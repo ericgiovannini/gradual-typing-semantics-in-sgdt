@@ -1,0 +1,318 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
+
+\newcommand{\dyn}{\text{Dyn}}
+\newcommand{\dynv}{\text{Dyn}^+}
+\newcommand{\dync}{\text{Dyn}^-}
+\newcommand{\good}[1]{\text{good}_{#1}}
+\newcommand{\prop}{\mathbb P}
+\newcommand{\with}{\mathrel{\&}}
+\newcommand{\eqv}{\simeq}
+\newcommand{\soln}{\text{Sol}}
+\newcommand{\police}[1]{\text{police}_{#1}}
+\newcommand{\later}{{\blacktriangleright}}
+\newcommand{\errp}[1]{\mho_{#1}}
+\newcommand{\kerrp}[2]{\mho^{#1}_{#2}}
+\newcommand{\err}{\mho}
+\newcommand{\errlift}{L_\err}
+\newcommand{\ostar}{\circledast}
+
+\newcommand{\ltdynp}[1]{\mathrel{\sqsubseteq_{#1}}}
+\newcommand{\ltdynlift}[1]{\mathrel{\sqsubseteq_{\errlift#1}}}
+\newcommand{\ltprecp}[1]{\mathrel{\sqsubseteq^{\prec}_{\errlift #1}}}
+\newcommand{\ltsuccp}[1]{\mathrel{\sqsubseteq^{\succ}_{#1}}}
+
+\newcommand{\kltp}[2]{\mathrel{\sqsubseteq^{#1}_{#2}}}
+
+\newcommand{\ltgt}[1]{\mathbin{\langle\mspace{-1mu}#1\mspace{-1mu}\rangle}}
+\newcommand{\fmap}{\ltgt{\$}}
+\newcommand{\monto}{\mathrel{\to_{m}}}
+\newcommand{\linto}{\multimap}
+
+\begin{document}
+
+\title{Semantics of Gradual Types in SGDT}
+\author{Max S. New}
+
+\maketitle
+
+\section{Goals}
+
+We want to define a denotational semantics for the core language of
+GTLC and prove graduality.
+
+Here's roughly the structure required
+\begin{verbatim}
+record GTLC(U)
+  type : U
+  tm : type -> U
+  _<ty=_ : PreOrder type
+  _<tm=_ : PreOrder (Sigma A (tm A))
+  impl : (A, M) <tm= (B,N) -> A <ty= B
+
+  dyn : type
+  dynTop : {A} -> A <ty= dyn
+
+  ans : type
+  yes : tm ans
+  no  : tm ans
+
+  arr : type -> type -> type
+  lam : (tm A -> tm B) -> tm (arr A B)
+  app : tm (arr A B) -> tm A -> tm B
+  -- beta, eta
+
+  up : A <ty= B -> tm A -> tm B
+  upR : ...
+
+  dn : A <ty= B -> tm B -> tm A
+  
+\end{verbatim}
+
+\section{Error predomains and domains}
+
+First, we need to define our monad.
+\begin{definition}
+  Define the error-lift type as a solution to the guarded recursive
+  domain equation:
+  \[ \errlift X \cong (X + 1 + \later \errlift X) \]
+
+  We label the three injections as follows:
+  \begin{align*}
+    \eta &: X \to \errlift X\\
+    \err &: \errlift X\\
+    \theta &: \later \errlift X \to \errlift X
+  \end{align*}
+
+  This carries the structure of a strong monad, with $\eta$ as the
+  unit and the join defined by L\"ob induction as follows:
+  \begin{align*}
+    \mu(\eta x) &= x\\
+    \mu(\mho) &= \mho\\
+    \mu(\theta(u)) &= \theta (\mu^\later \ostar u)
+  \end{align*}
+  With map (implying strength) defined as
+  \begin{align*}
+    \errlift f(\eta x) &= f x\\
+    \errlift f(\mho) &= \mho\\
+    \errlift f(\theta(u)) &= \theta ((\errlift f)^\later \ostar u)
+  \end{align*}
+  And the equational laws of a monad can be proven using L\"ob
+  induction.
+\end{definition}
+
+This can be seen as simply a composition of two monads using a
+distributive law: the error monad and the recursive lift monad.
+%
+However, we present them as one combined monad because in gradual
+typing we are interested in a specific ordering relation called the
+\emph{error ordering} where $\err$ is the least element. This is
+\emph{not} the composition of the lift and error monad, which would
+instead have the error as an isolated, maximal element.
+
+We can define this error ordering as a variation on the weak
+simulation relations of prior work:
+\begin{definition}
+  Let $X$ be a type and $\sqsubseteq_X$ a binary relation. We define
+  $\ltdynp{\errlift X} : \errlift X \to \errlift X \to \prop$ as follows:
+  \begin{align*}
+    \err \ltdynlift X d &= \top\\
+    \eta x \ltdynlift X \eta y &= x \ltdynp X y\\
+    \eta x \ltdynlift X \err &= \bot\\
+    \eta x \ltdynlift X \theta t &= \exists{n:\mathbb N}.\exists{y: X}. \theta t = \delta^n (\eta y) \wedge x \ltdynp X y\\
+    \theta s \ltdynlift X \eta y &= \exists{n:\mathbb N}.(\theta s = \delta^n \err)\vee(\exists{y: X}. \theta t = \delta^n (\eta y) \wedge x \ltdynp X y)\\
+    \theta s \ltdynlift X \err &= \exists{n:\mathbb N}.\theta s = \delta^n \err\\
+    \theta s \ltdynlift X \theta t &= \later[l \leftarrow s,r\leftarrow t] s \ltdynlift X t
+  \end{align*}
+\end{definition}
+
+\begin{lemma}
+  When $\ltdynp X$ is reflexive, so is $\ltdynlift X$.
+\end{lemma}
+\begin{proof}
+  By L\"ob induction on the proposition $\forall d: \errlift X. d
+  \ltdynlift X d$. Error and return cases are immediate.  We need to
+  show
+  \[ \theta t \ltdynlift X \theta t = \later[l \leftarrow t,r\leftarrow t] l \ltdynlift X r = \later[l \leftarrow t] l \ltdynlift X l \]
+  The inductive hypothesis $h : \later (\forall d: \errlift X. d \ltdynlift X d)$
+  We can then conclude
+  \[ \text{next}[f \leftarrow h, l \leftarrow t]. h l \]
+\end{proof}
+
+Unfortunately, transitivity is not preserved.
+%
+The problematic case is of the form $\theta s \ltdynlift X \theta t
+\ltdynlift X \eta z$. In this case we know $\theta t = \delta^n (\eta
+y)$ but we cannot conclude that $\theta s$ must eventually terminate!
+In fact this is false in the semantics because it might be that
+$\theta s$ is only related to $\theta t$ because we ran out of fuel,
+and actually $s$ is a diverging computation.
+
+However, this should support transitive reasoning \emph{in the limit},
+i.e., if the equivalence holds for \emph{all} levels of approximation
+then eventually if $\theta t$ terminates, at high enough level of
+approximation it will no longer be related to the diverging
+computation.
+%
+This reasoning \emph{in the limit} is accomplished analytically by
+quantification over all steps.
+%
+Here we accomplish it by using \emph{clocks} and \emph{clock
+quantification}.
+%
+That is rather than a denotation of a syntactic type being a type it
+will be given by a ``clocked'' type:
+
+\begin{definition}
+  A \emph{clocked} type $X$ is an element of $K \to U$.
+
+  We call $\forall k:K. X k$, the \emph{limit} of $X$.
+\end{definition}
+
+Note that, similar to the interval in cubical type theory, $K$ is not
+a type, but only a ``pseudo-type'' that we can quantify over in the
+type $\Pi_{k:K} B$.
+%
+Next, we need a ``clocked'' error ordering associated to every type.
+%
+This will be assumed to be reflexive at each level of approximation,
+but only transitive in the limit.
+
+\begin{definition}
+  A \emph{clocked} preorder on a clocked type $X : K \to U$ is a
+  clocked relation $\kltp {} X : \forall k. X_k \to X_k \to \prop$ satisfying
+  \begin{enumerate}
+  \item Clocked Reflexivity $\forall k. \prod_{x:X_k} x \kltp k X x$
+  \item Transitivity in the limit $\prod_{x,y,z:\forall k. X_k} x \kltp \omega X y \to y \kltp \omega X z \to x \kltp \omega X z$
+  \end{enumerate}
+
+  Where 
+  \[ x \kltp \omega X y = \forall k. x_k \kltp k X y_k \]
+
+  A \emph{monotone function} is a function $f : \forall k. X_0 k \to
+  Y_0 k$ satisfying monotonicity:
+  \[ \forall k.\prod_{x,x':X_0^k} x \kltp k X x' \to f_k x \kltp k Y f_k x' \]
+\end{definition}
+
+For any clocked preorder we can construct the delayed preorder by
+\begin{definition}
+  Define $\later : K \to (K \to U) \to (K \to U)$ by
+  \[ (\later X)^k = \later^k X^k \]
+  and on preorders by:
+  \begin{align*}
+    x \kltp k {\later X} y &= \later^k[l\leftarrow x, r\leftarrow y].~l \kltp k {X} r
+  \end{align*}
+  
+\end{definition}
+
+Then we can define our semantic notions
+\begin{definition}
+  An \emph{error predomain} $X$ consists of
+  \begin{enumerate}
+  \item A clocked type $X_0$
+  \item A clocked preorder $\kltp {} X$ on $X_0$ 
+  \end{enumerate}
+  A morphism of error predomains is a monotone function.
+
+  An \emph{error domain} is an error predomain $X$ with
+  \begin{enumerate}
+  \item A least element $\kerrp {} X : \forall k. X$, i.e., it
+    satisfies $\forall k. \prod_{x:X_k} \kerrp k X \kltp k X x$.
+  \item A monotone ``thunk'' function $\theta_X : \later X \to X$
+  \end{enumerate}
+  A morphism of error domains is a morphism of the underlying error
+  predomains.
+
+  A \emph{linear} morphism of error domains $S : X \multimap Y$ is a
+  morphism of error domains additionally satisfying
+  \begin{enumerate}
+  \item Error preservation $S^k \err^k_X = \err^k_Y$
+  \item Thunk preservation $S^k (\theta^k_X x) = \theta^k_Y (S^k \fmap x)$
+  \end{enumerate}
+\end{definition}
+
+Finally we can return to our original goal of defining the monad for our semantics!
+%
+
+\begin{lemma}
+  next and $\delta$ are monotone
+\end{lemma}
+
+\begin{definition}
+  Let $X$ be an error predomain a binary relation. We define the error
+  domain $\errlift X$ as
+
+  TODO: put the ks in the right spots
+
+  \begin{enumerate}
+  \item $(\errlift X)_0^k = \mu L. X_0^k + 1 + \later^k L$
+  \item Ordering defined by cases:
+    \begin{align*}
+      \err \kltp k {\errlift X} d &= \top\\
+      \eta x \kltp k {\errlift X} \eta y &= x \ltdynp X y\\
+      \eta x \kltp k {\errlift X} \err &= \bot\\
+      \eta x \kltp k {\errlift X} \theta t &= \exists{n:\mathbb N}.\exists{y: X}. \theta t = \delta^n (\eta y) \wedge x \ltdynp X y\\
+      \theta s \kltp k {\errlift X} \eta y &= \exists{n:\mathbb N}.(\theta s = \delta^n \err)\vee(\exists{y: X}. \theta t = \delta^n (\eta y) \wedge x \ltdynp X y)\\
+      \theta s \kltp k {\errlift X} \err &= \exists{n:\mathbb N}.\theta s = \delta^n \err\\
+      \theta s \kltp k {\errlift X} \theta t &= \later[l \leftarrow s,r\leftarrow t] s \kltp k {\errlift X} t
+    \end{align*}
+  \item reflexive: as above
+  \item TODO: transitive in the limit
+  \item TODO: strong monad
+  \end{enumerate}
+\end{definition}
+
+\begin{lemma}
+  $\errlift X$ is the free error domain on $X$, i.e., it is left
+  adjoint to the forgetful functor from the category of error domains
+  and linear maps to the category of predomains.
+\end{lemma}
+
+\begin{lemma}
+  The adjunction is monadic: error domains are precisely algebras of
+  the free error domain. Is this true?
+\end{lemma}
+
+\section{Lazy Semantics}
+
+To define a semantics for lazy gradually typed language, we first need
+to define our \emph{universal} error domain. Unless we add in features
+like pattern matching on the dynamic type, there is some freedom in
+this choice. We present two natural solutions:
+
+The first is a classic-looking dynamic type: the lift of the sum of
+the base type and the function type. A notable difference are the
+guarded recursive uses.
+\[ \dyn_+ \cong \errlift (2 + (\later \dyn_+ \monto \later \dyn_+)) \]
+The second is slightly closer to untyped lambda calculus: we take a
+product rather than a sum, and only need to lift the base type itself.
+\[ \dyn_- \cong \errlift 2 \times (\later \dyn_- \monto \later \dyn_-) \]
+The idea here is that any dynamically typed term can be safely applied
+to any number of arguments and at some point ``projected'' to return a
+boolean, which will actually cause computation to occur as indicated
+by the $\errlift$.
+
+To construct these domains we need to be able to solve recursive
+domain equations \emph{of error domains}. To do this we simply need to
+show that the universe of error predomains is a predomain.
+
+\begin{definition}
+  Define $\theta_{\predom} : \later \predom \to \predom$ as follows
+  \begin{align*}
+    \theta_{\predom}P &= (\later[(X,\ltdynp X) \leftarrow P] X, )
+  \end{align*}
+\end{definition}
+
+
+\end{document}
