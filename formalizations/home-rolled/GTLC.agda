@@ -1,74 +1,12 @@
+-- | The below is an attempt to describe the semantics of gradually
+-- | typed languages in a HOAS style.
+--
+-- | Warning: this might not make any sense without directed type
+-- | theory!
 
+open import ErrorDomains
 open import Relation.Binary.PropositionalEquality using (_≡_)
 open import Data.Product
-
-postulate
-
-  ▸ : Set → Set
-  K : Set
-
-𝕌 : Set₁
-𝕌 = Set
-
-ℙ : Set₁
-ℙ = Set
-
-record Preorder : Set₁ where
-  field
-    X   : 𝕌
-    _⊑_ : X → X → ℙ
-    refl : ∀ (x : X) → x ⊑ x
-    trans : ∀ {x y z : X} → x ⊑ y → y ⊑ z → x ⊑ z
-
-infixr 20 _⇨_
-infixr 20 _⇒_
-
-record _⇨_ (X : Preorder) (Y : Preorder) : Set where
-  module X = Preorder X
-  module Y = Preorder Y
-  field
-    f   : X.X → Y.X
-    mon : ∀ {x y} → X._⊑_ x y → Y._⊑_ (f x) (f y)
-
-app : ∀ {X Y} → (X ⇨ Y) → Preorder.X X → Preorder.X Y
-app = _⇨_.f
-
-_$_ = app
-
-_⇒_ : Preorder → Preorder → Preorder
-X ⇒ Y = record { X = X ⇨ Y
-               ; _⊑_ = λ f g → (x : X.X) → _⇨_.f f x ⊑y _⇨_.f g x
-               ; refl = λ x x₁ → _⇨_.mon x (X.refl x₁)
-               ; trans = λ p1 p2 x → Y.trans (p1 x) (p2 x) }
-  where
-    module X = Preorder X
-    module Y = Preorder Y
-    _⊑y_ = Y._⊑_
-
-_⊨_⊑_ : (X : Preorder) → Preorder.X X → Preorder.X X → Set
-X ⊨ x ⊑ x' = Preorder._⊑_ X x x'
-
-record _⊨_≣_ (X : Preorder) (x y : Preorder.X X) : Set where
-  module X = Preorder X
-  _⊑_ = X._⊑_
-  field
-    to  : x ⊑ y
-    fro : y ⊑ x
-
-record _⇔_ (X : Preorder) (Y : Preorder) : Set where
-  field
-    to  : X ⇨ Y
-    fro : Y ⇨ X
-    eqX : ∀ x → X ⊨ app fro (app to x) ≣ x
-    eqY : ∀ y → Y ⊨ app to (app fro y) ≣ y
-
-record _◃_ (X Y : Preorder) : Set where
-  _⊑y_ = Preorder._⊑_ Y
-  field
-    emb  : X ⇨ Y
-    prj  : Y ⇨ X
-    projection : ∀ y → Y ⊨ app emb (app prj y) ⊑ y
-    retraction : ∀ x → X ⊨ x ≣ app prj (app emb x)
 
 op : Preorder → Preorder
 op X = record
@@ -84,17 +22,6 @@ opF {X}{Y} f = record { f = f.f ; mon = _⇨_.mon f }
   where module X = Preorder X
         module Y = Preorder Y
         module f = _⇨_ f
-
-product : Preorder → Preorder → Preorder
-product X Y = record { X = X.X × Y.X
-                     ; _⊑_ = λ p1 p2 → (proj₁ p1 ⊑x proj₁ p2) × (proj₂ p1 ⊑y proj₂ p2)
-                     ; refl = λ x → (X.refl (proj₁ x)) , (Y.refl (proj₂ x))
-                     ; trans = λ leq1 leq2 → (X.trans (proj₁ leq1) (proj₁ leq2)) , Y.trans (proj₂ leq1) (proj₂ leq2)
-                     }
-  where module X = Preorder X
-        _⊑x_ = X._⊑_
-        module Y = Preorder Y
-        _⊑y_ = Y._⊑_
 
 record FiberPts {X : Preorder}{Y : Preorder} (f : X ⇨ Y) (y : Preorder.X Y) : Set where
   field

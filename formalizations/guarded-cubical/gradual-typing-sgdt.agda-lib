@@ -1,0 +1,3 @@
+name: gradual-typing-sgdt
+include: .
+depend: cubical

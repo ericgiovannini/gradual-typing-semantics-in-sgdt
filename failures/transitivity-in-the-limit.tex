@@ -1,5 +1,4 @@
 \documentclass{article}
-
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -13,14 +12,11 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{lemma}{Lemma}[section]
 
-\newcommand{\bool}{2}
 \newcommand{\dyn}{\text{Dyn}}
 \newcommand{\dynv}{\text{Dyn}^+}
 \newcommand{\dync}{\text{Dyn}^-}
 \newcommand{\good}[1]{\text{good}_{#1}}
 \newcommand{\prop}{\mathbb P}
-\newcommand{\smallU}{\mathbb U}
-\newcommand{\bigU}{\mathbb V}
 \newcommand{\with}{\mathrel{\&}}
 \newcommand{\eqv}{\simeq}
 \newcommand{\soln}{\text{Sol}}
@@ -42,11 +38,7 @@
 \newcommand{\ltgt}[1]{\mathbin{\langle\mspace{-1mu}#1\mspace{-1mu}\rangle}}
 \newcommand{\fmap}{\ltgt{\$}}
 \newcommand{\monto}{\mathrel{\to_{m}}}
-\newcommand{\predom}{\text{$\mho$PreDom}}
-\newcommand{\dom}{\text{Dom}}
 \newcommand{\linto}{\multimap}
-\newcommand{\Next}{\text{next}}
-\newcommand{\thinkp}[1]{\theta_{#1}}
 
 \begin{document}
 
@@ -59,164 +51,49 @@
 
 We want to define a denotational semantics for the core language of
 GTLC and prove graduality.
-%
-For lazy gradual typing, based on New and Licata, we need to construct
-a vertically thin cartesian closed pro-arrow equipment with a greatest
-type, least element of each hom set and a weak boolean type.
 
-New and Licata used a denotational semantics based on classical
-analytic domain theory to construct such models. Here we will use
-\emph{synthetic guarded domain theory} to sidestep any side-conditions
-on constructing solutions to domain equations. We work internal to a
-model of multi-clock synthetic guarded domain theory. We use two
-universes $\mathbb U \leq \mathbb V$.
+Here's roughly the structure required
+\begin{verbatim}
+record GTLC(U)
+  type : U
+  tm : type -> U
+  _<ty=_ : PreOrder type
+  _<tm=_ : PreOrder (Sigma A (tm A))
+  impl : (A, M) <tm= (B,N) -> A <ty= B
 
-For gradual typing we need to develop a notion of domain that includes
-an \emph{error ordering} with respect to which all constructions in
-the language are monotone and and the errors and gradual type casts
-are characterized by universal properties. We also need to construct
-in each model a \emph{universal} (pre-)domain to interpret the
-``dynamic'' type.
+  dyn : type
+  dynTop : {A} -> A <ty= dyn
 
-For instance, for a CBN gradual language with functions and booleans a
-suitable domain can be constructed as:
-\[ \dync \cong \errlift \bool \times (\later \dync \monto \later \dync) \]
-where $\errlift$ is an appropriate combination of the error and lift
-monads, $\later$ provides the necessary guarding and $\monto$ is the
-set of \emph{monotone} functions.  A CBV gradual language with
-functions and booleans could instead use
-\[ \dynv \cong \bool + (\later \dynv \monto \errlift(\later\dynv))\]
+  ans : type
+  yes : tm ans
+  no  : tm ans
+
+  arr : type -> type -> type
+  lam : (tm A -> tm B) -> tm (arr A B)
+  app : tm (arr A B) -> tm A -> tm B
+  -- beta, eta
+
+  up : A <ty= B -> tm A -> tm B
+  upR : ...
+
+  dn : A <ty= B -> tm B -> tm A
+  
+\end{verbatim}
 
 \section{Error predomains and domains}
 
-We start by defining our notion of predomain and domain and showing
-how to solve recursive domain equations.
-%
-All of the constructions (later, fix, etc) in this section are
-parameterized by an arbitrary clock variable $k : K$, but to avoid
-clutter we leave it implicit.
-
-Our notion of predomain is simply that of a (constructive)
-\emph{preorder}, and our notion of domain is a predomain with a least
-element.
+First, we need to define our monad.
 \begin{definition}
-  An error predomain $X$ consists of
-  \begin{enumerate}
-  \item A type $X_0 : \smallU$
-  \item An order ``relation'' $\ltdynp X : X_0 \to X_0 \to \smallU$
-  \item Satisfying reflexivity, i.e., $x \ltdynp X x$ for every $x$.
-  \item And transitivity, if $x \ltdynp X y$ and $y \ltdynp X z$ then
-    $x \ltdynp X z$.
-  \end{enumerate}
-  We write the universe of predomains as $\predom : \bigU$.
-
-  A monotone function $f : X \to Y$ between error predomains consists
-  of
-  \begin{enumerate}
-  \item A function on the underlying sets $f_0 : X_0 \to Y_0$
-  \item That preserves the ordering: $f_1 : (x \ltdynp X x') \to (f_0x \ltdynp X f_0 x')$
-  \end{enumerate}
-
-  We write the type of monotone functions from $X$ to $Y$ as $X \monto Y : \smallU$
-  Furthermore, the type of monotone functions can be extended to a
-  predomain with pointwise ordering. We abusively also write $X \monto
-  Y : \predom$
-\end{definition}
-
-Strangely enough for our purposes it is important that the preorder is
-not in a proof-irrelevant universe, but we do not seem to care about
-the equality of ordering proofs. So we seem to have a weird
-intermediate point between proper preorders and categories where there
-might be many different proofs but we impose no ``laws'' on the
-manipulation of these proofs. Michael Arntzenius calls these ``lawless
-categories''.
-
-Next, to solve recursive domain equations, we need to prove that the
-universe of error predomains is a domain in the sense of guarded
-domain theory that there is a $\later$-algebra $\theta : \later
-\predom \to \predom$
-
-\begin{definition}
-  Given $X^\later : \later \predom$, define a predomain $\later X^\later$ as
-  follows:
-  \begin{enumerate}
-  \item $(\later X^\later)_0 = \later[X \leftarrow X^\later] X_0$
-  \item $x^\later \ltdynp {\later X^\later} y^\later = \later[X \leftarrow X^\later, x \leftarrow x^\later, y \leftarrow y^\later] x \ltdynp X y$
-  \item Given $x^\later$,
-    \begin{align*}
-      \later[X \leftarrow X^\later, x \leftarrow x^\later, y \leftarrow x^\later] x \ltdynp X y
-      &\equiv \later[X \leftarrow X^\later, x \leftarrow x^\later] x \ltdynp X x
-    \end{align*}
-    Which we can prove as
-    \[ \Next[X \leftarrow X^\later, x \leftarrow x^\later] \text{refl}_X x\]
-    or in applicative style
-    \[ \Next\,\text{refl} \ostar X^\later \ostar x^\later \]
-  \item Given $p_{xy}^\later : x^\later \ltdynp {\later X^\later} y^\later$ and
-    $p_{yz}^\later : y^\later \ltdynp {\later X^\later} z^\later$, we need to show
-    \begin{align*}
-      \later[X \leftarrow X^\later, x \leftarrow x^\later, z \leftarrow z^\later] x \ltdynp X z
-      &\equiv \later[X \leftarrow X^\later, x \leftarrow x^\later,y\leftarrow y^\later, z \leftarrow z^\later] x \ltdynp X z
-    \end{align*}
-    Which we prove as
-    \[ \Next[X \leftarrow X^\later, x \leftarrow x^\later,y\leftarrow y^\later, z \leftarrow z^\later,p_{xy}\leftarrow p_{xy}^\later, p_{yz}\leftarrow p_{yz}^\later] \text{trans}_X p_{xy} p_{yz} \]
-    or in applicative style
-    \[ \Next\,\text{trans} \ostar X^\later \ostar x^\later\ostar y^\later\ostar z^\later \ostar p_{xy}^\later \ostar p_{yz}^\later \]
-  \end{enumerate}
-\end{definition}
-When $X : \predom$, we will write $\later X$ for $\later (\Next\,X)$
-
-We can then define our notion of \emph{error domain} as error
-predomains that have a suitable notion of error and have a
-\emph{monotone} $\later$-algebra.
-\begin{definition}
-  An error domain $X$ is an error predomain with furthermore
-  \begin{enumerate}
-  \item An element $\errp X : X_0$ that is the least element $\errp X \ltdynp X x$
-  \item A monotone function $\thinkp X : \later X \to X$
-  \end{enumerate}
-  We write the universe of error domains as $\dom : \bigU$ and we will
-  (usually?) suppress the obvious coercion $U : \dom \to \predom$
-
-  When $X$ is an error predomain and $Y$ is an error domain, $X \monto
-  Y$ is an error domain with
-  \begin{enumerate}
-  \item $\errp {X \monto Y} = \lambda x. \errp Y$
-  \item $\thinkp {X \monto Y} f = \lambda x. \thinkp Y (f \ostar (\Next\, x)) $
-  \end{enumerate}
-\end{definition}
-
-And finally we can define the error-lift monad, which defines the free
-error domain from an error predomain.
-\begin{definition}
-  Given any predomain $X : \predom$, we define the error lift $\errlift X$ as follows
-
-  \begin{enumerate}
-  \item First, $(\errlift X)_0$ is defined as the solution to the
-    guarded domain equation:
-    \[ (\errlift X)_0 \cong (X_0 + 1 + \later (\errlift X)_0) \]
-
-    We label the three injections as follows:
-    \begin{align*}
-      \eta &: X \to \errlift X\\
-      \err &: \errlift X\\
-      \theta &: \later \errlift X \to \errlift X
-    \end{align*}
-
-  \item We define the order relation, $\ltdynp {\errlift X}$ as the
-    transitive closure of $\wr$, which is defined as:
-
-    \begin{align*}
-      \err \wr r &= 1\\
-      (\eta x) \wr (\eta y) &= x \ltdynp X y\\
-      (\theta s) \wr (\theta t) &= (\Next\; \wr) \ostar s \ostar t\\
-      (\eta x) \wr (\theta t) &= \Sigma_{n:\mathbb N}\Sigma_{y:X_0} (\theta t = \delta^n (\eta y)) \times (x \ltdynp X y)\\
-      (\theta s) \wr (\eta y) &= \Sigma_{n:\mathbb N}\Sigma_{x:X_0} (\theta s = \delta^n (\eta x)) \times (x \ltdynp X y)\\
-    \end{align*}
-  \end{enumerate}
-  
   Define the error-lift type as a solution to the guarded recursive
   domain equation:
+  \[ \errlift X \cong (X + 1 + \later \errlift X) \]
 
+  We label the three injections as follows:
+  \begin{align*}
+    \eta &: X \to \errlift X\\
+    \err &: \errlift X\\
+    \theta &: \later \errlift X \to \errlift X
+  \end{align*}
 
   This carries the structure of a strong monad, with $\eta$ as the
   unit and the join defined by L\"ob induction as follows:
@@ -430,12 +307,12 @@ To construct these domains we need to be able to solve recursive
 domain equations \emph{of error domains}. To do this we simply need to
 show that the universe of error predomains is a predomain.
 
-%% \begin{definition}
-%%   Define $\theta_{\predom} : \later \predom \to \predom$ as follows
-%%   \begin{align*}
-%%     \theta_{\predom}P &= (\later[(X,\ltdynp X) \leftarrow P] X, )
-%%   \end{align*}
-%% \end{definition}
+\begin{definition}
+  Define $\theta_{\predom} : \later \predom \to \predom$ as follows
+  \begin{align*}
+    \theta_{\predom}P &= (\later[(X,\ltdynp X) \leftarrow P] X, )
+  \end{align*}
+\end{definition}
 
 
 \end{document}
