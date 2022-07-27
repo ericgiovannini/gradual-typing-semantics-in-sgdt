@@ -1,0 +1,84 @@
+\documentclass[acmsmall,screen]{acmart}
+\usepackage{mathpartir}
+\usepackage{tikz-cd}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2018}
+\acmYear{2018}
+\acmDOI{10.1145/1122445.1122456}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural
+  Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
+\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+  June 03--05, 2018, Woodstock, NY}
+\acmPrice{15.00}
+\acmISBN{978-1-4503-XXXX-X/18/06}
+
+
+\begin{document}
+
+\title{Denotational Semantics for Gradual Typing in Synthetic Guarded Domain Theory}
+\author{Eric Giovannini}
+\author{Max S. New}
+
+\begin{abstract}
+  We develop a denotational semantics for a gradually typed language
+  with effects that is adequate and proves the graduality theorem.
+  %
+  The denotational semantics is constructed using \emph{synthetic
+  guarded domain theory} working in a type theory with a later
+  modality and clock quantification.
+  %
+  This provides a remarkably simple presentation of the semantics,
+  where gradual types are interpreted as ordinary types in our ambient
+  type theory equipped with an ordinary preorder structure to model
+  the error ordering.
+  %
+  This avoids the complexities of classical domain-theoretic models
+  (New and Licata) or logical relations models using explicit
+  step-indexing (New and Ahmed).
+  %
+  In particular, we avoid a major technical complexity of New and
+  Ahmed that require two logical relations to prove the graduality
+  theorem.
+
+  By working synthetically we can treat the domains in which gradual
+  types are interpreted as if they were ordinary sets. This allows us
+  to give a ``na\"ive'' presentation of gradual typing where each
+  gradual type is modeled as a well-behaved subset of the universal
+  domain used to model the dynamic type, and type precision is modeled
+  as simply a subset relation.
+  %
+  This provides a rich semantic setting in which to 
+\end{abstract}
+
+\section{Introduction}
+
+% gradual typing, graduality
+
+% synthetic guarded domain theory, denotational semantics therein
+
+% Difficulties in prior semantics
+
+\section{Discussion}
+
+\subsection{Synthetic Ordering}
+
+While the use of synthetic guarded domain theory allows us to very
+conveniently work with non-well-founded recursive constructions while
+abstracting away the precise details of step-indexing, we do work with
+the error ordering in a mostly analytic fashion in that gradual types
+are interpreted as sets equipped with an ordering relation, and all
+terms must be proven to be monotone.
+%
+It is possible that a combination of synthetic guarded domain theory
+with \emph{directed} type theory would allow for an a synthetic
+treatment of the error ordering as well.
+
+\end{document}
