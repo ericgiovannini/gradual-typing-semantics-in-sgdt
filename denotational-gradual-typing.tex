@@ -1,0 +1,133 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
+
+\newcommand{\dynv}{\text{Dyn}^+}
+\newcommand{\dync}{\text{Dyn}^-}
+\newcommand{\good}[1]{\text{good}_{#1}}
+\newcommand{\prop}{\mathbb P}
+\newcommand{\with}{\mathrel{\&}}
+\newcommand{\eqv}{\simeq}
+\newcommand{\soln}{\text{Sol}}
+\newcommand{\police}[1]{\text{police}_{#1}}
+\newcommand{\later}{{\blacktriangleright}}
+
+\begin{document}
+
+\title{Gradual Types as Subsets}
+\author{Max S. New}
+
+\maketitle
+
+We fix a predomain $\dynv$ with poset structure and a domain $\dync$
+with bounded below poset structure as solutions to the domain
+equations:
+
+\[ \dynv = 2 + \dync \]
+\[ \dync = (\dynv \to \dync) \with L (\dynv_{\mho}) \]
+
+Q: does this actually get us the right order?
+Q: what domain-theoretic properties does the order have that matter?
+
+There are several ways to define essentially the same interpretation
+of CBV gradually typed lambda calculus with booleans into this
+semantics:
+
+\begin{enumerate}
+\item Types as ((Co-)Kleisli) co-reflections
+\item Types as interior operators
+\end{enumerate}
+
+I want to explore one that I previously dismissed as somewhat na\"ive:
+value types are (well-behaved) subsets of the universal predomain and
+computation types are (well-behaved) quotients of the universal
+domain.
+
+\begin{enumerate}
+\item A value type $A$ is a \emph{policeable} predicate $\good A :
+  \dynv \to \prop$
+\item A computation type $B$ is a \emph{envelopable} equivalence
+  relation $\eqv B : \text{Equivalence}(\dynv)$
+\end{enumerate}
+
+Let's explain what these mean.
+%
+First, define $\soln A$ to be the set of ``good'' elements of $\dynv$
+according to $A$, i.e., $\{ d : \dynv \,|\, \good A d \}$.
+%
+$\good A$ is \emph{policeable} when there exists a function $\police A
+: \dynv \to (\soln A)_\mho$ satisfying two properties:
+\begin{enumerate}
+\item (monotonicity) $\forall d \sqsubseteq d'. \police A d \sqsubseteq \police A d'$
+\item (retraction) $\forall x \in \soln A. \police A x = \eta x$
+\item (projection) $\forall d \in \dynv. \police d \sqsubseteq \eta d$
+\end{enumerate}
+
+If $\sqsubseteq$ is a poset and $\eta : A \to A_\mho$ is order-reflecting,
+then $\police A$ is uniquely determined by these two properties, for
+if there were another such function $(\police A)'$ we would have
+\[ \]
+
+\subsection{Synthetic Guarded Domain Theory}
+
+We can solve the domain equation using synthetic guarded domain
+theory.
+
+\begin{align*}
+  \dynv &= \mu (\lambda D^+. 2 + \mu (\lambda D^-. L (1 + D^+) \times (D^+ \to D^-) ))\\
+  \dync &= \mu (\lambda D^-. L (1 + \later \dynv) \times (\later \dynv \to D^-) )
+\end{align*}
+
+unfolding this gives us
+
+\begin{align*}
+  \dynv &\cong 2 + \dync \\
+  \dync &= L (1 + \later \dynv) \times (\later \dynv \to \later \dync)\\
+  &\cong L (1 + \later \dynv) \times \later (\dynv \to \dync)
+\end{align*}
+
+\begin{lemma}{Universal Domain}
+  $\dync$ is a domain with algebra
+  \[ \theta_\dync = \lambda p: \later \dync. (\pi_1p, ) \]
+\end{lemma}
+
+Let's define orderings.
+\begin{verbatim}
+data _<=_ : Dyn+ -> Dyn+ -> Prop where
+  bool : forall b : 2. inl b <= inl b
+
+
+data _<=_ : Dyn- -> Dyn- -> Prop where
+
+err-ord : BinRel a -> BinRel (a + 1)
+err-ord _<=_ (inr *)       y = T
+err-ord _<=_ (inl x) (inl y) = x <= y
+err-ord _<=_ _ _ = _|_
+
+laterr-ord< BinRel a -> BinRel (L (a + 1))
+laterr-ord< _<=_ (done (inr *)) _ = T
+laterr-ord< _<=_ (done (inl *)) _ = T
+
+
+laterr-ord> BinRel a -> BinRel (L (a + 1))
+  
+
+err : Dyn-
+err = mu (\e. ((inl (inl *)), \x. e))
+
+
+\end{verbatim}
+
+Let's define
+
+\end{document}
