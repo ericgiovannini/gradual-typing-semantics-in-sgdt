@@ -228,6 +228,136 @@ monad-assoc = fix lem
 
 
 
+
+
+
+-- Dyn as a predomain
+data Dyn'  (D : ▹ Type) :  Type where
+  nat : ℕ -> Dyn' D
+  arr : (▸ D -> L℧ (▸ D)) -> Dyn' D
+
+Dyn : Type
+Dyn = fix Dyn'
+
+-- Embedding-projection pairs
+record EP (A B : Set) : Set where
+  field
+    emb  : A -> B
+    proj : B -> L℧ A
+    retract :
+      proj ∘ emb ≡ ret
+
+
+-- E-P Pair for nat
+
+e-nat : ℕ -> Dyn
+e-nat n = transport (sym (fix-eq Dyn')) (nat n) 
+
+p-nat' : Dyn' (next Dyn) -> L℧ ℕ
+p-nat' (nat n) = ret n
+p-nat' (arr f) = ℧
+
+p-nat : Dyn -> L℧ ℕ
+p-nat d = p-nat' (transport (fix-eq Dyn') d)
+
+retraction-nat : (n : ℕ) -> p-nat (e-nat n) ≡ ret n
+retraction-nat n =
+  λ i → p-nat'
+    (transport⁻Transport (sym (fix-eq Dyn')) (nat n) i)
+
+EP-nat : EP ℕ Dyn
+EP-nat = record {
+  emb = e-nat;
+  proj = p-nat;
+  retract = funExt retraction-nat }
+
+-- E-P Pair for function types
+
+e-fun : (Dyn -> L℧ Dyn) -> Dyn
+e-fun f = transport
+  (sym (fix-eq Dyn'))
+  (arr λ (x : ▹ Dyn) →
+    θ (λ t -> mapL next (f (x t))))
+
+apply : Tick k -> ▹ Dyn -> Dyn
+apply t l_dyn = l_dyn t
+
+p-fun' : Dyn' (next Dyn) -> L℧ (Dyn -> L℧ Dyn)
+p-fun' (nat n) = ℧
+p-fun' (arr f) = ret λ d ->
+  θ (λ t →
+      mapL (apply t) (f (next d))
+      -- doesn't work:
+      -- mapL (\ (l_dyn : ▹ Dyn) -> l_dyn t) (f (next d))
+    )
+
+-- f : ▸ next Dyn → L℧ (▸ next Dyn)
+-- which is equal to
+-- ▹ Dyn -> L℧ (▹ Dyn)
+
+
+p-fun : Dyn -> L℧ (Dyn -> L℧ Dyn)
+p-fun d = p-fun' (transport (fix-eq Dyn') d)
+
+
+theta-lem : (t : Tick k) (la : L℧ A) ->
+  θ (λ t -> la) ≡ θ (next la)
+theta-lem t la = refl
+
+
+retraction-fun : (h : Dyn -> L℧ Dyn) ->
+   p-fun (e-fun h) ≡ {!!}
+retraction-fun h = {!!}
+
+
+EP-fun : EP (Dyn -> L℧ Dyn) Dyn
+EP-fun = record {
+  emb = e-fun;
+  proj = p-fun;
+  retract = {!!} }
+
+
+-- Lifting retractions to functions
+
+module LiftRetraction
+  (A A' B B' : Set)
+  (epAA' : EP A A')
+  (epBB' : EP B B') where
+
+    e-lift :
+      (A → L℧ B) → (A' → L℧ B')
+    e-lift h a' =
+      bind (EP.proj {!!} a') λ a -> mapL (EP.emb {!!}) (h a)
+      -- or equivalently:
+      -- mapL (EP.emb epBB') (bind (EP.proj epAA' a') h)
+
+    p-lift :
+      (A' -> L℧ B') -> L℧ (A -> L℧ B)
+    p-lift f =
+      ret (λ a → bind (f (EP.emb epAA' a)) (EP.proj epBB'))
+
+
+
+
+
+{-
+L℧ : Predomain → ErrorDomain
+L℧ X = record { X = L℧X ; ℧ = ℧ ; ℧⊥ = {!!} ; θ = record { f = θ₀ ; isMon = {!!} } }
+  where
+    L℧X : Predomain
+    L℧X = L℧₀ (X .fst) , {!!}
+-}
+
+  -- Plan:
+  -- 1. Define denotational semantics for gradual STLC and show soundness of term precision
+  -- 1a. Define interpretation of terms of gradual CBV cast calculus (STLC + casts)
+  --   i) Semantic domains
+  --   ii) Term syntax (intrinsically typed, de Bruijn)
+  --   iii) Denotation function
+  -- 1b. Soundness of term precision with equational theory only (no ordering)
+
+  -- The language supports Dyn, CBV functions, nat
+
 -- | TODO:
 -- | 1. monotone monad structure
 -- | 2. strict functions
