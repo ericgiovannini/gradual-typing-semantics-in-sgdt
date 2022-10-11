@@ -68,22 +68,18 @@ data L℧ (X : Set) : Set where
 -- The following lemma proves this.
 
 trivialize' : {X : Set} ->
-  ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
+  ((lx : L℧ X) -> lx ≡ θ (next lx)) ->
   ▹ ((lx : L℧ X) -> lx ≡ fix θ) → (lx : L℧ X) -> lx ≡ fix θ
 trivialize' hθ IH lx =
-  lx                 ≡⟨ sym (hθ lx) ⟩
-  θ (next lx)        ≡⟨ refl ⟩
-  θ (λ t -> lx)      ≡⟨ ( λ i -> θ λ t -> IH t lx i) ⟩
-  θ (λ t -> fix θ)   ≡⟨ refl ⟩
-  θ (next (fix θ))   ≡⟨ hθ (fix θ) ⟩
+  lx                 ≡⟨ hθ lx ⟩
+  θ (next lx)        ≡⟨ ( λ i -> θ λ t -> IH t lx i) ⟩
+  θ (next (fix θ))   ≡⟨ sym (fix-eq θ) ⟩
   (fix θ ∎)
 
-trivialize : {X : Set} ->
-          ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
-          ((lx : L℧ X) -> (lx ≡ fix θ))
-trivialize hθ = fix (trivialize' hθ)
-
-
+-- trivialize : {X : Set} ->
+--           ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
+--           ((lx : L℧ X) -> (lx ≡ fix θ))
+-- trivialize hθ = fix (trivialize' hθ)
 
 -- We can prove a similar fact for an arbitrary relation R,
 -- so long as it is symmetric, transitive, and a congruence
@@ -98,8 +94,13 @@ symmetric {X} _R_ =
   {x y : X} -> x R y -> y R x
 
 congruence : {X : Type} -> (_R_ : L℧ X -> L℧ X -> Type) -> Type
-congruence {X} _R_ = {lx ly : L℧ X} -> ▹ (lx R ly) -> (θ (next lx)) R (θ (next ly))
+congruence {X} _R_ = {lx ly : ▹ (L℧ X)} -> ▸ (λ t → (lx t) R (ly t)) -> (θ lx) R (θ ly)
 
+congruence' : {X : Type} -> (_R_ : L℧ X -> L℧ X -> Type) -> Type
+congruence' {X} _R_ = {lx ly : L℧ X} -> ▹ (lx R ly) -> (θ (next lx)) R (θ (next ly))
+
+cong→cong' : ∀ {X}{_R_ : L℧ X -> L℧ X -> Type} → congruence _R_ → congruence' _R_
+cong→cong' cong ▹R = cong ▹R
 
 trivialize2 : {X : Type} (_R_ : L℧ X -> L℧ X -> Type) ->
   symmetric _R_ ->
@@ -118,13 +119,33 @@ trivialize2 {X} _R_ hSym hTrans hCong hθ = fix trivialize2'
          (hCong (λ t → IH t lx))
          (hθ (fix θ)))
 
-
 -- lx                  R
 -- (θ (next lx))       R
 -- (θ (λ t -> fix θ)   ≡
 -- (θ (next (fix θ)))  R
 -- (fix θ)
 
+-- alternatively, we can drop symmetry if we assume that the relation
+-- is reflexive, or at least that fix θ is related to itself.
+trivialize3 : {X : Type} (_R_ : L℧ X -> L℧ X -> Type) ->
+  transitive _R_ ->
+  congruence _R_ ->
+  fix θ R fix θ ->
+  ((x : L℧ X) -> x R (θ (next x))) ->
+  ((x : L℧ X) -> x R (fix θ))
+trivialize3 {X} _R_ hTrans hCong fix-ok hθR = fix trivialize3'
+  where
+   lem : θ (next (fix θ)) R fix θ
+   lem = subst (λ x → x R fix θ) (fix-eq θ) fix-ok
+
+   trivialize3' :
+    ▹ ((x : L℧ X) -> x R (fix θ)) → (x : L℧ X) -> x R (fix θ)
+   trivialize3' IH lx =
+     hTrans
+       (hθR lx)
+       (hTrans
+         (hCong (λ t → IH t lx))
+         lem)
 
 --------------------------------------------------------------------------
 
