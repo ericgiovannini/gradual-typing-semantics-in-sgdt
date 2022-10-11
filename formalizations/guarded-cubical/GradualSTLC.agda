@@ -2,9 +2,9 @@
 
 module GradualSTLC where
 
-
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat
+open import Cubical.Relation.Nullary
 
 -- Types --
 
@@ -27,6 +27,37 @@ data _⊑_ : Ty -> Ty -> Set where
   -- inj-arrow : {A A' : Ty} ->
   --   (A => A') ⊑ (dyn => dyn) -> (A => A') ⊑ dyn
 
+module ⊑-properties where
+  -- experiment with modules
+  ⊑-prop : ∀ A B → isProp (A ⊑ B)
+  ⊑-prop .dyn .dyn dyn dyn = refl
+  ⊑-prop .(_ => _) .(_ => _) (p1 => p3) (p2 => p4) = λ i → (⊑-prop _ _ p1 p2 i) => (⊑-prop _ _ p3 p4 i)
+  ⊑-prop .nat .nat nat nat = refl
+  ⊑-prop .nat .dyn inj-nat inj-nat = refl
+  ⊑-prop A .dyn (inj-arrow p1) (inj-arrow p2) = λ i → inj-arrow (⊑-prop _ _ p1 p2 i)
+
+  dyn-⊤ : ∀ A → A ⊑ dyn
+  dyn-⊤ nat = inj-nat
+  dyn-⊤ dyn = dyn
+  dyn-⊤ (A => B) = inj-arrow (dyn-⊤ A => dyn-⊤ B)
+
+  ⊑-dec : ∀ A B → Dec (A ⊑ B)
+  ⊑-dec A dyn = yes (dyn-⊤ A)
+  ⊑-dec nat nat = yes nat
+  ⊑-dec nat (B => B₁) = no (λ ())
+  ⊑-dec dyn nat = no (λ ())
+  ⊑-dec dyn (B => B₁) = no (λ ())
+  ⊑-dec (A => A₁) nat = no ((λ ()))
+  ⊑-dec (A => B) (A' => B') with (⊑-dec A A') | (⊑-dec B B')
+  ... | yes p | yes q = yes (p => q)
+  ... | yes p | no ¬p = no (refute ¬p)
+    where refute : ∀ {A A' B B'} → (¬ (B ⊑ B')) → ¬ ((A => B) ⊑ (A' => B'))
+          refute ¬p (_ => p) = ¬p p
+  ... | no ¬p | _ = no (refute ¬p)
+    where refute : ∀ {A A' B B'} → (¬ (A ⊑ A')) → ¬ ((A => B) ⊑ (A' => B'))
+          refute ¬p (p => _) = ¬p p
+    
+  
 -- Contexts --
 
 data Ctx : Set where
@@ -137,6 +168,3 @@ termKit = kit var idTerm weakenTerm
 
 sub : (Δ Γ : Ctx) (σ : Subst Δ Γ Tm) (T : Ty) (t : Tm Γ T) -> Tm Δ T
 sub Δ Γ σ T t = trav termKit σ t
-
-
-  
