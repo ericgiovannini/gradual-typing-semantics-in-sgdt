@@ -1,5 +1,8 @@
 {-# OPTIONS --cubical --rewriting --guarded #-}
 
+ -- to allow opening this module in other files while there are still holes
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Later
 
 module ErrorDomains(k : Clock) where
@@ -65,6 +68,7 @@ mapL' : (A -> B) -> ▹ (L℧ A -> L℧ B) -> L℧ A -> L℧ B
 mapL' f map_rec (η x) = η (f x)
 mapL' f map_rec ℧ = ℧
 mapL' f map_rec (θ l_la) = θ (map_rec ⊛ l_la)
+-- mapL' f map_rec (θ-next x i) = θ-next {!!} {!!}
 
 mapL : (A -> B) -> L℧ A -> L℧ B
 mapL f = fix (mapL' f)
@@ -161,7 +165,7 @@ map-comp : {A B C : Set} (g : B -> C) (f : A -> B) (x : ▹_,_ k _) ->
 map-comp g f x = -- could just say refl for the whole thing
   map▹ g (map▹ f x)          ≡⟨ refl ⟩
   (λ α -> g ((map▹ f x) α)) ≡⟨ refl ⟩
-  (λ α -> g ((λ β -> f (x β)) α)) ≡⟨ refl ⟩
+  -- (λ α -> g ((λ β -> f (x β)) α)) ≡⟨ refl ⟩
   (λ α -> g (f (x α))) ≡⟨ refl ⟩
   map▹ (g ∘ f) x ∎
 
@@ -226,26 +230,49 @@ monad-assoc = fix lem
   -- bind (θ ( (λ la -> bind la f) <$> x)) g ≡⟨ {!!} ⟩
 
 
+--------------------------------------------------------------------------
+
+
+  -- 1. Define denotational semantics for gradual STLC and show soundness of term precision
+  -- 1a. Define interpretation of terms of gradual CBV cast calculus (STLC + casts)
+  --   i) Semantic domains
+  --   ii) Term syntax (intrinsically typed, de Bruijn)
+  --   iii) Denotation function
+  -- 1b. Soundness of term precision with equational theory only (no ordering)
+
+  -- The language supports Dyn, CBV functions, nat
 
 
 
 
-
--- Dyn as a predomain
-data Dyn'  (D : ▹ Type) :  Type where
+data Dyn' (D : ▹ Type) : Type where
   nat : ℕ -> Dyn' D
-  arr : (▸ D -> L℧ (▸ D)) -> Dyn' D
+  arr : ▸ (λ t → D t -> L℧ (D t)) -> Dyn' D
 
 Dyn : Type
 Dyn = fix Dyn'
+
 
 -- Embedding-projection pairs
 record EP (A B : Set) : Set where
   field
     emb  : A -> B
     proj : B -> L℧ A
-    retract :
-      proj ∘ emb ≡ ret
+
+
+-- E-P Pair for a type with itself
+EP-id : (A : Type) -> EP A A
+EP-id A = record {
+  emb = id;
+  proj = ret }
+
+-- Composing EP pairs
+
+EP-comp : {A B C : Type} -> EP A B -> EP B C -> EP A C
+EP-comp epAB epBC = record {
+  emb =  λ a -> emb epBC (emb epAB a) ;
+  proj = λ c -> bind (proj epBC c) (proj epAB) }
+  where open EP
 
 
 -- E-P Pair for nat
@@ -268,66 +295,52 @@ retraction-nat n =
 EP-nat : EP ℕ Dyn
 EP-nat = record {
   emb = e-nat;
-  proj = p-nat;
-  retract = funExt retraction-nat }
+  proj = p-nat }
 
--- E-P Pair for function types
+
+-- E-P Pair for functions Dyn to L℧ Dyn
 
 e-fun : (Dyn -> L℧ Dyn) -> Dyn
-e-fun f = transport
-  (sym (fix-eq Dyn'))
-  (arr λ (x : ▹ Dyn) →
-    θ (λ t -> mapL next (f (x t))))
-
-apply : Tick k -> ▹ Dyn -> Dyn
-apply t l_dyn = l_dyn t
+e-fun f = transport (sym (fix-eq Dyn'))
+  (arr (next f))
 
 p-fun' : Dyn' (next Dyn) -> L℧ (Dyn -> L℧ Dyn)
-p-fun' (nat n) = ℧
-p-fun' (arr f) = ret λ d ->
-  θ (λ t →
-      mapL (apply t) (f (next d))
-      -- doesn't work:
-      -- mapL (\ (l_dyn : ▹ Dyn) -> l_dyn t) (f (next d))
-    )
-
--- f : ▸ next Dyn → L℧ (▸ next Dyn)
--- which is equal to
--- ▹ Dyn -> L℧ (▹ Dyn)
-
+p-fun' (nat x) = ℧
+p-fun' (arr x) = θ (ret <$> x) -- could also define using tick
 
 p-fun : Dyn -> L℧ (Dyn -> L℧ Dyn)
 p-fun d = p-fun' (transport (fix-eq Dyn') d)
 
 
-theta-lem : (t : Tick k) (la : L℧ A) ->
-  θ (λ t -> la) ≡ θ (next la)
-theta-lem t la = refl
-
-
-retraction-fun : (h : Dyn -> L℧ Dyn) ->
-   p-fun (e-fun h) ≡ {!!}
-retraction-fun h = {!!}
-
+fun-retract : (f : (Dyn -> L℧ Dyn)) ->
+  p-fun (e-fun f) ≡ θ (next (ret f))
+fun-retract f =
+  p-fun' (transport (fix-eq Dyn') (e-fun f))
+                         ≡⟨  refl ⟩
+  p-fun' (transport (fix-eq Dyn') (transport (sym (fix-eq Dyn')) (arr (next f))))
+                         ≡⟨ (λ i → p-fun' (transportTransport⁻ (fix-eq Dyn') (arr (next f)) i)) ⟩
+  p-fun' (arr (next f))  ≡⟨ refl ⟩
+  θ (ret <$> next f)     ≡⟨ refl ⟩
+  θ (next (ret f)) ∎
 
 EP-fun : EP (Dyn -> L℧ Dyn) Dyn
 EP-fun = record {
   emb = e-fun;
-  proj = p-fun;
-  retract = {!!} }
+  proj = p-fun }
+
 
 
 -- Lifting retractions to functions
 
 module LiftRetraction
-  (A A' B B' : Set)
+  {A A' B B' : Set}
   (epAA' : EP A A')
   (epBB' : EP B B') where
 
     e-lift :
       (A → L℧ B) → (A' → L℧ B')
-    e-lift h a' =
-      bind (EP.proj {!!} a') λ a -> mapL (EP.emb {!!}) (h a)
+    e-lift f a' =
+      bind (EP.proj epAA' a') λ a -> mapL (EP.emb epBB') (f a)
       -- or equivalently:
       -- mapL (EP.emb epBB') (bind (EP.proj epAA' a') h)
 
@@ -335,6 +348,19 @@ module LiftRetraction
       (A' -> L℧ B') -> L℧ (A -> L℧ B)
     p-lift f =
       ret (λ a → bind (f (EP.emb epAA' a)) (EP.proj epBB'))
+
+
+
+EP-lift : {A A' B B' : Set} ->
+  EP A A' ->
+  EP B B' ->
+  EP (A -> L℧ B) (A' -> L℧ B')
+EP-lift epAA' epBB' = record {
+  emb = e-lift;
+  proj = p-lift  }
+  where open LiftRetraction epAA' epBB'
+
+
 
 
 
@@ -347,16 +373,6 @@ L℧ X = record { X = L℧X ; ℧ = ℧ ; ℧⊥ = {!!} ; θ = record { f = θ�
     L℧X : Predomain
     L℧X = L℧₀ (X .fst) , {!!}
 -}
-
-  -- Plan:
-  -- 1. Define denotational semantics for gradual STLC and show soundness of term precision
-  -- 1a. Define interpretation of terms of gradual CBV cast calculus (STLC + casts)
-  --   i) Semantic domains
-  --   ii) Term syntax (intrinsically typed, de Bruijn)
-  --   iii) Denotation function
-  -- 1b. Soundness of term precision with equational theory only (no ordering)
-
-  -- The language supports Dyn, CBV functions, nat
 
 -- | TODO:
 -- | 1. monotone monad structure
