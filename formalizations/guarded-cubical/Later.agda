@@ -44,6 +44,7 @@ _⊛_ f x a = f a (x a)
 
 map▹ : (f : A → B) → ▹ k , A → ▹ k , B
 map▹ f x α = f (x α)
+_<$>_ = map▹
 
 -- The behaviour of fix is encoded with rewrite rules, following the
 -- definitional equalities of Clocked CTT.
