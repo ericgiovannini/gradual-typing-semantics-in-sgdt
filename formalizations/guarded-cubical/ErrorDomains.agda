@@ -61,6 +61,73 @@ data L℧ (X : Set) : Set where
   ℧ : L℧ X
   θ : ▹ (L℧ X) → L℧ X
 
+-- Although tempting from an equational perspective,
+-- we should not add the restriction that θ (next x) ≡ x
+-- for all x. If we did do this, we would end up collapsing
+-- everything down to the infinite looping computation, fix θ.
+-- The following lemma proves this.
+
+trivialize' : {X : Set} ->
+  ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
+  ▹ ((lx : L℧ X) -> lx ≡ fix θ) → (lx : L℧ X) -> lx ≡ fix θ
+trivialize' hθ IH lx =
+  lx                 ≡⟨ sym (hθ lx) ⟩
+  θ (next lx)        ≡⟨ refl ⟩
+  θ (λ t -> lx)      ≡⟨ ( λ i -> θ λ t -> IH t lx i) ⟩
+  θ (λ t -> fix θ)   ≡⟨ refl ⟩
+  θ (next (fix θ))   ≡⟨ hθ (fix θ) ⟩
+  (fix θ ∎)
+
+trivialize : {X : Set} ->
+          ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
+          ((lx : L℧ X) -> (lx ≡ fix θ))
+trivialize hθ = fix (trivialize' hθ)
+
+
+
+-- We can prove a similar fact for an arbitrary relation R,
+-- so long as it is symmetric, transitive, and a congruence
+-- with respect to θ.
+
+transitive : {X : Type} -> (_R_ : X -> X -> Type) -> Type
+transitive {X} _R_ =
+  {x y z : X} -> x R y -> y R z -> x R z
+
+symmetric : {X : Type} -> (_R_ : X -> X -> Type) -> Type
+symmetric {X} _R_ =
+  {x y : X} -> x R y -> y R x
+
+congruence : {X : Type} -> (_R_ : L℧ X -> L℧ X -> Type) -> Type
+congruence {X} _R_ = {lx ly : L℧ X} -> ▹ (lx R ly) -> (θ (next lx)) R (θ (next ly))
+
+
+trivialize2 : {X : Type} (_R_ : L℧ X -> L℧ X -> Type) ->
+  symmetric _R_ ->
+  transitive _R_ ->
+  congruence _R_ ->
+  ((x : L℧ X) -> (θ (next x)) R x) ->
+  ((x : L℧ X) -> x R (fix θ))
+trivialize2 {X} _R_ hSym hTrans hCong hθ = fix trivialize2'
+  where
+   trivialize2' :
+    ▹ ((x : L℧ X) -> x R (fix θ)) → (x : L℧ X) -> x R (fix θ)
+   trivialize2' IH lx =
+     hTrans
+       (hSym (hθ lx))
+       (hTrans
+         (hCong (λ t → IH t lx))
+         (hθ (fix θ)))
+
+
+-- lx                  R
+-- (θ (next lx))       R
+-- (θ (λ t -> fix θ)   ≡
+-- (θ (next (fix θ)))  R
+-- (fix θ)
+
+
+--------------------------------------------------------------------------
+
 
 -- Showing that L is a monad
 
