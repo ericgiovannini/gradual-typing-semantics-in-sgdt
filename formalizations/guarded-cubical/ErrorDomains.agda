@@ -76,10 +76,24 @@ trivialize' hθ IH lx =
   θ (next (fix θ))   ≡⟨ sym (fix-eq θ) ⟩
   (fix θ ∎)
 
--- trivialize : {X : Set} ->
---           ((lx : L℧ X) -> θ (next lx) ≡ lx) ->
---           ((lx : L℧ X) -> (lx ≡ fix θ))
--- trivialize hθ = fix (trivialize' hθ)
+trivialize : {X : Set} ->
+          ((lx : L℧ X) -> lx ≡ θ (next lx)) ->
+          ((lx : L℧ X) -> (lx ≡ fix θ))
+trivialize hθ = fix (trivialize' hθ)
+
+-- A slightly stronger version (i.e. a weaker assumption)
+-- This applies to the weak bisimulation relation in Mogelberg-Paviotti
+trivialize_quotient_stronger : ∀ {X} ->
+  (∀ x -> η x ≡ θ (next (η x))) ->
+  (x : X) -> η x ≡ fix θ
+trivialize_quotient_stronger {X} hθ = fix rec
+  where rec : ▹ ((x : X) -> η x ≡ fix θ) → (x : X) -> η x ≡ fix θ
+        rec IH x = 
+         η x                ≡⟨ hθ x ⟩
+         θ (next (η x))     ≡⟨ (λ i → θ (λ t → IH t x i)) ⟩
+         θ (next (fix θ))   ≡⟨ sym (fix-eq θ) ⟩
+         (fix θ ∎)
+
 
 -- We can prove a similar fact for an arbitrary relation R,
 -- so long as it is symmetric, transitive, and a congruence
