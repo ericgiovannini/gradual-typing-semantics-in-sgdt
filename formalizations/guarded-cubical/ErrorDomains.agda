@@ -128,21 +128,27 @@ trivialize2 {X} _R_ hSym hTrans hCong hθ = fix trivialize2'
 -- (θ (next (fix θ)))  R
 -- (fix θ)
 
--- don't need symmetry
+-- alternatively, we can drop symmetry if we assume that the relation
+-- is reflexive, or at least that fix θ is related to itself.
 trivialize3 : {X : Type} (_R_ : L℧ X -> L℧ X -> Type) ->
   transitive _R_ ->
   congruence _R_ ->
+  fix θ R fix θ ->
   ((x : L℧ X) -> x R (θ (next x))) ->
   ((x : L℧ X) -> x R (fix θ))
-trivialize3 {X} _R_ hTrans hCong hθR = fix trivialize3'
+trivialize3 {X} _R_ hTrans hCong fix-ok hθR = fix trivialize3'
   where
+   lem : θ (next (fix θ)) R fix θ
+   lem = subst (λ x → x R fix θ) (fix-eq θ) fix-ok
+
    trivialize3' :
     ▹ ((x : L℧ X) -> x R (fix θ)) → (x : L℧ X) -> x R (fix θ)
    trivialize3' IH lx =
-     subst (λ y → lx R y) (sym (fix-eq θ))
+     hTrans
+       (hθR lx)
        (hTrans
-         (hθR lx)
-         (hCong (λ t → IH t lx)))
+         (hCong (λ t → IH t lx))
+         lem)
 
 --------------------------------------------------------------------------
 
