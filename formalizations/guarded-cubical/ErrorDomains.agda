@@ -119,6 +119,9 @@ trivialize2 {X} _R_ hSym hTrans hCong hθ = fix trivialize2'
          (hCong (λ t → IH t lx))
          (hθ (fix θ)))
 
+
+
+
 -- lx                  R
 -- (θ (next lx))       R
 -- (θ (λ t -> fix θ)   ≡
@@ -362,6 +365,14 @@ EP-comp epAB epBC = record {
   proj = λ c -> bind (proj epBC c) (proj epAB) }
   where open EP
 
+-- E-P pair between a type and its lift
+
+EP-L : {A : Type} -> EP A B -> EP (L℧ A) (L℧ B)
+EP-L epAB = record {
+  emb = λ la -> mapL (emb epAB) la;
+  proj = λ lb -> mapL (proj epAB) lb }
+  where open EP
+
 
 -- E-P Pair for nat
 
@@ -447,6 +458,7 @@ EP-lift epAA' epBB' = record {
   emb = e-lift;
   proj = p-lift  }
   where open LiftRetraction epAA' epBB'
+
 
 
 
