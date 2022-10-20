@@ -31,10 +31,10 @@ private
     k : Clock
 
 ▹_,_ : Clock → Set l → Set l
-▹ k , A = (@tick x : Tick k) → A
+▹ k , A = (@tick t : Tick k) → A
 
 ▸_ : ▹ k , Set l → Set l
-▸ A = (@tick x : Tick _) → A x
+▸ A = (@tick t : Tick _) → A t
 
 next : A → ▹ k , A
 next x _ = x

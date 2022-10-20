@@ -348,16 +348,19 @@ data Dyn' (D : ▹ Type) : Type where
   nat : ℕ -> Dyn' D
   arr : ▸ (λ t → D t -> L℧ (D t)) -> Dyn' D
 
+-- Would this Dyn be better?
+data Dyn'' (D : ▹ Type) : Type where
+  nat : ℕ -> Dyn'' D
+  arr : (▸ D -> L℧ (Dyn'' D)) -> Dyn'' D
+
 Dyn : Type
 Dyn = fix Dyn'
-
 
 -- Embedding-projection pairs
 record EP (A B : Set) : Set where
   field
     emb  : A -> B
     proj : B -> L℧ A
-
 
 -- E-P Pair for a type with itself
 EP-id : (A : Type) -> EP A A
