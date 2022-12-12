@@ -26,6 +26,59 @@ data _⊑_ : Ty -> Ty -> Set where
     A ⊑ (dyn => dyn) -> A ⊑ dyn
   -- inj-arrow : {A A' : Ty} ->
   --   (A => A') ⊑ (dyn => dyn) -> (A => A') ⊑ dyn
+  
+  -- inj-arrow could be made more compositional by having a
+  -- case for composition of EP pairs and a case for
+  -- dyn => dyn ⊑ dyn
+
+⊑ref : (A : Ty) -> A ⊑ A
+⊑ref nat = nat
+⊑ref dyn = dyn
+⊑ref (A1 => A2) = (⊑ref A1) => (⊑ref A2)
+
+{-
+data ltdyn : ℕ -> Ty -> Ty -> Set where
+  dyn : {n : ℕ} -> ltdyn n dyn dyn
+  _=>_ : {A A' B B' : Ty} {n m p : ℕ} ->
+    {eq : p ≡ n + m} ->
+    ltdyn n A A' -> ltdyn m B B' ->
+    ltdyn p (A => B) (A' => B')
+  nat : {n : ℕ} -> ltdyn n nat nat
+  inj-nat : {n : ℕ} -> ltdyn n nat dyn
+  inj-arrow : {A : Ty} -> {n : ℕ} ->
+    ltdyn n A (dyn => dyn) -> ltdyn n A dyn
+
+
+_⊑[_]_ : Ty -> ℕ -> Ty -> Set
+A ⊑[ n ] B = ltdyn n A B
+-}
+
+
+{-
+max-sum : (a b c d : ℕ) ->
+  max (a + b) (c + d) ≡ max a c + max b d
+max-sum zero b zero d = refl
+max-sum zero b (suc c) d = {!!}
+max-sum (suc a) b c d = {!!}
+-}
+
+{-
+ltdyn-transitive : {A B C : Ty} -> {n m p : ℕ} ->
+   p ≡ n + m -> A ⊑[ n ] B -> B ⊑[ m ] C -> A ⊑[ p ] C
+ltdyn-transitive _ dyn dyn = dyn
+ltdyn-transitive {A => B} {A' => B'} {A'' => B''} {n} {m} {p}
+  eq (_=>_ {eq = eq1} dAA' dBB') (_=>_ {eq = eq2} dA'A'' dB'B'') =
+  _=>_ {n = {!?!}} {m = {!!}} {p = {!!}} {eq = {!!}}
+    (ltdyn-transitive {!!} dAA' dA'A'')
+    (ltdyn-transitive {!!} dBB' dB'B'')
+ltdyn-transitive eq (dAA' => dBB') (inj-arrow dBC) = {!!}
+ltdyn-transitive _ nat nat = nat
+ltdyn-transitive _ nat inj-nat = inj-nat
+ltdyn-transitive _ inj-nat dyn = inj-nat
+ltdyn-transitive eq (inj-arrow dA-dyn-dyn) dyn =
+  inj-arrow (ltdyn-transitive _ dA-dyn-dyn (dyn => dyn))
+-}
+
 
 module ⊑-properties where
   -- experiment with modules
@@ -85,6 +138,8 @@ data Tm : Ctx -> Ty -> Set where
   err : ∀ {Γ A} -> Tm Γ A
   up  : ∀ {Γ A B} -> A ⊑ B -> Tm Γ A -> Tm Γ B
   dn  : ∀ {Γ A B} -> A ⊑ B -> Tm Γ B -> Tm Γ A
+  zro : ∀ {Γ} -> Tm Γ nat
+  suc : ∀ {Γ} -> Tm Γ nat -> Tm Γ nat
 
 -- infix 4 _▸_
 
@@ -141,6 +196,8 @@ trav K τ (app f s) = app (trav K τ f) (trav K τ s)
 trav K τ (up deriv t') = up deriv (trav K τ t')
 trav K τ (dn deriv t') = dn deriv (trav K τ t')
 trav K τ err = err
+trav K τ zro = zro
+trav K τ (suc t') = suc (trav K τ t')
 
 -- Renaming --
 
@@ -168,3 +225,36 @@ termKit = kit var idTerm weakenTerm
 
 sub : (Δ Γ : Ctx) (σ : Subst Δ Γ Tm) (T : Ty) (t : Tm Γ T) -> Tm Δ T
 sub Δ Γ σ T t = trav termKit σ t
+
+-- Single substitution
+-- N[M/x]
+
+_[_] : ∀ {Γ A B}
+  → Tm (Γ :: B) A
+  → Tm Γ B
+  → Tm Γ A
+_[_] {Γ} {A} {B} N M = sub Γ (Γ :: B) σ A N -- sub {!!} {!!} {!!} {!!} {!!}
+  where
+    σ : Subst Γ (Γ :: B) Tm -- i.e., {T : Ty} → Γ :: B ∋ T → Tm Γ T
+    σ vz = M
+    σ (vs x) = var x
+
+
+-- Values --
+
+data Value : ∀ {Γ} {A} -> Tm Γ A -> Set where
+  VLam : ∀ {Γ A B} -> {N : Tm (Γ :: A) B} -> Value (lda N)
+  VZero : ∀ {Γ} -> Value {Γ} zro
+  VSuc : ∀ {Γ} -> {V : Tm Γ nat} ->
+    Value V ->
+    Value (suc V)
+  VUpFun : ∀ {Γ} {Ain Aout Bin Bout} ->
+    {cin : Ain ⊑ Bin} {cout : Aout ⊑ Bout} ->
+    {V : Tm Γ (Ain => Aout)} ->
+    Value V ->
+    Value (up (cin => cout) V)
+  VDnFun : ∀ {Γ} {Ain Aout Bin Bout} ->
+    {cin : Ain ⊑ Bin} {cout : Aout ⊑ Bout} ->
+    {V : Tm Γ (Bin => Bout)} ->
+    Value V ->
+    Value (dn (cin => cout) V)

@@ -44,12 +44,7 @@ module Interpretation (k : Clock)  where
   look env A vz = proj₂ env
   look env A (vs {Γ} {S} {T} x) = look (proj₁ env) A x
 
-  {-
-  lookup : (Γ : Ctx) -> (A : Ty) -> (x : Γ ∋ A) -> ⟦ A ⟧ty
-  lookup (Γ :: A) A vz =  proj₂ {!!}
-  lookup Γ A (vs y) = {!!}
-  -}
-
+{-
   ⟦_⟧lt : {A B : Ty} -> A ⊑ B -> EP ⟦ A ⟧ty ⟦ B ⟧ty
   ⟦ dyn ⟧lt = EP-id Dyn
   ⟦ A⊑A' => B⊑B' ⟧lt = EP-lift ⟦ A⊑A' ⟧lt ⟦ B⊑B' ⟧lt
@@ -57,6 +52,11 @@ module Interpretation (k : Clock)  where
   ⟦ inj-nat ⟧lt = EP-nat
   ⟦ inj-arrow (A-dyn => B-dyn) ⟧lt =
     EP-comp (EP-lift  ⟦ A-dyn ⟧lt  ⟦ B-dyn ⟧lt) EP-fun
+-}
+
+  ⟦_⟧lt : {A B : Ty} {n : ℕ} -> A ⊑[ n ] B -> EP ⟦ A ⟧ty ⟦ B ⟧ty
+  
+  
 
 
   ⟦_⟧tm : {Γ : Ctx} {A : Ty} -> Tm Γ A -> (⟦ Γ ⟧ctx -> L℧ ⟦ A ⟧ty)
