@@ -1,0 +1,242 @@
+\documentclass[acmsmall,screen]{acmart}
+\usepackage{mathpartir}
+\usepackage{tikz-cd}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2018}
+\acmYear{2018}
+\acmDOI{10.1145/1122445.1122456}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural
+  Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
+\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+  June 03--05, 2018, Woodstock, NY}
+\acmPrice{15.00}
+\acmISBN{978-1-4503-XXXX-X/18/06}
+
+\newcommand{\dyn}{?}
+\newcommand{\ltdyn}{\sqsubseteq}
+
+\newcommand{\uarrowl}{\mathrel{\rotatebox[origin=c]{-30}{$\leftarrowtail$}}}
+\newcommand{\uarrowr}{\mathrel{\rotatebox[origin=c]{60}{$\leftarrowtail$}}}
+\newcommand{\darrowl}{\mathrel{\rotatebox[origin=c]{30}{$\twoheadleftarrow$}}}
+\newcommand{\darrowr}{\mathrel{\rotatebox[origin=c]{120}{$\twoheadleftarrow$}}}
+\newcommand{\vuarrow}{\mathrel{\rotatebox[origin=c]{-90}{$\leftarrowtail$}}}
+\newcommand{\vdarrow}{\mathrel{\rotatebox[origin=c]{90}{$\twoheadleftarrow$}}}
+\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
+\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
+
+\newcommand{\later}{\vartriangleright}
+\newcommand{\type}{\texttt{Type}}
+\newcommand{\lob}{\text{L\"{o}b}}
+\newcommand{\tick}{\texttt{tick}}
+
+\begin{document}
+
+\title{Denotational Semantics for Gradual Typing in Synthetic Guarded Domain Theory}
+\author{Eric Giovannini}
+\author{Max S. New}
+
+
+\begin{abstract}
+    We develop a denotational semantics for a gradually typed language
+    with effects that is adequate and proves the graduality theorem.
+    %
+    The denotational semantics is constructed using \emph{synthetic
+    guarded domain theory} working in a type theory with a later
+    modality and clock quantification.
+    %
+    This provides a remarkably simple presentation of the semantics,
+    where gradual types are interpreted as ordinary types in our ambient
+    type theory equipped with an ordinary preorder structure to model
+    the error ordering.
+    %
+    This avoids the complexities of classical domain-theoretic models
+    (New and Licata) or logical relations models using explicit
+    step-indexing (New and Ahmed).
+    %
+    In particular, we avoid a major technical complexity of New and
+    Ahmed that requires two logical relations to prove the graduality
+    theorem.
+  
+    By working synthetically we can treat the domains in which gradual
+    types are interpreted as if they were ordinary sets. This allows us
+    to give a ``na\"ive'' presentation of gradual typing where each
+    gradual type is modeled as a well-behaved subset of the universal
+    domain used to model the dynamic type, and type precision is modeled
+    as simply a subset relation.
+    %
+  \end{abstract}
+
+  \maketitle
+  
+  \section{Introduction}
+  
+  % gradual typing, graduality
+  \subsection{Gradual Typing and Graduality}
+  Gradual typing allows a language to have both statically-typed and dynamically-typed terms;
+  the statically-typed terms are type checked at compile time, while type checking for the 
+  dynamically-typed terms is deferred to runtime.
+
+  Gradually-typed languages support the smooth migration from dynamic typing
+  to static typing, in that the programmer can initially leave off the
+  typing annotations and provide them later without altering the meaning of the
+  program. Moreover, a key feature of gradually typed languages is that the interaction
+  between the static and dynamic components of the codebase should be safe -- i.e., should
+  preserve the guarantees made by the static types.
+  In other words, in the static portions of the codebase, type soundness must be preserved.
+
+
+  In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
+  the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
+  forms of the language (e.g., pattern matching, field reference, etc.).
+  Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
+  type checking is made explicit through the insertion of \emph{type casts}.
+
+  ...
+
+  % Up and down casts
+  There is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that $A$ is a \emph{more
+  precise} type than $B$.
+  There a dynamic type $\dyn$ with the property that $A \ltdyn \dyn$ for all $A$.
+
+  If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
+  and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
+  Upcasts always succeed, while downcasts may fail at runtime.
+
+  % Graduality property
+  A key property that any gradually-typed language should satisfy is the \emph{dynamic gradual guarantee},
+  originally defined by Siek, Vitousek, Cimini, and Boyland \cite{TODO}.
+  New et al refer to this property as \emph{graduality}, by analogy with parametricity.
+  Intuitively, graduality says that in going from a dynamic to static style
+  should not introduce changes in the meaning of the program.
+  More specifically, making the types more precise (replacing $\dyn$ with a more specific type
+  such as integers) will either result in the same behavior as the less precise program,
+  or cause a dynamic type error.
+
+  % Observational equivalence and approximation
+  % TODO
+  
+  
+  \subsection{Prior Approach}
+  % Proving graduality via LR
+  The usual approach to proving graduality uses the technique of \emph{logical relations}.
+  Specifially, a logical relation is constructed and showed to be sound with respect to
+  observational approximation. Because the dynamic type is modeled as a recursive type,
+  the logical relation needs to be paramterized by natural numbers, a so-called
+  step-indexed logical relation. Reasoning about step-indexed logical relations
+  is tedious and error-prone, and there are several very subtle aspects that must
+  be taken into account in the proofs.
+
+  % Difficulties in prior semantics
+  % TODO
+
+  % - two separate logical relations for expressions
+  % - transitivity
+  
+
+  % synthetic guarded domain theory, denotational semantics therein
+  \subsection{Synthetic Guarded Domain Theory}
+  One way to avoid the tedious reasoning associated with step-indexing is to work
+  axiomatically inside of a logical system that can reason about non-well-founded recursive
+  constructions while abstracting away the specific details of step-indexing required
+  if we were working analytically.
+  The system that proves useful fot this purpose is called \emph{synthetic guarded
+  domain theory}, or SGDT for short. We provide a brief overview here, but more
+  details can be found in \cite{TODO}.
+
+  In SGDT, there is the notion of a \emph{clock}, an abstract type that tracks the
+  passage of time through \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
+  as evidence that one unit of time has passed according to the clock $k$.
+
+  SGDT also introduces a modality $\later : \type \to \type$, (pronounced ``later'').
+  Given a clock $k$ and type $T$, the type $\later_k T$ represents a value of type
+  $T$ one unit of time in the future according to clock $k$.
+  The type $\later T$ is represented as a function from ticks of a clock $k$ to $T$.
+  There is an axiom called $\lob$-induction which is stated as follows:
+
+  \[
+    \lob : \forall T, (\later T \to T) \to T.
+  \]
+
+  That is, to construct a term of type $T$, it suffices to assume that we have access to
+  such a term ``later'' and use that to help us build a term ``now''.
+
+  In particular, this axiom applies to propositions $P : \texttt{Prop}$.
+
+
+
+
+
+
+
+  \subsection{Overview of Remainder of Paper}
+  In Section \ref{sec:GTLC}, we introduce the gradually-typed cast calculus
+  for which we will prove graduality. Important here are the notions of syntactic
+  type precision and term precision.
+
+  In Section \ref{sec:domain-theory}, we define several fundamental constructions
+  internal to SGDT that will be needed when we give a denotational semantics to
+  the language. This includes the notion of Predomains as well as the concept
+  of EP-Pairs.
+
+  In Section \ref{Semantics}, we define the denotational semantics for the gradually-typed
+  language
+
+
+\section{GTLC}\label{sec:GTLC}
+
+\subsection{Syntax}
+
+\subsection{Type Precision}
+
+\subsection{Term Precision}
+
+
+\section{Domain-Theoretic Constructions}\label{sec:domain-theory}
+
+\subsection{Predomains}
+
+\subsection{Weak Bisimilarity Relation}
+
+\subsection{EP-Pairs}
+
+
+\section{Semantics}\label{sec:semantics}
+
+\subsection{Types as Predomains}
+
+\subsection{Terms as Monotone Functions}
+
+\subsection{Type Precision as EP-Pairs}
+
+\subsection{Term Precision}
+% Homogeneous vs heterogeneous term precision
+
+
+\section{Graduality}\label{sec:graduality}
+
+
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Synthetic Ordering}
+
+While the use of synthetic guarded domain theory allows us to very
+conveniently work with non-well-founded recursive constructions while
+abstracting away the precise details of step-indexing, we do work with
+the error ordering in a mostly analytic fashion in that gradual types
+are interpreted as sets equipped with an ordering relation, and all
+terms must be proven to be monotone.
+%
+It is possible that a combination of synthetic guarded domain theory
+with \emph{directed} type theory would allow for an a synthetic
+treatment of the error ordering as well.
+
+\end{document}
