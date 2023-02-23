@@ -36,6 +36,33 @@ data _⊑_ : Ty -> Ty -> Set where
 ⊑ref dyn = dyn
 ⊑ref (A1 => A2) = (⊑ref A1) => (⊑ref A2)
 
+⊑comp : {A B C : Ty} ->
+  A ⊑ B -> B ⊑ C -> A ⊑ C
+⊑comp dyn dyn = dyn
+⊑comp {Ai => Ao} {Bi => Bo} {Ci => Co} (cin => cout) (din => dout) =
+  (⊑comp cin din) => (⊑comp cout dout)
+⊑comp {Ai => Ao} {Bi => Bo} (cin => cout) (inj-arrow (cin' => cout')) =
+  inj-arrow ((⊑comp cin cin') => (⊑comp cout cout'))
+⊑comp nat nat = nat
+⊑comp nat inj-nat = inj-nat
+⊑comp inj-nat dyn = inj-nat
+⊑comp (inj-arrow c) dyn = inj-arrow c
+
+{-
+ltdyn-transitive {A => B} {A' => B'} {A'' => B''} {n} {m} {p}
+  eq (_=>_ {eq = eq1} dAA' dBB') (_=>_ {eq = eq2} dA'A'' dB'B'') =
+  _=>_ {n = {!?!}} {m = {!!}} {p = {!!}} {eq = {!!}}
+    (ltdyn-transitive {!!} dAA' dA'A'')
+    (ltdyn-transitive {!!} dBB' dB'B'')
+ltdyn-transitive eq (dAA' => dBB') (inj-arrow dBC) = {!!}
+ltdyn-transitive _ nat nat = nat
+ltdyn-transitive _ nat inj-nat = inj-nat
+ltdyn-transitive _ inj-nat dyn = inj-nat
+ltdyn-transitive eq (inj-arrow dA-dyn-dyn) dyn =
+  inj-arrow (ltdyn-transitive _ dA-dyn-dyn (dyn => dyn))
+
+-}
+
 {-
 data ltdyn : ℕ -> Ty -> Ty -> Set where
   dyn : {n : ℕ} -> ltdyn n dyn dyn
@@ -258,3 +285,14 @@ data Value : ∀ {Γ} {A} -> Tm Γ A -> Set where
     {V : Tm Γ (Bin => Bout)} ->
     Value V ->
     Value (dn (cin => cout) V)
+
+-- Upcasts are values, downcasts are evaluation contexts
+
+{-
+data Value : Type where
+  Zero : {Γ} -> Value
+  Suc : Value -> Value
+-}
+
+
+

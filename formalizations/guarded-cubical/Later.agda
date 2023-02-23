@@ -79,3 +79,70 @@ postulate
 postulate
   force-beta : ∀ {A : Set l} (x : A) → force (λ k _ → x) ≣ λ k → x
 
+
+
+
+
+-- ########################################################## --
+--
+-- Added by Eric (not part of original file from Niccolò Veltri
+-- and Andrea Vezzosi)
+
+
+-- Tick irrelevance axiom. This is needed in the development.
+-- There is likely a better way to do this, see
+-- https://arxiv.org/pdf/2102.01969.pdf (in particular Section 3.2).
+postulate
+  tick-irrelevance : {A : Type} -> (M : ▹ k , A) (t t' : Tick k) ->
+    M t ≡ M t'
+
+  tr' : {A : Type} -> (M : ▹ k , A) ->
+    ▸ λ t -> ▸ λ t' -> M t ≡ M t'
+
+{-
+tr→tr' : {M : ▹ k , A} -> tick-irrelevance M -> tr' M
+-}
+
+-- The tick constant.
+postulate
+  _◇ : (k : Clock) -> Tick k
+
+-- From Section V.C of Bahr et. al
+-- (See https://bahr.io/pubs/files/bahr17lics-paper.pdf).
+postulate
+  tick-irrelevance-◇-refl : {A : Type} -> (M : ▹ k , A) ->
+    (tick-irrelevance M (k ◇) (k ◇)) ≡ Cubical.Foundations.Everything.refl
+      -- Should this use _≣_.refl instead?
+
+
+-- This relies on tick irrelevance.
+next-Mt≡M : {A : Type} -> (M : ▹ k , A) ->
+  ▸ λ t -> (next (M t) ≡ M)
+next-Mt≡M M t = later-ext (λ t' → tick-irrelevance M t t')
+
+
+next-Mt≡M' : {A : Type} -> (M : ▹ k , A) -> (t : Tick k) ->
+  next (M t) ≡ M
+next-Mt≡M' M t = next-Mt≡M M t
+
+
+
+
+
+-- Clock-related postulates.
+postulate
+  clock-iso : {A : Type} -> (∀ (k : Clock) -> A) ≡ A
+
+postulate
+  k0 : Clock
+
+postulate
+  clock-irrel : {ℓ : Level} -> {A : Type ℓ} ->
+    (M : ∀ (k : Clock) -> A) ->
+    (k k' : Clock) ->
+    M k ≡ M k'
+
+
+
+
+
