@@ -2,3 +2,8 @@
 *.log
 /gtlc.pdf
 *.agdai
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.agda~
