@@ -13,6 +13,8 @@ open import Agda.Builtin.Sigma
 open import Cubical.Core.Everything
 open import Cubical.Foundations.Everything
 
+open import Cubical.Data.Nat
+
 module Prims where
   primitive
     primLockUniv : Set₁
@@ -105,13 +107,14 @@ tr→tr' : {M : ▹ k , A} -> tick-irrelevance M -> tr' M
 
 -- The tick constant.
 postulate
-  _◇ : (k : Clock) -> Tick k
+  -- _◇ : (k : Clock) -> Tick k
+  ◇ : {k : Clock} -> Tick k
 
 -- From Section V.C of Bahr et. al
 -- (See https://bahr.io/pubs/files/bahr17lics-paper.pdf).
 postulate
   tick-irrelevance-◇-refl : {A : Type} -> (M : ▹ k , A) ->
-    (tick-irrelevance M (k ◇) (k ◇)) ≡ Cubical.Foundations.Everything.refl
+    (tick-irrelevance M (◇) (◇)) ≡ Cubical.Foundations.Everything.refl
       -- Should this use _≣_.refl instead?
 
 
@@ -127,6 +130,13 @@ next-Mt≡M' M t = next-Mt≡M M t
 
 
 
+-- "Dependent" forcing (where the type can mention the clock).
+-- This seems to be the correct type of the force function.
+
+postulate
+  force' : {A : Clock -> Type} -> (∀ k → (▹ k , A k)) → (∀ (k : Clock) → A k)
+
+
 
 
 -- Clock-related postulates.
@@ -136,12 +146,34 @@ postulate
 postulate
   k0 : Clock
 
+{-
 postulate
-  clock-irrel : {ℓ : Level} -> {A : Type ℓ} ->
-    (M : ∀ (k : Clock) -> A) ->
-    (k k' : Clock) ->
-    M k ≡ M k'
+  nat-clock-irrel : (∀ (k : Clock) -> ℕ) ≡ ℕ
+-}
 
+-- Definition of clock irrelevance, parameterized by a specific type
+clock-irrel : Type -> Type
+clock-irrel A =
+  (M : ∀ (k : Clock) -> A) ->
+  (k k' : Clock) ->
+  M k ≡ M k'
+
+
+∀kA->A : (A : Type) ->
+  (∀ (k : Clock) -> A) -> A
+∀kA->A A f = f k0
+
+-- If A is clock irrelevant, then the above map is inverse
+-- to the map A -> ∀ k . A.
+
+
+postulate
+  nat-clock-irrel : clock-irrel ℕ
+
+
+clock-ext : {ℓ : Level} {A : (k : Clock) -> Type ℓ} -> {M N : (k : Clock) -> A k} →
+  (∀ k → M k ≡ N k) → M ≡ N
+clock-ext eq i k = eq k i
 
 
 
