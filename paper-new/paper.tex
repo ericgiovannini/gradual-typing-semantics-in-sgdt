@@ -1,6 +1,13 @@
 \documentclass[acmsmall,screen]{acmart}
 \usepackage{mathpartir}
 \usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{wrapfig}
+\usepackage{fancyvrb}
+\usepackage{comment}
+
+\usepackage{ stmaryrd }
+
 
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
@@ -20,22 +27,8 @@
 \acmPrice{15.00}
 \acmISBN{978-1-4503-XXXX-X/18/06}
 
-\newcommand{\dyn}{?}
-\newcommand{\ltdyn}{\sqsubseteq}
+\input{defs}
 
-\newcommand{\uarrowl}{\mathrel{\rotatebox[origin=c]{-30}{$\leftarrowtail$}}}
-\newcommand{\uarrowr}{\mathrel{\rotatebox[origin=c]{60}{$\leftarrowtail$}}}
-\newcommand{\darrowl}{\mathrel{\rotatebox[origin=c]{30}{$\twoheadleftarrow$}}}
-\newcommand{\darrowr}{\mathrel{\rotatebox[origin=c]{120}{$\twoheadleftarrow$}}}
-\newcommand{\vuarrow}{\mathrel{\rotatebox[origin=c]{-90}{$\leftarrowtail$}}}
-\newcommand{\vdarrow}{\mathrel{\rotatebox[origin=c]{90}{$\twoheadleftarrow$}}}
-\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
-\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
-
-\newcommand{\later}{\vartriangleright}
-\newcommand{\type}{\texttt{Type}}
-\newcommand{\lob}{\text{L\"{o}b}}
-\newcommand{\tick}{\texttt{tick}}
 
 \begin{document}
 
@@ -84,143 +77,746 @@
   the statically-typed terms are type checked at compile time, while type checking for the 
   dynamically-typed terms is deferred to runtime.
 
-  Gradually-typed languages support the smooth migration from dynamic typing
-  to static typing, in that the programmer can initially leave off the
-  typing annotations and provide them later without altering the meaning of the
-  program. Moreover, a key feature of gradually typed languages is that the interaction
+  Gradually-typed languages should satisfy two intuitive properties.
+  First, the interaction
   between the static and dynamic components of the codebase should be safe -- i.e., should
   preserve the guarantees made by the static types.
   In other words, in the static portions of the codebase, type soundness must be preserved.
+  Second, gradual langugaes should support the smooth migration from dynamic typing
+  to static typing, in that the programmer can initially leave off the
+  typing annotations and provide them later without altering the meaning of the
+  program.
+
+  % Graduality property
+  Formally speaking, gradually typed languages should satisfy the 
+  \emph{dynamic gradual guarantee}, originally defined by Siek, Vitousek, Cimini,
+  and Boyland \cite{siek_et_al:LIPIcs:2015:5031}.
+  This property is also referred to as \emph{graduality}, by analogy with parametricity.
+  Intuitively, graduality says that in going from a dynamic to static style should not
+  introduce changes in the meaning of the program.
+  More specifically, making the types more precise by adding annotations
+  % (replacing $\dyn$ with a more specific type
+  %such as integers)
+  will either result in the same behavior as the less precise program,
+  or result in a type error.
+
+  
+  \subsection{Current Approaches}
+  Current approaches to proving graduality include the methods of Abstracting Gradual Typing
+  \cite{garcia-clark-tanter2016} and the formal tools of the Gradualier \cite{cimini-siek2016}.
+  These allow the language developer to start with a statically typed langauge and derive a
+  gradually typed language that satisfies the gradual guarantee. The downside is that
+  not all gradually typed languages can be derived from these frameworks, and moreover, in both
+  approaches the semantics is derived from the static type system as opposed to the alternative
+  in which the semantics determines the type checking. Without a clear semantic interpretation of type
+  dynamism, it becomes difficult to extend these techniques to new language features such as polymorphism.
+
+  % Proving graduality via LR
+  New and Ahmed have developed a semantic approach to specifying type dynamism in term of
+  embedding-projection pairs, which allows for a particularly elegant formulation of the
+  gradual guarantee.
+  Moreover, this approach allows for type-based reasoning using $\eta$-equivalences
+  
+  The downside of the above approach is that each new language requires a different logical relation
+  to prove graduality. As a result, many developments using this approach require vast effort,
+  with many such papers having 50+ pages of proofs.
+  Our aim here is that by mechanizing a graduality proof in a reusable way,
+  we will provide a framework for other language designers to use to ensure that their languages satsify graduality.
 
 
+  One approach currently used to prove graduality uses the technique of \emph{logical relations}.
+  Specifially, a logical relation is constructed and shown to be sound with respect to
+  observational approximation. Because the dynamic type is modeled as a non-well-founded
+  recursive type, the logical relation needs to be paramterized by natural numbers to restore well-foundedness.
+  This technique is known as a \emph{step-indexed logical relation} \cite{TODO}.
+  Reasoning about step-indexed logical relations
+  can be tedious and error-prone, and there are some very subtle aspects that must
+  be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
+  relation for the gradually-typed lambda calculus.
+
+  % TODO move to another section?
+  % Difficulties in prior semantics
+  % - two separate logical relations for expressions
+  % - transitivity
+  In particular, the prior approach of New and Ahmed requires two separate logical
+  relations for terms, one in which the steps of the left-hand term are counted,
+  and another in which the steps of the right-hand term are counted \cite{TODO}.
+  Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
+  related in both of the one-sided logical relations. Having two separate logical relations
+  complicates the statement of the lemmas used to prove graduality, becasue any statement that
+  involves a term stepping needs to take into account whether we are counting steps on the left
+  or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
+  as fundamental and seemingly straightforward as transitivty.
+
+  Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
+  index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
+  But this does not actually hold: we requrie that one of the two pairs of terms
+  be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
+  Which pair is required to satisfy this depends on which logical relation we are considering,
+  (i.e., is it counting steps on the left or on the right),
+  and so any argument that uses transitivity needs to consider two cases, one
+  where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
+  be related for all $i$. This may not even be possible to show in some scenarios!
+
+  These complications introduced by step-indexing lead one to wonder whether there is a
+  way of proving graduality without relying on tedious arguments involving natural numbers.
+  An alternative approach, which we investigate in this paper, is provided by
+  \emph{synthetic guarded domain theory}, as discussed below.
+  Synthetic guarded domain theory allows the resulting logical relation to look almost
+  identical to a typical, non-step-indexed logical relation.
+
+  \subsection{Contributions}
+  Our main contribution is a framework in Guarded Cubical Agda for proving graduality of a cast calculus.
+  To demonstrate the feasability and utility of our approach, we have used the framework to prove
+  graduality for the simply-typed gradual lambda calculus. Along the way, we have developed an intensional theory
+  of graduality that is of independent interest.
+
+
+  \subsection{Proving Graduality in SGDT}
+  % TODO move to technical background
+
+  % Cast calculi
   In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
   the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
   forms of the language (e.g., pattern matching, field reference, etc.).
   Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
   type checking is made explicit through the insertion of \emph{type casts}.
 
-  ...
-
   % Up and down casts
-  There is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that $A$ is a \emph{more
-  precise} type than $B$.
+  In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
+  $A$ is a \emph{more precise} type than $B$.
   There a dynamic type $\dyn$ with the property that $A \ltdyn \dyn$ for all $A$.
-
+  %
   If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
   and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
   Upcasts always succeed, while downcasts may fail at runtime.
+  %
+  % Syntactic term precision
+  We also have a notion of \emph{syntatcic term precision}.
+  If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
+  $M \ltdyn N : A \ltdyn B$ to mean that $M$ is more precise than $N$, i.e., $M$ and $N$
+  behave the same except that $M$ may error more.
 
-  % Graduality property
-  A key property that any gradually-typed language should satisfy is the \emph{dynamic gradual guarantee},
-  originally defined by Siek, Vitousek, Cimini, and Boyland \cite{TODO}.
-  New et al refer to this property as \emph{graduality}, by analogy with parametricity.
-  Intuitively, graduality says that in going from a dynamic to static style
-  should not introduce changes in the meaning of the program.
-  More specifically, making the types more precise (replacing $\dyn$ with a more specific type
-  such as integers) will either result in the same behavior as the less precise program,
-  or cause a dynamic type error.
+  % Modeling the dynamic type as a recursive sum type?
+  % Observational equivalence and approximation?
 
-  % Observational equivalence and approximation
-  % TODO
+  In this paper, we will be using SGDT techniques to prove graduality for a particularly
+  simple gradually-typed cast calculus, the gradually-typed lambda calculus. This is just
+  the usual simply-typed lambda calculus with a dynamic type $\dyn$ such that $A \ltdyn\, \dyn$ for all types $A$,
+  as well as upcasts and downcasts between any types $A$ and $B$ such that $A \ltdyn B$.
+  The complete definition will be provided in Section \ref{sec:GTLC}.
+
+  Our main theorem is the following:
+
   
-  
-  \subsection{Prior Approach}
-  % Proving graduality via LR
-  The usual approach to proving graduality uses the technique of \emph{logical relations}.
-  Specifially, a logical relation is constructed and showed to be sound with respect to
-  observational approximation. Because the dynamic type is modeled as a recursive type,
-  the logical relation needs to be paramterized by natural numbers, a so-called
-  step-indexed logical relation. Reasoning about step-indexed logical relations
-  is tedious and error-prone, and there are several very subtle aspects that must
-  be taken into account in the proofs.
-
-  % Difficulties in prior semantics
-  % TODO
-
-  % - two separate logical relations for expressions
-  % - transitivity
+  % \begin{theorem}[Graduality]
+  %   If $M \ltdyn N : \nat$, then either:
+  %   \begin{enumerate}
+  %     \item $M = \mho$
+  %     \item $M = N = \zro$
+  %     \item $M = N = \suc n$ for some $n$
+  %     \item $M$ and $N$ diverge
+  %   \end{enumerate}
+  % \end{theorem}
   
 
-  % synthetic guarded domain theory, denotational semantics therein
-  \subsection{Synthetic Guarded Domain Theory}
-  One way to avoid the tedious reasoning associated with step-indexing is to work
-  axiomatically inside of a logical system that can reason about non-well-founded recursive
-  constructions while abstracting away the specific details of step-indexing required
-  if we were working analytically.
-  The system that proves useful fot this purpose is called \emph{synthetic guarded
-  domain theory}, or SGDT for short. We provide a brief overview here, but more
-  details can be found in \cite{TODO}.
+  \begin{theorem}[Graduality]
+    If $\cdot \vdash M \ltdyn N : \nat$, then
+    \begin{enumerate}
+      \item If $N = \mho$, then $M = \mho$
+      \item If $N = `n$, then $M = \mho$ or $M = `n$
+      \item If $M = V$, then $N = V$
+    \end{enumerate}
+  \end{theorem}
 
-  In SGDT, there is the notion of a \emph{clock}, an abstract type that tracks the
-  passage of time through \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
-  as evidence that one unit of time has passed according to the clock $k$.
+  We also should be able to show that $\mho$, $\zro$, and $\suc\, N$ are not equal.
 
-  SGDT also introduces a modality $\later : \type \to \type$, (pronounced ``later'').
-  Given a clock $k$ and type $T$, the type $\later_k T$ represents a value of type
-  $T$ one unit of time in the future according to clock $k$.
-  The type $\later T$ is represented as a function from ticks of a clock $k$ to $T$.
-  There is an axiom called $\lob$-induction which is stated as follows:
+  Our first step toward proving graduality is to formulate an \emph{intensional} gradual lambda calculus,
+  which we call $\intlc$, in which the computation steps taken by a term are made explicit.
+  The ``normal'' graudal lambda calculus for which we want to prove graduality will be called the
+  \emph{extensional} gradual lambda calculus, denoted $\extlc$. We will define an erasure function
+  $\erase{\cdot} : \intlc \to \extlc$ which takes a program in the intensional lambda calculus
+  and ``forgets'' the syntactic information about the steps to produce a term in the extensional calculus.
 
-  \[
-    \lob : \forall T, (\later T \to T) \to T.
-  \]
+  Every term $M_e$ in $\extlc$ will have a corresponding program $M_i$ in $\intlc$ such that
+  $\erase{M_i} = M_e$. Moreover, we will show that if $M_e \ltdyn_e M_e'$ in the extensional theory,
+  then there exists terms $M_i$ and $M_i'$ such that $\erase{M_i}=M_e$, $\erase{M_i'}=M_e'$ and
+  $M_i \ltdyn_i M_i'$ in the intensional theory.
 
-  That is, to construct a term of type $T$, it suffices to assume that we have access to
-  such a term ``later'' and use that to help us build a term ``now''.
-
-  In particular, this axiom applies to propositions $P : \texttt{Prop}$.
-
-
-
-
-
+  We formulate and prove an analogous graduality theorem for the intensional lambda calculus.
+  We define an interpretation of the intensional lambda calculus into a model in which we prove
+  various results. Using the observation above, given $M_e \ltdyn M_e' : \nat$, we can find
+  intensional programs $M_i$ and $M_i'$ that erase to them and are such that $M_i \ltdyn M_i'$.
+  We will then apply the intensional graduality theorem to $M_i$ and $M_i'$, and translate the result
+  back to $M_e$ and $M_e'$.
 
 
   \subsection{Overview of Remainder of Paper}
+
+  In Section \ref{sec:technical-background}, we provide technical background on gradually typed languages and
+  on synthetic guarded domain theory.
+ % 
   In Section \ref{sec:GTLC}, we introduce the gradually-typed cast calculus
   for which we will prove graduality. Important here are the notions of syntactic
-  type precision and term precision.
-
+  type precision and term precision. We introduce both the extensional gradual lambda calculus
+  ($\extlc$) and the intensional gradual lambda calculus ($\intlc$).
+%
   In Section \ref{sec:domain-theory}, we define several fundamental constructions
   internal to SGDT that will be needed when we give a denotational semantics to
-  the language. This includes the notion of Predomains as well as the concept
+  our intensional lambda calculus.
+  This includes the notion of Predomains as well as the concept
   of EP-Pairs.
+%
+  In Section \ref{sec:semantics}, we define the denotational semantics for the
+  intensional gradually-typed lambda calculus using the domain theoretic constructions in the
+  previous section.
+%
+  In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
+  extensional gradual lambda calculus.
+%
+  In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
+  to the traditional step-indexing approach, as well as possibilities for future work.
 
-  In Section \ref{Semantics}, we define the denotational semantics for the gradually-typed
-  language
+
+\section{Technical Background}\label{sec:technical-background}
+
+% synthetic guarded domain theory, denotational semantics therein
+\subsection{Synthetic Guarded Domain Theory}
+One way to avoid the tedious reasoning associated with step-indexing is to work
+axiomatically inside of a logical system that can reason about non-well-founded recursive
+constructions while abstracting away the specific details of step-indexing required
+if we were working analytically.
+The system that proves useful for this purpose is called \emph{synthetic guarded
+domain theory}, or SGDT for short. We provide a brief overview here, but more
+details can be found in \cite{TODO}.
+
+SGDT offers a synthetic approach to domain theory that allows for guarded recursion
+to be expressed syntactically via a type constructor $\later : \type \to \type$ 
+(pronounced ``later''). The use of a modality to express guarded recursion
+was introduced by Nakano \cite{TODO}.
+
+Given a type $A$, the type $\later A$ represents an element of type $A$
+that is available one time step later. There is an operator $\nxt : A \to\, \later A$
+that ``delays'' an element available now to make it available later.
+We will use a tilde to denote a term of type $\later A$, e.g., $\tilde{M}$.
+
+% TODO later is an applicative functor, but not a monad
+
+There is a fixpoint operator
+
+\[
+  \fix : \forall T, (\later T \to T) \to T.
+\]
+
+That is, to construct a term of type $T$, it suffices to assume that we have access to
+such a term ``later'' and use that to help us build a term ``now''.
+This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
+In particular, this axiom applies to propositions $P : \texttt{Prop}$; proving
+a statement in this manner is known as $\lob$-induction.
+
+In SGDT, there is also a new sort called \emph{clocks}. A clock serves as a reference
+relative to which the constructions described above are carried out.
+For instance, given a clock $k$ and type $T$, the type $\later^k T$ represents a value of type
+$T$ one unit of time in the future according to clock $k$.
+If we only ever had one clock, then we would not need to bother defining this notion.
+However, the notion of \emph{clock quantification} is crucial for encoding coinductive types using guarded
+recursion, an idea first introduced by Atkey and McBride \cite{TODO}.
+
+
+% Clocked Cubical Type Theory
+\subsubsection{Ticked Cubical Type Theory}
+% TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions
+
+In Ticked Cubical Type Theory \cite{TODO}, there is an additional sort
+called \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
+as evidence that one unit of time has passed according to the clock $k$.
+The type $\later A$ is represented as a function from ticks of a clock $k$ to $A$.
+The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
+to emphasize the dependence.
+
+% TODO next as a function that ignores its input tick argument
+
+The rules for tick abstraction and application are similar to those of dependent
+$\Pi$ types. 
+In particular, if we have a term $M$ of type $\later^k A$, and we
+have available in the context a tick $t' : \tick k$, then we can apply the tick to $M$ to get
+a term $M[t'] : A[t'/t]$. We will also write tick application as $M_t$.
+Conversely, if in a context $\Gamma, t : \tick k$ we have that $M$ has type $A$,
+then in context $\Gamma$ we have $\lambda t.M$ has type $\later A$. % TODO dependent version?
+
+The statements in this paper have been formalized in a variant of Agda called
+Guarded Cubical Agda \cite{TODO}, an implementation of Clocked Cubical Type Theory.
+
+
+% TODO axioms (clock irrelevance, tick irrelevance)
+
+
+% TODO topos of trees model
+\subsection{The Topos of Trees Model}
+
+The topos of trees $\calS$ is the presheaf category $\Set^{\omega^o}$. 
+
+  We assume a universe $\calU$ of types, with encodings for operations such
+  as sum types (written as $\widehat{+}$). There is also an operator 
+  $\laterhat \colon \later \calU \to \calU$ such that 
+  $\El(\laterhat(\nxt A)) =\,\, \later \El(A)$, where $\El$ is the type corresponding
+  to the code $A$.
+
+  An object $X$ is a family $\{X_i\}$ of sets indexed by natural numbers,
+  along with restriction maps $r^X_i \colon X_{i+1} \to X_i$.
+  
+  A morphism from $\{X_i\}$ to $\{Y_i\}$ is a family of functions $f_i \colon X_i \to Y_i$
+  that commute with the restriction maps in the obvious way, that is,
+  $f_i \circ r^X_i = r^Y_i \circ f_{i+1}$.
+  
+  The type operator $\later$ is defined on an object $X$ by
+  $(\later X)_0 = 1$ and $(\later X)_{i+1} = X_i$.
+  The restriction maps are given by $r^\later_0 =\, !$, where $!$ is the
+  unique map into $1$, and $r^\later_{i+1} = r^X_i$.
+  The morphism $\nxt^X \colon X \to \later X$ is defined pointwise by
+  $\nxt^X_0 =\, !$, and $\nxt^X_{i+1} = r^X_i$.
+
+
+  Given a morphism $f \colon \later X \to X$, we define $\fix f$ pointwise
+  as $\fix_i(f) = f_{i} \circ \dots \circ f_0$.
+
+  % TODO global elements
+
 
 
 \section{GTLC}\label{sec:GTLC}
 
+Here we describe the syntax and typing for the graudally-typed lambda calculus.
+We also give the rules for syntactic type and term precision.
+
+We start with the extensional lambda calculus $\extlc$, and then describe the additions
+necessary for the intensional lambda calculus $\intlc$.
+
 \subsection{Syntax}
+
+
+\begin{align*}
+  &\text{Types } A, B := \nat, \, \dyn, \, (A \To B) \\
+  &\text{Terms } M, N := \err_A, \, \zro, \,  \suc\, M, \, (\lda{x}{M}), \, (M\, N), \, (\up{A}{B} M), \, (\dn{A}{B} M) \\
+  &\text{Contexts } \Gamma := \cdot, \, (\Gamma, x : A)
+\end{align*}
+
+The typing rules are as expected, with a cast between $A$ to $B$ allowed only when $A \ltdyn B$.
+
+\begin{mathpar}
+  \inferrule*{ }{\hasty \Gamma {\err_A} A}
+
+  \inferrule*{ }{\hasty \Gamma \zro \nat}
+
+  \inferrule {\hasty \Gamma M \nat} {\hasty \Gamma {\suc\, M} \nat}
+
+  \inferrule* 
+    {\hasty {\Gamma, x : A} M B} 
+    {\hasty \Gamma {\lda x M} {A \To B}}
+
+  \inferrule *
+    {\hasty \Gamma M {A \To B} \and \hasty \Gamma N A}
+    {\hasty \Gamma {M \, N} B}
+
+  \inferrule*
+    {A \ltdyn B \and \hasty \Gamma M A}
+    {\hasty \Gamma {\up A B M} B }
+
+  \inferrule*
+    {A \ltdyn B \and \hasty \Gamma M B}
+    {\hasty \Gamma {\dn A B M} A}
+\end{mathpar}
+
+The equational theory is also as expected, with $\beta$ and $\eta$ laws for function type.
 
 \subsection{Type Precision}
 
+The rules for type precision are as follows:
+
+\begin{mathpar}
+  \inferrule*[right = \dyn]
+    { }{\dyn \ltdyn \dyn}
+
+  \inferrule*[right = \nat]
+    { }{\nat \ltdyn \nat}
+
+  \inferrule*[right = $Inj_\nat$]
+    { }{\nat \ltdyn \dyn}
+
+  \inferrule*[right = $\To$]
+    {A_i \ltdyn B_i \and A_o \ltdyn B_o }
+    {(A_i \To A_o) \ltdyn (B_i \To B_o)}
+
+  \inferrule*[right=$Inj_{\To}$]
+    {(A_i \to A_o) \ltdyn (\dyn \To \dyn)}
+    {(A_i \to A_o) \ltdyn\, \dyn}
+
+  
+\end{mathpar}
+
+% Type precision derivations
+Note that as a consequence of this presentation of the type precision rules, we
+have that if $A \ltdyn B$, there is a unique precision derivation that witnesses this.
+As in previous work, we go a step farther and make these derivations first-class objects,
+known as \emph{type precision derivations}.
+Specifically, for every $A \ltdyn B$, we have a derivation $d : A \ltdyn B$ that is constructed
+using the rules above. For instance, there is a derivation $\dyn : \dyn \ltdyn \dyn$, and a derivation
+$\nat : \nat \ltdyn \nat$, and if $d_i : A_i \ltdyn B_i$ and $d_o : A_o \ltdyn B_o$, then
+there is a derivation $d_i \To d_o : (A_i \To A_o) \ltdyn (B_i \To B_o)$. Likewise for
+the remaining two rules. The benefit to making these derivations explicit in the syntax is that we
+can perform induction over them.
+Note also that for any type $A$, we use $A$ to denote the reflexivity derivation that $A \ltdyn A$,
+i.e., $A : A \ltdyn A$.
+Finally, observe that for type precision derivations $d : A \ltdyn B$ and $d' : B \ltdyn C$, we
+can define their composition $d' \circ d : A \ltdyn C$. This will be used in the statement
+of transitivity of the term precision relation.
+
 \subsection{Term Precision}
+
+We allow for a \emph{heterogeneous} term precision judgment on terms $M$ of type $A$ and $N$ of type $B$,
+provided that $A \ltdyn B$ holds.
+
+% Type precision contexts
+In order to deal with open terms, we will need the notion of a type precision \emph{context}, which we denote
+$\gamlt$. This is similar to a normal context but instead of mapping variables to types,
+it maps variables $x$ to related types $A \ltdyn B$, where $x$ has type $A$ in the left-hand term
+and $B$ in the right-hand term. We may also write $x : d$ where $d : A \ltdyn B$ to indicate this.
+Another way of thinking of type precision contexts is as a zipped pair of contexts $\Gamma^l, \Gamma^r$
+with the same domain such that $\Gamma^l(x) \ltdyn \Gamma^r(x)$ for each $x$ in the domain.
+
+The rules for term precision come in two forms. We first have the \emph{congruence} rules,
+one for each term constructor. These assert that the term constructors respect term precision.
+The congruence rules are as follows:
+
+
+\begin{mathpar}
+  \inferrule*[right = $\err$]
+    { \hasty \Gamma M A }
+    {\etmprec {\gamlt} {\err_A} M A}
+
+  \inferrule*[right = Var]
+    { d : A \ltdyn B \and \gamlt(x) = (A, B) } { \etmprec {\gamlt} x x d  }
+
+  \inferrule*[right = Zro]
+    { } {\etmprec \gamlt \zro \zro \nat }
+
+  \inferrule*[right = Suc]
+    { \etmprec \gamlt M N \nat } {\etmprec \gamlt {\suc\, M} {\suc\, N} \nat}
+
+  \inferrule*[right = Lambda]
+    { d_i : A_i \ltdyn B_i \and 
+      d_o : A_o \ltdyn B_o \and 
+      \etmprec {\gamlt , x : d_i} M N {d_o} } 
+    { \etmprec \gamlt {\lda x M} {\lda x N} (d_i \To d_o) }
+
+  \inferrule*[right = App]
+    { d_i : A_i \ltdyn B_i \and
+      d_o : A_o \ltdyn B_o \\\\
+      \etmprec \gamlt {M} {M'} (d_i \To d_o) \and
+      \etmprec \gamlt {N} {N'} d_i
+    } 
+    { \etmprec \gamlt {M\, N} {M'\, N'} {d_o}}
+\end{mathpar}
+
+We then have additional equational axioms, including transitivity, $\beta$ and $\eta$ laws, and
+rules characterizing upcasts as least upper bounds, and downcasts as greatest lower bounds.
+
+We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
+
+% TODO
+\begin{mathpar}
+  \inferrule*[right = Transitivity]
+    {\etmprec \gamlt M N d \and
+     \etmprec \gamlt N P {d'} } 
+    {\etmprec \gamlt M P {d' \circ d} }
+
+  \inferrule*[right = $\beta$]
+    { \hasty {\Gamma, x : A_i} M {A_o} \and
+      \hasty {\Gamma} V {A_i} } 
+    { \etmequidyn \gamlt {(\lda x M)\, V} {M[V/x]} {A_o} }
+
+  \inferrule*[right = $\eta$]
+    { \hasty {\Gamma} {V} {A_i \To A_o} } 
+    { \etmequidyn \gamlt {\lda x (V\, x)} V {A_i \To A_o} }
+
+  \inferrule*[right = UpR]
+    { d : A \ltdyn B \and 
+      \hasty \Gamma M A } 
+    { \etmprec \gamlt M {\up A B M} d  }
+
+  \inferrule*[right = UpL]
+    { d : A \ltdyn B \and
+      \etmprec \gamlt M N d } 
+    { \etmprec \gamlt {\up A B M} N B }
+
+  \inferrule*[right = DnL]
+    { d : A \ltdyn B \and 
+      \hasty \Gamma M B } 
+    { \etmprec \gamlt {\dn A B M} M d }
+
+  \inferrule*[right = DnR]
+    { d : A \ltdyn B \and
+      \etmprec \gamlt M N d } 
+    { \etmprec \gamlt M {\dn A B N} A }
+\end{mathpar}
+
+% TODO explain the least upper bound/greatest lower bound rules
+The rules UpR, UpL, DnL, and DnR were introduced in \cite{TODO} as a means
+of cleanly axiomatizing the intended behavior of casts in a way that
+doesn't depend on the specific constructs of the language.
+Intuitively, rule UpR says that the upcast of $M$ is an upper bound for $M$
+in that $M$ may error more, and UpL says that the upcast is the \emph{least}
+such upper bound, in that it errors more than any other upper bound for $M$.
+Conversely, DnL says that the downcast of $M$ is a lower bound, and DnR says
+that it is the \emph{greatest} lower bound.
+% These rules provide a clean axiomatization of the behavior of casts that doesn't
+% depend on the specific constructs of the language.
+
+
+\subsection{The Intensional Lambda Calculus}
+
+Now that we have described the syntax along with the type and term precision judgments for
+$\extlc$, we can now do the same for $\intlc$. One key difference between the two calculi
+is that we define $\intlc$ using the constructs available to us in the language of synthetic
+guarded domain theory, e.g., we use the $\later$ operator. Whereas when we defined the syntax
+of the extensional lambda calculus we were working in the category of sets, when we define the
+syntax of the intensional lambda calculus we will be working in the topos of trees. 
+% in a presheaf category known as the \emph{topos of trees}.
+
+More specifically, in $\intlc$, we not only have normal terms, but also terms available
+``later'', which we denote by $\tilde{M}$.
+We have a term constructor $\theta_s$ which takes a later-term and turns it into
+a term avaialble now. 
+The typing and precision rules for $\theta_s$ involve the $\later$ operator, as shown below.
+Observe that $\theta_s$ is a syntactic analogue to the $\theta$ constructor of the lifting monad
+that we will define in the section on domain theoretic constructions (Section \ref{sec:domain-theory}),
+but it is important to note that $\theta_s (\tilde{M})$ is an actual term in $\intlc$, whereas the
+$\theta$ constructor is a purely semantic construction. These will be connected when we discuss the
+interpretation of $\intlc$ into the semantic model.
+
+% Most aspects of the two calculi are the same, except that in $\intlc$ we add a new term constructor
+% $\theta_s$ which represents a syntactic way of delaying a term by one computation step.
+
+To better understand this situation, note that $\lda{x}{(\cdot)}$ can be viewed as a function
+(at the level of the ambient type theory) from terms of type $B$ under context $\Gamma, x : A$
+to terms of type $A \To B$ under context $\Gamma$. Similarly, we can view $\theta_s(\cdot)$ as a
+function (in the ambient type theory, which is sythetic guarded domain theory) taking terms
+$\tilde{M}$ of type $A$ avaiable \emph{later} to terms of type $A$ available \emph{now}.
+
+Notice that the notion of a ``term available later'' does not need to be part of the syntax
+of the intensional lambda calculus, because this can be expressed in the ambient theory.
+Similarly, we do not need a syntactic form to delay a term, because we can simply use $\nxt$.
+
+
+\begin{align*}
+  % &\text{Later Terms } \tilde{M}, \tilde{N}
+  &\text{Terms } M, N := \err_A, \, \dots \, \theta_s (\tilde{M}) \\
+\end{align*}
+
+\begin{mathpar}
+  \inferrule*[]
+    { \later_t (\hasty \Gamma {M_t} A) }
+    { \hasty \Gamma {\theta_s M} {A} }
+\end{mathpar}
+
+\begin{mathpar}
+  \inferrule*[]
+    { \later_t (\itmprec \gamlt {M_t} {N_t} d) }
+    { \itmprec \gamlt {\theta_s M} {\theta_s N} d }
+\end{mathpar}
+
+Recall that $\later_t$ is a dependent form of $\later$ where the arugment is allowed
+to mention $t$. In particular, here we apply the tick $t$ to the later-terms $M$ and $N$ to get 
+``now"-terms $M_t$ and $N_t$.
+
+Formally speaking, the term precision relation must be defined as a guarded fixpoint,
+i.e., we assume that the function is defined later, and use it to construct a definition
+that is defined ``now''. This involves applying a tick to the later-function to shift it
+to a now-function. Indeed, this is what we do in the formal Agda development, but in this
+paper, we will elide these issues as they are not relevant to the main ideas.
+
+% TODO equational theory
+
+
 
 
 \section{Domain-Theoretic Constructions}\label{sec:domain-theory}
 
+In this section, we discuss the fundamental objects of the model into which we will embed
+the intensional lambda calculus and inequational theory. It is important to remember that
+the constructions in this section are entirely independent of the syntax described in the
+previous section; the notions defined here exist in their own right as purely mathematical
+constructs. In the next section, we will link the syntax and semantics via an interpretation
+function.
+
+\subsection{The Lift Monad}
+
+When thinking about how to model intensional gradually-typed programs, we must consider
+their possible behaviors. On the one hand, we have \emph{failure}: a program may fail
+at run-time because of a type error. In addition to this, a program may ``think'',
+i.e., take a step of computation. If a program thinks forever, then it never returns a value,
+so we can think of the idea of thinking as a way of intensionally modelling \emph{partiality}.
+
+With this in mind, we can describe a semantic object that models these behaviors: a monad
+for embedding computations that has cases for failure and ``thinking''.
+Previous work has studied such a construct in the setting of the latter only, called the lift
+monad \cite{TODO}; here, we add the additional effect of failure.
+
+For a type $A$, we define the \emph{lift monad with failure} $\li A$, which we will just call
+the \emph{lift monad}, as the following datatype:
+
+\begin{align*}
+  \li A &:= \\
+  &\eta \colon A \to \li A \\
+  &\mho \colon \li A \\
+  &\theta \colon \later (\li A) \to \li A
+\end{align*}
+
+Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
+
+\[ \li A \cong A + 1 + \later \li A. \]
+
+An element of $\li A$ should be viewed as a computation that can either (1) return a value (via $\eta$),
+(2) raise an error and stop (via $\mho$), or (3) think for a step (via $\theta$).
+
+Notice there is a computation $\fix \theta$ of type $\li A$. This represents a computation
+that thinks forever and never returns a value.
+
+Since we claimed that $\li A$ is a monad, we need to define the monadic operations
+and show that they repect the monadic laws. The return is just $\eta$, and extend
+is defined via by guarded recursion by cases on the input.
+% It is instructive to give at least one example of a use of guarded recursion, so
+% we show below how to define extend:
+% TODO
+%
+%
+Verifying that the monadic laws hold requires \lob-induction and is straightforward.
+
+The lift monad has the following universal property. Let $f$ be a function from $A$ to $B$,
+where $B$ is a $\later$-algebra, i.e., there is $\theta_B \colon \later B \to B$.
+Further suppose that $B$ is also an ``error-algebra'', that is, an algebra of the
+constant functor $1 \colon \text{Type} \to \text{Type}$ mapping all types to Unit.
+This latter statement amounts to saying that there is a map $\text{Unit} \to B$, so $B$ has a
+distinguished ``error element" $\mho_B \colon B$.
+
+Then there is a unique homomorphism of algebras $f' \colon \li A \to B$ such that
+$f' \circ \eta = f$. The function $f'(l)$ is defined via guarded fixpoint by cases on $l$. 
+In the $\mho$ case, we simply return $\mho_B$.
+In the $\theta(\tilde{l})$ case, we will return
+
+\[\theta_B (\lambda t . (f'_t \, \tilde{l}_t)). \]
+
+Recalling that $f'$ is a guaded fixpoint, it is available ``later'' and by
+applying the tick we get a function we can apply ``now''; for the argument,
+we apply the tick to $\tilde{l}$ to get a term of type $\li A$.
+
+
+\subsubsection{Model-Theoretic Description}
+We can describe the lift monad in the topos of trees model as follows.
+
+
 \subsection{Predomains}
+
+The next important construction is that of a \emph{predomain}. A predomain is intended to
+model the notion of error ordering that we want terms to have. Thus, we define a predomain $A$
+as a partially-ordered set, which consists of a type which we denote $\ty{A}$ and a reflexive,
+transitive, and antisymmetric relation $\le_P$ on $A$.
+
+For each type we want to represent, we define a predomain for the corresponding semantic
+type. For instance, we define a predomain for natural numbers, a predomain for the
+dynamic type, a predomain for functions, and a predomain for the lift monad. We
+describe each of these below.
+
+We define monotone functions between predomain as expected. Given predomains
+$A$ and $B$, we write $f \colon A \monto B$ to indicate that $f$ is a monotone
+function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(a_2)$.
+
+% TODO
+\begin{itemize}
+  \item There is a predomain Nat for natural numbers, where the ordering is equality.
+  
+  \item There is a predomain Dyn to represent the dynamic type. The underlying type
+  for this predomain is defined to be $\mathbb{N} + \later (Dyn \monto Dyn)$.
+  This definition is valid because the occurrences of Dyn are guarded by the $\later$.
+  The ordering is defined via guarded recursion by cases on the argument, using the
+  ordering on $\mathbb{N}$ and the ordering on monotone functions described below.
+
+  \item For a predomain $A$, there is a predomain $\li A$ that is the ``lift'' of $A$
+  using the lift monad. We use the same notation for $\li A$ when $A$ is a type
+  and $A$ is a predomain, since the context should make clear which one we are referring to.
+  The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
+  type of $A$.
+  The ordering of $\li A$ is the ``lock-step error-ordering'' which we describe in \ref{subsec:lock-step}.
+
+  \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
+  from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
+  Two such functions are related
+\end{itemize}
+
+Predomains will form the objects of a structure similar to a double category,
+with horizontal morphisms being monotone funcitons, and vertical morphisms being
+embedding-projection pairs discussed below.
+
+
+
+\subsection{Lock-step Error Ordering}\label{subsec:lock-step}
+
+As mentioned, the ordering on the lift of a predomain $A$
+The relation is parameterized by an ordering $\le_A$ on $A$.
+We call this the lock-step error-ordering, the idea being that two computations
+$l$ and $l'$ are related if they are in lock-step with regard to their
+intensional behavior. That is, if $l$ is $\eta x$, then $l'$ should be equal to $\eta y$
+for some $y$ such that $x \le_A y$.
 
 \subsection{Weak Bisimilarity Relation}
 
+
+
+\subsection{Combined Ordering}
+
+
+
+
+
+
+
 \subsection{EP-Pairs}
+
+The use of embedding-projection pairs in gradual typing was introduced by New and
+Ahmed \cite{TODO}.
+Here, we want to adapt this notion of embedding-projection pair to the setting
+of intensional denotaional semantics.
+
+
+
 
 
 \section{Semantics}\label{sec:semantics}
 
 \subsection{Types as Predomains}
 
+
 \subsection{Terms as Monotone Functions}
+
 
 \subsection{Type Precision as EP-Pairs}
 
-\subsection{Term Precision}
+
+\subsection{Term Precision via the Lock-Step Error Ordering}
 % Homogeneous vs heterogeneous term precision
 
 
 \section{Graduality}\label{sec:graduality}
+
+\subsection{Outline}
+
+\subsection{Extensional to Intensional}
+
+\subsection{Intensional Results}
+
+\subsection{Adequacy}
+
+\subsection{Putting it Together}
 
 
 
@@ -238,5 +834,9 @@ terms must be proven to be monotone.
 It is possible that a combination of synthetic guarded domain theory
 with \emph{directed} type theory would allow for an a synthetic
 treatment of the error ordering as well.
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
 
 \end{document}

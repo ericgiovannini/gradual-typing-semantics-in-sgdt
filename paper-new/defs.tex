@@ -1,0 +1,90 @@
+\newcommand{\To}{\Rightarrow}
+\newcommand{\inl}{\mathsf{inl}}
+\newcommand{\inr}{\mathsf{inr}}
+
+
+\newcommand{\extlc}{\text{Ext-}\lambda C}
+\newcommand{\intlc}{\text{Int-}\lambda C}
+\newcommand{\erase}[1]{\lfloor {#1} \rfloor}
+
+
+\newcommand{\uarrowl}{\mathrel{\rotatebox[origin=c]{-30}{$\leftarrowtail$}}}
+\newcommand{\uarrowr}{\mathrel{\rotatebox[origin=c]{60}{$\leftarrowtail$}}}
+\newcommand{\darrowl}{\mathrel{\rotatebox[origin=c]{30}{$\twoheadleftarrow$}}}
+\newcommand{\darrowr}{\mathrel{\rotatebox[origin=c]{120}{$\twoheadleftarrow$}}}
+\newcommand{\vuarrow}{\mathrel{\rotatebox[origin=c]{-90}{$\leftarrowtail$}}}
+\newcommand{\vdarrow}{\mathrel{\rotatebox[origin=c]{90}{$\twoheadleftarrow$}}}
+
+% Types, terms, and precision 
+
+\newcommand{\dyn}{?}
+\newcommand{\nat}{\text{Nat}}
+\newcommand{\bool}{\text{Bool}}
+
+\newcommand{\err}{\mho}
+\newcommand{\zro}{\textsf{zro}}
+\newcommand{\suc}{\textsf{suc}}
+\newcommand{\lda}[2]{\lambda {#1} . {#2}}
+\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
+\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
+
+\newcommand{\ltdyn}{\sqsubseteq}
+\newcommand{\gtdyn}{\sqsupseteq}
+\newcommand{\equidyn}{\mathrel{\gtdyn\ltdyn}}
+\newcommand{\gamlt}{\Gamma^\ltdyn}
+\newcommand{\hasty}[3]{{#1} \vdash {#2} \colon {#3}}
+\newcommand{\etmprec}[4]{{#1} \vdash {#2} \ltdyn_e {#3} \colon {#4}}
+\newcommand{\itmprec}[4]{{#1} \vdash {#2} \ltdyn_i {#3} \colon {#4}}
+\newcommand{\etmequidyn}[4]{{#1} \vdash {#2} \equidyn_e {#3} \colon {#4}}
+\newcommand{\itmequidyn}[4]{{#1} \vdash {#2} \equidyn_i {#3} \colon {#4}}
+
+
+
+% SGDT and Intensional Stuff
+
+\newcommand{\later}{\vartriangleright}
+\newcommand{\type}{\texttt{Type}}
+\newcommand{\lob}{\text{L\"{o}b}}
+\newcommand{\tick}{\mathsf{tick}}
+\newcommand{\nxt}{\mathsf{next}}
+\newcommand{\fix}{\mathsf{fix}}
+\newcommand{\kpa}{\kappa}
+
+% Model-related stuff
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\Set}{\mathsf{Set}}
+\newcommand{\Yo}{\mathsf{Yo}}
+\newcommand{\Hom}{\mathsf{Hom}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\gfix}{\texttt{gfix}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\laterhat}{\widehat{\later}}
+\newcommand{\El}{\mathsf{El}}
+
+
+% Predomains and EP pairs
+\newcommand{\ty}[1]{\langle {#1} \rangle}
+\newcommand{\li}{L_\mho}
+
+\newcommand{\ltls}{\lesssim}
+\newcommand{\bisim}{\approx}
+
+\newcommand{\injarr}{\textsf{Inj}_\to}
+\newcommand{\injnat}{\textsf{Inj}_\mathbb{N}}
+
+\newcommand{\id}{\mathsf{id}}
+\newcommand{\ep}{\leadsto}
+
+\newcommand{\emb}[2]{\mathsf{emb}_{#1}({#2})}
+\newcommand{\proj}[2]{\mathsf{proj}_{#1}({#2})}
+
+\newcommand{\monto}{\to_m}
+
+
+% Notation for wait functions
+\newcommand{\wre}{w_r^e}
+\newcommand{\wle}{w_l^e}
+\newcommand{\wrp}{w_r^p}
+\newcommand{\wlp}{w_l^p}
+
+\newcommand{\sem}[1]{\llbracket {#1} \rrbracket}
