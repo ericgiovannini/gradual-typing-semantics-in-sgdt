@@ -26,10 +26,12 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
 
 import Semantics.StrongBisimulation
-import Common.MonFuns
+import Semantics.Monotone.Base
 import Syntax.GradualSTLC
 
 open import Common.Common
+open import Semantics.Predomains
+open import Semantics.Lift
 
 -- TODO move definition of Predomain to a module that
 -- isn't parameterized by a clock!
@@ -199,7 +201,7 @@ module AdequacyLockstep
   open Semantics.StrongBisimulation
   open Semantics.StrongBisimulation.LiftPredomain
 
-  _≾-gl_ : {p : Predomain k0} -> (L℧F ⟨ p ⟩) -> (L℧F ⟨ p ⟩) -> Type
+  _≾-gl_ : {p : Predomain} -> (L℧F ⟨ p ⟩) -> (L℧F ⟨ p ⟩) -> Type
   _≾-gl_ {p} lx ly = ∀ (k : Clock) -> _≾_ k p (lx k) (ly k)
 
   -- _≾'_ : {k : Clock} -> L℧ k Nat → L℧ k Nat → Type
@@ -299,7 +301,7 @@ module AdequacyBisim where
 
 
   -- Some properties of the global bisimilarity relation
-  module GlobalBisim (p : Predomain k0) where
+  module GlobalBisim (p : Predomain) where
 
     _≈-gl_ : (L℧F ⟨ p ⟩) -> (L℧F ⟨ p ⟩) -> Type
     _≈-gl_ lx ly = ∀ (k : Clock) -> _≈_ k p (lx k) (ly k)

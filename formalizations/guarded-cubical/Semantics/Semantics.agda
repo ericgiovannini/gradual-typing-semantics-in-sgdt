@@ -28,11 +28,16 @@ open import Cubical.Foundations.Function
 
 open import Common.Common
 
+open import Semantics.Predomains
+open import Semantics.Lift k
 open import Semantics.StrongBisimulation k
 open import Syntax.GradualSTLC
 -- open import SyntacticTermPrecision k
-open import Common.Lemmas k
-open import Common.MonFuns k
+
+open import Semantics.Monotone.Base
+open import Semantics.Monotone.Lemmas k
+open import Semantics.Monotone.MonFunCombinators k
+
 
 private
   variable

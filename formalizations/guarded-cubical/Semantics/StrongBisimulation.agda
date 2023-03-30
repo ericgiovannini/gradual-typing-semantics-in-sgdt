@@ -4,6 +4,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Common.Later
+open import Semantics.Monotone.Base
 
 module Semantics.StrongBisimulation(k : Clock) where
 
@@ -31,6 +32,9 @@ open import Cubical.Data.Unit.Properties
 open import Agda.Primitive
 
 open import Common.Common
+open import Semantics.Predomains
+open import Semantics.Lift k
+open import Semantics.ErrorDomains
 
 private
   variable
@@ -43,397 +47,6 @@ private
 
 
 
-
-Predomain' : {ℓ ℓ' : Level} -> Type (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ'))
-Predomain' {ℓ} {ℓ'} = Poset ℓ ℓ'
-
--- The relation associated to a predomain d
-rel' : (d : Predomain') -> (⟨ d ⟩ -> ⟨ d ⟩ -> Type)
-rel' d = PosetStr._≤_ (d .snd)
-
-reflexive' : (d : Predomain') -> (x : ⟨ d ⟩) -> (rel' d x x)
-reflexive' d x = IsPoset.is-refl (PosetStr.isPoset (str d)) x
-
-transitive' : (d : Predomain') -> (x y z : ⟨ d ⟩) ->
-  rel' d x y -> rel' d y z -> rel' d x z
-transitive' d x y z x≤y y≤z =
-  IsPoset.is-trans (PosetStr.isPoset (str d)) x y z x≤y y≤z 
-
-test : Predomain' -> Predomain' -> Predomain'
-test A B =
-  (Path Predomain' A B) ,
-  posetstr (λ p1 p2 → rel' A {!p1 i0!} {!!} × {!!})
-    (isposet {!!} {!!} (λ a → {!!}) {!!} {!!}) 
-
-
-
-
-
-
-
-
-
--- Define predomains as posets
-
-
-Predomain : Set₁
-Predomain = Poset ℓ-zero ℓ-zero
-
-
--- The relation associated to a predomain d
-rel : (d : Predomain) -> (⟨ d ⟩ -> ⟨ d ⟩ -> Type)
-rel d = PosetStr._≤_ (d .snd)
-
-reflexive : (d : Predomain) -> (x : ⟨ d ⟩) -> (rel d x x)
-reflexive d x = IsPoset.is-refl (PosetStr.isPoset (str d)) x
-
-transitive : (d : Predomain) -> (x y z : ⟨ d ⟩) ->
-  rel d x y -> rel d y z -> rel d x z
-transitive d x y z x≤y y≤z =
-  IsPoset.is-trans (PosetStr.isPoset (str d)) x y z x≤y y≤z 
-
--- Monotone functions from X to Y
-
-record MonFun (X Y : Predomain) : Set where
-  module X = PosetStr (X .snd)
-  module Y = PosetStr (Y .snd)
-  _≤X_ = X._≤_
-  _≤Y_ = Y._≤_
-  field
-    f : (X .fst) → (Y .fst)
-    isMon : ∀ {x y} → x ≤X y → f x ≤Y f y
-
--- Use reflection to show that this is a sigma type
--- Look for proof in standard library to show that
--- Sigma type with a proof that RHS is a prop, then equality of a pair
--- follows from equality of the LHS's
--- Specialize to the case of monotone functions and fill in the proof
--- later
-
-
--- Monotone relations between predomains X and Y
--- (antitone in X, monotone in Y).
-record MonRel {ℓ' : Level} (X Y : Predomain) : Type (ℓ-suc ℓ') where
-  module X = PosetStr (X .snd)
-  module Y = PosetStr (Y .snd)
-  _≤X_ = X._≤_
-  _≤Y_ = Y._≤_
-  field
-    R : ⟨ X ⟩ -> ⟨ Y ⟩ -> Type ℓ'
-    isAntitone : ∀ {x x' y} -> R x y -> x' ≤X x -> R x' y
-    isMonotone : ∀ {x y y'} -> R x y -> y ≤Y y' -> R x y'
-
-predomain-monrel : (X : Predomain) -> MonRel X X
-predomain-monrel X = record {
-  R = rel X ;
-  isAntitone = λ {x} {x'} {y} x≤y x'≤x → transitive X x' x y x'≤x x≤y ;
-  isMonotone = λ {x} {y} {y'} x≤y y≤y' -> transitive X x y y' x≤y y≤y' }
-
-
-compRel : {X Y Z : Type} ->
-  (R1 : Y -> Z -> Type ℓ) ->
-  (R2 : X -> Y -> Type ℓ) ->
-  (X -> Z -> Type ℓ)
-compRel {ℓ} {X} {Y} {Z} R1 R2 x z = Σ[ y ∈ Y ] R2 x y × R1 y z
-
-CompMonRel : {X Y Z : Predomain} ->
-  MonRel {ℓ} Y Z ->
-  MonRel {ℓ} X Y ->
-  MonRel {ℓ} X Z
-CompMonRel {ℓ} {X} {Y} {Z} R1 R2 = record {
-  R = compRel (MonRel.R R1) (MonRel.R R2) ;
-  isAntitone = antitone ;
-  isMonotone = {!!} }
-    where
-      antitone : {x x' : ⟨ X ⟩} {z : ⟨ Z ⟩} ->
-        compRel (MonRel.R R1) (MonRel.R R2) x z ->
-        rel X x' x ->
-        compRel (MonRel.R R1) (MonRel.R R2) x' z 
-      antitone (y , xR2y , yR1z) x'≤x = y , (MonRel.isAntitone R2 xR2y x'≤x) , yR1z
-
-      monotone : {x : ⟨ X ⟩} {z z' : ⟨ Z ⟩} ->
-        compRel (MonRel.R R1) (MonRel.R R2) x z ->
-        rel Z z z' ->
-        compRel (MonRel.R R1) (MonRel.R R2) x z'
-      monotone (y , xR2y , yR1z) z≤z' = y , xR2y , (MonRel.isMonotone R1 yR1z z≤z')
-
-
-{-
-record IsMonFun {X Y : Predomain} (f : ⟨ X ⟩ → ⟨ Y ⟩) : Type (ℓ-max ℓ ℓ') where
-  no-eta-equality
-  constructor ismonfun
-
-  module X = PosetStr (X .snd)
-  module Y = PosetStr (Y .snd)
-  _≤X_ = X._≤_
-  _≤Y_ = Y._≤_
-
-  field
-    isMon : ∀ {x y} → x ≤X y → f x ≤Y f y
-
-record MonFunStr (ℓ' : Level) (X Y : Predomain) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
-
-  constructor monfunstr
-
-  field
-    f : ⟨ X ⟩ -> ⟨ Y ⟩
-    isMonFun : IsMonFun {ℓ'} f
-
-  open IsMonFun isMonFun public
-
-MonF : ∀ ℓ ℓ' -> Predomain -> Predomain -> Type (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ'))
-MonF ℓ ℓ' X Y = TypeWithStr ℓ {!!}
--}
-
-{-
-lem-later : {X~ : ▹ Type} ->
-  (x~ y~ : ▸ X~) -> (x~ ≡ y~) ≡ ( ▸ λ t -> ( x~ t ≡ y~ t ))
-lem-later = ?
--}
-
-
-isSet-poset : {ℓ ℓ' : Level} -> (P : Poset ℓ ℓ') -> isSet ⟨ P ⟩
-isSet-poset P = IsPoset.is-set (PosetStr.isPoset (str P))
-
-
--- Theta for predomains
-
-▸' : ▹ Predomain → Predomain
-▸' X = (▸ (λ t → ⟨ X t ⟩)) ,
-       posetstr ord
-                (isposet isset-later {!!} ord-refl ord-trans ord-antisym)
-   where
-
-     ord : ▸ (λ t → ⟨ X t ⟩) → ▸ (λ t → ⟨ X t ⟩) → Type ℓ-zero
-     -- ord x1~ x2~ =  ▸ (λ t → (str (X t) PosetStr.≤ (x1~ t)) (x2~ t))
-     ord x1~ x2~ =  ▸ (λ t → (PosetStr._≤_ (str (X t)) (x1~ t)) (x2~ t))
-     
-
-     isset-later : isSet (▸ (λ t → ⟨ X t ⟩))
-     isset-later = λ x y p1 p2 i j t →
-       isSet-poset (X t) (x t) (y t) (λ i' → p1 i' t) (λ i' → p2 i' t) i j
-
-     ord-refl : (a : ▸ (λ t → ⟨ X t ⟩)) -> ord a a
-     ord-refl a = λ t ->
-       IsPoset.is-refl (PosetStr.isPoset (str (X t))) (a t)
-
-     ord-trans : BinaryRelation.isTrans ord
-     ord-trans = λ a b c ord-ab ord-bc t →
-       IsPoset.is-trans
-         (PosetStr.isPoset (str (X t))) (a t) (b t) (c t) (ord-ab t) (ord-bc t)
-
-     ord-antisym : BinaryRelation.isAntisym ord
-     ord-antisym = λ a b ord-ab ord-ba i t ->
-       IsPoset.is-antisym
-         (PosetStr.isPoset (str (X t))) (a t) (b t) (ord-ab t) (ord-ba t) i
-
-
--- Delay for predomains
-▸''_ : Predomain → Predomain
-▸'' X = ▸' (next X)
-
-
--- Error domains
-
-record ErrorDomain : Set₁ where
-  field
-    X : Predomain
-  module X = PosetStr (X .snd)
-  _≤_ = X._≤_
-  field
-    ℧ : X .fst
-    ℧⊥ : ∀ x → ℧ ≤ x
-    θ : MonFun (▸'' X) X
-
-
--- Lift monad
-
-data L℧ (X : Set) : Set where
-  η : X → L℧ X
-  ℧ : L℧ X
-  θ : ▹ (L℧ X) → L℧ X
-
--- Similar to caseNat,
--- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
-caseL℧ : {X : Set} -> {ℓ : Level} -> {A : Type ℓ} ->
-  (aη a℧ aθ : A) → (L℧ X) → A
-caseL℧ aη a℧ aθ (η x) = aη
-caseL℧ aη a℧ aθ ℧ = a℧
-caseL℧ a0 a℧ aθ (θ lx~) = aθ
-
--- Similar to znots and snotz, defined at
--- https://agda.github.io/cubical/Cubical.Data.Nat.Properties.html
-℧≠θ : {X : Set} -> {lx~ : ▹ (L℧ X)} -> ¬ (℧ ≡ θ lx~)
-℧≠θ {X} {lx~} eq = subst (caseL℧ X (L℧ X) ⊥) eq ℧
-
-θ≠℧ : {X : Set} -> {lx~ : ▹ (L℧ X)} -> ¬ (θ lx~ ≡ ℧)
-θ≠℧ {X} {lx~} eq = subst (caseL℧ X ⊥ (L℧ X)) eq (θ lx~)
-
-
--- Does this make sense?
-pred : {X : Set} -> (lx : L℧ X) -> ▹ (L℧ X)
-pred (η x) = next ℧
-pred ℧ = next ℧
-pred (θ lx~) = lx~
-
-pred-def : {X : Set} -> (def : ▹ (L℧ X)) -> (lx : L℧ X) -> ▹ (L℧ X)
-pred-def def (η x) = def
-pred-def def ℧ = def
-pred-def def (θ lx~) = lx~
-
-
--- Uses the pred function above, and I'm not sure whether that
--- function makes sense.
-inj-θ : {X : Set} -> (lx~ ly~ : ▹ (L℧ X)) ->
-  θ lx~ ≡ θ ly~ ->
-  ▸ (λ t -> lx~ t ≡ ly~ t)
-inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
-  λ t i → lx~≡ly~ i t
-
-
-
-ret : {X : Set} -> X -> L℧ X
-ret = η
-
-{-
-bind' : ∀ {A B} -> (A -> L℧ B) -> ▹ (L℧ A -> L℧ B) -> L℧ A -> L℧ B
-bind' f bind_rec (η x) = f x
-bind' f bind_rec ℧ = ℧
-bind' f bind_rec (θ l_la) = θ (bind_rec ⊛ l_la)
-
--- fix : ∀ {l} {A : Set l} → (f : ▹ k , A → A) → A
-bind : L℧ A -> (A -> L℧ B) -> L℧ B
-bind {A} {B} la f = (fix (bind' f)) la
-
-ext : (A -> L℧ B) -> L℧ A -> L℧ B
-ext f la = bind la f
--}
-
-ext' : (A -> L℧ B) -> ▹ (L℧ A -> L℧ B) -> L℧ A -> L℧ B
-ext' f rec (η x) = f x
-ext' f rec ℧ = ℧
-ext' f rec (θ l-la) = θ (rec ⊛ l-la)
-
-ext : (A -> L℧ B) -> L℧ A -> L℧ B
-ext f = fix (ext' f)
-
-
-bind : L℧ A -> (A -> L℧ B) -> L℧ B
-bind {A} {B} la f = ext f la
-
-mapL : (A -> B) -> L℧ A -> L℧ B
-mapL f la = bind la (λ a -> ret (f a))
-
-unfold-ext : (f : A -> L℧ B) -> ext f ≡ ext' f (next (ext f))
-unfold-ext f = fix-eq (ext' f)
-
-
-ext-eta : ∀ (a : A) (f : A -> L℧ B) ->
-  ext f (η a) ≡ f a
-ext-eta a f =
-  fix (ext' f) (ret a)            ≡⟨ (λ i → unfold-ext f i (ret a)) ⟩
-  (ext' f) (next (ext f)) (ret a) ≡⟨ refl ⟩
-  f a ∎
-
-ext-err : (f : A -> L℧ B) ->
-  bind ℧ f ≡ ℧
-ext-err f =
-  fix (ext' f) ℧            ≡⟨ (λ i → unfold-ext f i ℧) ⟩
-  (ext' f) (next (ext f)) ℧ ≡⟨ refl ⟩
-  ℧ ∎
-
-
-ext-theta : (f : A -> L℧ B)
-            (l : ▹ (L℧ A)) ->
-            bind (θ l) f ≡ θ (ext f <$> l)
-ext-theta f l =
-  (fix (ext' f)) (θ l)            ≡⟨ (λ i → unfold-ext f i (θ l)) ⟩
-  (ext' f) (next (ext f)) (θ l)   ≡⟨ refl ⟩
-  θ (fix (ext' f) <$> l) ∎
-
-
-
-mapL-eta : (f : A -> B) (a : A) ->
-  mapL f (η a) ≡ η (f a)
-mapL-eta f a = ext-eta a λ a → ret (f a)
-
-mapL-theta : (f : A -> B) (la~ : ▹ (L℧ A)) ->
-  mapL f (θ la~) ≡ θ (mapL f <$> la~)
-mapL-theta f la~ = ext-theta (ret ∘ f) la~
-
-
--- Strong bisimulation relation/ordering for the lift monad
-
-{-
-U : Predomain -> Type
-U p = ⟨ p ⟩
--}
-
-{-
-module LiftOrder (p : Predomain) where
-
-  module X = PosetStr (p .snd)
-  open X using (_≤_)
-  -- _≤_ = X._≤_
-
-  module Inductive (rec : ▹ (L℧ (U p) -> L℧ (U p) -> Type)) where
-
-    _≾'_ : L℧ (U p) -> L℧ (U p) -> Type
-    ℧ ≾' _ = Unit
-    η x ≾' η y = x ≤ y
-    θ lx ≾' θ ly = ▸ (λ t -> rec t (lx t) (ly t))
-    η _ ≾' _ = ⊥
-    θ _ ≾' _ = ⊥
-
-  open Inductive
-  _≾_ : L℧ (U p) -> L℧ (U p) -> Type
-  _≾_ = fix _≾'_
-
-  ≾-refl : BinaryRelation.isRefl _≾_
-
-  ≾-refl' : ▹ (BinaryRelation.isRefl _≾_) ->
-            BinaryRelation.isRefl _≾_
-  ≾-refl' IH (η x) =
-    transport (sym (λ i -> fix-eq _≾'_ i (η x) (η x)))
-              (IsPoset.is-refl (X.isPoset) x)
-  ≾-refl' IH ℧ =
-    transport (sym (λ i -> fix-eq _≾'_ i ℧ ℧))
-              tt
-  ≾-refl' IH (θ lx~) =
-    transport (sym (λ i -> fix-eq _≾'_ i (θ lx~) (θ lx~)))
-              λ t → IH t (lx~ t)
-
-  ≾-refl = fix ≾-refl'
-
-  
-  ℧-bot : (l : L℧ (U p)) -> ℧ ≾ l
-  ℧-bot l = transport (sym λ i → fix-eq _≾'_ i ℧ l) tt
-
-
-
--- Predomain to lift predomain
-
-𝕃℧' : Predomain -> Predomain
-𝕃℧' X = L℧ (X .fst) ,
-      posetstr (LiftOrder._≾_ X)
-        (isposet {!!} {!!} ≾-refl {!!} {!!})
-  where open LiftOrder X
-
-
--- Predomain to lift Error Domain
-
-𝕃℧ : Predomain → ErrorDomain
-𝕃℧ X = record {
-  X = 𝕃℧' X ; ℧ = ℧ ; ℧⊥ = ℧-bot ;
-  θ = record { f = θ ; isMon = λ t -> {!!} } }
-  where
-    -- module X = PosetStr (X .snd)
-    -- open Relation X
-    open LiftOrder X
-
-𝕌 : ErrorDomain -> Predomain
-𝕌 d = ErrorDomain.X d
--}
 
 
 -- Flat predomain from a set
@@ -455,16 +68,8 @@ UnitP : Predomain
 UnitP = flat (Unit , isSetUnit)
 
 
--- Underlying predomain of an error domain
-
-𝕌 : ErrorDomain -> Predomain
-𝕌 d = ErrorDomain.X d
-
-
 
 -- Predomains from arrows (need to ensure monotonicity)
-
-
 
 -- Ordering on functions between predomains. This does not require that the
 -- functions are monotone.
@@ -476,8 +81,6 @@ fun-order-het P1 P1' P2 P2' rel-P1P1' rel-P2P2' fP1P2 fP1'P2' =
   (p : ⟨ P1 ⟩) -> (p' : ⟨ P1' ⟩) ->
   rel-P1P1' p p' ->
   rel-P2P2' (fP1P2 p) (fP1'P2' p')
-
-
 
 
 -- TODO can define this in terms of fun-order-het
@@ -497,6 +100,7 @@ mon-fun-order-refl : {P1 P2 : Predomain} ->
   fun-order P1 P2 f f
 mon-fun-order-refl {P1} {P2} f f-mon = λ x y x≤y → f-mon x≤y
 -}
+  
 
 fun-order-trans : {P1 P2 : Predomain} ->
   (f g h : ⟨ P1 ⟩ -> ⟨ P2 ⟩) ->
@@ -534,8 +138,8 @@ mon-fun-order-trans : {P1 P2 : Predomain} ->
   mon-fun-order P1 P2 f g ->
   mon-fun-order P1 P2 g h ->
   mon-fun-order P1 P2 f h
-mon-fun-order-trans f g h f≤g g≤h =
-  fun-order-trans (MonFun.f f) (MonFun.f g) (MonFun.f h) f≤g g≤h
+mon-fun-order-trans {P1} {P2} f g h f≤g g≤h =
+  fun-order-trans {P1} {P2} (MonFun.f f) (MonFun.f g) (MonFun.f h) f≤g g≤h
 
 
 -- Predomain of monotone functions between two predomains
@@ -556,13 +160,9 @@ arr' P1 P2 =
          (Hf2-f3 x y H≤xy))
       {!!}))
   where
-    -- Two functions from P1 to P2 are related if, when given inputs
-    -- that are related (in P1), the outputs are related (in P2)
     open MonFun
     module P1 = PosetStr (P1 .snd)
     module P2 = PosetStr (P2 .snd)
-    _≤P1_ = P1._≤_
-    _≤P2_ = P2._≤_
 
 
 _==>_ : Predomain -> Predomain -> Predomain
@@ -591,32 +191,8 @@ FunRel {A} {A'} {B} {B'} RAA' RBB' =
       MonRel.isMonotone RBB' (f≤f' a a' a≤a') {!!} } -- (f'≤g' a' a' (reflexive A' a')) }
 
 
-arr : Predomain -> ErrorDomain -> ErrorDomain
-arr dom cod =
-  record {
-    X = arr' dom (𝕌 cod) ;
-    ℧ = const-err ;
-    ℧⊥ = const-err-bot ;
-    θ = {!!} }
-    where
-       -- open LiftOrder
-       const-err : ⟨ arr' dom (𝕌 cod) ⟩
-       const-err = record {
-         f = λ _ -> ErrorDomain.℧ cod ;
-         isMon = λ _ -> reflexive (𝕌 cod) (ErrorDomain.℧ cod) }
 
-       const-err-bot : (f : ⟨ arr' dom (𝕌 cod) ⟩) -> rel (arr' dom (𝕌 cod)) const-err f
-       const-err-bot f = λ x y x≤y → ErrorDomain.℧⊥ cod (MonFun.f f y)
  
-
-
--- Delay function
-δ : {X : Type} -> L℧ X -> L℧ X
-δ = θ ∘ next
-  where open L℧
-
-
-
 -- Lifting a heterogeneous relation between A and B to a
 -- relation between L A and L B
 -- (We may be able to reuse this logic to define the homogeneous ordering on 𝕃 below)
@@ -671,37 +247,6 @@ module LiftPredomain (p : Predomain) where
 
   module X = PosetStr (p .snd)
   open X using (_≤_)
-      -- _≤_ = X._≤_
-
-  {-
-  ord' : ▹ ( L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type) ->
-                 L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type
-  ord' _ ℧ _ = Unit
-  ord' _ (η x) (η y) = x ≤ y
-  ord' _ (η _) _ = ⊥
-  ord' rec (θ lx~) (θ ly~) = ▸ (λ t -> (rec t) (lx~ t) (ly~ t))
-        -- or: ▸ ((rec ⊛ lx~) ⊛ ly~)
-  ord' _ (θ _) _ = ⊥
-
-  ord :  L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type
-  ord = fix ord'
-  -}
-
-  -- _≾_ : L℧ ⟨ p ⟩ -> L℧ ⟨ p ⟩ -> Type
-  -- _≾_ = LiftRelation._≾_ p p (_≤_)
-
-  -- unfold-ord : ord ≡ ord' (next ord)
-  -- unfold-ord = fix-eq ord'
-
-   {-
-   ≈->≈' : {lx ly : L℧ ⟨ d ⟩} ->
-     lx ≈ ly -> lx ≈' ly
-   ≈->≈' {lx} {ly} lx≈ly = transport (λ i → unfold-≈ i lx ly) lx≈ly
-
-   ≈'->≈ : {lx ly : L℧ ⟨ d ⟩} ->
-     lx ≈' ly -> lx ≈ ly
-   ≈'->≈ {lx} {ly} lx≈'ly = transport (sym (λ i → unfold-≈ i lx ly)) lx≈'ly
-   -}
 
 
   -- Open the more general definitions from the heterogeneous
@@ -714,10 +259,6 @@ module LiftPredomain (p : Predomain) where
   open Inductive (next _≾_) public
   open Properties public
 
-  {-
-  ord-η-monotone : {x y : ⟨ p ⟩} -> x ≤ y -> (η x) ≾ (η y)
-  ord-η-monotone {x} {y} x≤y = transport (sym λ i → unfold-≾ i (η x) (η y)) x≤y
-  -}
 
   -- TODO move to heterogeneous lifting module
   ord-δ-monotone : {lx ly : L℧ ⟨ p ⟩} -> lx ≾ ly -> (δ lx) ≾ (δ ly)
@@ -729,12 +270,6 @@ module LiftPredomain (p : Predomain) where
         Inductive._≾'_ (next _≾_) (δ lx) (δ ly)
       ord-δ-monotone' {lx} {ly} lx≤ly = λ t → lx≤ly
 
-  {-
-  ord-bot : (lx : L℧ ⟨ p ⟩) -> ℧ ≾ lx
-  ord-bot lx = transport (sym λ i → unfold-≾ i ℧ lx) tt
-  -}
-
-  -- lift-ord : (A -> A -> Type) -> (L℧ A -> L℧ A -> Type)
 
   ord-refl-ind : ▹ ((a : L℧ ⟨ p ⟩) -> a ≾ a) ->
                     (a : L℧ ⟨ p ⟩) -> a ≾ a
@@ -797,7 +332,7 @@ module LiftRelMon
   -- Bring the heterogeneous relation between 𝕃 A and 𝕃 B into scope
   open LiftRelation A B (MonRel.R RAB)
     using (_≾_ ; module Inductive ; module Properties) -- brings _≾_ into scope
-  open Inductive (next _≾_)            -- brings _≾'_ into scope
+  open Inductive (next _≾_)  -- brings _≾'_ into scope
   open Properties -- brings conversion between _≾_ and _≾'_ into scope
 
   -- Bring the homogeneous lifted relations on A and B into scope 
@@ -812,44 +347,28 @@ module LiftRelMon
   _≾'LA_ = LiftPredomain._≾'_ A
   _≾'LB_ = LiftPredomain._≾'_ B
 
-
   R : MonRel (𝕃 A) (𝕃 B)
   R = record {
     R = _≾_ ;
-    isAntitone = {!!} ;
+    isAntitone = λ {la} {la'} {lb} la≤lb la'≤la -> {!!} ;
     isMonotone = {!!} }
+    where
+      antitone' :
+        ▹ ({la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
+            la ≾' lb -> la' ≾'LA la -> la' ≾' lb) ->
+           {la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
+            la ≾' lb -> la' ≾'LA la -> la' ≾' lb
+      antitone' IH {η a2} {η a1} {η a3} la≤lb la'≤la =
+        MonRel.isAntitone RAB la≤lb la'≤la
+      antitone' IH {la} {℧} {lb} la≤lb la'≤la = tt
+      antitone' IH {θ la2~} {θ la1~} {θ lb~} la≤lb la'≤la =
+        λ t → ≾'->≾ (IH t {!!} {!!})
 
-  antitone' :
-    ▹ ({la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
-        la ≾' lb -> la' ≾'LA la -> la' ≾' lb) ->
-       {la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
-        la ≾' lb -> la' ≾'LA la -> la' ≾' lb
-  antitone' IH {η a2} {η a1} {η a3} la≤lb la'≤la =
-    MonRel.isAntitone RAB la≤lb la'≤la
-  antitone' IH {la} {℧} {lb} la≤lb la'≤la = tt
-  antitone' IH {θ la2~} {θ la1~} {θ lb~} la≤lb la'≤la =
-    λ t → ≾'->≾ (IH t (≾->≾' (la≤lb t)) ({!!} ))
-
-  monotone : {!!}
-  monotone = {!!}
+      monotone : {!!}
+      monotone = {!!}
 
  -- isAntitone : ∀ {x x' y} -> R x y -> x' ≤X x -> R x' y
  -- isMonotone : ∀ {x y y'} -> R x y -> y ≤Y y' -> R x y'
-
-
-
--- Predomain to lift Error Domain
-
-𝕃℧ : Predomain → ErrorDomain
-𝕃℧ X = record {
-  X = 𝕃 X ; ℧ = ℧ ; ℧⊥ = ord-bot X ;
-  θ = record { f = θ ; isMon = λ t -> {!!} } }
-  where
-    -- module X = PosetStr (X .snd)
-    -- open Relation X
-    open LiftPredomain
-
-
 
 
 
@@ -902,23 +421,6 @@ A ×d B =
       (IsPoset.is-trans A.isPoset a1 a2 a3 a1≤a2 a2≤a3) ,
        IsPoset.is-trans B.isPoset b1 b2 b3 b1≤b2 b2≤b3
     
-
-    {-
-    order : ⟨ A ⟩ × ⟨ B ⟩ → ⟨ A ⟩ × ⟨ B ⟩ → Type ℓ-zero
-    order (a1 , b1) (a2 , b2) = (a1 A.≤ a2) ⊎ ((a1 ≡ a2) × b1 B.≤ b2)
-
-    order-trans : BinaryRelation.isTrans order
-    order-trans (a1 , b1) (a2 , b2) (a3 , b3) (inl a1≤a2) (inl a2≤a3) =
-      inl (IsPoset.is-trans A.isPoset a1 a2 a3 a1≤a2 a2≤a3)
-    order-trans (a1 , b1) (a2 , b2) (a3 , b3) (inl a1≤a2) (inr (a2≡a3 , b2≤b3)) =
-      inl (transport (λ i → a1 A.≤ a2≡a3 i) a1≤a2)
-    order-trans (a1 , b1) (a2 , b2) (a3 , b3) (inr (a1≡a2 , b1≤b2)) (inl a2≤a3) =
-      inl (transport (sym (λ i → a1≡a2 i A.≤ a3)) a2≤a3)
-    order-trans (a1 , b1) (a2 , b2) (a3 , b3) (inr (a1≡a2 , b1≤b2)) (inr (a2≡a3 , b2≤b3)) =
-      inr (
-        (a1 ≡⟨ a1≡a2 ⟩ a2 ≡⟨ a2≡a3 ⟩ a3 ∎) ,
-        IsPoset.is-trans B.isPoset b1 b2 b3 b1≤b2 b2≤b3)
-    -}
 
     is-poset : IsPoset order
     is-poset = isposet
@@ -1060,25 +562,12 @@ module Bisimilarity (d : Predomain) where
     ≈'->≈ : {lx ly : L℧ ⟨ d ⟩} ->
      lx ≈' ly -> lx ≈ ly
     ≈'->≈ {lx} {ly} lx≈'ly = transport (sym (λ i → unfold-≈ i lx ly)) lx≈'ly
-
-    {-
-    ≈-℧ : (lx : L℧ ⟨ d ⟩) ->
-     lx ≈' ℧ -> (lx ≡ ℧) ⊎ (Σ Nat λ n -> lx ≡ (δ ^ n) ℧)
-    ≈-℧ ℧ H = inl refl
-    ≈-℧ (θ x) H = inr H
-    -}
     
-    -- Simpler version of the above:
     ≈-℧ : (lx : L℧ ⟨ d ⟩) ->
      lx ≈' ℧ -> (Σ Nat λ n -> lx ≡ (δ ^ n) ℧)
     ≈-℧ ℧ H = zero , refl
     ≈-℧ (θ x) H = H
 
-{-
-    bisim-θ : (lx~ ly~ : L℧ ⟨ d ⟩) ->
-       ▸ (λ t → lx~ t ≈ ly~ t) ->
-       θ lx~ ≈ θ ly~
--} 
 
     symmetric' :
       ▹ ((lx ly : L℧ ⟨ d ⟩) -> lx ≈' ly -> ly ≈' lx) ->
@@ -1095,12 +584,9 @@ module Bisimilarity (d : Predomain) where
       n , y , H-eq , (isEquivRel.symmetric isEqRel x y H-rel)
 
     symmetric : (lx ly : L℧ ⟨ d ⟩) -> lx ≈ ly -> ly ≈ lx
-    symmetric = fix (subst {!!} {!!}) 
-
-     -- fix (transport {!!} symmetric')
+    symmetric = {!!} -- fix {k} (subst {!!} {!!}) 
 
    {-
-
         ord-trans = fix (transport (sym (λ i ->
          (▹ ((a b c : L℧ ⟨ p ⟩) →
             unfold-ord i a b → unfold-ord i b c → unfold-ord i a c) →
@@ -1160,9 +646,6 @@ module Bisimilarity (d : Predomain) where
       (fix x≈'δx)
 
 
-    -- ¬_ : Set → Set
-    -- ¬ A = A → ⊥
-
     contradiction : {A : Type} -> A -> ¬ A -> ⊥
     contradiction HA ¬A = ¬A HA
 
@@ -1187,8 +670,8 @@ module Bisimilarity (d : Predomain) where
 
 
     fixθ-lem1 : (n : Nat) ->
-      (▹ (¬ (θ (next (fix θ)) ≡ (δ ^ n) ℧))) ->
-          ¬ (θ (next (fix θ)) ≡ (δ ^ n) ℧)
+      (▹ (¬ (θ {Nat} (next (fix θ)) ≡ (δ ^ n) ℧))) ->
+          ¬ (θ {Nat} (next (fix θ)) ≡ (δ ^ n) ℧)
     fixθ-lem1 zero    _  H-eq =  θ≠℧ H-eq
     fixθ-lem1 (suc n) IH H-eq =
        let tmp = inj-θ (next (fix θ)) (next ((δ ^ n) ℧)) H-eq in {!!}
@@ -1196,254 +679,4 @@ module Bisimilarity (d : Predomain) where
 
     ℧-fixθ : ¬ (℧ ≈' θ (next (fix θ)))
     ℧-fixθ (n , H-eq) = {!!}
-
-
-
-
-
-
-
-
-
-
-{-
-    lem1 :
-      ▹ ((lx : L℧ ⟨ d ⟩) -> lx ≾' θ (next lx)) ->
-        (lx : L℧ ⟨ d ⟩) -> lx ≾' θ (next lx)
-    lem1 _ (η x) = 1 , (x , (refl , (reflexive d x)))
-    lem1 _ ℧ = tt
-    lem1 IH (θ lx~) = {!!}
-
-
-    lem2 :
-      (lx~ ly~ : ▹ L℧ ⟨ d ⟩) ->
-      (n : Nat) ->
-      θ lx~ ≾' θ ly~ ->
-      θ ly~ ≡ (δ ^ n)  ℧ ->
-      Σ Nat λ m -> θ lx~ ≡ (δ ^ m) ℧
-    lem2 lx ly n lx≤ly H-eq-δ = {!!}
-
-    lem3 :
-      (lx~ ly~ : ▹ L℧ ⟨ d ⟩) ->
-      (n : Nat) ->
-      (x' : ⟨ d ⟩) ->
-      θ lx~ ≾' θ ly~ ->
-      θ lx~ ≡ (δ ^ n) (η x') ->
-      Σ Nat λ m -> Σ ⟨ d ⟩ λ y' -> θ ly~ ≡ (δ ^ m) (η y')
-    lem3 = {!!}
-
-
-    trans-ind :
-        ▹ ((lx ly lz : L℧ ⟨ d ⟩) ->
-           lx ≾' ly -> ly ≾' lz -> lx ≾' lz) ->
-        (lx ly lz : L℧ ⟨ d ⟩) ->
-          lx ≾' ly -> ly ≾' lz -> lx ≾' lz
-    trans-ind IH ℧ ly lz lx≤ly ly≤lz = tt
-    trans-ind IH (η x) (η y) (η z) lx≤ly ly≤lz =
-      IsPoset.is-trans D.isPoset x y z lx≤ly ly≤lz
-
-    trans-ind IH lx ℧ lz = {!!} -- not possible unless x is ℧
-    trans-ind IH lx ly ℧ = {!!} -- not possible unless lx and ly are ℧
-
-    trans-ind IH (θ lx~) (θ ly~) (θ lz~) = {!!} -- follows by induction
-    {-
-      λ t -> transport (sym λ i → unfold-ord i (lx~ t) (lz~ t))
-          (IH t (lx~ t) (ly~ t) (lz~ t)
-          (transport (λ i -> unfold-ord i (lx~ t) (ly~ t)) (ord-ab t))
-          (transport (λ i -> unfold-ord i (ly~ t) (lz~ t)) (ord-bc t)))
-
-    -}
-
     
-    trans-ind IH (η x) (θ ly~) (η z) (n , y' , H-eq-δ , H-y'≤z) (m , inl H-℧) =
-      {!-- contradiction: θ ly~ ≡ δ^m ℧ and also ≡ δ^n (η y')!}
-    trans-ind IH (η x) (θ ly~) (η z)
-      (n , y' , H-eq-δ1 , H-y'≤z)
-      (m , inr (y'' , H-eq-δ2 , H-y''≤z)) =
-      {! -- we have m ≡ n and y'== y'', so x ≤ z by transitivity!}
-
-    trans-ind IH (η x) (θ ly~) (θ lz~) (n , y' , H-eq-δ , H-x≤y') ly≤lz =
-      let (m , y'' , eq) = lem3 ly~ lz~ n y' ly≤lz H-eq-δ in {!!}
-
-    trans-ind IH (θ lx~) (θ ly~) (η z) lx≤ly ly≤lz = {!!}
-
-    trans-ind IH (θ lx~) (η y) (θ lz~) lx≤ly ly≤lz = {!!}
--}
-
-
-
-{-
--- Extensional relation (two terms are error-related "up to thetas")
-module ExtRel (d : Predomain) where
-
-  open Bisimilarity d
-  open 𝕃 d
-
-  _⊴_ : L℧ ⟨ d ⟩ -> L℧ ⟨ d ⟩ -> Type
-  x ⊴ y = Σ (L℧ ⟨ d ⟩) λ p -> Σ (L℧ ⟨ d ⟩) λ q ->
-    (x ≈ p) × (p ≾ q) × (q ≈ y)
-
--}
-
-
-
-
-{-
--- Weak bisimulation relaion
--- Define compositionally
-
-module WeakRel (d : ErrorDomain) where
-
-  -- make this a module so we can avoid having to make the IH
-  -- a parameter of the comparison function
-  module Inductive (IH : ▹ (L℧ (U d) -> L℧ (U d) -> Type)) where
-
-    open ErrorDomain d renaming (θ to θ')
-
-    _≾'_ : L℧ (U d) -> L℧ (U d) -> Type
-    ℧ ≾' _ = Unit
-      
-    η x ≾' η y = x ≤ y
-    
-    θ lx ≾' θ ly = ▸ (λ t -> IH t (lx t) (ly t))
-    -- or equivalently: θ lx ≾' θ ly = ▸ ((IH ⊛ lx) ⊛ ly)
-      
-    η x ≾' θ t = Σ ℕ λ n -> Σ (U d) (λ y -> (θ t ≡ (δ ^ n) (η y)) × (x ≤ y))
-
-    -- need to account for error (θ s ≡ delay of η x or delay of ℧, in which case we're done)
-    θ s ≾' η y = Σ ℕ λ n ->
-       (θ s ≡ (δ ^ n) L℧.℧) ⊎
-       (Σ (U d) (λ x -> (θ s ≡ (δ ^ n) (η x)) × (x ≤ y)))
-      
-    _ ≾' ℧ = ⊥
-   
-  _≾_ : L℧ (U d) -> L℧ (U d) -> Type
-  _≾_ = fix _≾'_
-    where open Inductive
-
--}
-
-{-
-
-
-Lemma A:
-
-If lx ≈ ly and ly ≡ δ^n (℧), then
-lx = δ^m (℧) for some m ≥ 0.
-
-Proof. By induction on n.
-
-  First note that if lx ≡ ℧, then we are finished (taking m = 0).
-  If lx ≡ η x', this contradicts the assumption that lx ≈ δ^n (℧).
-
-  Hence, we may assume lx = (θ lx~). By definition of the relation, we have
-
-    ▸t [lx~ t ≈ δ^(n-1) (℧)],
-
-  so by induction, we have lx~ t ≡ δ^m (℧) for some m,
-  and thus lx~ ≡ δ^(m+1) (℧)
-
-
-
-Lemma B:
-
-If lx ≈ ly and 
-
-
-
-Claim: The weak bisimulation relation is transitive,
-
-i.e. if lx ≈ ly ≈ lz, then lx ≈ lz.
-
-Proof.
-
-By Lob induction.
-Consider cases on lx, ly, and lz.
-
-
-Case η x ≈ η y ≈ η z:
-  We have x ≤ y ≤ z, so by transitivity of the underlying relation we
-  have x ≤ z, so η x ≈ η z
-
-Case ℧ ≈ ly ≈ lz:
-  Trivial by definition of the relation.
-
-Case ly = ℧ or lz = ℧:
-  Impossible by definition of the relation.
-
-Case (θ lx~) ≈ (θ ly~) ≈ (θ lz~):
-  By definition of the relation, STS that
-  ▸t [(lx~ t) ≈ (lz~ t)]
-
-  We know
-  ▸t [(lx~ t) ≈ (ly~ t)] and
-  ▸t [(ly~ t) ≈ (lz~ t)],
-
-  so the conclusion follows by the IH.
-
-
-          (1)       (2)
-Case (η x) ≈ (θ ly~) ≈ (η z):
-
-  By (2), we have that either
-  (θ ly~) ≡ δ^n ℧ or (θ ly~) ≡ δ^n (η y') where y' ≤ z.
-
-  But by (1), we have (θ ly~) ≡ δ^n (η y') where x ≤ y'.
-  Thus the second case above must hold, and we have by
-  transitivity of the underlying relation that x ≤ z,
-  so (η x) ≈ (η z).
-
-
-          (1)       (2)
-Case (η x) ≈ (θ ly~) ≈ (θ lz~):
-
-  
-
-
-            (1)     (2)
-Case (θ lx~) ≈ (η y) ≈ (θ lz~):
-
-  We need to show that
-
-    ▸t [(lx~ t) ≈ (lz~ t)].
-
-  By (1), either (θ lx~) ≡ δ^n (℧) for some n ≥ 1, or
-  (θ lx~) ≡ δ^n (η x') where x' ≤ y.
-
-  By (2), (θ lz~) ≡ δ^m (η z') for some m ≥ 1 and y ≤ z'.
-
-  Suppose n ≤ m. Then after n "steps" of unfolding thetas
-  on both sides, we will be left with either ℧ or η x' on the left,
-  and δ^(m-n)(η z') on the right.
-  In the former case we are finished since ℧ is the bottom element,
-  and in the latter case we can use transitivity of the underlying
-  relation to conclude x' ≤ z' and hence η x' ≈ δ^(m-n)(η z').
-
-  Now suppose n > m. Then after m steps of unfolding,
-  we will be left with either δ^(n-m)(℧) or δ(n-m)(η x') on the left,
-  and η z' on the right.
-  In the former case we are finished by definition of the relation.
-  In the latter case we again use transitivity of the underlying relation.
-  
-
-
-            (1)       (2)
-Case (θ lx~) ≈ (θ ly~) ≈ (η z):
-
-  By (2), either (θ ly~) ≡ δ^n (℧), or
-  (θ ly~) ≡ δ^n (η y') where y' ≤ z.
-
-  In the former case, (1) and Lemma A imply that
-  (θ lx~) ≡ δ^m (℧) for some m, and we are finished
-  by definiton of the relation.
-
-  In the latter case, (1) and Lemma B imply that
-  (θ lx~) ≡ δ^m (η x') for some m and some x'
-  with x' ≤ y'.
-  Then by transitivity of the underlying relation
-  we have x' ≤ z, so we are finished.
-
-
-
-
--}

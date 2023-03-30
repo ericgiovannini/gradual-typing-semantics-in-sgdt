@@ -15,8 +15,12 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Empty
 
-open import Results.IntensionalAdequacy
+open import Semantics.Predomains
 open import Semantics.StrongBisimulation
+open import Semantics.Lift
+
+open import Results.IntensionalAdequacy
+
 
 private
   variable
@@ -178,7 +182,7 @@ module _ {X : Type} (H-irrel : clock-irrel X) where
 
 
 -- Bisimilarity relation on Machines.
-module Bisim (X : Predomain k0) (H-irrel : clock-irrel ⟨ X ⟩) where
+module Bisim (X : Predomain) (H-irrel : clock-irrel ⟨ X ⟩) where
 
 
   -- Mutually define coinductive bisimilarity of machines
@@ -188,7 +192,7 @@ module Bisim (X : Predomain k0) (H-irrel : clock-irrel ⟨ X ⟩) where
   record _≋_ (m m' : Machine ⟨ X ⟩) : Type
 
   _≋''_ : State ⟨ X ⟩ -> State ⟨ X ⟩ -> Type
-  result x ≋'' result x' = rel k0 X x x'
+  result x ≋'' result x' = rel X x x'
   error ≋'' error = ⊤
   running m ≋'' running m' = m ≋ m' -- using the coinductive bisimilarity on machines
   _ ≋'' _ = ⊥
