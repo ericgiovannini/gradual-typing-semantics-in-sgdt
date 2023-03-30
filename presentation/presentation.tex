@@ -1,0 +1,1372 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 2.0 (March 8, 2022)
+%
+% This template originates from:
+% https://www.LaTeXTemplates.com
+%
+% Author:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+	11pt, % Set the default font size, options include: 8pt, 9pt, 10pt, 11pt, 12pt, 14pt, 17pt, 20pt
+	%t, % Uncomment to vertically align all slide content to the top of the slide, rather than the default centered
+	%aspectratio=169, % Uncomment to set the aspect ratio to a 16:9 ratio which matches the aspect ratio of 1080p and 4K screens and projectors
+]{beamer}
+
+\graphicspath{{Images/}{./}} % Specifies where to look for included images (trailing slash required)
+
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule for better rules in tables
+\usepackage{comment}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathpartir}
+\usepackage{tikz-cd}
+\usepackage{stmaryrd}
+
+\input{../paper-new/defs}
+%\renewcommand{\ltdyn}{\sqsubseteq \,}
+
+%----------------------------------------------------------------------------------------
+%	SELECT LAYOUT THEME
+%----------------------------------------------------------------------------------------
+
+% Beamer comes with a number of default layout themes which change the colors and layouts of slides. Below is a list of all themes available, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+%----------------------------------------------------------------------------------------
+%	SELECT COLOR THEME
+%----------------------------------------------------------------------------------------
+
+% Beamer comes with a number of color themes that can be applied to any layout theme to change its colors. Uncomment each of these in turn to see how they change the colors of your selected layout theme.
+
+%\usecolortheme{albatross}
+%\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{monarca}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{spruce}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%----------------------------------------------------------------------------------------
+%	SELECT FONT THEME & FONTS
+%----------------------------------------------------------------------------------------
+
+% Beamer comes with several font themes to easily change the fonts used in various parts of the presentation. Review the comments beside each one to decide if you would like to use it. Note that additional options can be specified for several of these font themes, consult the beamer documentation for more information.
+
+\usefonttheme{default} % Typeset using the default sans serif font
+%\usefonttheme{serif} % Typeset using the default serif font (make sure a sans font isn't being set as the default font if you use this option!)
+%\usefonttheme{structurebold} % Typeset important structure text (titles, headlines, footlines, sidebar, etc) in bold
+%\usefonttheme{structureitalicserif} % Typeset important structure text (titles, headlines, footlines, sidebar, etc) in italic serif
+%\usefonttheme{structuresmallcapsserif} % Typeset important structure text (titles, headlines, footlines, sidebar, etc) in small caps serif
+
+%------------------------------------------------
+
+%\usepackage{mathptmx} % Use the Times font for serif text
+\usepackage{palatino} % Use the Palatino font for serif text
+
+%\usepackage{helvet} % Use the Helvetica font for sans serif text
+\usepackage[default]{opensans} % Use the Open Sans font for sans serif text
+%\usepackage[default]{FiraSans} % Use the Fira Sans font for sans serif text
+%\usepackage[default]{lato} % Use the Lato font for sans serif text
+
+%----------------------------------------------------------------------------------------
+%	SELECT INNER THEME
+%----------------------------------------------------------------------------------------
+
+% Inner themes change the styling of internal slide elements, for example: bullet points, blocks, bibliography entries, title pages, theorems, etc. Uncomment each theme in turn to see what changes it makes to your presentation.
+
+%\useinnertheme{default}
+\useinnertheme{circles}
+%\useinnertheme{rectangles}
+%\useinnertheme{rounded}
+%\useinnertheme{inmargin}
+
+%----------------------------------------------------------------------------------------
+%	SELECT OUTER THEME
+%----------------------------------------------------------------------------------------
+
+% Outer themes change the overall layout of slides, such as: header and footer lines, sidebars and slide titles. Uncomment each theme in turn to see what changes it makes to your presentation.
+
+%\useoutertheme{default}
+%\useoutertheme{infolines}
+%\useoutertheme{miniframes}
+%\useoutertheme{smoothbars}
+%\useoutertheme{sidebar}
+%\useoutertheme{split}
+%\useoutertheme{shadow}
+%\useoutertheme{tree}
+%\useoutertheme{smoothtree}
+
+%\setbeamertemplate{footline} % Uncomment this line to remove the footer line in all slides
+%\setbeamertemplate{footline}[page number] % Uncomment this line to replace the footer line in all slides with a simple slide count
+
+%\setbeamertemplate{navigation symbols}{} % Uncomment this line to remove the navigation symbols from the bottom of all slides
+
+% See https://tex.stackexchange.com/a/124271
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title[SGDT + GTT]{Synthetic Guarded Domain Theory + \\ Gradual Typing} % The short title in the optional parameter appears at the bottom of every slide, the full title in the main parameter is only on the title page
+
+% \subtitle{Optional Subtitle} % Presentation subtitle, remove this command if a subtitle isn't required
+
+\author[Eric Giovannini and Max New]{Eric Giovannini and Max New} % Presenter name(s), the optional parameter can contain a shortened version to appear on the bottom of every slide, while the main parameter will appear on the title slide
+
+%\institute[U-M]{University of Michigan \\ \smallskip \textit{james@LaTeXTemplates.com}}
+\institute[U-M]{University of Michigan}
+% Your institution, the optional parameter can be used for the institution shorthand and will appear on the bottom of every slide after author names, while the required parameter is used on the title slide and can include your email address or additional information on separate lines
+
+\date[\today]{MPLSE Reading Group \\ \today} % Presentation date or conference/meeting name, the optional parameter can contain a shortened version to appear on the bottom of every slide, while the required parameter value is output to the title slide
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SLIDE
+%----------------------------------------------------------------------------------------
+
+\begin{frame}
+	\titlepage % Output the title slide, automatically created using the text entered in the PRESENTATION INFORMATION block above
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS SLIDE
+%----------------------------------------------------------------------------------------
+
+% The table of contents outputs the sections and subsections that appear in your presentation, specified with the standard \section and \subsection commands. You may either display all sections and subsections on one slide with \tableofcontents, or display each section at a time on subsequent slides with \tableofcontents[pausesections]. The latter is useful if you want to step through each section and mention what you will discuss.
+
+\begin{frame}
+	\frametitle{Overview} % Slide title, remove this command for no title
+	
+	\tableofcontents % Output the table of contents (all sections on one slide)
+	%\tableofcontents[pausesections] % Output the table of contents (break sections up across separate slides)
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION BODY SLIDES
+%----------------------------------------------------------------------------------------
+
+\section{Introduction}
+
+\subsection{Gradual Typing}
+
+\begin{frame}
+	\frametitle{What is Gradual Typing?}
+
+	Gradually-typed languages combine static and dynamic typing in a single language
+	and allow smooth interaction between both typed and untyped code.
+
+	\bigskip
+
+	This allows programmers to get the best of both worlds: they can start off programming
+	in an untyped style and later annotate the code with types.
+
+	\bigskip
+
+	Doing so should not alter the semantics of the program!
+
+	\bigskip
+
+	Gradually-typed languages are usually compiled to \textbf{cast calculi} where the casts
+	are made explicit.
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Graduality}
+
+	Gradual Guarantee (Siek et al. \cite{SVCB2015}):
+	Key property for a language to be considered gradually-typed.
+
+	\smallskip
+
+	Adding type annotations should not change the semantics of the program, except to possibly introduce type errors.
+
+	\medskip
+
+	Conversely: Removing type annotations should not change the behavior of the program.
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Type and Term Precision}
+
+	\textbf{Type Precision}: $A \ltdyn B$ means that $A$ is more precise than $B$,
+	or equivalently, $B$ is more dynamic
+
+	Least precise type: $\dyn$ (i.e., $A \ltdyn\, \dyn$ for all $A$)
+
+	\medskip
+
+	\textbf{Term precision}: Extension of type precision to terms
+
+	Intuitively: $M \ltdyn N$ means ``$M$ behaves like $N$, but may error more''
+
+	For each type $A$, there is an error-term $\mho_A$ such that $\mho_A \ltdyn M$ for all $M : A$.
+
+	\medskip
+
+	In the cast calculus, we allow casts between types $A$ and $B$ such that $A \ltdyn B$.
+
+
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{The Current Approach to Proving Graduality}
+
+	Define a notion of \emph{contextual error approximation} (two programs are equivalent, up to one erroring more than the other)
+
+	\medskip
+
+	Construct a \emph{logical relations model} and show that it is sound with respect to contextual
+	error approximation.
+
+	\medskip
+
+	This approach has been utilized by New and Ahmed \cite{NA2018} and New, Licata, and Ahmed \cite{NLA2019}.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Step Indexing}
+
+	The logical relation must be \emph{step-indexed} in order to deal with issues of non-wellfoundnedness
+	i.e. we index the relation by a natural number representing the ``fuel'' we have left to observe
+	the expression.
+	Whenever a non well-founded operation takes place, we decrement the step-index.
+
+	\medskip
+
+	This has a few downsides: 
+	\begin{itemize}
+		\item 	Need to keep track of step index throughout the proofs
+		\item  	Need two seaprate expression logical relations (one that counts steps on the left,
+		and one on the right)
+		\item 	Transitivity of the logical relation is not straightforward
+	\end{itemize}
+
+\end{frame}
+
+\subsection{SGDT}
+
+\begin{frame}
+	\frametitle{What is SGDT?}
+
+	SGDT is a logic/type theory with certain new axioms that internalize the notion of step-indexing.
+
+	\bigskip
+
+	There is an endofunctor $\later \colon \type \to \type$, where $\later A$ represents
+	values of type $A$ available one time step later.
+
+	\medskip
+
+	There is a ``delaying'' function $\nxt \colon A \to\, \later A$ that takes a value available
+	now and views it as a value available later.
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{SGDT: Guarded Fixpoints}
+
+	Fixpoint operator $\fix \colon (\later A \to A) \to A$.
+	
+	\medskip
+
+	Idea: to construct an $A$ ``now``, it suffices to assume we have an $A$ ``later`` and use that
+	to build an $A$ ``now``.
+
+	\medskip
+
+	When used for propositions, this is called ``\lob-induction''.
+
+	\medskip
+
+	Fix satisfies the following unrolling equation:
+
+	\[ \fix(f) = f (\nxt (\fix(f))) \]
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Clocks and Clock Quantification}
+
+	SGDT comes with a notion of clocks, abstract objects which keep track of time steps.
+
+	\medskip
+
+	The operations above are with repsect to a given clock $\kpa$, e.g, we have $\later^\kpa$.
+
+	\medskip
+
+	The notion of \emph{clock quantification} is crucial for encoding coinductive types using guarded
+    recursion, an idea first introduced by Atkey and McBride \cite{AM2013}.
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{The Topos of Trees Model}
+
+	The denotational semantics of SGDT is in a category called the \emph{topos of trees}, denoted $\calS = \Set^{\omega^o}$.
+
+	\medskip
+
+	Objects: presheaves over the ordered natural numbers, i.e., families $\{X_i\}$ of sets
+	indexed by natural numbers, along with restriction maps $r^X_i \colon X_{i+1} \to X_i$.
+
+	\medskip
+
+	Morphisms $\{X_i\}$ to $\{Y_i\}$: family of functions $f_i \colon X_i \to Y_i$
+	that commute with the restriction maps in the obvious way, that is,
+	$f_i \circ r^X_i = r^Y_i \circ f_{i+1}$.
+
+	\medskip
+
+	% TODO image
+
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Denotations of Later, Next, and Fix}
+
+	The type operator $\later$ is defined on an object $X$ by $(\later X)_0 = 1$
+	and $(\later X)_{i+1} = X_i$.
+    The restriction maps are given by $r^\later_0 =\, !$, where $!$ is the unique map into
+	$1$, and $r^\later_{i+1} = r^X_i$.
+
+	\medskip
+  
+	The morphism $\nxt^X \colon X \to\, \later X$ is defined pointwise by $\nxt^X_0 =\, !$,
+	and $\nxt^X_{i+1} = r^X_i$.
+
+	\medskip
+
+  	Given a morphism $f \colon \later X \to X$, we define $\fix\, f$ pointwise
+  	as $\fix_i(f) = f_{i} \circ \dots \circ f_0$.
+
+	\bigskip
+
+	Note that as defined, $\fix$ isn't actually a morphism in $\calS$: what is its source?
+	We need an object for functions from $\later X \to X$.
+	This is the internal hom $\later X \To X$.
+	
+	\medskip
+	
+	We can then define $\fix \colon (\later X \To X) \to X$; we omit the details.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Denotations of Later, Next, and Fix}
+	% Need to use ampersand replacement in tikzcd (see https://tex.stackexchange.com/a/220603)
+
+% https://q.uiver.app/?q=WzAsMTQsWzAsMSwiWCJdLFswLDIsIlxcbGF0ZXIgWCJdLFsyLDEsIlhfMCJdLFszLDEsIlhfMSJdLFs0LDEsIlhfMiJdLFs1LDEsIlhfMyJdLFsyLDIsIjEiXSxbMywyLCJYXzAiXSxbNCwyLCJYXzEiXSxbNSwyLCJYXzIiXSxbNiwxLCJcXGRvdHMiXSxbNiwyLCJcXGRvdHMiXSxbMCwwLCJcXHRleHR7SW4gJFxcY2FsUyR9Il0sWzIsMCwiXFx0ZXh0e0luICRcXFNldCR9Il0sWzMsMiwicl5YXzAiLDJdLFs0LDMsInJeWF8xIiwyXSxbNSw0LCJyXlhfMiIsMl0sWzcsNiwiISJdLFs4LDddLFs5LDhdLFswLDEsIlxcbnh0Il0sWzIsNiwiISIsMl0sWzMsNywicl5YXzAiLDJdLFs0LDgsInJeWF8xIiwyXSxbNSw5LCJyXlhfMiIsMl0sWzEwLDVdLFsxMSw5XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{\text{In $\calS$}} \&\& {\text{In $\Set$}} \\
+	X \&\& {X_0} \& {X_1} \& {X_2} \& {X_3} \& \dots \\
+	{\later X} \&\& 1 \& {X_0} \& {X_1} \& {X_2} \& \dots
+	\arrow["{r^X_0}"', from=2-4, to=2-3]
+	\arrow["{r^X_1}"', from=2-5, to=2-4]
+	\arrow["{r^X_2}"', from=2-6, to=2-5]
+	\arrow["{!}", from=3-4, to=3-3]
+	\arrow[from=3-5, to=3-4]
+	\arrow[from=3-6, to=3-5]
+	\arrow["\nxt", from=2-1, to=3-1]
+	\arrow["{!}"', from=2-3, to=3-3]
+	\arrow["{r^X_0}"', from=2-4, to=3-4]
+	\arrow["{r^X_1}"', from=2-5, to=3-5]
+	\arrow["{r^X_2}"', from=2-6, to=3-6]
+	\arrow[from=2-7, to=2-6]
+	\arrow[from=3-7, to=3-6]
+\end{tikzcd}\]
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Ticked Cubical Type Theory}
+
+	In Ticked Cubical Type Theory \cite{MV2019}, there is an additional sort
+    called \emph{ticks}.
+
+	\medskip
+
+	Given a clock $k$, a tick $t : \tick\, k$ serves as evidence that one unit of time has passed according to the clock $k$.
+
+  	\medskip
+
+  	The type $\later^k A$ is represented as a function from ticks of a clock $k$ to $A$.
+
+	\medskip
+
+  	The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
+  	to emphasize the dependence.
+
+	\medskip
+
+	The rules for tick abstraction and application are similar to those of dependent
+  	$\Pi$ types. 
+
+\end{frame}
+
+% ########################################
+
+\section{Graduality for GTLC}
+\frame{\tableofcontents[currentsection]}
+
+
+\subsection{GTLC}
+
+
+\begin{frame}
+	\frametitle{GTLC: Syntax}
+
+	\begin{block}{Syntax}
+	\begin{align*}
+		\text{Types } A, B &:= \nat, \, \dyn, \, (A \To B) \\
+		\text{Terms } M, N &:= \err_A, \, \zro, \,  \suc\, M, \, (\lda{x}{M}), \, (M\, N), \, \\
+		& (\up{A}{B} M), \, (\dn{A}{B} M) \\
+		\text{Contexts } \Gamma &:= \cdot, \, (\Gamma, x : A)
+	\end{align*}
+	\end{block}
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{GTLC: Typing}
+
+	\begin{mathpar}
+		\inferrule*{ }{\hasty \Gamma {\err_A} A}
+	  
+		\inferrule*{ }{\hasty \Gamma \zro \nat}
+	  
+		\inferrule {\hasty \Gamma M \nat} {\hasty \Gamma {\suc\, M} \nat}
+	  
+		\inferrule* 
+		  {\hasty {\Gamma, x : A} M B} 
+		  {\hasty \Gamma {\lda x M} {A \To B}}
+	  
+		\inferrule *
+		  {\hasty \Gamma M {A \To B} \and \hasty \Gamma N A}
+		  {\hasty \Gamma {M \, N} B}
+	  
+		\inferrule*
+		  {A \ltdyn B \and \hasty \Gamma M A}
+		  {\hasty \Gamma {\up A B M} B }
+	  
+		\inferrule*
+		  {A \ltdyn B \and \hasty \Gamma M B}
+		  {\hasty \Gamma {\dn A B M} A}
+	  \end{mathpar}
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{GTLC: Type Precision}
+
+	\begin{mathpar}
+		\inferrule*[right = \dyn]
+		  { }{\dyn \ltdyn \dyn}
+	  
+		\inferrule*[right = \nat]
+		  { }{\nat \ltdyn \nat}
+	  
+		\inferrule*[right = $Inj_\nat$]
+		  { }{\nat \ltdyn \dyn}
+	  
+		\inferrule*[right = $\To$]
+		  {A_i \ltdyn B_i \and A_o \ltdyn B_o }
+		  {(A_i \To A_o) \ltdyn (B_i \To B_o)}
+	  
+		\inferrule*[right=$Inj_{\To}$]
+		  {(A_i \to A_o) \ltdyn (\dyn \To \dyn)}
+		  {(A_i \to A_o) \ltdyn\, \dyn}
+	  		
+	\end{mathpar}
+
+	\medskip
+	  
+	\textbf{Precision Derivations}:
+
+	For every $A \ltdyn B$, we have a \emph{type precision derivation} $d : A \ltdyn B$
+	that is constructed using the rules above.
+
+	\smallskip
+
+	For any type $A$, we use $A$ to denote the reflexivity derivation that $A \ltdyn A$,
+	i.e., $A : A \ltdyn A$.
+
+	\smallskip
+
+	For type precision derivations $d : A \ltdyn B$ and $d' : B \ltdyn C$, we
+	can define their composition $d' \circ d : A \ltdyn C$.
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{GTLC: Term Precision}
+
+	Three kinds of rules: Congruence, Equational, and Cast Rules
+
+	\bigskip
+
+	\textbf{Congruence rules}: one per term constructor (except for casts)
+
+	Two examples (other rules omitted):
+
+	\begin{mathpar}
+	  \inferrule*[right = Var]
+      { d : A \ltdyn B \and \gamlt(x) = (A, B) } { \etmprec {\gamlt} x x d  }
+
+	  \inferrule*[right = Lambda]
+      { d_i : A_i \ltdyn B_i \and 
+        d_o : A_o \ltdyn B_o \and 
+        \etmprec {\gamlt , x : d_i} M N {d_o} } 
+      { \etmprec \gamlt {\lda x M} {\lda x N} (d_i \To d_o) }
+	\end{mathpar}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{GTLC: Term Precision}
+
+	\textbf{Equational Rules}: Transitivity, $\beta$ and $\eta$ laws
+
+	\begin{mathpar}
+		\inferrule*[right = Transitivity]
+		{\etmprec \gamlt M N d \and
+		\etmprec \gamlt N P {d'} } 
+		{\etmprec \gamlt M P {d' \circ d} }
+
+		\inferrule*[right = $\eta$]
+		{ \hasty {\Gamma} {V} {A_i \To A_o} } 
+		{ \etmequidyn \gamlt {\lda x (V\, x)} V {A_i \To A_o} }
+	\end{mathpar}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{GTLC: Term Precision}
+
+	\textbf{Cast Rules}
+	\begin{mathpar}
+		\inferrule*[right = UpR]
+		{ d : A \ltdyn B \and 
+		  \hasty \Gamma M A } 
+		{ \etmprec \gamlt M {\up A B M} d  }
+	
+	  \inferrule*[right = UpL]
+		{ d : A \ltdyn B \and
+		  \etmprec \gamlt M N d } 
+		{ \etmprec \gamlt {\up A B M} N B }
+	\end{mathpar}
+
+	(The other rules DnL, DnR are dual.)
+
+	\medskip
+
+	The cast rules say that upcasts are least upper bounds, and dually, downcasts
+	are greatest lower bounds.
+
+	\medskip
+
+	
+
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Graduality for GTLC}
+
+	\begin{theorem}[Graduality at Base Type]
+		If $\cdot \vdash M \ltdyn N : \nat$, then
+		\begin{enumerate}
+		  \item If $N = \mho$, then $M = \mho$
+		  \item If $N = V$, then $M = \mho$ or $M = V$, where $V = \zro$ or $V = \suc\, V'$
+		  \item If $M = V$, then $N = V$
+		\end{enumerate}
+	  \end{theorem}
+
+	  \bigskip
+	
+	  We also should be able to show that $\mho$, $\zro$, and $\suc\, N$ are not equal.
+
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Intensional GTLC}
+
+	In addition to the above language, which we call the \emph{extensional GTLC}
+	($\extlc$ for short), we formalize the \emph{intensional GTLC} ($\intlc$ for short).
+
+	\smallskip
+	
+	$\intlc$ includes syntax to express ``delayed" terms as terms, via the term constructor $\theta_s$ taking a term ``later" to a term ``now''.
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Intensional GTLC}
+
+	\begin{align*}
+		% &\text{Later Terms } \tilde{M}, \tilde{N}
+		&\text{Terms } M, N := \err_A, \, \dots \, \theta_s (\tilde{M}) \\
+	  \end{align*}
+	  
+	  Typing:
+	  \begin{mathpar}
+		\inferrule*[]
+		  { \later_t (\hasty \Gamma {M_t} A) }
+		  { \hasty \Gamma {\theta_s M} {A} }
+	  \end{mathpar}
+	  
+	  Term Precision:
+	  \begin{mathpar}
+		\inferrule*[]
+		  { \later_t (\itmprec \gamlt {M_t} {N_t} d) }
+		  { \itmprec \gamlt {\theta_s M} {\theta_s N} d }
+	  \end{mathpar}
+	  
+	  Recall that $\later_t$ is a dependent form of $\later$ where the arugment is allowed
+	  to mention $t$. In particular, here we apply the tick $t$ to the later-terms $M$ and $N$ to get 
+	  ``now"-terms $M_t$ and $N_t$.
+
+\end{frame}
+
+
+% #########################################################
+
+
+\subsection{Domain-Theoretic Constructions}
+\frame{\tableofcontents[currentsubsection]}
+
+
+
+\begin{frame}
+	\frametitle{The Lift Monad}
+
+	Datatype that represents computations that at each step can return a value ($\eta$), terminate with an error ($\mho$), or
+	``think'', i.e., defer the result to a later step ($\theta$).
+
+	\begin{definition}[Lift Monad]
+		\begin{align*}
+			\li A &:= \\
+			&\eta \colon A \to \li A \\
+			&\mho \colon \li A \\
+			&\theta \colon \later (\li A) \to \li A
+		\end{align*}
+	\end{definition}
+
+	There is a computation $\fix(\theta)$ of type $\li A$; this represents a computation
+	that thinks forever and never returns a value.
+
+	\medskip
+
+	Notation: We define $\delta \colon \li A \to \li A$ by $\delta = \theta \circ \nxt$
+
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Predomains and Monotone Functions}
+
+	A \textbf{predomain} $A$ consists of a type (which we denote $\ty{A}$) and a relation
+	$\le_A$ on $A$ that satisfies the axioms of a partial ordering.
+
+	\smallskip
+
+	Since our types have an underlying order structure (representing the error ordering),
+	we want to model types as partially-ordered sets in the semantics.
+
+	\bigskip
+
+	Then functions between terms will be modeled as \emph{monotone} functions between
+	their corresponding predomains.
+
+	\smallskip
+	
+	We write $f \colon A \monto B$ to indicate that $f$ is a monotone
+	function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(a_2)$.
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Predomains}
+
+	We define predomains for natural numbers, the dynamic type (which we denote $D$), and for monotone functions between predomains (which we denote $A_i \To A_o$).
+
+	\medskip
+	
+  	For Dyn, the underlying type is defined to be 
+	
+	\[ \ty{D} = \mathbb{N}\,\, + \later (D \monto D) \]
+
+  	This definition is valid because the occurrences of $D$ are guarded by the $\later$.
+  	The ordering is defined via guarded recursion by cases on the argument.
+
+	\medskip
+
+	We also define a predomain for the ``lifting'' of a predomain by the $\li$ monad.
+	We denote this by $\li A$.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lock-Step Ordering and Weak Bisimilarity}
+	For a predomain $A$, the ordering on $\li A$ is called the ``lock-step error ordering'', denoted $l \ltls l'$.
+
+	Intuitively: $l$ is less than $l'$ if they are in lock-step with regard to their
+	intensional behavior, up to $l$ erroring.
+
+	\begin{itemize}
+		\item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
+		\item 	$\mho \ltls l$ for all $l$ 
+		\item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
+		        $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+	\end{itemize}
+	
+	We analogously define a lifting of a heterogeneous relation $R$ between $A$ and $B$
+	to a relation $L(R)$ between $\li A$ and $\li B$.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lock-Step Ordering and Weak Bisimilarity}
+
+	We also define another ordering on $\li A$, called ``weak bisimilarity'',
+	written $l \bisim l'$.
+
+	We say $l \bisim l'$ if they are equivalent ``up to delays''.
+
+	\begin{align*}
+		&\mho \bisim \mho \\
+%
+		&\eta\, x \bisim \eta\, y \text{ if } 
+		  x \sim_A y \\
+%		
+		&\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+		  \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+%	
+		&\theta\, \tilde{x} \bisim \mho \text{ if } 
+		  \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+		&\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+		  (\theta\, \tilde{x} = \delta^n(\eta\, x))
+		\text { for some $n$ and $x : \ty{A}$ such that $x \sim_A y$ } \\
+%
+		&\mho \bisim \theta\, \tilde{y} \text { if } 
+		  \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+		&\eta\, x \bisim \theta\, \tilde{y} \text { if }
+		  (\theta\, \tilde{y} = \delta^n (\eta\, y))
+		\text { for some $n$ and $y : \ty{A}$ such that $x \sim_A y$ }
+	\end{align*}
+
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{EP Pairs}
+
+	We will model casts as \emph{EP-pairs}.
+
+	\bigskip
+	
+	Given predomains $A$ and $B$, an EP-pair $c : A \ep B$ consists of $\emb{c}{\cdot} \colon A \to B$ and $\proj{c}{\cdot} \colon B \to \li A$, and a monotone relation $R_c$ between $A$ and $B$.
+
+	\medskip
+
+	The relation $R_c$ should be related in a specific way to the embedding and projection functions.
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{EP Pairs}
+
+	We have an identity EP-pair $\id : A \ep A$, with the embedding and projection equal to the identity and $\eta$, respectively.
+
+	\medskip
+
+	Recall: $D \cong \mathbb{N}\,\, + \later(D \monto D)$
+
+	\medskip
+
+	We have an EP-pair $\injnat$, where the embedding is just $\inl$ and
+	Projection checks if the value of type $D$ is a nat and returns it, otherwise returns $\mho$.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{EP Pairs}
+
+	We have an EP-pair $\injarr \colon (D \to \li D) \ep D$.
+	The embedding delays the function and injects into the sum type of $D$:
+	$e(f) = \inl(\nxt f)$
+	The projection does case analysis on the value of type $D$, and if it
+	is a nat, returns $\mho$, otherwise, it it's a delayed function $\tilde{f}$, it returns
+
+	\[ \theta_t (\eta (\tilde{f}_t)). \]
+
+	\medskip
+
+	For EP pairs $c_i : A_i \ep B_i$ and $c_o : A_o \ep B_o$ we have the EP-pair $c_i \To c_o : (A_i \monto A_o) \ep (B_i \monto B_o)$.
+	
+	The embedding and projection are defined functorially via the embeddings and projections of the domain and codomain.
+	%The relation $R$ is the ``heterogeneous'' relation on functions, i.e.,
+	%if $a_i\, R_{c_i}\, b_i$ then $f_1(a_i)\, R_{c_o}\, f_2(b_i)$
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{EP Pairs: Semantics}
+
+	We would like the semantic analogues of the cast rules to hold, e.g.,
+
+	\begin{mathpar}
+		\inferrule*[right = DnL]
+		{ c : A \ep B \and M : \ty{B} } 
+		{ {\proj c M} \quad L(R) \quad M }
+	\end{mathpar}
+
+	Unfortunately, this does not hold, because the projection function for
+	$\injarr$ introduces a $\theta$, and so the LHS and RHS are not in lock-step!
+
+	\medskip
+
+	This problem leaks into the embedding functions as well via functoriality in the $c_i \To c_o$ case.
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Wait functions}
+
+	To remedy this, we associate to each EP pair four ``wait'' functions
+	that mirror the structure of the embedding and projection functions for their EP-pair.
+
+	\begin{align*}
+		&\wle \colon A \monto A \\
+		&\wre \colon A \monto A \\
+		&\wlp \colon A \monto \li A \\
+		&\wrp \colon A \monto \li A \\
+	\end{align*}
+
+	Each wait function appears in one of the four semantic analogues of the cast rules, i.e., the rule above becomes
+
+	\begin{mathpar}
+		\inferrule*[right = DnL]
+		{ c : A \ep B \and M : \ty{B} } 
+		{ {\proj c M} \quad L(R) \quad \wrp(c)(M) }
+	\end{mathpar}
+
+\end{frame}
+
+
+% \subsection{Denotational Semantics for Intensional GTLC}
+
+% \begin{frame}
+% 	\frametitle{Interpreting Intensional GTLC}
+
+% \end{frame}
+
+\subsection{Outline of Graduality Proof}
+\frame{\tableofcontents[currentsubsection]}
+
+\begin{frame}
+	\frametitle{Main Theorem}
+
+	\begin{theorem}[Graduality at Base Type]
+		If $\cdot \vdash M_e \ltdyn_e N_e : \nat$, then
+		\begin{enumerate}
+		  \item If $N_e = \mho$, then $M_e = \mho$
+		  \item If $N_e = V$, then $M_e = \mho$ or $M_e = V$, where $V = \zro$ or $V = \suc\, V'$
+		  \item If $M_e = V$, then $N_e = V$
+		\end{enumerate}
+	  \end{theorem}
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Extensional Collapse}
+
+	We define a ``collapse" function $\erase{\cdot} \colon \intlc \to \extlc$
+	that ``forgets'' about the intensional delay information, i.e., all occurrences of $\theta_s$ are erased.
+
+	\medskip
+	
+	Every term $M_e$ in $\extlc$ will have a corresponding program $M_i$ in $\intlc$ such that $\erase{M_i} = M_e$.
+
+	\medskip
+	
+	Moreover, we will show that if $M_e \ltdyn_e M_e'$ in the extensional theory,
+	then there exists terms $M_i$ and $M_i'$ such that $\erase{M_i}=M_e$, $\erase{M_i'}=M_e'$ and
+	$M_i \ltdyn_i M_i'$ in the intensional theory.
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{The Current Picture}
+
+	% https://q.uiver.app/?q=WzAsNCxbMCwwLCJcXGludGxjIl0sWzIsMCwiXFxleHRsYyJdLFsyLDIsIlxcdGV4dHtFeHQuIFNlbS59Il0sWzAsMiwiXFx0ZXh0e0ludC4gU2VtLn0iXSxbMCwxLCJcXGVyYXNle1xcY2RvdH0iXSxbMCwzLCJcXHNlbXtcXGNkb3R9XmkiLDJdLFszLDIsIlxcdGV4dHtjb2xsYXBzZX0iLDJdLFsxLDIsIj8/Il1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\intlc \&\& \extlc \\
+	\\
+	{\text{Int. Sem.}} \&\& {\text{Ext. Sem.}}
+	\arrow["{\erase{\cdot}}", from=1-1, to=1-3]
+	\arrow["{\sem{\cdot}^i}"', from=1-1, to=3-1]
+	\arrow["{\text{collapse}}"', from=3-1, to=3-3]
+	\arrow["{??}", from=1-3, to=3-3]
+\end{tikzcd}\]
+
+
+\end{frame}
+
+% \begin{frame}
+% 	\frametitle{Intensional Graduality Results}
+
+	
+% \end{frame}
+
+% \begin{frame}
+% 	\frametitle{Intensional Adequacy}
+
+% 	We want to prove that the lock-step and weak bisimilarity relations
+% 	are \emph{adequate}, i.e.,
+
+	
+% \end{frame}
+
+
+\section{Discussion and Lessons Learned}
+\frame{\tableofcontents[currentsection]}
+
+
+\begin{frame}
+	\frametitle{Benefits and Drawbacks}
+
+	Positives:
+	\begin{itemize}
+		\item SGDT handles much of the tedious step-index reasoning
+		\item Clarifies the underlying semantic and algebraic structure
+	\end{itemize}
+
+	Drawbacks:
+	\begin{itemize}
+		\item 	Intensional semantics is much more complicated (needed to introduce wait functions)
+		\item 	Still need to work ``analytically'' with monotone functions
+		\item   Need to do a lot of manual ``unfolding'' of fixpoint definitions in Guarded Cubical Agda
+	\end{itemize}
+
+	
+
+\end{frame}
+
+\begin{frame}[allowframebreaks] % Use [allowframebreaks] to allow automatic splitting across slides if the content is too long
+	\frametitle{References}
+	
+	\begin{thebibliography}{99} % Beamer does not support BibTeX so references must be inserted manually as below, you may need to use multiple columns and/or reduce the font size further if you have many references
+		\footnotesize % Reduce the font size in the bibliography
+		
+			
+		\bibitem[1]{AM2013}
+			Robert Atkey and Conor McBride.
+			\newblock Productive coprogramming with guarded recursion.
+			\newblock \emph{ACM SIGPLAN Notices 48, 9 (2013), 197-208. }
+
+		\bibitem[2]{BMSS2012}
+			Lars Birkedal, Rasmus Ejlers Møgelberg, Jan Schwinghammer, and Kristian Støvring.			
+			\newblock First steps in synthetic guarded domain theory: step-indexing in the topos of trees.
+			\newblock \emph{Logical Methods in Computer Science 8, 4 (2012). }
+
+		\bibitem[3]{MV2019}
+			Rasmus Ejlers Møgelberg and Niccolò Veltri.
+			\newblock Bisimulation as path type for guarded recursive types.
+			\newblock \emph{Proc. ACM Program. Lang. 3, POPL Article 4 (January 2019)}
+
+		\bibitem[4]{MP2019}
+			Rasmus E Møgelberg and Marco Paviotti.		
+			\newblock Denotational semantics of recursive types in synthetic guarded domain theory.
+			\newblock \emph{Mathematical Structures in Computer Science 29, 3 (2019), 465-510.  }
+
+		\bibitem[5]{NA2018}
+			Max S. New and Amal Ahmed.		
+			\newblock Graduality from Embedding-Projection Pairs. 
+			\newblock \emph{MProc. ACM Program. Lang. 2, ICFP, Article 73 (September 2018), 30 pages. }
+
+		\bibitem[6]{NLA2019}
+			Max S. New, Daniel R. Licata, and Amal Ahmed.
+			\newblock Gradual type theory. 
+			\newblock \emph{Proc. ACM Program. Lang. 3, POPL, Article 15 (January 2019), 31 pages. }
+
+		\bibitem[7]{SVCB2015}
+			Jeremy G. Siek, Michael M. Vitousek, Matteo Cimini, and John Tang Boyland
+			\newblock Refined Criteria for Gradual Typing
+			\newblock \emph{1st Summit on Advances in Programming Languages (SNAPL 2015). }
+
+		
+		
+
+	\end{thebibliography}
+\end{frame}
+
+
+
+\begin{comment}
+\section{Text Examples} % Sections are added in order to organize your presentation into discrete blocks, all sections and subsections are automatically output to the table of contents as an overview of the talk but NOT output in the presentation as separate slides
+
+%------------------------------------------------
+
+
+\subsection{Paragraphs and Lists}
+
+\begin{frame}
+	\frametitle{Paragraphs of Text}
+	
+	Sed iaculis \alert{dapibus gravida}. Morbi sed tortor erat, nec interdum arcu. Sed id lorem lectus. Quisque viverra augue id sem ornare non aliquam nibh tristique. Aenean in ligula nisl. Nulla sed tellus ipsum. Donec vestibulum ligula non lorem vulputate fermentum accumsan neque mollis.
+	
+	\bigskip % Vertical whitespace
+	
+	% Quote example
+	\begin{quote}
+		Sed diam enim, sagittis nec condimentum sit amet, ullamcorper sit amet libero. Aliquam vel dui orci, a porta odio.\\
+		--- Someone, somewhere\ldots
+	\end{quote}
+	
+	\bigskip % Vertical whitespace
+	
+	Nullam id suscipit ipsum. Aenean lobortis commodo sem, ut commodo leo gravida vitae. Pellentesque vehicula ante iaculis arcu pretium rutrum eget sit amet purus. Integer ornare nulla quis neque ultrices lobortis.
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+	\frametitle{Lists}
+	\framesubtitle{Bullet Points and Numbered Lists} % Optional subtitle
+	
+	\begin{itemize}
+		\item Lorem ipsum dolor sit amet, consectetur adipiscing elit
+		\item Aliquam blandit faucibus nisi, sit amet dapibus enim tempus
+		\begin{itemize}
+			\item Lorem ipsum dolor sit amet, consectetur adipiscing elit
+			\item Nam cursus est eget velit posuere pellentesque
+		\end{itemize}
+		\item Nulla commodo, erat quis gravida posuere, elit lacus lobortis est, quis porttitor odio mauris at libero
+	\end{itemize}
+	
+	\bigskip % Vertical whitespace
+	
+	\begin{enumerate}
+		\item Nam cursus est eget velit posuere pellentesque
+		\item Vestibulum faucibus velit a augue condimentum quis convallis nulla gravida 
+	\end{enumerate}
+\end{frame}
+
+%------------------------------------------------
+
+\subsection{Blocks}
+
+\begin{frame}
+	\frametitle{Blocks of Highlighted Text}
+	
+	\begin{block}{Block Title}
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer lectus nisl, ultricies in feugiat rutrum, porttitor sit amet augue.
+	\end{block}
+	
+	\begin{exampleblock}{Example Block Title}
+		Aliquam ut tortor mauris. Sed volutpat ante purus, quis accumsan.
+	\end{exampleblock}
+	
+	\begin{alertblock}{Alert Block Title}
+		Pellentesque sed tellus purus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
+	\end{alertblock}
+	
+	\begin{block}{} % Block without title
+		Suspendisse tincidunt sagittis gravida. Curabitur condimentum, enim sed venenatis rutrum, ipsum neque consectetur orci.
+	\end{block}
+\end{frame}
+
+%------------------------------------------------
+
+\subsection{Columns}
+
+\begin{frame}
+	\frametitle{Multiple Columns}
+	\framesubtitle{Subtitle} % Optional subtitle
+	
+	\begin{columns}[c] % The "c" option specifies centered vertical alignment while the "t" option is used for top vertical alignment
+		\begin{column}{0.45\textwidth} % Left column width
+			\textbf{Heading}
+			\begin{enumerate}
+				\item Statement
+				\item Explanation
+				\item Example
+			\end{enumerate}
+		\end{column}
+		\begin{column}{0.5\textwidth} % Right column width
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer lectus nisl, ultricies in feugiat rutrum, porttitor sit amet augue. Aliquam ut tortor mauris. Sed volutpat ante purus, quis accumsan dolor.
+		\end{column}
+	\end{columns}
+\end{frame}
+
+%------------------------------------------------
+
+\section{Table and Figure Examples}
+
+\subsection{Table}
+
+\begin{frame}
+	\frametitle{Table}
+	\framesubtitle{Subtitle} % Optional subtitle
+	
+	\begin{table}
+		\begin{tabular}{l l l}
+			\toprule
+			\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
+			\midrule
+			Treatment 1 & 0.0003262 & 0.562 \\
+			Treatment 2 & 0.0015681 & 0.910 \\
+			Treatment 3 & 0.0009271 & 0.296 \\
+			\bottomrule
+		\end{tabular}
+		\caption{Table caption}
+	\end{table}
+\end{frame}
+
+%------------------------------------------------
+
+\subsection{Figure}
+
+\begin{frame}
+	\frametitle{Figure}
+	
+	\begin{figure}
+		%\includegraphics[width=0.8\linewidth]{creodocs_logo.pdf}
+		\caption{Creodocs logo.}
+	\end{figure}
+\end{frame}
+
+%------------------------------------------------
+
+\section{Mathematics}
+
+\begin{frame}
+	\frametitle{Definitions \& Examples}
+	
+	\begin{definition}
+		A \alert{prime number} is a number that has exactly two divisors.
+	\end{definition}
+	
+	\smallskip % Vertical whitespace
+	
+	\begin{example}
+		\begin{itemize}
+			\item 2 is prime (two divisors: 1 and 2).
+			\item 3 is prime (two divisors: 1 and 3).
+			\item 4 is not prime (\alert{three} divisors: 1, 2, and 4).
+		\end{itemize}
+	\end{example}
+	
+	\smallskip % Vertical whitespace
+	
+	You can also use the \texttt{theorem}, \texttt{lemma}, \texttt{proof} and \texttt{corollary} environments.
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+	\frametitle{Theorem, Corollary \& Proof}
+	
+	\begin{theorem}[Mass--energy equivalence]
+		$E = mc^2$
+	\end{theorem}
+	
+	\begin{corollary}
+		$x + y = y + x$
+	\end{corollary}
+	
+	\begin{proof}
+		$\omega + \phi = \epsilon$
+	\end{proof}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+	\frametitle{Equation}
+
+	\begin{equation}
+		\cos^3 \theta =\frac{1}{4}\cos\theta+\frac{3}{4}\cos 3\theta
+	\end{equation}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+	\frametitle{Verbatim}
+	
+	\begin{example}[Theorem Slide Code]
+		\begin{verbatim}
+			\begin{frame}
+				\frametitle{Theorem}
+				\begin{theorem}[Mass--energy equivalence]
+					$E = mc^2$
+				\end{theorem}
+		\end{frame}\end{verbatim} % Must be on the same line
+	\end{example}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+	Slide without title.
+\end{frame}
+
+%------------------------------------------------
+
+\section{Referencing}
+
+\begin{frame}
+	\frametitle{Citing References}
+	
+	An example of the \texttt{\textbackslash cite} command to cite within the presentation:
+	
+	\bigskip % Vertical whitespace
+	
+	This statement requires citation \cite{p1,p2}.
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame} % Use [allowframebreaks] to allow automatic splitting across slides if the content is too long
+	\frametitle{References}
+	
+	\begin{thebibliography}{99} % Beamer does not support BibTeX so references must be inserted manually as below, you may need to use multiple columns and/or reduce the font size further if you have many references
+		\footnotesize % Reduce the font size in the bibliography
+		
+		\bibitem[Smith, 2022]{p1}
+			John Smith (2022)
+			\newblock Publication title
+			\newblock \emph{Journal Name} 12(3), 45 -- 678.
+			
+		\bibitem[Kennedy, 2023]{p2}
+			Annabelle Kennedy (2023)
+			\newblock Publication title
+			\newblock \emph{Journal Name} 12(3), 45 -- 678.
+	\end{thebibliography}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	ACKNOWLEDGMENTS SLIDE
+%----------------------------------------------------------------------------------------
+
+\begin{frame}
+	\frametitle{Acknowledgements}
+	
+	\begin{columns}[t] % The "c" option specifies centered vertical alignment while the "t" option is used for top vertical alignment
+		\begin{column}{0.45\textwidth} % Left column width
+			\textbf{Smith Lab}
+			\begin{itemize}
+				\item Alice Smith
+				\item Devon Brown
+			\end{itemize}
+			\textbf{Cook Lab}
+			\begin{itemize}
+				\item Margaret
+				\item Jennifer
+				\item Yuan
+			\end{itemize}
+		\end{column}		
+		\begin{column}{0.5\textwidth} % Right column width
+			\textbf{Funding}
+			\begin{itemize}
+				\item British Royal Navy
+				\item Norwegian Government
+			\end{itemize}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	CLOSING SLIDE
+%----------------------------------------------------------------------------------------
+
+\begin{frame}[plain] % The optional argument 'plain' hides the headline and footline
+	\begin{center}
+		{\Huge The End}
+		
+		\bigskip\bigskip % Vertical whitespace
+		
+		{\LARGE Questions? Comments?}
+	\end{center}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+\end{comment}
+
+\end{document} 
