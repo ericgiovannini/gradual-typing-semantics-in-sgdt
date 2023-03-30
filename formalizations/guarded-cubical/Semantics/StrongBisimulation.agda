@@ -3,9 +3,9 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-open import Later
+open import Common.Later
 
-module StrongBisimulation(k : Clock) where
+module Semantics.StrongBisimulation(k : Clock) where
 
 open import Cubical.Relation.Binary
 open import Cubical.Relation.Binary.Poset
@@ -30,6 +30,8 @@ open import Cubical.Data.Unit.Properties
 
 open import Agda.Primitive
 
+open import Common.Common
+
 private
   variable
     l : Level
@@ -40,18 +42,43 @@ private
   ▹_ A = ▹_,_ k A
 
 
-id : {ℓ : Level} -> {A : Type ℓ} -> A -> A
-id x = x
 
-_^_ : {ℓ : Level} -> {A : Type ℓ} -> (A -> A) -> Nat -> A -> A
-f ^ zero = id
-f ^ suc n = f ∘ (f ^ n)
+
+Predomain' : {ℓ ℓ' : Level} -> Type (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ'))
+Predomain' {ℓ} {ℓ'} = Poset ℓ ℓ'
+
+-- The relation associated to a predomain d
+rel' : (d : Predomain') -> (⟨ d ⟩ -> ⟨ d ⟩ -> Type)
+rel' d = PosetStr._≤_ (d .snd)
+
+reflexive' : (d : Predomain') -> (x : ⟨ d ⟩) -> (rel' d x x)
+reflexive' d x = IsPoset.is-refl (PosetStr.isPoset (str d)) x
+
+transitive' : (d : Predomain') -> (x y z : ⟨ d ⟩) ->
+  rel' d x y -> rel' d y z -> rel' d x z
+transitive' d x y z x≤y y≤z =
+  IsPoset.is-trans (PosetStr.isPoset (str d)) x y z x≤y y≤z 
+
+test : Predomain' -> Predomain' -> Predomain'
+test A B =
+  (Path Predomain' A B) ,
+  posetstr (λ p1 p2 → rel' A {!p1 i0!} {!!} × {!!})
+    (isposet {!!} {!!} (λ a → {!!}) {!!} {!!}) 
+
+
+
+
+
+
+
 
 
 -- Define predomains as posets
 
+
 Predomain : Set₁
 Predomain = Poset ℓ-zero ℓ-zero
+
 
 -- The relation associated to a predomain d
 rel : (d : Predomain) -> (⟨ d ⟩ -> ⟨ d ⟩ -> Type)
@@ -83,6 +110,7 @@ record MonFun (X Y : Predomain) : Set where
 -- Specialize to the case of monotone functions and fill in the proof
 -- later
 
+
 -- Monotone relations between predomains X and Y
 -- (antitone in X, monotone in Y).
 record MonRel {ℓ' : Level} (X Y : Predomain) : Type (ℓ-suc ℓ') where
@@ -100,6 +128,34 @@ predomain-monrel X = record {
   R = rel X ;
   isAntitone = λ {x} {x'} {y} x≤y x'≤x → transitive X x' x y x'≤x x≤y ;
   isMonotone = λ {x} {y} {y'} x≤y y≤y' -> transitive X x y y' x≤y y≤y' }
+
+
+compRel : {X Y Z : Type} ->
+  (R1 : Y -> Z -> Type ℓ) ->
+  (R2 : X -> Y -> Type ℓ) ->
+  (X -> Z -> Type ℓ)
+compRel {ℓ} {X} {Y} {Z} R1 R2 x z = Σ[ y ∈ Y ] R2 x y × R1 y z
+
+CompMonRel : {X Y Z : Predomain} ->
+  MonRel {ℓ} Y Z ->
+  MonRel {ℓ} X Y ->
+  MonRel {ℓ} X Z
+CompMonRel {ℓ} {X} {Y} {Z} R1 R2 = record {
+  R = compRel (MonRel.R R1) (MonRel.R R2) ;
+  isAntitone = antitone ;
+  isMonotone = {!!} }
+    where
+      antitone : {x x' : ⟨ X ⟩} {z : ⟨ Z ⟩} ->
+        compRel (MonRel.R R1) (MonRel.R R2) x z ->
+        rel X x' x ->
+        compRel (MonRel.R R1) (MonRel.R R2) x' z 
+      antitone (y , xR2y , yR1z) x'≤x = y , (MonRel.isAntitone R2 xR2y x'≤x) , yR1z
+
+      monotone : {x : ⟨ X ⟩} {z z' : ⟨ Z ⟩} ->
+        compRel (MonRel.R R1) (MonRel.R R2) x z ->
+        rel Z z z' ->
+        compRel (MonRel.R R1) (MonRel.R R2) x z'
+      monotone (y , xR2y , yR1z) z≤z' = y , xR2y , (MonRel.isMonotone R1 yR1z z≤z')
 
 
 {-
@@ -408,6 +464,8 @@ UnitP = flat (Unit , isSetUnit)
 
 -- Predomains from arrows (need to ensure monotonicity)
 
+
+
 -- Ordering on functions between predomains. This does not require that the
 -- functions are monotone.
 fun-order-het : (P1 P1' P2 P2' : Predomain) ->
@@ -418,6 +476,8 @@ fun-order-het P1 P1' P2 P2' rel-P1P1' rel-P2P2' fP1P2 fP1'P2' =
   (p : ⟨ P1 ⟩) -> (p' : ⟨ P1' ⟩) ->
   rel-P1P1' p p' ->
   rel-P2P2' (fP1P2 p) (fP1'P2' p')
+
+
 
 
 -- TODO can define this in terms of fun-order-het
@@ -504,22 +564,31 @@ arr' P1 P2 =
     _≤P1_ = P1._≤_
     _≤P2_ = P2._≤_
 
-    {-
-    mon-fun-order : MonFun P1 P2 → MonFun P1 P2 → Type ℓ-zero
-    mon-fun-order mon-f1 mon-f2 =
-      fun-order P1 P2 (MonFun.f mon-f1) (MonFun.f mon-f2)
-    -}
-
-    {-
-    fun-order : MonFun P1 P2 → MonFun P1 P2 → Type ℓ-zero
-    fun-order mon-f1 mon-f2 =
-      (x y : ⟨ P1 ⟩) -> x ≤P1 y -> (mon-f1 .f) x ≤P2 (mon-f2 .f) y
-    -}
 
 _==>_ : Predomain -> Predomain -> Predomain
 A ==> B = arr' A B
 
 infixr 20 _==>_
+
+
+
+-- TODO show that this is a monotone relation
+
+-- TODO define version where the arguments are all monotone relations
+-- instead of arbitrary relations
+
+FunRel : {A A' B B' : Predomain} ->
+  MonRel {ℓ-zero} A A' ->
+  MonRel {ℓ-zero} B B' ->
+  MonRel {ℓ-zero} (A ==> B) (A' ==> B')
+FunRel {A} {A'} {B} {B'} RAA' RBB' =
+  record {
+    R = λ f f' → fun-order-het A A' B B'
+                   (MonRel.R RAA') (MonRel.R RBB')
+                   (MonFun.f f) (MonFun.f f') ;
+    isAntitone = {!!} ;
+    isMonotone = λ {f} {f'} {g'} f≤f' f'≤g' a a' a≤a' →
+      MonRel.isMonotone RBB' (f≤f' a a' a≤a') {!!} } -- (f'≤g' a' a' (reflexive A' a')) }
 
 
 arr : Predomain -> ErrorDomain -> ErrorDomain
@@ -538,8 +607,13 @@ arr dom cod =
 
        const-err-bot : (f : ⟨ arr' dom (𝕌 cod) ⟩) -> rel (arr' dom (𝕌 cod)) const-err f
        const-err-bot f = λ x y x≤y → ErrorDomain.℧⊥ cod (MonFun.f f y)
-       
+ 
 
+
+-- Delay function
+δ : {X : Type} -> L℧ X -> L℧ X
+δ = θ ∘ next
+  where open L℧
 
 
 
@@ -549,7 +623,7 @@ arr dom cod =
 
 module LiftRelation
   (A B : Predomain)
-  (ordAB : ⟨ A ⟩ -> ⟨ B ⟩ -> Type)
+  (RAB : ⟨ A ⟩ -> ⟨ B ⟩ -> Type)
   where
 
   module A = PosetStr (A .snd)
@@ -558,90 +632,48 @@ module LiftRelation
   open A renaming (_≤_ to _≤A_)
   open B renaming (_≤_ to _≤B_)
 
-  ord' : ▹ ( L℧ ⟨ A ⟩ → L℧ ⟨ B ⟩ → Type) ->
-             L℧ ⟨ A ⟩ → L℧ ⟨ B ⟩ → Type
-  ord' rec (η a) (η b) = ordAB a b
-  ord' rec ℧ lb = Unit
-  ord' rec (θ la~) (θ lb~) = ▸ (λ t → rec t (la~ t) (lb~ t))
-  ord' _ _ _ = ⊥
+  module Inductive
+    (rec : ▹ ( L℧ ⟨ A ⟩ → L℧ ⟨ B ⟩ → Type)) where
 
-  ord : L℧ ⟨ A ⟩ -> L℧ ⟨ B ⟩ -> Type
-  ord = fix ord'
+    _≾'_ : L℧ ⟨ A ⟩ → L℧ ⟨ B ⟩ → Type
+    (η a) ≾' (η b) = RAB a b
+    ℧ ≾' lb = Unit
+    (θ la~) ≾' (θ lb~) = ▸ (λ t → rec t (la~ t) (lb~ t))
+    _ ≾' _ = ⊥
 
-  unfold-ord : ord ≡ ord' (next ord)
-  unfold-ord = fix-eq ord'
+  _≾_ : L℧ ⟨ A ⟩ -> L℧ ⟨ B ⟩ -> Type
+  _≾_ = fix _≾'_
+    where open Inductive
 
-  ord-η-monotone : {a : ⟨ A ⟩} -> {b : ⟨ B ⟩} -> ordAB a b -> ord (η a) (η b)
-  ord-η-monotone {a} {b} a≤b = transport (sym (λ i → unfold-ord i (η a) (η b))) a≤b
+  unfold-≾ : _≾_ ≡ Inductive._≾'_ (next _≾_)
+  unfold-≾ = fix-eq Inductive._≾'_
 
-  ord-bot : (lb : L℧ ⟨ B ⟩) -> ord ℧ lb
-  ord-bot lb = transport (sym (λ i → unfold-ord i ℧ lb)) tt
+  module Properties where
+     open Inductive (next _≾_)
 
+     ≾->≾' : {la : L℧ ⟨ A ⟩} {lb : L℧ ⟨ B ⟩} ->
+       la ≾ lb -> la ≾' lb
+     ≾->≾' {la} {lb} la≾lb = transport (λ i → unfold-≾ i la lb) la≾lb
 
-module LiftRelMonotone
-  (A B C : Predomain)
-  (ordAB : ⟨ A ⟩ -> ⟨ B ⟩ -> Type)
-  (ordBC : ⟨ B ⟩ -> ⟨ C ⟩ -> Type)
-  where
+     ≾'->≾ : {la : L℧ ⟨ A ⟩} {lb : L℧ ⟨ B ⟩} ->
+       la ≾' lb -> la ≾ lb
+     ≾'->≾ {la} {lb} la≾'lb = transport (sym (λ i → unfold-≾ i la lb)) la≾'lb
 
-  module A = PosetStr (A .snd)
-  module B = PosetStr (B .snd)
-  module C = PosetStr (C .snd)
+     ord-η-monotone : {a : ⟨ A ⟩} -> {b : ⟨ B ⟩} -> RAB a b -> (η a) ≾ (η b)
+     ord-η-monotone {a} {b} a≤b = transport (sym (λ i → unfold-≾ i (η a) (η b))) a≤b
 
-  open A renaming (_≤_ to _≤A_)
-  open B renaming (_≤_ to _≤B_)
-  open C renaming (_≤_ to _≤C_)
-
-  open LiftRelation A B ordAB renaming (ord to ordLALB; unfold-ord to unfold-ordLALB)
-  open LiftRelation B C ordBC renaming (ord to ordLBLC; unfold-ord to unfold-ordLBLC)
-
-  ordAC : ⟨ A ⟩ -> ⟨ C ⟩ -> Type
-  ordAC a c = Σ ⟨ B ⟩ λ b → ordAB a b × ordBC b c
-
-  open LiftRelation A C ordAC renaming (ord to ordLALC; unfold-ord to unfold-ordLALC)
-
-
-  {-
-  ord-trans-ind :
-        ▹ ((a b c : L℧ ⟨ p ⟩) ->
-           ord' (next ord) a b ->
-           ord' (next ord) b c ->
-           ord' (next ord) a c) ->
-        (a b c : L℧ ⟨ p ⟩) ->
-         ord' (next ord) a b ->
-         ord' (next ord) b c ->
-         ord' (next ord) a c
-  -}
-
-
-  ord-trans :
-    (la : L℧ ⟨ A ⟩) (lb : L℧ ⟨ B ⟩) (lc : L℧ ⟨ C ⟩) ->
-    ordLALB la lb -> ordLBLC lb lc -> ordLALC la lc
-  ord-trans la lb lc la≤lb lb≤lc = {!!}
- 
-
-  {- ord-trans = fix (transport (sym (λ i ->
-         (▹ ((a b c : L℧ ⟨ p ⟩) →
-            unfold-ord i a b → unfold-ord i b c → unfold-ord i a c) →
-             (a b c : L℧ ⟨ p ⟩) →
-            unfold-ord i a b → unfold-ord i b c → unfold-ord i a c))) ord-trans-ind)
-  -}
-  
-
--- Delay function
-δ : {X : Type} -> L℧ X -> L℧ X
-δ = θ ∘ next
-  where open L℧
+     ord-bot : (lb : L℧ ⟨ B ⟩) -> ℧ ≾ lb
+     ord-bot lb = transport (sym (λ i → unfold-≾ i ℧ lb)) tt
 
 
 -- Predomain to lift predomain
-module 𝕃 (p : Predomain) where
+module LiftPredomain (p : Predomain) where
 
   module X = PosetStr (p .snd)
   open X using (_≤_)
       -- _≤_ = X._≤_
 
-
+  {-
   ord' : ▹ ( L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type) ->
                  L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type
   ord' _ ℧ _ = Unit
@@ -653,54 +685,86 @@ module 𝕃 (p : Predomain) where
 
   ord :  L℧ ⟨ p ⟩ → L℧ ⟨ p ⟩ → Type
   ord = fix ord'
+  -}
 
-  _≾_ : L℧ ⟨ p ⟩ -> L℧ ⟨ p ⟩ -> Type
-  _≾_ = ord
+  -- _≾_ : L℧ ⟨ p ⟩ -> L℧ ⟨ p ⟩ -> Type
+  -- _≾_ = LiftRelation._≾_ p p (_≤_)
 
-  unfold-ord : ord ≡ ord' (next ord)
-  unfold-ord = fix-eq ord'
+  -- unfold-ord : ord ≡ ord' (next ord)
+  -- unfold-ord = fix-eq ord'
 
-  ord-η-monotone : {x y : ⟨ p ⟩} -> x ≤ y -> ord (η x) (η y)
-  ord-η-monotone {x} {y} x≤y = transport (sym λ i → unfold-ord i (η x) (η y)) x≤y
+   {-
+   ≈->≈' : {lx ly : L℧ ⟨ d ⟩} ->
+     lx ≈ ly -> lx ≈' ly
+   ≈->≈' {lx} {ly} lx≈ly = transport (λ i → unfold-≈ i lx ly) lx≈ly
 
-  ord-δ-monotone : {lx ly : L℧ ⟨ p ⟩} -> ord lx ly -> ord (δ lx) (δ ly)
-  ord-δ-monotone = {!!}
+   ≈'->≈ : {lx ly : L℧ ⟨ d ⟩} ->
+     lx ≈' ly -> lx ≈ ly
+   ≈'->≈ {lx} {ly} lx≈'ly = transport (sym (λ i → unfold-≈ i lx ly)) lx≈'ly
+   -}
 
-  ord-bot : (lx : L℧ ⟨ p ⟩) -> ord ℧ lx
-  ord-bot lx = transport (sym λ i → unfold-ord i ℧ lx) tt
+
+  -- Open the more general definitions from the heterogeneous
+  -- lifting module, specializing the types for the current
+  -- (homogeneous) situation, and re-export the definitions for
+  -- clients of this module to use at these specialized types.
+  open LiftRelation p p _≤_ public
+
+  -- could also say: open LiftRelation.Inductive p p _≤_ (next _≾_)
+  open Inductive (next _≾_) public
+  open Properties public
+
+  {-
+  ord-η-monotone : {x y : ⟨ p ⟩} -> x ≤ y -> (η x) ≾ (η y)
+  ord-η-monotone {x} {y} x≤y = transport (sym λ i → unfold-≾ i (η x) (η y)) x≤y
+  -}
+
+  -- TODO move to heterogeneous lifting module
+  ord-δ-monotone : {lx ly : L℧ ⟨ p ⟩} -> lx ≾ ly -> (δ lx) ≾ (δ ly)
+  ord-δ-monotone {lx} {ly} lx≤ly =
+    transport (sym (λ i → unfold-≾ i (δ lx) (δ ly))) (ord-δ-monotone' lx≤ly)
+    where
+      ord-δ-monotone' : {lx ly : L℧ ⟨ p ⟩} ->
+        lx ≾ ly ->
+        Inductive._≾'_ (next _≾_) (δ lx) (δ ly)
+      ord-δ-monotone' {lx} {ly} lx≤ly = λ t → lx≤ly
+
+  {-
+  ord-bot : (lx : L℧ ⟨ p ⟩) -> ℧ ≾ lx
+  ord-bot lx = transport (sym λ i → unfold-≾ i ℧ lx) tt
+  -}
 
   -- lift-ord : (A -> A -> Type) -> (L℧ A -> L℧ A -> Type)
 
-  ord-refl-ind : ▹ ((a : L℧ ⟨ p ⟩) -> ord a a) ->
-                    (a : L℧ ⟨ p ⟩) -> ord a a
+  ord-refl-ind : ▹ ((a : L℧ ⟨ p ⟩) -> a ≾ a) ->
+                    (a : L℧ ⟨ p ⟩) -> a ≾ a
 
   ord-refl-ind IH (η x) =
-    transport (sym (λ i -> fix-eq ord' i (η x) (η x))) (IsPoset.is-refl X.isPoset x)
+    transport (sym (λ i -> unfold-≾ i (η x) (η x))) (IsPoset.is-refl X.isPoset x)
   ord-refl-ind IH ℧ =
-    transport (sym (λ i -> fix-eq ord' i ℧ ℧)) tt
+    transport (sym (λ i -> unfold-≾ i ℧ ℧)) tt
   ord-refl-ind IH (θ x) =
-    transport (sym (λ i -> fix-eq ord' i (θ x) (θ x))) λ t → IH t (x t)
+    transport (sym (λ i -> unfold-≾ i (θ x) (θ x))) λ t → IH t (x t)
 
-  ord-refl : (a : L℧ ⟨ p ⟩) -> ord a a
+  ord-refl : (a : L℧ ⟨ p ⟩) -> a ≾ a
   ord-refl = fix ord-refl-ind
 
- 
 
   𝕃 : Predomain
   𝕃 =
     (L℧ ⟨ p ⟩) ,
-    (posetstr ord (isposet {!!} {!!} ord-refl ord-trans {!!}))
+    (posetstr _≾_ (isposet {!!} {!!} ord-refl ord-trans {!!}))
     where
-
+      
       ord-trans-ind :
         ▹ ((a b c : L℧ ⟨ p ⟩) ->
-           ord' (next ord) a b ->
-           ord' (next ord) b c ->
-           ord' (next ord) a c) ->
+           a ≾' b ->
+           b ≾' c ->
+           a ≾' c) ->
         (a b c : L℧ ⟨ p ⟩) ->
-         ord' (next ord) a b ->
-         ord' (next ord) b c ->
-         ord' (next ord) a c
+         a ≾' b ->
+         b ≾' c ->
+         a ≾' c
       ord-trans-ind IH (η x) (η y) (η z) ord-ab ord-bc =
         IsPoset.is-trans X.isPoset x y z ord-ab ord-bc
         -- x ≡⟨ ord-ab ⟩ y ≡⟨ ord-bc ⟩ z ∎
@@ -711,17 +775,67 @@ module 𝕃 (p : Predomain) where
       ord-trans-ind IH (η x) (θ y) (θ z) ord-ab ord-bc = ord-ab
       ord-trans-ind IH ℧ b c ord-ab ord-bc = tt
       ord-trans-ind IH (θ lx~) (θ ly~) (θ lz~) ord-ab ord-bc =
-        λ t -> transport (sym λ i → unfold-ord i (lx~ t) (lz~ t))
+        λ t -> transport (sym λ i → unfold-≾ i (lx~ t) (lz~ t))
           (IH t (lx~ t) (ly~ t) (lz~ t)
-          (transport (λ i -> unfold-ord i (lx~ t) (ly~ t)) (ord-ab t))
-          (transport (λ i -> unfold-ord i (ly~ t) (lz~ t)) (ord-bc t)))
+          (transport (λ i -> unfold-≾ i (lx~ t) (ly~ t)) (ord-ab t))
+          (transport (λ i -> unfold-≾ i (ly~ t) (lz~ t)) (ord-bc t)))
 
-      ord-trans : (a b c : L℧ ⟨ p ⟩) -> ord a b -> ord b c -> ord a c
+      ord-trans : (a b c : L℧ ⟨ p ⟩) -> a ≾ b -> b ≾ c -> a ≾ c
       ord-trans = fix (transport (sym (λ i ->
          (▹ ((a b c : L℧ ⟨ p ⟩) →
-            unfold-ord i a b → unfold-ord i b c → unfold-ord i a c) →
+            unfold-≾ i a b → unfold-≾ i b c → unfold-≾ i a c) →
              (a b c : L℧ ⟨ p ⟩) →
-            unfold-ord i a b → unfold-ord i b c → unfold-ord i a c))) ord-trans-ind)
+            unfold-≾ i a b → unfold-≾ i b c → unfold-≾ i a c))) ord-trans-ind)
+
+
+
+
+module LiftRelMon
+  (A B : Predomain)
+  (RAB : MonRel A B) where
+
+  -- Bring the heterogeneous relation between 𝕃 A and 𝕃 B into scope
+  open LiftRelation A B (MonRel.R RAB)
+    using (_≾_ ; module Inductive ; module Properties) -- brings _≾_ into scope
+  open Inductive (next _≾_)            -- brings _≾'_ into scope
+  open Properties -- brings conversion between _≾_ and _≾'_ into scope
+
+  -- Bring the homogeneous lifted relations on A and B into scope 
+  -- open LiftPredomain renaming (_≾_ to _≾h_ ; _≾'_ to _≾h'_)
+  open LiftPredomain using (𝕃)
+
+  _≾LA_ = LiftPredomain._≾_ A
+  _≾LB_ = LiftPredomain._≾_ B
+  -- Could also say:
+  -- open LiftPredomain A using () renaming (_≾_ to _≾LA_)
+
+  _≾'LA_ = LiftPredomain._≾'_ A
+  _≾'LB_ = LiftPredomain._≾'_ B
+
+
+  R : MonRel (𝕃 A) (𝕃 B)
+  R = record {
+    R = _≾_ ;
+    isAntitone = {!!} ;
+    isMonotone = {!!} }
+
+  antitone' :
+    ▹ ({la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
+        la ≾' lb -> la' ≾'LA la -> la' ≾' lb) ->
+       {la la' : L℧ ⟨ A ⟩} -> {lb : L℧ ⟨ B ⟩} ->
+        la ≾' lb -> la' ≾'LA la -> la' ≾' lb
+  antitone' IH {η a2} {η a1} {η a3} la≤lb la'≤la =
+    MonRel.isAntitone RAB la≤lb la'≤la
+  antitone' IH {la} {℧} {lb} la≤lb la'≤la = tt
+  antitone' IH {θ la2~} {θ la1~} {θ lb~} la≤lb la'≤la =
+    λ t → ≾'->≾ (IH t (≾->≾' (la≤lb t)) ({!!} ))
+
+  monotone : {!!}
+  monotone = {!!}
+
+ -- isAntitone : ∀ {x x' y} -> R x y -> x' ≤X x -> R x' y
+ -- isMonotone : ∀ {x y y'} -> R x y -> y ≤Y y' -> R x y'
+
 
 
 -- Predomain to lift Error Domain
@@ -733,7 +847,10 @@ module 𝕃 (p : Predomain) where
   where
     -- module X = PosetStr (X .snd)
     -- open Relation X
-    open 𝕃
+    open LiftPredomain
+
+
+
 
 
 
@@ -944,7 +1061,18 @@ module Bisimilarity (d : Predomain) where
      lx ≈' ly -> lx ≈ ly
     ≈'->≈ {lx} {ly} lx≈'ly = transport (sym (λ i → unfold-≈ i lx ly)) lx≈'ly
 
-
+    {-
+    ≈-℧ : (lx : L℧ ⟨ d ⟩) ->
+     lx ≈' ℧ -> (lx ≡ ℧) ⊎ (Σ Nat λ n -> lx ≡ (δ ^ n) ℧)
+    ≈-℧ ℧ H = inl refl
+    ≈-℧ (θ x) H = inr H
+    -}
+    
+    -- Simpler version of the above:
+    ≈-℧ : (lx : L℧ ⟨ d ⟩) ->
+     lx ≈' ℧ -> (Σ Nat λ n -> lx ≡ (δ ^ n) ℧)
+    ≈-℧ ℧ H = zero , refl
+    ≈-℧ (θ x) H = H
 
 {-
     bisim-θ : (lx~ ly~ : L℧ ⟨ d ⟩) ->
@@ -1027,7 +1155,9 @@ module Bisimilarity (d : Predomain) where
     -- which holds by IH.
 
     x≈δx : (lx : L℧ ⟨ d ⟩) -> lx ≈ (δ lx)
-    x≈δx = {!!}
+    x≈δx = transport
+      (sym (λ i → (lx : L℧ ⟨ d ⟩) -> unfold-≈ i lx (δ lx)))
+      (fix x≈'δx)
 
 
     -- ¬_ : Set → Set
@@ -1066,6 +1196,10 @@ module Bisimilarity (d : Predomain) where
 
     ℧-fixθ : ¬ (℧ ≈' θ (next (fix θ)))
     ℧-fixθ (n , H-eq) = {!!}
+
+
+
+
 
 
 
@@ -1138,6 +1272,7 @@ module Bisimilarity (d : Predomain) where
 
 
 
+{-
 -- Extensional relation (two terms are error-related "up to thetas")
 module ExtRel (d : Predomain) where
 
@@ -1148,7 +1283,7 @@ module ExtRel (d : Predomain) where
   x ⊴ y = Σ (L℧ ⟨ d ⟩) λ p -> Σ (L℧ ⟨ d ⟩) λ q ->
     (x ≈ p) × (p ≾ q) × (q ≈ y)
 
-
+-}
 
 
 

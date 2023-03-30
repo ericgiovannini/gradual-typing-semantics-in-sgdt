@@ -1,12 +1,12 @@
 {-# OPTIONS --cubical --rewriting --guarded #-}
-module Later where
+module Common.Later where
 
 -- | This file is adapted from the supplementary material for the
 -- | paper https://doi.org/10.1145/3372885.3373814, originally written
 -- | by Niccolò Veltri and Andrea Vezzosi see the LICENSE.txt for
 -- | their license.
 
-open import Agda.Builtin.Equality renaming (_≡_ to _≣_)
+open import Agda.Builtin.Equality renaming (_≡_ to _≣_) hiding (refl)
 open import Agda.Builtin.Equality.Rewrite
 open import Agda.Builtin.Sigma
 
@@ -130,18 +130,44 @@ next-Mt≡M' M t = next-Mt≡M M t
 
 
 
+
+
+-- Clock-related postulates.
+
+clock-ext : {ℓ : Level} {A : (k : Clock) -> Type ℓ} -> {M N : (k : Clock) -> A k} →
+  (∀ k → M k ≡ N k) → M ≡ N
+clock-ext eq i k = eq k i
+
+
 -- "Dependent" forcing (where the type can mention the clock).
 -- This seems to be the correct type of the force function.
 
 postulate
   force' : {A : Clock -> Type} -> (∀ k → (▹ k , A k)) → (∀ (k : Clock) → A k)
+  -- original (non-dependent) version:
+  -- force'-beta : ∀ {A : Type} (x : A) → force' (λ k -> next x) ≡ λ k → x
+
+  -- "Reduction" rules:
+
+  -- Builds in clock extensionality
+  force'-beta : ∀ {A : Clock -> Type} (f : ∀ k -> A k) →
+    force' (λ k -> next (f k)) ≡ f
+
+  -- Builds in clock extensionality
+  next-force' :     ∀ {A : Clock -> Type} (f : ∀ k -> ▹ k , A k) ->
+    (λ k -> next (force' f k)) ≡ f
+
+  --next-force' :     ∀ {A : Clock -> Type} (f : ∀ k -> ▹ k , A k) ->
+  --  (k : Clock) -> next (force' f k) ≡ f k
 
 
+force-iso : {A : Clock -> Type} -> Iso (∀ k -> (▹ k , A k)) (∀ k -> A k)
+force-iso = iso force' (λ f k → next (f k))
+  force'-beta
+  next-force'
+  -- (λ f → clock-ext (λ k → next-force' f k))
 
 
--- Clock-related postulates.
-postulate
-  clock-iso : {A : Type} -> (∀ (k : Clock) -> A) ≡ A
 
 postulate
   k0 : Clock
@@ -152,7 +178,7 @@ postulate
 -}
 
 -- Definition of clock irrelevance, parameterized by a specific type
-clock-irrel : Type -> Type
+clock-irrel : {ℓ : Level} -> Type ℓ -> Type ℓ
 clock-irrel A =
   (M : ∀ (k : Clock) -> A) ->
   (k k' : Clock) ->
@@ -165,15 +191,20 @@ clock-irrel A =
 
 -- If A is clock irrelevant, then the above map is inverse
 -- to the map A -> ∀ k . A.
+Iso-∀kA-A : {A : Type} -> clock-irrel A -> Iso (∀ (k : Clock) -> A) A
+Iso-∀kA-A {A} H-irrel-A = iso
+  (∀kA->A A)
+  (λ a k -> a)
+  (λ a → refl)
+  (λ f → clock-ext (λ k → H-irrel-A f k0 k))
 
 
 postulate
   nat-clock-irrel : clock-irrel ℕ
+  type-clock-irrel : clock-irrel Type
 
 
-clock-ext : {ℓ : Level} {A : (k : Clock) -> Type ℓ} -> {M N : (k : Clock) -> A k} →
-  (∀ k → M k ≡ N k) → M ≡ N
-clock-ext eq i k = eq k i
+
 
 
 

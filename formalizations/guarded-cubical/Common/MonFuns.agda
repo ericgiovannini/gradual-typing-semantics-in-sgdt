@@ -3,9 +3,9 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-open import Later
+open import Common.Later
 
-module MonFuns (k : Clock) where
+module Common.MonFuns (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat renaming (ℕ to Nat)
@@ -22,10 +22,11 @@ open import Cubical.Data.Empty
 
 open import Cubical.Foundations.Function
 
-open import StrongBisimulation k
-open import GradualSTLC
-open import SyntacticTermPrecision k
-open import Lemmas k
+open import Common.Common
+open import Semantics.StrongBisimulation k
+open import Syntax.GradualSTLC
+open import Syntax.SyntacticTermPrecision k
+open import Common.Lemmas k
 
 
 private
@@ -36,8 +37,9 @@ private
   ▹_ : Set l → Set l
   ▹_ A = ▹_,_ k A
 
+open MonFun
 
-open 𝕃
+open LiftPredomain
 
 -- abstract
 
@@ -106,8 +108,8 @@ mSuc = record {
 U : {A B : Predomain} -> ⟨ A ==> B ⟩ -> ⟨ A ⟩ -> ⟨ B ⟩
 U f = MonFun.f f
 
-_<$$>_ : {A B : Predomain} -> ⟨ A ==> B ⟩ -> ⟨ A ⟩ -> ⟨ B ⟩
-_<$$>_ = U
+_$_ : {A B : Predomain} -> ⟨ A ==> B ⟩ -> ⟨ A ⟩ -> ⟨ B ⟩
+_$_ = U
 
 S : (Γ : Predomain) -> {A B : Predomain} ->
     ⟨ Γ ×d A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
@@ -140,12 +142,15 @@ Id = record { f = id ; isMon = λ x≤y → x≤y }
 
 
 Curry : {Γ A B : Predomain} -> ⟨ (Γ ×d A) ==> B ⟩ -> ⟨ Γ ==> A ==> B ⟩
-Curry f = record {
+Curry {Γ} g = record {
     f = λ γ →
       record {
-        f = λ a → MonFun.f f (γ , a) ;
-        isMon = {!!} } ;
-    isMon = {!!} }
+        f = λ a → MonFun.f g (γ , a) ;
+        -- For a fixed γ, f as defined directly above is monotone
+        isMon = λ {a} {a'} a≤a' → MonFun.isMon g (reflexive Γ _ , a≤a') } ;
+
+    -- The outer f is monotone in γ
+    isMon = λ {γ} {γ'} γ≤γ' → λ a a' a≤a' -> MonFun.isMon g (γ≤γ' , a≤a') }
 
 Uncurry : {Γ A B : Predomain} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ (Γ ×d A) ==> B ⟩
 Uncurry f = record {
@@ -171,23 +176,10 @@ Swap Γ f = record {
       λ γ1 γ2 γ1≤γ2 -> {!!} } -- γ1 γ2 γ1≤γ2 → {!!} }
 
 
-  -- Convenience versions of comp, ext, and ret using combinators
-
-mComp' : (Γ : Predomain) -> {A B C : Predomain} ->
-    ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
-mComp' Γ f g = {!!}
-    --_ ! _ ! K Γ mComp <*> f <*> g
-    -- (K Γ mComp) <*> f <*> g
-
-
-_∘m_ : {Γ A B C : Predomain} ->
-   ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
-_∘m_ {Γ} = mComp' Γ
-
-_$_∘m_ :  (Γ : Predomain) -> {A B C : Predomain} ->
-    ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
-Γ $ f ∘m g = mComp' Γ f g
-infixl 20 _∘m_
+SwapPair : {A B : Predomain} -> ⟨ (A ×d B) ==> (B ×d A) ⟩
+SwapPair = record {
+  f = λ { (a , b) -> b , a } ;
+  isMon = λ { {a1 , b1} {a2 , b2} (a1≤a2 , b1≤b2) → b1≤b2 , a1≤a2} }
 
 
 -- Apply a monotone function to the first or second argument of a pair
@@ -210,17 +202,76 @@ Cong2nd = {!!}
 
 
 
-IntroArg : {Γ B B' : Predomain} ->
+IntroArg' : {Γ B B' : Predomain} ->
     ⟨ Γ ==> B ⟩ -> ⟨ B ==> B' ⟩ -> ⟨ Γ ==> B' ⟩
-IntroArg {Γ} {B} {B'} fΓB fBB' = S Γ (With2nd fBB') fΓB
+IntroArg' {Γ} {B} {B'} fΓB fBB' = S Γ (With2nd fBB') fΓB
 -- S : ⟨ Γ ×d A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
 
+IntroArg : {Γ B B' : Predomain} ->
+  ⟨ B ==> B' ⟩ -> ⟨ (Γ ==> B) ==> (Γ ==> B') ⟩
+IntroArg f = Curry (mCompU f App)
+
+
+PairAssocLR : {A B C : Predomain} ->
+  ⟨ A ×d B ×d C ==> A ×d (B ×d C) ⟩
+PairAssocLR = record {
+  f = λ { ((a , b) , c) → a , (b , c) } ;
+  isMon = λ { {(a1 , b1) , c1} {(a2 , b2) , c2} ((a1≤a2 , b1≤b2) , c1≤c2) →
+    a1≤a2 , (b1≤b2 , c1≤c2)} }
+
+PairAssocRL : {A B C : Predomain} ->
+ ⟨ A ×d (B ×d C) ==> A ×d B ×d C ⟩
+PairAssocRL = record {
+  f =  λ { (a , (b , c)) -> (a , b) , c } ;
+  isMon = λ { {a1 , (b1 , c1)} {a2 , (b2 , c2)} (a1≤a2 , (b1≤b2 , c1≤c2)) →
+    (a1≤a2 , b1≤b2) , c1≤c2} }
+
+PairCong : {Γ A A' : Predomain} ->
+  ⟨ A ==> A' ⟩ -> ⟨ (Γ ×d A) ==> (Γ ×d A') ⟩
+PairCong f = record {
+  f = λ { (γ , a) → γ , (f $ a)} ;
+  isMon = λ { {γ1 , a1} {γ2 , a2} (γ1≤γ2 , a1≤a2) → γ1≤γ2 , isMon f a1≤a2 }}
+
+{-
+PairCong : {Γ A A' : Predomain} ->
+  ⟨ A ==> A' ⟩ -> ⟨ (Γ ×d A) ==> (Γ ×d A') ⟩
+PairCong f = Uncurry (mCompU {!!} {!!})
+-- Goal: 
+-- Γ ==> (A ==> Γ ×d A')
+-- Write it as : Γ ==> (A ==> (A' ==> Γ ×d A'))
+-- i.e. Γ ==> A' ==> Γ ×d A'
+-- Pair : ⟨ A ==> B ==> A ×d B ⟩
+-}
 
 TransformDomain : {Γ A A' B : Predomain} ->
     ⟨ Γ ×d A ==> B ⟩ ->
     ⟨ ( A ==> B ) ==> ( A' ==> B ) ⟩ ->
     ⟨ Γ ×d A' ==> B ⟩
-TransformDomain f1 f2 = Uncurry (IntroArg (Curry f1) f2)
+TransformDomain fΓ×A->B f = Uncurry (IntroArg' (Curry fΓ×A->B) f)
+
+
+
+  -- Convenience versions of comp, ext, and ret using combinators
+
+mComp' : (Γ : Predomain) -> {A B C : Predomain} ->
+    ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
+mComp' Γ {A} {B} {C} f g = S {!!} (mCompU f aux) g
+    where
+      aux : ⟨ Γ ×d A ×d B ==> Γ ×d B ⟩
+      aux = mCompU π1 (mCompU (mCompU PairAssocRL (PairCong SwapPair)) PairAssocLR)
+
+      aux2 : ⟨ Γ ×d B ==> C ⟩ -> ⟨ Γ ×d A ×d B ==> C ⟩
+      aux2 h = mCompU f aux
+
+
+_∘m_ : {Γ A B C : Predomain} ->
+   ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
+_∘m_ {Γ} = mComp' Γ
+
+_$_∘m_ :  (Γ : Predomain) -> {A B C : Predomain} ->
+    ⟨ (Γ ×d B ==> C) ⟩ -> ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d A ==> C) ⟩
+Γ $ f ∘m g = mComp' Γ f g
+infixl 20 _∘m_
 
 
 mExt' : (Γ : Predomain) -> {A B : Predomain} ->
@@ -250,7 +301,7 @@ mMap {A} {B} = Curry (mExt' (A ==> B) ((With2nd mRet) ∘m App))
 
 mMap' : {Γ A B : Predomain} ->
     ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ×d 𝕃 A ==> 𝕃 B) ⟩
-mMap' f = Uncurry {!!}
+mMap' f = {!!}
 
 Map : {Γ A B : Predomain} ->
     ⟨ (Γ ×d A ==> B) ⟩ -> ⟨ (Γ ==> 𝕃 A) ⟩ -> ⟨ (Γ ==> 𝕃 B) ⟩
@@ -321,6 +372,7 @@ mFunProj A A' B B' fAA' fB'LB = {!!}
   -- ((ext ((mapL fBB') ∘ f1)) ∘ fA'LA) (a'1) ≤ ((ext ((mapL fBB') ∘ f2)) ∘ fA'LA) (a'2)
 
 
+{-
  -- Properties
 bind-unit-l : {Γ A B : Predomain} ->
     (f : ⟨ Γ ×d A ==> 𝕃 B ⟩) ->
@@ -358,3 +410,5 @@ bind-K = {!!}
  {- Goal: rel (⟦ Γ ⟧ctx ==> 𝕃 ⟦ B ⟧ty) ⟦ err [ N ] ⟧tm
       (Bind ⟦ Γ ⟧ctx ⟦ N ⟧tm (Curry ⟦ err ⟧tm))
  -}
+
+-}

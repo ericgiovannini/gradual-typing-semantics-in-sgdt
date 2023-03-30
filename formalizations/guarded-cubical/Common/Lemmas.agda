@@ -3,9 +3,9 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-open import Later
+open import Common.Later
 
-module Lemmas (k : Clock) where
+module Common.Lemmas (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
@@ -21,9 +21,9 @@ open import Cubical.Data.Empty
 
 open import Cubical.Foundations.Function
 
-open import StrongBisimulation k
-open import GradualSTLC
-open import SyntacticTermPrecision k
+open import Semantics.StrongBisimulation k
+open import Syntax.GradualSTLC
+open import Syntax.SyntacticTermPrecision k
 
 private
   variable
@@ -33,7 +33,7 @@ private
   ▹_ : Set l → Set l
   ▹_ A = ▹_,_ k A
 
-open 𝕃
+open LiftPredomain
 
 {-
 test : (A B : Type) -> (eq : A ≡ B) -> (x : A) -> (T : (A : Type) -> A -> Type) ->
@@ -137,7 +137,72 @@ mTransportDomain {A} {B} {C} eq f = record {
 -- ord' (next ord) (ext' f (next (ext f)) la) (ext' f (next (ext f)) la')
 
 
--- ext respects monotonicity 
+-- ext respects monotonicity, in a general, heterogeneous sense
+ext-monotone-het : {A A' B B' : Predomain} ->
+  (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type) -> (rBB' : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type) ->
+  (f : ⟨ A ⟩ -> ⟨ (𝕃 B) ⟩) -> (f' : ⟨ A' ⟩ -> ⟨ (𝕃 B') ⟩) ->
+  fun-order-het A A' (𝕃 B) (𝕃 B') rAA' (LiftRelation._≾_ B B' rBB') f f' ->
+  (la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩) ->
+  (LiftRelation._≾_ A A' rAA' la la') ->
+  LiftRelation._≾_ B B' rBB' (ext f la) (ext f' la')
+ext-monotone-het {A} {A'} {B} {B'} rAA' rBB' f f' f≤f' la la' la≤la' =
+  let fixed = fix (monotone-ext') in
+  transport
+    (sym (λ i -> LiftBB'.unfold-≾ i (unfold-ext f i la) (unfold-ext f' i la')))
+    (fixed la la' (transport (λ i → LiftAA'.unfold-≾ i la la') la≤la'))
+  where
+
+    -- bring the homogeneous lifted relations into scope
+    _≾LA_  = LiftPredomain._≾_ A
+    _≾LA'_ = LiftPredomain._≾_ A'
+    _≾LB_  = LiftPredomain._≾_ B
+    _≾LB'_ = LiftPredomain._≾_ B'
+
+    -- Note that these next four have already been
+    -- passed (next _≾_) as a parameter (this happened in
+    -- the defintion of the module 𝕃, where we said
+    -- open Inductive (next _≾_) public)
+    _≾'LA_  = LiftPredomain._≾'_ A
+    _≾'LA'_ = LiftPredomain._≾'_ A'
+    _≾'LB_  = LiftPredomain._≾'_ B
+    _≾'LB'_ = LiftPredomain._≾'_ B'
+
+
+    module LiftAA' = LiftRelation A A' rAA'
+    module LiftBB' = LiftRelation B B' rBB'
+
+    -- The heterogeneous lifted relations
+    _≾'LALA'_ = LiftAA'.Inductive._≾'_ (next LiftAA'._≾_)
+    _≾'LBLB'_ = LiftBB'.Inductive._≾'_ (next LiftBB'._≾_)
+    
+
+    monotone-ext' :
+      ▹ (
+          (la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩)  ->
+          (la ≾'LALA' la') ->
+          (ext' f  (next (ext f))  la) ≾'LBLB'
+          (ext' f' (next (ext f')) la')) ->
+       (la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩)  ->
+          (la ≾'LALA' la') ->
+          (ext' f  (next (ext f))  la) ≾'LBLB'
+          (ext' f' (next (ext f')) la')
+    monotone-ext' IH (η x) (η y) x≤y =
+      transport
+      (λ i → LiftBB'.unfold-≾ i (f x) (f' y))
+      (f≤f' x y x≤y)
+    monotone-ext' IH ℧ la' la≤la' = tt
+    monotone-ext' IH (θ lx~) (θ ly~) la≤la' = λ t ->
+      transport
+        (λ i → (sym (LiftBB'.unfold-≾)) i
+          (sym (unfold-ext f) i (lx~ t))
+          (sym (unfold-ext f') i (ly~ t)))
+        (IH t (lx~ t) (ly~ t)
+          (transport (λ i -> LiftAA'.unfold-≾ i (lx~ t) (ly~ t)) (la≤la' t)))
+
+
+
+-- ext respects monotonicity (in the usual homogeneous sense)
+-- This can be rewritten to reuse the above result!
 ext-monotone : {A B : Predomain} ->
   (f f' : ⟨ A ⟩ -> ⟨ (𝕃 B) ⟩) ->
   fun-order A (𝕃 B) f f' ->
@@ -147,35 +212,45 @@ ext-monotone : {A B : Predomain} ->
 ext-monotone {A} {B} f f' f≤f' la la' la≤la' =
   let fixed = fix (monotone-ext' f f' f≤f') in
   transport
-    (sym (λ i -> unfold-ord B i (unfold-ext f i la) (unfold-ext f' i la')))
-    (fixed la la' (transport (λ i → unfold-ord A i la la') la≤la'))
+    (sym (λ i -> unfold-≾ B i (unfold-ext f i la) (unfold-ext f' i la')))
+    (fixed la la' (transport (λ i → unfold-≾ A i la la') la≤la'))
   where
+
+    -- bring the homogeneous lifted relations into scope
+    _≾LA_ = LiftPredomain._≾_ A
+    _≾LB_ = LiftPredomain._≾_ B
+
+    -- Note that these next two have already been
+    -- passed (next _≾_) as a parameter (this happened in
+    -- the defintion of the module 𝕃, where we said
+    -- open Inductive (next _≾_) public)
+    _≾'LA_ = LiftPredomain._≾'_ A
+    _≾'LB_ = LiftPredomain._≾'_ B
+
     monotone-ext' :
       (f f' : ⟨ A ⟩ -> ⟨ (𝕃 B) ⟩) ->
       (fun-order A (𝕃 B) f f') ->
       ▹ (
         (la la' : ⟨ 𝕃 A ⟩) ->
-         ord' A (next (ord A)) la la' ->
-         ord' B (next (ord B))
-          (ext' f  (next (ext f))  la)
+          la ≾'LA la' ->
+          (ext' f  (next (ext f))  la) ≾'LB
           (ext' f' (next (ext f')) la')) ->
      (la la' : ⟨ 𝕃 A ⟩) ->
-       ord' A (next (ord A)) la la' ->
-       ord' B (next (ord B))
-        (ext' f  (next (ext f))  la)
+        la ≾'LA la' ->
+        (ext' f  (next (ext f))  la) ≾'LB
         (ext' f' (next (ext f')) la')
     monotone-ext' f f' f≤f' IH (η x) (η y) x≤y =
       transport
-      (λ i → unfold-ord B i (f x) (f' y))
+      (λ i → unfold-≾ B i (f x) (f' y))
       (f≤f' x y x≤y)
     monotone-ext' f f' f≤f' IH ℧ la' la≤la' = tt
     monotone-ext' f f' f≤f' IH (θ lx~) (θ ly~) la≤la' = λ t ->
       transport
-        (λ i → (sym (unfold-ord B)) i
+        (λ i → (sym (unfold-≾ B)) i
           (sym (unfold-ext f) i (lx~ t))
           (sym (unfold-ext f') i (ly~ t)))
         (IH t (lx~ t) (ly~ t)
-          (transport (λ i -> unfold-ord A i (lx~ t) (ly~ t)) (la≤la' t)))
+          (transport (λ i -> unfold-≾ A i (lx~ t) (ly~ t)) (la≤la' t)))
 
 
 
@@ -223,6 +298,20 @@ bind-monotone {A} {B} {la} {la'} f f' la≤la' f≤f' =
   ext-monotone f f' f≤f' la la' la≤la'
    
 
+mapL-monotone-het : {A A' B B' : Predomain} ->
+  (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type) -> (rBB' : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type) ->
+  (f : ⟨ A ⟩ -> ⟨ B ⟩) -> (f' : ⟨ A' ⟩ -> ⟨ B' ⟩) ->
+  fun-order-het A A' B B' rAA' rBB' f f' ->
+  (la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩) ->
+  (LiftRelation._≾_ A A' rAA' la la') ->
+   LiftRelation._≾_ B B' rBB' (mapL f la) (mapL f' la')
+mapL-monotone-het {A} {A'} {B} {B'} rAA' rBB' f f' f≤f' la la' la≤la' =
+  ext-monotone-het rAA' rBB' (ret ∘ f) (ret ∘ f')
+    (λ a a' a≤a' → LiftRelation.Properties.ord-η-monotone B B' rBB' (f≤f' a a' a≤a'))
+    la la' la≤la'
+
+
+-- This is a special case of the above
 mapL-monotone : {A B : Predomain} ->
   {la la' : ⟨ 𝕃 A ⟩} ->
   (f f' : ⟨ A ⟩ -> ⟨ B ⟩) ->

@@ -2,10 +2,14 @@
 
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --lossy-unification #-} -- Makes type-checking *much* faster
+-- (Otherwise, finding the implicit arguments for the definitions in EP-arrow
+-- takes a long time)
+-- See https://agda.readthedocs.io/en/v2.6.3/language/lossy-unification.html
 
-open import Later
+open import Common.Later
 
-module Semantics (k : Clock) where
+module Semantics.Semantics (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
@@ -22,22 +26,26 @@ open import Cubical.Data.Empty
 
 open import Cubical.Foundations.Function
 
-open import StrongBisimulation k
-open import GradualSTLC
-open import SyntacticTermPrecision k
-open import Lemmas k
-open import MonFuns k
+open import Common.Common
+
+open import Semantics.StrongBisimulation k
+open import Syntax.GradualSTLC
+-- open import SyntacticTermPrecision k
+open import Common.Lemmas k
+open import Common.MonFuns k
 
 private
   variable
     l : Level
     A B : Set l
+    ℓ ℓ' : Level
 private
   ▹_ : Set l → Set l
   ▹_ A = ▹_,_ k A
 
 
-open 𝕃
+open LiftPredomain using (𝕃 ; ord-η-monotone ; ord-δ-monotone ; ord-bot )
+
 
 -- Denotations of Types
 
@@ -114,40 +122,46 @@ DynP-rel : ∀ d1 d2 ->
   rel DynP (DynP'-to-DynP d1) (DynP'-to-DynP d2)
 DynP-rel d1 d2 d1≤d2 = transport
   (λ i → rel (unfold-DynP (~ i))
-    (transport-filler (λ j -> ⟨ unfold-DynP (~ j) ⟩) d1 i)
+    (transport-filler (λ j -> ⟨ unfold-DynP (~ j) ⟩) d1 i) -- can also just use (sym unfold-⟨DynP⟩) and remove the λ j
     (transport-filler (λ j -> ⟨ unfold-DynP (~ j) ⟩) d2 i))
   d1≤d2
 
-
-{-
-rel-lemma : ∀ d1 d2 ->
-  rel (DynP' (next DynP)) d1 d2 ->
-  rel DynP (transport (sym unfold-⟨DynP⟩) d1) (transport (sym unfold-⟨DynP⟩) d2)
-rel-lemma d1 d2 d1≤d2 = {!!}
-transport
-  (λ i -> rel (unfold-DynP (~ i))
-    (transport-filler (λ j -> sym unfold-⟨DynP⟩ j ) d1 i)
-    {!!}
-    --(transport-filler (sym unfold-⟨DynP⟩) d1 i)
-    --(transport-filler (sym unfold-⟨DynP⟩) d2 i)
-  )
+DynP'-rel : ∀ d1 d2 ->
+  rel DynP d1 d2 ->
+  rel (DynP' (next DynP)) (DynP-to-DynP' d1) (DynP-to-DynP' d2)
+DynP'-rel d1 d2 d1≤d2 = transport
+  (λ i → rel (unfold-DynP i)
+    (transport-filler (λ j -> ⟨ unfold-DynP j ⟩) d1 i) -- can also just use unfold-⟨DynP⟩ and remove the λ j
+    (transport-filler (λ j -> ⟨ unfold-DynP j ⟩) d2 i))
   d1≤d2
--}
-
 
 
 -------------------------------------
 -- *** Embedding-projection pairs ***
 
+-- open MonRel
+-- open MonFun
+-- open LiftRelation
 
-record EP (A B : Predomain) : Set where
+record EP (A B : Predomain) : Type (ℓ-suc ℓ-zero)  where
+  open LiftPredomain using () renaming (_≾_ to _≾hom_)
+  open LiftRelation
+  open MonRel
+  open MonFun
   field
     emb : MonFun A B
     proj : MonFun B (𝕃 A)
     wait-l-e : ⟨ A ==> A ⟩
-    wait-l-p : ⟨ 𝕃 A ==> 𝕃 A ⟩
+    wait-l-p : ⟨ A ==> 𝕃 A ⟩
     wait-r-e : ⟨ B ==> B ⟩
-    wait-r-p : ⟨ 𝕃 B ==> 𝕃 B ⟩
+    wait-r-p : ⟨ B ==> 𝕃 B ⟩
+    R : MonRel A B
+
+    upR     : fun-order-het A A A B          (rel A) (MonRel.R R) (wait-l-e .f) (emb .f)
+    upL     : fun-order-het A B B B          (MonRel.R R) (rel B) (emb .f) (wait-r-e .f)
+    
+    dnL     : fun-order-het B B (𝕃 A) (𝕃 B) (rel B) (_≾_ A B (MonRel.R R)) (proj .f) (wait-r-p .f)
+    dnR     : fun-order-het A B (𝕃 A) (𝕃 A) (MonRel.R R) (_≾hom_ A)          (wait-l-p .f) (proj .f)
 
 
 -- Identity E-P pair
@@ -155,11 +169,18 @@ record EP (A B : Predomain) : Set where
 EP-id : (A : Predomain) -> EP A A
 EP-id A = record {
   emb = record { f = id ; isMon = λ x≤y → x≤y };
-  proj = record { f = ret ; isMon = ord-η-monotone A };
+  proj = mCompU Δ mRet ; -- record { f = ret ; isMon = ord-η-monotone A };
   wait-l-e = Id;
-  wait-l-p = Id;
+  wait-l-p = mCompU Δ mRet;
   wait-r-e = Id;
-  wait-r-p = Id}
+  wait-r-p = mCompU Δ mRet;
+  R = predomain-monrel A;
+
+  upR = λ a a' a≤a' → a≤a';
+  upL = λ a a' a≤a' → a≤a';
+
+  dnL = λ a a' a≤a' → ord-δ-monotone A (ord-η-monotone A a≤a') ; -- (ord-η-monotone A a≤a');
+  dnR = λ a a' a≤a' → ord-δ-monotone A (ord-η-monotone A a≤a') } -- ord-η-monotone A a≤a'}
 
 
 
@@ -192,101 +213,226 @@ p-nat = {!!} -- S DynP (K DynP p-nat') (mTransport unfold-DynP)
   -- mTransportDomain (sym unfold-DynP) p-nat'
 
 
+-- TODO add in delays for the projection and wait-p functions
 EP-nat : EP ℕ DynP
 EP-nat = record {
   emb = e-nat;
   proj = p-nat;
   wait-l-e = Id;
-  wait-l-p = Id;
+  wait-l-p = mRet;
   wait-r-e = Id;
-  wait-r-p = Id}
+  wait-r-p = mRet;
+  R = record {
+    R = λ n d -> R' n (DynP-to-DynP' d) ;
+    isAntitone = λ {n} {n'} {d} n≤d n'≤n → {!!} ;
+    isMonotone = λ {n} {d} {d'} n≤d d≤d' ->
+      isMonotone' n≤d (DynP'-rel d d' d≤d') } ;
+
+  upR = λ n n' n≤n' → {!!};
+  upL = λ n d n≤d → {!!};
+
+  dnL = λ d d' d≤d' → {!!};
+  dnR = λ n d n≤d → {!!}
+
+  }
+    where
+      R' : ⟨ ℕ ⟩ -> ⟨ DynP' (next DynP) ⟩ -> Type
+      R' n (nat n') = n ≡ n'
+      R' n (fun _) = ⊥
+
+      R : ⟨ ℕ ⟩ -> ⟨ DynP ⟩ -> Type
+      R n d = R' n (DynP-to-DynP' d)
+
+      isMonotone' : {n : ⟨ ℕ ⟩} {d d' : ⟨ DynP' (next DynP) ⟩}  →
+        R' n d →
+        rel (DynP' (next DynP)) d d' →
+        R' n d'
+      isMonotone' {n} {nat n1} {nat n2} n≡n1 n1≡n2 =
+        n ≡⟨ n≡n1 ⟩ n1 ≡⟨ n1≡n2 ⟩ n2 ∎
+
 
 
 -- E-P Pair for monotone functions Dyn to L℧ Dyn
-
-e-fun : MonFun (DynP ==> (𝕃 DynP)) DynP
-e-fun = record { f = e-fun-f ; isMon = e-fun-mon }
-  where
-    e-fun-f : ⟨ DynP ==> (𝕃 DynP) ⟩ -> ⟨ DynP ⟩
-    e-fun-f f = DynP'-to-DynP (fun (next f))
-
-    e-fun-mon :
-      {f1 f2 : ⟨ DynP ==> (𝕃 DynP) ⟩} ->
-      rel (DynP ==> (𝕃 DynP)) f1 f2 ->
-      rel DynP (e-fun-f f1) (e-fun-f f2)
-    e-fun-mon {f1} {f2} f1≤f2 =
-      DynP-rel (fun (next f1)) (fun (next f2)) (λ t d1 d2 d1≤d2 → {!!})
-
-
-p-fun : MonFun DynP (𝕃 (DynP ==> (𝕃 DynP)))
-p-fun = record { f = p-fun-f ; isMon = {!!} }
-  where
-
-    p-fun-f' : ⟨ DynP' (next DynP) ⟩ -> ⟨ 𝕃 (DynP ==> (𝕃 DynP)) ⟩
-    p-fun-f' (nat n) = ℧
-    p-fun-f' (fun f) = θ (λ t → η (f t))
-    -- f : ▸ (λ t → MonFun (next DynP t) (𝕃 (next DynP t)))
-
-    p-fun-f : ⟨ DynP ⟩ -> ⟨ 𝕃 (DynP ==> (𝕃 DynP)) ⟩
-    -- p-fun-f d = p-fun-f' (transport unfold-⟨DynP⟩ d)
-    p-fun-f d = p-fun-f' (transport (λ i -> ⟨ unfold-DynP i ⟩) d)
-
-
-EP-fun : EP (arr' DynP (𝕃 DynP)) DynP
+-- This is parameterized by the waiting information of the EP-pair below it,
+-- in order for the projection/wait left function to remain in sync with the
+-- child's wait-right function (required for composition to be defined)
+EP-fun : EP (DynP ==> (𝕃 DynP)) DynP
 EP-fun = record {
   emb = e-fun;
   proj = p-fun;
-  wait-l-e = Id;
-  wait-l-p = Δ;
+
+  -- This is equal to the identity!
+  wait-l-e = Curry (
+    (mMap' (With2nd (EP.wait-l-e (EP-id DynP)))) ∘m
+    (Uncurry mExt) ∘m
+    (With2nd (EP.wait-l-p (EP-id DynP))) ∘m
+    π2
+  );
+  
+  wait-l-p = mRet' (DynP ==> 𝕃 DynP) (Curry (
+    With2nd (U mExt (EP.wait-l-p (EP-id DynP))) ∘m
+    App ∘m
+    With2nd (EP.wait-l-e (EP-id DynP)))) ;
+    
   wait-r-e = Id;
-  wait-r-p = Δ}
+  
+  wait-r-p = record {
+    f = λ d → mapL DynP'-to-DynP (wait-r-p-fun (DynP-to-DynP' d)) ;
+    isMon = {!!} } ;
+
+  R = R ;
+
+  upR = λ n n' n≤n' → {!!};
+  upL = λ n d n≤d → {!!};
+
+  dnL = λ d d' d≤d' → {!!};
+  dnR = λ n d n≤d → {!!}
+  
+    
+  }
+    where
+      e-fun : MonFun (DynP ==> (𝕃 DynP)) DynP
+      e-fun = record { f = e-fun-f ; isMon = e-fun-mon }
+        where
+          e-fun-f : ⟨ DynP ==> (𝕃 DynP) ⟩ -> ⟨ DynP ⟩
+          e-fun-f f = DynP'-to-DynP (fun (next f))
+
+          e-fun-mon :
+            {f1 f2 : ⟨ DynP ==> (𝕃 DynP) ⟩} ->
+            rel (DynP ==> (𝕃 DynP)) f1 f2 ->
+            rel DynP (e-fun-f f1) (e-fun-f f2)
+          e-fun-mon {f1} {f2} f1≤f2 =
+            DynP-rel (fun (next f1)) (fun (next f2)) (λ t d1 d2 d1≤d2 → {!!})
+
+
+      p-fun : MonFun DynP (𝕃 (DynP ==> (𝕃 DynP)))
+      p-fun = record { f = p-fun-f ; isMon = {!!} }
+        where
+
+          p-fun-f' : ⟨ DynP' (next DynP) ⟩ -> ⟨ 𝕃 (DynP ==> (𝕃 DynP)) ⟩
+          p-fun-f' (nat n) = ℧
+          p-fun-f' (fun f) = θ (λ t → η (f t))
+
+    -- f : ▸ (λ t → MonFun (next DynP t) (𝕃 (next DynP t)))
+
+          p-fun-f : ⟨ DynP ⟩ -> ⟨ 𝕃 (DynP ==> (𝕃 DynP)) ⟩
+          -- p-fun-f d = p-fun-f' (transport unfold-⟨DynP⟩ d)
+          p-fun-f d = p-fun-f' (transport (λ i -> ⟨ unfold-DynP i ⟩) d)
+
+      wait-l-p-fun : ⟨   ( (DynP' (next DynP)) ==> 𝕃 (DynP' (next DynP)) ) ⟩ ->
+                     ⟨ 𝕃 ( (DynP' (next DynP)) ==> 𝕃 (DynP' (next DynP)) ) ⟩
+      wait-l-p-fun d = δ (η d) -- is this correct?                   
+
+      wait-r-p-fun : ⟨ DynP' (next DynP) ⟩ -> ⟨ 𝕃 (DynP' (next DynP)) ⟩
+      wait-r-p-fun (nat n) = η (nat n)
+      wait-r-p-fun (fun f) = θ (next (η (fun f)))
+
+
+     {-
+      R' : ⟨ DynP ==> 𝕃 DynP ⟩ -> ⟨ DynP' (next DynP) ⟩ -> Type
+      R' f (nat n) = ⊥
+      R' f (fun f') = ▸ λ t ->
+        fun-order-het DynP DynP (𝕃 DynP) (𝕃 DynP)
+        (rel DynP)
+        (LiftRelation._≾_ DynP DynP (rel DynP))
+        (MonFun.f f) (MonFun.f (f' t))
+      -}
+
+      R' : ⟨ DynP ==> 𝕃 DynP ⟩ -> ⟨ DynP' (next DynP) ⟩ -> Type
+      R' f (nat n) = ⊥
+      R' f (fun f') = ▸ λ t ->
+        mon-fun-order DynP (𝕃 DynP) f (f' t)
+
+      R : MonRel (DynP ==> 𝕃 DynP) DynP
+      R = record {
+        R = λ f d → R' f (DynP-to-DynP' d) ;
+        isAntitone = λ {f} {f'} {d} f≤d f'≤f → {!!} ;
+        isMonotone = λ {f} {d} {d'} f≤d d≤d' -> monotone' f≤d (DynP'-rel d d' d≤d') }
+
+        where
+          monotone' :  {f : ⟨ DynP ==> 𝕃 DynP ⟩} {d d' : ⟨ DynP' (next DynP) ⟩}  →
+            R' f d →
+            rel (DynP' (next DynP)) d d' ->
+            R' f d'
+          monotone' {f} {fun f~} {fun g~} f≤d d≤d' =
+            λ t → mon-fun-order-trans f (f~ t) (g~ t) (f≤d t) (d≤d' t)
 
 
 
 
 -- Composing EP pairs
 
+-- We can compose EP pairs provided that the "middle" wait functions
+-- satisfy a "coherence" condition.
 module EPComp
   {A B C : Predomain}
-  (epAB : EP A B)
-  (epBC : EP B C) where
+  (d' : EP B C)
+  (d : EP A B)
+  (⊑-wait-rl-e : rel (B ==> B)   (EP.wait-r-e d) (EP.wait-l-e d'))
+  (⊑-wait-rl-p : rel (B ==> 𝕃 B) (EP.wait-r-p d) (EP.wait-l-p d')) 
+  where
 
   open EP
   open MonFun
+  open MonRel
 
   comp-emb : ⟨ A ==> C ⟩
-  comp-emb = mCompU (emb epBC) (emb epAB)
-  -- A ! K A (emb epBC) <*> (emb epAB) -- mComp (emb epBC) (emb epAB)
+  comp-emb = mCompU (emb d') (emb d)
 
   comp-proj : ⟨ C ==> 𝕃 A ⟩
-  comp-proj = Bind C (proj epBC) (mCompU (proj epAB) π2)
-  --C ! (mExt' C (K C (proj epAB))) <*> (proj epBC)
-  -- mComp (mExt (proj epAB)) (proj epBC)
-  --  comp-proj-f =
-  --    λ c -> bind (f (proj epBC) c) (f (proj epAB)) ==
-  --    λ c -> ext  (f (proj epAB)) (f (proj epBC) c) ==
-  --    (ext (f (proj epAB))) ∘ (f (proj epBC c)) 
+  comp-proj = Bind C (proj d') (mCompU (proj d) π2)
+
 
   EP-comp : EP A C
   EP-comp = record {
     emb = comp-emb;
     proj = comp-proj;
-    wait-l-e = wait-l-e epAB;
-    wait-l-p = wait-l-p epAB;
-    wait-r-e = wait-r-e epBC;
-    wait-r-p = wait-r-p epBC}
+
+    wait-l-e = mCompU (wait-l-e d) (wait-l-e d);
+    wait-l-p = mCompU (mExtU (wait-l-p d)) (wait-l-p d);
+    wait-r-e = mCompU (wait-r-e d') (wait-r-e d');
+    wait-r-p = mCompU (mExtU (wait-r-p d')) (wait-r-p d');
+    
+    R = CompMonRel (R d') (R d);
+
+    upR = λ a a' a≤a' →
+      emb d $ (wait-l-e d $ a)  ,
+      upR d (wait-l-e d $ a) (wait-l-e d $ a) (reflexive A _) ,
+      isAntitone (R d')
+        (upR d' (emb d $ a') (emb d $ a') (reflexive B _))
+        (transitive B
+           (emb d $ (wait-l-e d $ a))
+           (wait-r-e d $ (emb d $ a'))
+           (wait-l-e d' $ (emb d $ a'))
+           (upL d _ _ (upR d _ _ a≤a'))
+           (⊑-wait-rl-e _ _ (reflexive B _)));
+   
+    upL = λ a c (b , a≤b , b≤c) → {!!};
+
+    dnL = λ c c' c≤c' → {!!};
+    dnR = λ a c a≤c → {!!} }
+
 
 
 -- Lifting EP pairs to 𝕃
 EP-lift : {A B : Predomain} -> EP A B -> EP (𝕃 A) (𝕃 B)
-EP-lift epAB =
+EP-lift {A} {B} d =
   record {
-    emb = U mMap (EP.emb epAB);
-    proj = U mMap (EP.proj epAB);
-    wait-l-e = U mMap (EP.wait-l-e epAB);
-    wait-l-p = U mMap (EP.wait-l-p epAB);
-    wait-r-e = U mMap (EP.wait-r-e epAB);
-    wait-r-p = U mMap (EP.wait-r-p epAB) }
+    emb = U mMap (EP.emb d);
+    proj = U mMap (EP.proj d);
+    wait-l-e = U mMap (EP.wait-l-e d);
+    wait-l-p = U mMap (EP.wait-l-p d);
+    wait-r-e = U mMap (EP.wait-r-e d);
+    wait-r-p = U mMap (EP.wait-r-p d);
+    R = LiftRelMon.R A B (EP.R d);
+
+    upR = λ la la' la≤la' → mapL-monotone-het (rel A) (MonRel.R (EP.R d)) (MonFun.f (EP.wait-l-e d)) (MonFun.f (EP.emb d)) (EP.upR d) la la' la≤la' ;
+    upL = λ la lb la≤lb   → mapL-monotone-het (MonRel.R (EP.R d)) (rel B) _ _ (EP.upL d) la lb la≤lb ;
+
+    dnL = {!!};
+    dnR = {!!}}
+      where open MonFun
+            open EP
 
 
 -- Lifting EP pairs to functions
@@ -302,53 +448,52 @@ module EPArrow
     p-arrow : ⟨ (A' ==> (𝕃 B')) ==> (𝕃 (A ==> (𝕃 B))) ⟩
     p-arrow = mFunProj A A' B B' (EP.emb epAA') (EP.proj epBB')
 
-{-
-    p-lift :
-      (A' -> L℧ B') -> L℧ (A -> L℧ B)
-    p-lift f =
-      ret (λ a → bind (f (EP.emb epAA' a)) (EP.proj epBB'))
--}
 
 
 EP-arrow : {A A' B B' : Predomain} ->
   EP A A' ->
   EP B B' ->
   EP (A ==> (𝕃 B)) (A' ==> (𝕃 B'))
-EP-arrow epAA' epBB' = record {
+EP-arrow {A} {A'} {B} {B'} epAA' epBB' = record {
   emb = e-arrow;
   proj = p-arrow;
   
+
   wait-l-e = Curry (
     (mMap' (With2nd (EP.wait-l-e epBB'))) ∘m
     (Uncurry mExt) ∘m
     (With2nd (EP.wait-l-p epAA')) ∘m
-    (mRet' _ π2)
+    π2
   ) ;
   
-  wait-l-p = U mMap (Curry (
-    With2nd (EP.wait-l-p epBB') ∘m
+  wait-l-p = mRet' (A ==> 𝕃 B) (Curry (
+    With2nd (U mExt (EP.wait-l-p epBB')) ∘m
     App ∘m
-    With2nd (EP.wait-l-e epAA')
-  )) ;
+    With2nd (EP.wait-l-e epAA'))) ;
   
   wait-r-e = Curry (
     mMap' (With2nd (EP.wait-r-e epBB')) ∘m
     ((Uncurry mExt) ∘m
     (With2nd (EP.wait-r-p epAA') ∘m
-    (mRet' _ π2)))) ;
-  -- or : wait-r-e = Curry (mMap' (With2nd (EP.wait-r-e epBB')) ∘m ((Uncurry mExt) ∘m (With2nd (EP.wait-r-p epAA') ∘m (With2nd mRet)))) ;
-
+    π2))) ;
   
-  wait-r-p = U mMap (Curry (
-    With2nd (EP.wait-r-p epBB') ∘m
+  wait-r-p = mRet' (A' ==> 𝕃 B') (Curry (
+    With2nd (U mExt (EP.wait-r-p epBB')) ∘m
     App ∘m
-    With2nd (EP.wait-r-e epAA')
-  ))
+    With2nd (EP.wait-r-e epAA'))) ;
+
+  R = FunRel (EP.R epAA') {!!} ;
+
+  upR = λ p p' x p₁ p'' x₁ → {!!} ;
+  upL = {!!} ;
+  dnL = {!!} ;
+  dnR = {!!}
 
   }
   
   where open EPArrow epAA' epBB'
 
+{-
 
 
 -------------------------------------------
@@ -723,17 +868,6 @@ UpR {Ai => Ao} M1 M2 (inj-arrow (cin' => cout')) dyn M1⊑M2 = {!!}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 id≤map : {A B : Predomain} ->
   (la la' : L℧ ⟨ A ⟩) ->
   (f : ⟨ A ⟩ -> ⟨ B ⟩) ->
@@ -821,7 +955,5 @@ eta : (Γ : Ctx) (A B : Ty) -> (M : Tm Γ (A => B)) ->
 eta = {!!}
 -}
 
-
-{-
 
 -}
