@@ -112,95 +112,47 @@
   dynamism, it becomes difficult to extend these techniques to new language features such as polymorphism.
 
   % Proving graduality via LR
-  New and Ahmed have developed a semantic approach to specifying type dynamism in term of
-  embedding-projection pairs, which allows for a particularly elegant formulation of the
+  New and Ahmed \cite{new-ahmed2018}
+  have developed a semantic approach to specifying type dynamism in terms of
+  \emph{embedding-projection pairs}, which allows for a particularly elegant formulation of the
   gradual guarantee.
-  Moreover, this approach allows for type-based reasoning using $\eta$-equivalences
-  
-  The downside of the above approach is that each new language requires a different logical relation
-  to prove graduality. As a result, many developments using this approach require vast effort,
-  with many such papers having 50+ pages of proofs.
-  Our aim here is that by mechanizing a graduality proof in a reusable way,
-  we will provide a framework for other language designers to use to ensure that their languages satsify graduality.
+  Moreover, their axiomatic account of program equivalence allows for type-based reasoning
+  about program equivalences.
+%
+  In this approach, a logical relation is constructed and shown to be sound with respect to
+  the notion of observational approximation that specifies when one program is more precise than another.
+  The downside of this approach is that each new language requires a different logical relation
+  to prove graduality. Furthermore, the logical relations tend to be quite complicated due
+  to a technical requirement known as \emph{step-indexing}.
+  As a result, developments using this approach tend to require vast effort, with the
+  corresponding technical reports having 50+ pages of proofs.
 
-
-  One approach currently used to prove graduality uses the technique of \emph{logical relations}.
-  Specifially, a logical relation is constructed and shown to be sound with respect to
-  observational approximation. Because the dynamic type is modeled as a non-well-founded
-  recursive type, the logical relation needs to be paramterized by natural numbers to restore well-foundedness.
-  This technique is known as a \emph{step-indexed logical relation} \cite{TODO}.
-  Reasoning about step-indexed logical relations
-  can be tedious and error-prone, and there are some very subtle aspects that must
-  be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
-  relation for the gradually-typed lambda calculus.
-
-  % TODO move to another section?
-  % Difficulties in prior semantics
-  % - two separate logical relations for expressions
-  % - transitivity
-  In particular, the prior approach of New and Ahmed requires two separate logical
-  relations for terms, one in which the steps of the left-hand term are counted,
-  and another in which the steps of the right-hand term are counted \cite{TODO}.
-  Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
-  related in both of the one-sided logical relations. Having two separate logical relations
-  complicates the statement of the lemmas used to prove graduality, becasue any statement that
-  involves a term stepping needs to take into account whether we are counting steps on the left
-  or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
-  as fundamental and seemingly straightforward as transitivty.
-
-  Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
-  index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
-  But this does not actually hold: we requrie that one of the two pairs of terms
-  be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
-  Which pair is required to satisfy this depends on which logical relation we are considering,
-  (i.e., is it counting steps on the left or on the right),
-  and so any argument that uses transitivity needs to consider two cases, one
-  where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
-  be related for all $i$. This may not even be possible to show in some scenarios!
-
-  These complications introduced by step-indexing lead one to wonder whether there is a
-  way of proving graduality without relying on tedious arguments involving natural numbers.
   An alternative approach, which we investigate in this paper, is provided by
-  \emph{synthetic guarded domain theory}, as discussed below.
-  Synthetic guarded domain theory allows the resulting logical relation to look almost
+  \emph{synthetic guarded domain theory}.
+  The tecnhiques of synthetic guarded domain theory allow us to internalize the
+  step-index reasoning normally required in logical relations proofs of graduality,
+  ultimately allowing us to specify the logical relation in a manner that looks nearly
   identical to a typical, non-step-indexed logical relation.
+
+  In this paper, we report on work we have done to mechanize graduality proofs
+  using SGDT techniques in Agda.
+  Our hope in this work is that by mechanizing a graduality proof in a reusable way,
+  we will provide a framework for other language designers to use to more easily and
+  conveniently prove that their languages satsify graduality.
+
 
   \subsection{Contributions}
   Our main contribution is a framework in Guarded Cubical Agda for proving graduality of a cast calculus.
   To demonstrate the feasability and utility of our approach, we have used the framework to prove
-  graduality for the simply-typed gradual lambda calculus. Along the way, we have developed an intensional theory
+  graduality for the simply-typed gradual lambda calculus.Along the way, we have developed an ``intensional" theory
   of graduality that is of independent interest.
 
 
   \subsection{Proving Graduality in SGDT}
-  % TODO move to technical background
+  \textbf{TODO:} This section should probably be moved to after the relevant background has been introduced.
 
-  % Cast calculi
-  In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
-  the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
-  forms of the language (e.g., pattern matching, field reference, etc.).
-  Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
-  type checking is made explicit through the insertion of \emph{type casts}.
-
-  % Up and down casts
-  In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
-  $A$ is a \emph{more precise} type than $B$.
-  There a dynamic type $\dyn$ with the property that $A \ltdyn \dyn$ for all $A$.
-  %
-  If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
-  and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
-  Upcasts always succeed, while downcasts may fail at runtime.
-  %
-  % Syntactic term precision
-  We also have a notion of \emph{syntatcic term precision}.
-  If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
-  $M \ltdyn N : A \ltdyn B$ to mean that $M$ is more precise than $N$, i.e., $M$ and $N$
-  behave the same except that $M$ may error more.
-
-  % Modeling the dynamic type as a recursive sum type?
-  % Observational equivalence and approximation?
-
-  In this paper, we will be using SGDT techniques to prove graduality for a particularly
+  
+  In this paper, we will utilize SGDT techniques to prove graduality for a particularly
   simple gradually-typed cast calculus, the gradually-typed lambda calculus. This is just
   the usual simply-typed lambda calculus with a dynamic type $\dyn$ such that $A \ltdyn\, \dyn$ for all types $A$,
   as well as upcasts and downcasts between any types $A$ and $B$ such that $A \ltdyn B$.
@@ -258,8 +210,8 @@
  % 
   In Section \ref{sec:GTLC}, we introduce the gradually-typed cast calculus
   for which we will prove graduality. Important here are the notions of syntactic
-  type precision and term precision. We introduce both the extensional gradual lambda calculus
-  ($\extlc$) and the intensional gradual lambda calculus ($\intlc$).
+  type precision and term precision. We introduce both the \emph{extensional} gradual lambda calculus
+  ($\extlc$) and the \emph{intensional} gradual lambda calculus ($\intlc$).
 %
   In Section \ref{sec:domain-theory}, we define several fundamental constructions
   internal to SGDT that will be needed when we give a denotational semantics to
@@ -272,7 +224,8 @@
   previous section.
 %
   In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
-  extensional gradual lambda calculus.
+  extensional gradual lambda calculus, which will make use of prove properties we prove about
+   the intensional gradual lambda calculus.
 %
   In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
   to the traditional step-indexing approach, as well as possibilities for future work.
@@ -280,7 +233,84 @@
 
 \section{Technical Background}\label{sec:technical-background}
 
+\subsection{Gradual Typing}
+
+
+
+% Cast calculi
+In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
+the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
+forms of the language (e.g., pattern matching, field reference, etc.).
+Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
+type checking is made explicit through the insertion of \emph{type casts}.
+
+% Up and down casts
+In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
+$A$ is a \emph{more precise} type than $B$.
+There a dynamic type $\dyn$ with the property that $A \ltdyn \dyn$ for all $A$.
+%
+If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
+and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
+Upcasts always succeed, while downcasts may fail at runtime.
+%
+% Syntactic term precision
+We also have a notion of \emph{syntatcic term precision}.
+If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
+$M \ltdyn N : A \ltdyn B$ to mean that $M$ is more precise than $N$, i.e., $M$ and $N$
+behave the same except that $M$ may error more.
+
+% Modeling the dynamic type as a recursive sum type?
+% Observational equivalence and approximation?
+
 % synthetic guarded domain theory, denotational semantics therein
+
+\subsection{Difficulties in Prior Semantics}
+
+ % TODO move to another section?
+  % Difficulties in prior semantics
+  % - two separate logical relations for expressions
+  % - transitivity
+
+  In this work, we compare our approach to proving graduality to the approach
+  introduced by New and Ahmed \cite{new-ahmed2018} which constructs a step-indexed
+  logical relations model and shows that this model is sound with respect to their
+  notion of contextual error approximation.
+
+  Because the dynamic type is modeled as a non-well-founded
+  recursive type, their logical relation needs to be paramterized by natural numbers
+  to restore well-foundedness. This technique is known as a \emph{step-indexed logical relation}.
+  Reasoning about step-indexed logical relations
+  can be tedious and error-prone, and there are some very subtle aspects that must
+  be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
+  relation for the gradually-typed lambda calculus.
+
+  In particular, the prior approach of New and Ahmed requires two separate logical
+  relations for terms, one in which the steps of the left-hand term are counted,
+  and another in which the steps of the right-hand term are counted.
+  Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
+  related in both of the one-sided logical relations. Having two separate logical relations
+  complicates the statement of the lemmas used to prove graduality, becasue any statement that
+  involves a term stepping needs to take into account whether we are counting steps on the left
+  or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
+  as fundamental and seemingly straightforward as transitivty.
+
+  Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
+  index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
+  But this does not actually hold: we requrie that one of the two pairs of terms
+  be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
+  Which pair is required to satisfy this depends on which logical relation we are considering,
+  (i.e., is it counting steps on the left or on the right),
+  and so any argument that uses transitivity needs to consider two cases, one
+  where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
+  be related for all $i$. This may not even be possible to show in some scenarios!
+
+  % These complications introduced by step-indexing lead one to wonder whether there is a
+  % way of proving graduality without relying on tedious arguments involving natural numbers.
+  % An alternative approach, which we investigate in this paper, is provided by
+  % \emph{synthetic guarded domain theory}, as discussed below.
+  % Synthetic guarded domain theory allows the resulting logical relation to look almost
+  % identical to a typical, non-step-indexed logical relation.
+
 \subsection{Synthetic Guarded Domain Theory}
 One way to avoid the tedious reasoning associated with step-indexing is to work
 axiomatically inside of a logical system that can reason about non-well-founded recursive
@@ -288,13 +318,13 @@ constructions while abstracting away the specific details of step-indexing requi
 if we were working analytically.
 The system that proves useful for this purpose is called \emph{synthetic guarded
 domain theory}, or SGDT for short. We provide a brief overview here, but more
-details can be found in \cite{TODO}.
+details can be found in \cite{birkedal-mogelberg-schwinghammer-stovring2011}.
 
 SGDT offers a synthetic approach to domain theory that allows for guarded recursion
 to be expressed syntactically via a type constructor $\later : \type \to \type$ 
 (pronounced ``later''). The use of a modality to express guarded recursion
-was introduced by Nakano \cite{TODO}.
-
+was introduced by Nakano \cite{Nakano2000}.
+%
 Given a type $A$, the type $\later A$ represents an element of type $A$
 that is available one time step later. There is an operator $\nxt : A \to\, \later A$
 that ``delays'' an element available now to make it available later.
@@ -302,7 +332,7 @@ We will use a tilde to denote a term of type $\later A$, e.g., $\tilde{M}$.
 
 % TODO later is an applicative functor, but not a monad
 
-There is a fixpoint operator
+There is a \emph{guarded fixpoint} operator
 
 \[
   \fix : \forall T, (\later T \to T) \to T.
@@ -314,18 +344,18 @@ This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
 In particular, this axiom applies to propositions $P : \texttt{Prop}$; proving
 a statement in this manner is known as $\lob$-induction.
 
-In SGDT, there is also a new sort called \emph{clocks}. A clock serves as a reference
-relative to which the constructions described above are carried out.
+The operators $\later$, $\next$, and $\fix$ described above can be indexed by objects
+called \emph{clocks}. A clock serves as a reference relative to which steps are counted.
 For instance, given a clock $k$ and type $T$, the type $\later^k T$ represents a value of type
 $T$ one unit of time in the future according to clock $k$.
 If we only ever had one clock, then we would not need to bother defining this notion.
 However, the notion of \emph{clock quantification} is crucial for encoding coinductive types using guarded
-recursion, an idea first introduced by Atkey and McBride \cite{TODO}.
+recursion, an idea first introduced by Atkey and McBride \cite{atkey-mcbride2013}.
 
 
 % Clocked Cubical Type Theory
 \subsubsection{Ticked Cubical Type Theory}
-% TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions
+% TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions?
 
 In Ticked Cubical Type Theory \cite{TODO}, there is an additional sort
 called \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
@@ -334,7 +364,7 @@ The type $\later A$ is represented as a function from ticks of a clock $k$ to $A
 The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
 to emphasize the dependence.
 
-% TODO next as a function that ignores its input tick argument
+% TODO next as a function that ignores its input tick argument?
 
 The rules for tick abstraction and application are similar to those of dependent
 $\Pi$ types. 
@@ -348,49 +378,160 @@ The statements in this paper have been formalized in a variant of Agda called
 Guarded Cubical Agda \cite{TODO}, an implementation of Clocked Cubical Type Theory.
 
 
-% TODO axioms (clock irrelevance, tick irrelevance)
+% TODO axioms (clock irrelevance, tick irrelevance)?
 
 
-% TODO topos of trees model
-\subsection{The Topos of Trees Model}
+\subsubsection{The Topos of Trees Model}
+
+The topos of trees model provides a useful intuition for reasoning in SGDT 
+\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
+This section presupposes knowledge of category theory and can be safely skipped without
+disrupting the continuity.
 
 The topos of trees $\calS$ is the presheaf category $\Set^{\omega^o}$. 
+%
+We assume a universe $\calU$ of types, with encodings for operations such
+as sum types (written as $\widehat{+}$). There is also an operator 
+$\laterhat \colon \later \calU \to \calU$ such that 
+$\El(\laterhat(\nxt A)) =\,\, \later \El(A)$, where $\El$ is the type corresponding
+to the code $A$.
 
-  We assume a universe $\calU$ of types, with encodings for operations such
-  as sum types (written as $\widehat{+}$). There is also an operator 
-  $\laterhat \colon \later \calU \to \calU$ such that 
-  $\El(\laterhat(\nxt A)) =\,\, \later \El(A)$, where $\El$ is the type corresponding
-  to the code $A$.
+An object $X$ is a family $\{X_i\}$ of sets indexed by natural numbers,
+along with restriction maps $r^X_i \colon X_{i+1} \to X_i$ (see Figure \ref{fig:topos-of-trees-object}).
+These should be thought of as ``sets changing over time", where $X_i$ is the view of the set if we have $i+1$
+time steps to reason about it.
+We can also think of an ongoing computation, with $X_i$ representing the potential results of the computation
+after it has run for $i+1$ steps.
 
-  An object $X$ is a family $\{X_i\}$ of sets indexed by natural numbers,
-  along with restriction maps $r^X_i \colon X_{i+1} \to X_i$.
-  
-  A morphism from $\{X_i\}$ to $\{Y_i\}$ is a family of functions $f_i \colon X_i \to Y_i$
-  that commute with the restriction maps in the obvious way, that is,
-  $f_i \circ r^X_i = r^Y_i \circ f_{i+1}$.
-  
-  The type operator $\later$ is defined on an object $X$ by
-  $(\later X)_0 = 1$ and $(\later X)_{i+1} = X_i$.
-  The restriction maps are given by $r^\later_0 =\, !$, where $!$ is the
-  unique map into $1$, and $r^\later_{i+1} = r^X_i$.
-  The morphism $\nxt^X \colon X \to \later X$ is defined pointwise by
-  $\nxt^X_0 =\, !$, and $\nxt^X_{i+1} = r^X_i$.
+\begin{figure}
+  % https://q.uiver.app/?q=WzAsNSxbMiwwLCJYXzIiXSxbMCwwLCJYXzAiXSxbMSwwLCJYXzEiXSxbMywwLCJYXzMiXSxbNCwwLCJcXGRvdHMiXSxbMiwxLCJyXlhfMCIsMl0sWzAsMiwicl5YXzEiLDJdLFszLDAsInJeWF8yIiwyXSxbNCwzLCJyXlhfMyIsMl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{X_0} \& {X_1} \& {X_2} \& {X_3} \& \dots
+	\arrow["{r^X_0}"', from=1-2, to=1-1]
+	\arrow["{r^X_1}"', from=1-3, to=1-2]
+	\arrow["{r^X_2}"', from=1-4, to=1-3]
+	\arrow["{r^X_3}"', from=1-5, to=1-4]
+\end{tikzcd}\]
+  \caption{An example of an object in the topos of trees.}
+  \label{fig:topos-of-trees-object}
+\end{figure}
+
+A morphism from $\{X_i\}$ to $\{Y_i\}$ is a family of functions $f_i \colon X_i \to Y_i$
+that commute with the restriction maps in the obvious way, that is,
+$f_i \circ r^X_i = r^Y_i \circ f_{i+1}$ (see Figure \ref{fig:topos-of-trees-morphism}).
+
+\begin{figure}
+% https://q.uiver.app/?q=WzAsMTAsWzIsMCwiWF8yIl0sWzAsMCwiWF8wIl0sWzEsMCwiWF8xIl0sWzMsMCwiWF8zIl0sWzQsMCwiXFxkb3RzIl0sWzAsMSwiWV8wIl0sWzEsMSwiWV8xIl0sWzIsMSwiWV8yIl0sWzMsMSwiWV8zIl0sWzQsMSwiXFxkb3RzIl0sWzIsMSwicl5YXzAiLDJdLFswLDIsInJeWF8xIiwyXSxbMywwLCJyXlhfMiIsMl0sWzQsMywicl5YXzMiLDJdLFs2LDUsInJeWV8wIiwyXSxbNyw2LCJyXllfMSIsMl0sWzgsNywicl5ZXzIiLDJdLFs5LDgsInJeWV8zIiwyXSxbMSw1LCJmXzAiLDJdLFsyLDYsImZfMSIsMl0sWzAsNywiZl8yIiwyXSxbMyw4LCJmXzMiLDJdXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{X_0} \& {X_1} \& {X_2} \& {X_3} \& \dots \\
+	{Y_0} \& {Y_1} \& {Y_2} \& {Y_3} \& \dots
+	\arrow["{r^X_0}"', from=1-2, to=1-1]
+	\arrow["{r^X_1}"', from=1-3, to=1-2]
+	\arrow["{r^X_2}"', from=1-4, to=1-3]
+	\arrow["{r^X_3}"', from=1-5, to=1-4]
+	\arrow["{r^Y_0}"', from=2-2, to=2-1]
+	\arrow["{r^Y_1}"', from=2-3, to=2-2]
+	\arrow["{r^Y_2}"', from=2-4, to=2-3]
+	\arrow["{r^Y_3}"', from=2-5, to=2-4]
+	\arrow["{f_0}"', from=1-1, to=2-1]
+	\arrow["{f_1}"', from=1-2, to=2-2]
+	\arrow["{f_2}"', from=1-3, to=2-3]
+	\arrow["{f_3}"', from=1-4, to=2-4]
+\end{tikzcd}\]
+  \caption{An example of a morphism in the topos of trees.}
+  \label{fig:topos-of-trees-morphism}
+\end{figure}
 
 
-  Given a morphism $f \colon \later X \to X$, we define $\fix f$ pointwise
-  as $\fix_i(f) = f_{i} \circ \dots \circ f_0$.
+The type operator $\later$ is defined on an object $X$ by
+$(\later X)_0 = 1$ and $(\later X)_{i+1} = X_i$.
+The restriction maps are given by $r^\later_0 =\, !$, where $!$ is the
+unique map into $1$, and $r^\later_{i+1} = r^X_i$.
+The morphism $\nxt^X \colon X \to \later X$ is defined pointwise by
+$\nxt^X_0 =\, !$, and $\nxt^X_{i+1} = r^X_i$. It is easily checked that
+this satisfies the commutativity conditions required of a morphism in $\calS$.
+%
+Given a morphism $f \colon \later X \to X$, i.e., a family of functions
+$f_i \colon (\later X)_i \to X_i$ that commute with the restrictions in the appropriate way,
+we define $\fix(f) \colon 1 \to X$ pointwise
+by $\fix(f)_i = f_{i} \circ \dots \circ f_0$.
+This can be visualized as a diagram in the category of sets as shown in
+Figure \ref{fig:topos-of-trees-fix}.
+% Observe that the fixpoint is a \emph{global element} in the topos of trees.
+% Global elements allow us to view the entire computation on a global level.
 
-  % TODO global elements
 
+% https://q.uiver.app/?q=WzAsOCxbMSwwLCJYXzAiXSxbMiwwLCJYXzEiXSxbMywwLCJYXzIiXSxbMCwwLCIxIl0sWzAsMSwiWF8wIl0sWzEsMSwiWF8xIl0sWzIsMSwiWF8yIl0sWzMsMSwiWF8zIl0sWzMsNCwiZl8wIl0sWzAsNSwiZl8xIl0sWzEsNiwiZl8yIl0sWzIsNywiZl8zIl0sWzAsMywiISIsMl0sWzEsMCwicl5YXzAiLDJdLFsyLDEsInJeWF8xIiwyXSxbNSw0LCJyXlhfMCJdLFs2LDUsInJeWF8xIl0sWzcsNiwicl5YXzIiXV0=
+% \[\begin{tikzcd}[ampersand replacement=\&]
+% 	1 \& {X_0} \& {X_1} \& {X_2} \\
+% 	{X_0} \& {X_1} \& {X_2} \& {X_3}
+% 	\arrow["{f_0}", from=1-1, to=2-1]
+% 	\arrow["{f_1}", from=1-2, to=2-2]
+% 	\arrow["{f_2}", from=1-3, to=2-3]
+% 	\arrow["{f_3}", from=1-4, to=2-4]
+% 	\arrow["{!}"', from=1-2, to=1-1]
+% 	\arrow["{r^X_0}"', from=1-3, to=1-2]
+% 	\arrow["{r^X_1}"', from=1-4, to=1-3]
+% 	\arrow["{r^X_0}", from=2-2, to=2-1]
+% 	\arrow["{r^X_1}", from=2-3, to=2-2]
+% 	\arrow["{r^X_2}", from=2-4, to=2-3]
+% \end{tikzcd}\]
+
+% \begin{figure}
+%   % https://q.uiver.app/?q=WzAsMTksWzEsMiwiWF8wIl0sWzIsMywiWF8xIl0sWzMsMSwiMSJdLFswLDEsIjEiXSxbMCwyLCJYXzAiXSxbMSwzLCJYXzEiXSxbMSwxLCIxIl0sWzIsMSwiMSJdLFsyLDIsIlhfMCJdLFsyLDQsIlhfMiJdLFszLDIsIlhfMCJdLFszLDMsIlhfMSJdLFszLDQsIlhfMiJdLFszLDUsIlhfMyJdLFs0LDIsIlxcY2RvdHMiXSxbMCwwLCJcXGZpeChmKV8wIl0sWzEsMCwiXFxmaXgoZilfMSJdLFsyLDAsIlxcZml4KGYpXzIiXSxbMywwLCJcXGZpeChmKV8zIl0sWzMsNCwiZl8wIl0sWzAsNSwiZl8xIl0sWzYsMCwiZl8wIl0sWzcsOCwiZl8wIl0sWzgsMSwiZl8xIl0sWzEsOSwiZl8yIl0sWzIsMTAsImZfMCJdLFsxMCwxMSwiZl8xIl0sWzExLDEyLCJmXzIiXSxbMTIsMTMsImZfMyJdXQ==
+%   \[\begin{tikzcd}[ampersand replacement=\&]
+%     {\fix(f)_0} \& {\fix(f)_1} \& {\fix(f)_2} \& {\fix(f)_3} \\
+%     1 \& 1 \& 1 \& 1 \\
+%     {X_0} \& {X_0} \& {X_0} \& {X_0} \& \cdots \\
+%     \& {X_1} \& {X_1} \& {X_1} \\
+%     \&\& {X_2} \& {X_2} \\
+%     \&\&\& {X_3}
+%     \arrow["{f_0}", from=2-1, to=3-1]
+%     \arrow["{f_1}", from=3-2, to=4-2]
+%     \arrow["{f_0}", from=2-2, to=3-2]
+%     \arrow["{f_0}", from=2-3, to=3-3]
+%     \arrow["{f_1}", from=3-3, to=4-3]
+%     \arrow["{f_2}", from=4-3, to=5-3]
+%     \arrow["{f_0}", from=2-4, to=3-4]
+%     \arrow["{f_1}", from=3-4, to=4-4]
+%     \arrow["{f_2}", from=4-4, to=5-4]
+%     \arrow["{f_3}", from=5-4, to=6-4]
+%   \end{tikzcd}\]
+%   \caption{The first few approximations to the guarded fixpoint of $f$.}
+%   \label{fig:topos-of-trees-fix-approx}
+% \end{figure}
+
+
+\begin{figure}
+  % https://q.uiver.app/?q=WzAsNixbMywwLCIxIl0sWzAsMiwiWF8wIl0sWzIsMiwiWF8xIl0sWzQsMiwiWF8yIl0sWzYsMiwiWF8zIl0sWzgsMiwiXFxkb3RzIl0sWzIsMSwicl5YXzAiXSxbNCwzLCJyXlhfMiJdLFswLDEsIlxcZml4KGYpXzAiLDFdLFswLDIsIlxcZml4KGYpXzEiLDFdLFswLDMsIlxcZml4KGYpXzIiLDFdLFswLDQsIlxcZml4KGYpXzMiLDFdLFswLDUsIlxcY2RvdHMiLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMywyLCJyXlhfMSJdLFs1LDQsInJeWF8zIl1d
+  \[\begin{tikzcd}[ampersand replacement=\&,column sep=2.25em]
+    \&\&\& 1 \\
+    \\
+    {X_0} \&\& {X_1} \&\& {X_2} \&\& {X_3} \&\& \dots
+    \arrow["{r^X_0}", from=3-3, to=3-1]
+    \arrow["{r^X_2}", from=3-7, to=3-5]
+    \arrow["{\fix(f)_0}"{description}, from=1-4, to=3-1]
+    \arrow["{\fix(f)_1}"{description}, from=1-4, to=3-3]
+    \arrow["{\fix(f)_2}"{description}, from=1-4, to=3-5]
+    \arrow["{\fix(f)_3}"{description}, from=1-4, to=3-7]
+    \arrow["\cdots"{marking}, draw=none, from=1-4, to=3-9]
+    \arrow["{r^X_1}", from=3-5, to=3-3]
+    \arrow["{r^X_3}", from=3-9, to=3-7]
+  \end{tikzcd}\]
+  \caption{The guarded fixpoint of $f$.}
+  \label{fig:topos-of-trees-fix}
+\end{figure}
+
+% TODO global elements?
 
 
 \section{GTLC}\label{sec:GTLC}
 
 Here we describe the syntax and typing for the graudally-typed lambda calculus.
 We also give the rules for syntactic type and term precision.
-
-We start with the extensional lambda calculus $\extlc$, and then describe the additions
-necessary for the intensional lambda calculus $\intlc$.
+We define two separate calculi: the normal gradually-typed lambda calculus, which we
+call the extensional lambda calculus ($\extlc$), as well as an \emph{intensional} lambda calculus
+($\intlc$) whose syntax makes explicit the steps taken by a program.
 
 \subsection{Syntax}
 
@@ -575,6 +716,8 @@ that it is the \emph{greatest} lower bound.
 
 \subsection{The Intensional Lambda Calculus}
 
+\textbf{TODO: Subject to change!}
+
 Now that we have described the syntax along with the type and term precision judgments for
 $\extlc$, we can now do the same for $\intlc$. One key difference between the two calculi
 is that we define $\intlc$ using the constructs available to us in the language of synthetic
@@ -638,8 +781,6 @@ paper, we will elide these issues as they are not relevant to the main ideas.
 % TODO equational theory
 
 
-
-
 \section{Domain-Theoretic Constructions}\label{sec:domain-theory}
 
 In this section, we discuss the fundamental objects of the model into which we will embed
@@ -660,7 +801,7 @@ so we can think of the idea of thinking as a way of intensionally modelling \emp
 With this in mind, we can describe a semantic object that models these behaviors: a monad
 for embedding computations that has cases for failure and ``thinking''.
 Previous work has studied such a construct in the setting of the latter only, called the lift
-monad \cite{TODO}; here, we add the additional effect of failure.
+monad \cite{mogelberg-paviotti2016}; here, we add the additional effect of failure.
 
 For a type $A$, we define the \emph{lift monad with failure} $\li A$, which we will just call
 the \emph{lift monad}, as the following datatype:
@@ -678,7 +819,7 @@ Formally, the lift monad $\li A$ is defined as the solution to the guarded recur
 
 An element of $\li A$ should be viewed as a computation that can either (1) return a value (via $\eta$),
 (2) raise an error and stop (via $\mho$), or (3) think for a step (via $\theta$).
-
+%
 Notice there is a computation $\fix \theta$ of type $\li A$. This represents a computation
 that thinks forever and never returns a value.
 
@@ -714,6 +855,7 @@ we apply the tick to $\tilde{l}$ to get a term of type $\li A$.
 \subsubsection{Model-Theoretic Description}
 We can describe the lift monad in the topos of trees model as follows.
 
+% TODO
 
 \subsection{Predomains}
 
@@ -736,7 +878,8 @@ function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(
   \item There is a predomain Nat for natural numbers, where the ordering is equality.
   
   \item There is a predomain Dyn to represent the dynamic type. The underlying type
-  for this predomain is defined to be $\mathbb{N} + \later (Dyn \monto Dyn)$.
+  for this predomain is defined by guarded fixpoint to be such that
+  $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \ty{\Dyn})$.
   This definition is valid because the occurrences of Dyn are guarded by the $\later$.
   The ordering is defined via guarded recursion by cases on the argument, using the
   ordering on $\mathbb{N}$ and the ordering on monotone functions described below.
@@ -746,46 +889,73 @@ function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(
   and $A$ is a predomain, since the context should make clear which one we are referring to.
   The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
   type of $A$.
-  The ordering of $\li A$ is the ``lock-step error-ordering'' which we describe in \ref{subsec:lock-step}.
+  The ordering on $\li A$ is the ``lock-step error-ordering'' which we describe in
+  \ref{subsec:lock-step}.
 
   \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
   from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
-  Two such functions are related
+  The ordering is such that $f$ is below $g$ if for all $a$ in $\ty{A_i}$, we have
+  $f(a)$ is below $g(a)$ in the ordering for $A_o$. 
 \end{itemize}
-
-Predomains will form the objects of a structure similar to a double category,
-with horizontal morphisms being monotone funcitons, and vertical morphisms being
-embedding-projection pairs discussed below.
 
 
 
 \subsection{Lock-step Error Ordering}\label{subsec:lock-step}
 
 As mentioned, the ordering on the lift of a predomain $A$
-The relation is parameterized by an ordering $\le_A$ on $A$.
-We call this the lock-step error-ordering, the idea being that two computations
+is called the \emph{lock-step error-ordering}, the idea being that two computations
 $l$ and $l'$ are related if they are in lock-step with regard to their
-intensional behavior. That is, if $l$ is $\eta x$, then $l'$ should be equal to $\eta y$
-for some $y$ such that $x \le_A y$.
+intensional behavior, up to $l$ erroring.
+Formally, we define this ordering as follows:
+
+\begin{itemize}
+  \item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
+  \item 	$\mho \ltls l$ for all $l$ 
+  \item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
+          $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+\end{itemize}
+
+We also define a heterogeneous version of this ordering between the lifts of two
+different predomains $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
 
 \subsection{Weak Bisimilarity Relation}
 
+We also define another ordering on $\li A$, called ``weak bisimilarity'',
+written $l \bisim l'$.
+Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delays''.
+We introduce the notation $x \sim_A y$ to mean $x \le_A y$ and $y \le_A x$.
 
+The weak bisimilarity relation is defined by guarded fixpoint as follows:
 
-\subsection{Combined Ordering}
-
-
-
-
-
+\begin{align*}
+  &\mho \bisim \mho \\
+%
+  &\eta\, x \bisim \eta\, y \text{ if } 
+    x \sim_A y \\
+%		
+  &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+    \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+%	
+  &\theta\, \tilde{x} \bisim \mho \text{ if } 
+    \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+    (\theta\, \tilde{x} = \delta^n(\eta\, x))
+  \text { for some $n$ and $x : \ty{A}$ such that $x \sim_A y$ } \\
+%
+  &\mho \bisim \theta\, \tilde{y} \text { if } 
+    \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\eta\, x \bisim \theta\, \tilde{y} \text { if }
+    (\theta\, \tilde{y} = \delta^n (\eta\, y))
+  \text { for some $n$ and $y : \ty{A}$ such that $x \sim_A y$ }
+\end{align*}
 
 
 \subsection{EP-Pairs}
 
-The use of embedding-projection pairs in gradual typing was introduced by New and
-Ahmed \cite{TODO}.
-Here, we want to adapt this notion of embedding-projection pair to the setting
-of intensional denotaional semantics.
+Here, we adapt the notion of embedding-projection pair as used to study
+gradual typing (\cite{new-ahmed2018}) to the setting of intensional denotaional semantics.
 
 
 
@@ -793,20 +963,35 @@ of intensional denotaional semantics.
 
 \section{Semantics}\label{sec:semantics}
 
-\subsection{Types as Predomains}
+\subsection{Relational Semantics}
+
+\subsubsection{Types as Predomains}
 
 
-\subsection{Terms as Monotone Functions}
+\subsubsection{Terms as Monotone Functions}
 
 
-\subsection{Type Precision as EP-Pairs}
+\subsubsection{Type Precision as EP-Pairs}
 
 
-\subsection{Term Precision via the Lock-Step Error Ordering}
+\subsubsection{Term Precision via the Lock-Step Error Ordering}
 % Homogeneous vs heterogeneous term precision
+
+\subsection{Logical Relations Semantics}
 
 
 \section{Graduality}\label{sec:graduality}
+The main theorem we would like to prove is the following:
+
+\begin{theorem}[Graduality]
+  If $\cdot \vdash M \ltdyn N : \nat$, then
+  \begin{enumerate}
+    \item If $N = \mho$, then $M = \mho$
+    \item If $N = `n$, then $M = \mho$ or $M = `n$
+    \item If $M = V$, then $N = V$
+  \end{enumerate}
+\end{theorem}
+
 
 \subsection{Outline}
 
