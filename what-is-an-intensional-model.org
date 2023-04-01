@@ -1,0 +1,105 @@
+* Term Model
+
+** CBPV
+
+A judgmental cbpv model is
+
+1. A cartesian category 𝓒 of "pure functions"
+2. A subset of the objects of 𝓒 called the "value types"
+3. A 𝓟𝓒-enriched category 𝓔 of "linear functions", whose objects are
+   "computation types"
+4. 𝓟𝓒-enriched presheaf W on 𝓔
+
+Type structure:
+1. 𝓒 has product types if the value types are closed under products
+2. 𝓒 has pure function types if the vtypes are closed under exponentials
+3. 𝓒 has sum types if the value types are closed under *distributive*
+   coproducts
+4. 𝓒 has a ▹ type if for every A ∈ VType, the presheaf
+   P(Γ) = ▹ (𝓒 [ Γ , A ]) is representable
+5. 𝓒 has linear function types if every Hom_𝓔(B,B') is representable
+6. 𝓒 has thunks if every W B is representable
+
+Similarly:
+1. 𝓔 has function types if it has powers of 𝓒-types
+2. 𝓔 has returners if for every vtype A, the enriched covariant
+   presheaf Q(B)_Γ = W B (Γ × A) is (enriched) representable
+3. 𝓔 has product types if it has enriched products
+4. 𝓔 has
+This isn't quite right tho, because W needs to respect the powers...
+*** Alt
+
+A judgmental cbpv model is
+
+1. A cartesian category 𝓒 of "pure functions"
+2. A distinguished subset of 𝓒 objects called "value types"
+3. A 𝓟 𝓒-enriched category 𝓔 of "linear functions"
+4. A distinguished object W ∈ 𝓔 of "machines"
+5. A distinguished subset of 𝓔 objects called "computation types"
+
+** CBV/CBN
+
+Special cases:
+1. a judgmental cbv model is
+   - A cartesian category 𝓒
+   - A subset of types, which determines a 𝓟𝓒-enriched category 𝓣
+   - A 𝓟𝓒-enriched presheaf 𝓔 on 𝓣
+   - A 𝓟𝓒-enriched promonad structure on 𝓣 with underlying profunctor:
+     (𝓛 A B) Γ = 𝓔 B (Γ × A)
+
+   From this data, we can generate a cbpv model with 𝓒 as the
+   cartesian category and defining a "Kleisli" category whose objects
+   are 𝓣 + 1 with
+     (𝓔 (inl A) B) Γ = 𝓛 A B Γ
+     (𝓔 (inr *) B) Γ = 𝓔 Γ B
+
+   This can be generated for instance from
+   - A cartesian category 𝓒 and a strong monad T on 𝓒
+2. a judgmental cbn model is
+   - A cartesian category 𝓒
+   - a subset of types determining a wide subcategory 𝓣
+   - A subcategory? 𝓛 of 𝓣 of "linear" functions or should it be a
+     procomonad?
+
+   This can be generated for instance from a cartesian category 𝓒 and a (strong?) comonad W on 𝓒
+
+3. A cartesian category 𝓒 of contexts and "pure functions"
+4. Chosen subsets of the objects of 𝓒 called "types"
+5. For each type A ∈ Types, a presheaf Eff A ∈ 𝓟 𝓒
+   1. A natural element ret ∈ Y A ⇒ Eff A
+   2. A natural transformation bind ∈ (Y A ⇒ Eff B) ⇒ Eff A ⇒ Eff B
+   3. satisfying ...
+
+      
+* Relational Model
+
+To get a "relational" model, take the above and do it all internal to
+Cat. To make it more like relations, we should require it to be
+2-posetal (i.e. at most one 2-cell) and be fibrant (i.e., functions
+induce relations).
+
+This is all in the internal language of the topos of trees.
+
+An intensional cbv λ model with relations consists of:
+
+1. A double category 𝓒 that is cartesian, locally posetal and fibrant.
+2. A chosen subset of objects of 𝓒 called types.
+3. For each type A ∈ Types, a double presheaf  that is locally posetal and fibrant
+
+
+
+1. A cartesian locally posetal double category 𝓒.
+
+   Locally posetal means that there is at most one two cell of any
+   given framing.
+
+   Cartesian means it has finite products
+
+2. A locally posetal double category of types and effectful morphisms
+   𝓔
+
+   
+
+3. A locally posetal double profunctor Tm : 𝓒 o-* Eff
+
+
