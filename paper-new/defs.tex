@@ -1,10 +1,13 @@
 \newcommand{\To}{\Rightarrow}
 \newcommand{\inl}{\mathsf{inl}}
 \newcommand{\inr}{\mathsf{inr}}
+\newcommand{\alt}{\mathrel{\bf \,\mid\,}}
 
 
-\newcommand{\extlc}{\text{Ext-}\lambda C}
-\newcommand{\intlc}{\text{Int-}\lambda C}
+\newcommand{\extlc}{\text{Ext-}\lambda}
+\newcommand{\extlcm}{\text{Ext-}\lambda^{-\text{trans}}}
+\newcommand{\extlcmm}{\text{Ext-}\lambda^{-\text{trans}-\text{cast}}}
+\newcommand{\intlc}{\text{Int-}\lambda}
 \newcommand{\erase}[1]{\lfloor {#1} \rfloor}
 
 
@@ -20,14 +23,28 @@
 \newcommand{\dyn}{?}
 \newcommand{\nat}{\text{Nat}}
 \newcommand{\bool}{\text{Bool}}
+\newcommand{\ra}{\rightharpoonup}
+\newcommand{\Ret}{\mathsf{Ret}}
+\newcommand{\hole}[1]{\bullet \colon {#1}}
 
+
+\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
+\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
+
+\newcommand{\ret}{\mathsf{ret}}
 \newcommand{\err}{\mho}
 \newcommand{\zro}{\textsf{zro}}
 \newcommand{\suc}{\textsf{suc}}
 \newcommand{\lda}[2]{\lambda {#1} . {#2}}
-\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
-\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
+\newcommand{\injarr}[1]{\textsf{Inj}_\to ({#1})}
+\newcommand{\injnat}[1]{\textsf{Inj}_\text{nat} ({#1})}
+\newcommand{\casenat}[4]{\text{Case}_\text{nat} ({#1}) \{ \text{no} \to {#2} \alt \text{nat}({#3}) \to {#4} \}}
+\newcommand{\casearr}[4]{\text{Case}_\to ({#1}) \{ \text{no} \to {#2} \alt \text{fun}({#3}) \to {#4} \}}
+\newcommand{\bind}[3]{\text{var } {#1} = {#2} \text{ in } {#3}}
 
+\newcommand{\Lift}{\text{Lift}}
+
+\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
 \newcommand{\ltdyn}{\sqsubseteq}
 \newcommand{\gtdyn}{\sqsupseteq}
 \newcommand{\equidyn}{\mathrel{\gtdyn\ltdyn}}
@@ -38,7 +55,8 @@
 \newcommand{\etmequidyn}[4]{{#1} \vdash {#2} \equidyn_e {#3} \colon {#4}}
 \newcommand{\itmequidyn}[4]{{#1} \vdash {#2} \equidyn_i {#3} \colon {#4}}
 
-
+\newcommand{\Dwn}{\Downarrow}
+\newcommand{\qte}[1]{\text{quote}({#1})}
 
 % SGDT and Intensional Stuff
 
@@ -70,8 +88,8 @@
 \newcommand{\ltls}{\lesssim}
 \newcommand{\bisim}{\approx}
 
-\newcommand{\injarr}{\textsf{Inj}_\to}
-\newcommand{\injnat}{\textsf{Inj}_\mathbb{N}}
+%\newcommand{\injarr}{\textsf{Inj}_\to}
+%\newcommand{\injnat}{\textsf{Inj}_\mathbb{N}}
 
 \newcommand{\id}{\mathsf{id}}
 \newcommand{\ep}{\leadsto}

@@ -1,0 +1,332 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{tikz-cd}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
+
+\input{../../paper-new/defs}
+
+\begin{document}
+
+\title{Technical Outline}
+\author{Eric Giovannini}
+
+\maketitle
+
+\section{The Overall Plan}
+
+The goal is to show graduality of the extensional gradual lambda calculus.
+The main theorem is the following:
+
+\begin{theorem}[Graduality]
+If $M \ltdyn M'$, then
+
+\begin{itemize}
+    \item $M \Downarrow$ iff $M' \Downarrow$.
+    \item $M \Downarrow v_?$ iff $M' \Downarrow v_?'$, where $v_? = \err$ or $v_? = v_?'$.
+\end{itemize}
+\end{theorem}
+
+
+\section{Syntax}
+
+    % TODO details on admissibility: we can translate equations of the original logic
+    % into the new one and show that they hold there
+
+    We begin with a gradually-typed lambda calculus $(\extlc)$, which is similar to
+    the normal call-by-value gradually-typed lambda calculus, but differs in that it
+    is actually a fragment of call-by-push-value specialized such that there are no
+    non-trivial computation types. We do this for convenience, as either way
+    we would need a distinction between values and effectful terms; the framework of
+    of call-by-push-value gives us a convenient langugae to define what we need.
+
+    We then observe that composition of type precision derivations is admissible, 
+    as is heterogeneous transitivity for term
+    precision (via casts), so it will suffice to consider a new language ($\extlcm$)
+    in which we don't have composition of type precision derivations or transitivity
+    of term precision.
+
+    We further observe that all casts, except those between $\nat$ and $\dyn$
+    and between $\dyn \ra \dyn$ and $\dyn$, are admissible
+    (we can define the cast of a function type
+    functorially using the casts for its domain and codomain).
+
+    This means it is sufficient to consider a new language ($\extlcmm$) in which
+    instead of having arbitrary casts, we have injections from $\nat$ and
+    $\dyn \ra \dyn$ into $\dyn$, and case inspections from $\dyn$ to $\nat$ and
+    $\dyn$ to $\dyn \ra \dyn$.
+
+    From here, we define an intensional GSTLC, so-named because it makes the
+    intensional stepping behavior of programs explicit in the syntax.
+    This is acocmplished by adding a syntactic ``later'' type and a
+    syntactic $\theta$ that maps terms of type later $A$ to terms of type $A$.
+    
+    \subsection{Extensional ($\extlcmm$)}
+
+    \begin{align*}
+        &\text{Value Types } A := \nat \alt \dyn \alt (A \ra B) \\
+        &\text{Computation Types } B := \Ret A \\
+        &\text{Value Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
+        &\text{Computation Contexts } \Delta := \cdot \alt \hole B \alt \Delta , x : A \\
+        &\text{Values } V :=  \zro \alt \suc\, V \alt \injnat V \alt \injarr V \\ 
+        &\text{Terms } M, N := \err_B \alt \Ret {V} \alt \bind{x}{M}{N} % \alt \suc\, M, 
+          \alt \lda{x}{M} \alt V_f\, V_x \alt
+          %\\ & \quad\quad \injnat M \alt \injarr M
+          \\ & \quad\quad \casenat{V}{M_{no}}{n}{M_{yes}} 
+          \alt \casearr{V}{M_{no}}{f}{M_{yes}}
+      \end{align*}
+
+    % TODO is err a value? What about injnat and injarr?
+    % TODO should suc be a term and a value? What about injnat and injarr?
+
+    The value typing judgment is written $\hasty{\Gamma}{V}{A}$ and 
+    the computation typing judgment is written $\hasty{\Delta}{M}{B}$.
+
+    We define substitution for computation contexts as follows:
+    \begin{mathpar}
+        \inferrule*
+        { \delta : \Delta' \to \Delta \and 
+          \hasty{\Delta'|_V}{V}{A}}
+        { (\delta , V/x ) \colon \Delta' \to \Delta , x : A }
+
+        \inferrule*
+        {}
+        {\cdot \colon \cdot \to \cdot}
+
+        \inferrule*
+        {\hasty{\Delta'}{M}{B}}
+        {M \colon \Delta' \to \hole{B}}
+    \end{mathpar}
+
+    The typing rules are as follows:
+    \begin{mathpar}
+        % Err
+        \inferrule*{ }{\hasty {\cdot, \Gamma} {\err_B} B} 
+      
+        % Zero and suc
+        \inferrule*{ }{\hasty \Gamma \zro \nat}
+      
+        \inferrule*{\hasty \Gamma M \nat} {\hasty \Gamma {\suc\, M} \nat}
+      
+        % Lambda
+        \inferrule* 
+        {\hasty {\cdot, \Gamma, x : A} M {\Ret A'}} 
+        {\hasty \Gamma {\lda x M} {A \ra A'}}
+      
+        % App
+        \inferrule*
+        {\hasty \Gamma {V_f} {A \ra A'} \and \hasty \Gamma {V_x} A}
+        {\hasty {\cdot , \Gamma} {M \, N} {\Ret A'}}
+
+        % Ret
+        \inferrule*
+        {\hasty \Gamma V A}
+        {\hasty {\cdot , \Gamma} {\ret V} {\Ret A}}
+      
+        % Bind
+        \inferrule*
+        {\hasty \Delta M {\Ret A} \and \hasty{\cdot , \Delta|_V , x : A}{N}{B} } % Need x : A in context
+        {\hasty{\Delta}{\bind{x}{M}{N}}{B}}
+
+        % inj-nat
+        \inferrule*
+        {\hasty \Gamma M \nat}
+        {\hasty \Gamma {\injnat M} \dyn}
+
+        % inj-arr 
+        \inferrule*
+        {\hasty \Gamma M (\dyn \ra \dyn)}
+        {\hasty \Gamma {\injarr M} \dyn}
+
+        % Case nat
+        \inferrule*
+        {\hasty{\Gamma}{V}{\dyn} \and 
+          \hasty{\Delta , x : \nat }{M_{yes}}{B} \and 
+          \hasty{\Delta}{M_{no}}{B}}
+        {\hasty {\Delta} {\casenat{M}{M_{no}}{n}{M_{yes}}} {B}}
+      
+        % Case arr
+        \inferrule*
+        {\hasty{\Gamma}{V}{\dyn} \and 
+          \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{yes}}{B} \and 
+          \hasty{\Delta}{M_{no}}{B}}
+        {\hasty {\Delta} {\casearr{M}{M_{no}}{f}{M_{yes}}} {B}}
+    \end{mathpar}
+
+
+    The equational theory is as follows:
+    \begin{mathpar}
+        % Function Beta and Eta
+        \inferrule*
+        {\hasty {\cdot, \Gamma, x : A} M {\Ret A'} \and \hasty \Gamma V A}
+        {(\lda x M)\, V = M[V/x]}
+
+        \inferrule*
+        {\hasty \Gamma V {A \ra A}}
+        {\Gamma \vdash V = \lda x {V\, x}}
+
+        % Case-nat Beta
+        \inferrule*
+        {\hasty \Gamma V \nat}
+        {\casenat {\injnat {V}} {M_{no}} {n} {M_{yes}} = M_{yes}[V/n]}
+
+        \inferrule*
+        {\hasty \Gamma V {\dyn \ra \dyn} }
+        {\casenat {\injarr {V}} {M_{no}} {n} {M_{yes}} = M_{no}}
+
+        % Case-nat Eta
+        \inferrule*
+        {}
+        {\Gamma , x :\, \dyn \vdash M = \casenat{x}{M}{n}{M[(\injnat{n}) / x]} }
+
+
+        % Case-arr Beta
+
+
+        % Case-arr Eta
+
+
+        % Ret Beta and Eta
+        \inferrule*
+        {}
+        {\bind{x}{\ret\, V}{N} = N[V/x]}
+
+        \inferrule*
+        {\hasty {\hole{\Ret A} , \Gamma} {M} {B}}
+        {\hole{\Ret A}, \Gamma \vdash M = \bind{x}{\bullet}{M[\ret\, x]}}
+
+    \end{mathpar}
+
+    Equivalent terms in the equational theory are considered equal.
+
+    
+    We now discuss type and term precision. In our language, we do not have
+    ``term precision'' but rather arbitrary monotone relations on types,
+    which we denote by $A \rel B$. We have relations on value types, as well
+    as on computation types.
+    %
+    In addition, because we don't have casts in our language, we do not have
+    the usual cast rules specifying that casts are least upper bounds and greatest
+    lower bounds. Instead, we have rules for our injection and case terms.
+
+    \begin{align*}
+        &\text{Value Relations } R := \nat \alt \dyn \alt (R \ra R) \alt \alpha_1 \leq_A \alpha_2 \\
+        &\text{Computation Relations } S := \Lift R \\
+    \end{align*}
+
+    % We define 
+
+    % \begin{mathpar}
+    %     \inferrule*
+    %     {\alpha_1 : A_1 \mid \alpha_2 : A_2 \vdash R \text{ rel} \and 
+    %      \alpha_1' : A_1' \vdash V_1 : A_1 \and
+    %      \alpha_2' : A_2' \vdash V_2 : A_2 }
+    %     {\alpha_1' : A_1' \mid \alpha_2' : A_2' \vdash R (V_1/\alpha_1, V_2/\alpha_2)}
+    % \end{mathpar}
+
+    % TODO term precision
+
+
+    \subsection{Intensional}
+    In the intensional syntax, we add a type constructor for later, as well as a
+    syntactic $\theta$ term and a syntactic $\nxt$ term.
+    We add rules for each of these, and also modify the rules for inj-arr and
+    case-arr, since now
+    the function is not $\Dyn \ra \Dyn$ but rather $\later (\Dyn \ra \Dyn)$.
+
+    % TODO show changes
+
+    We define an erasure function from intensional syntax to extensional syntax
+    by induction on the intensional types and terms.
+    The basic idea is that the syntactic type $\later A$ erases to $A$,
+    and $\nxt$ and $\theta$ erase to the identity.
+
+    
+
+
+\section{Semantics}
+To give a semantics of the extensional, quotiented syntax ($\extlcmm$), we proceed
+in a few steps:
+
+\begin{enumerate}
+    \item We first give a denotational semantics of the intensional syntax $\intlc$
+    using synthetic guarded domain theory, i.e., working internal to the topos of trees.
+    The denotation of a value type $A$ will be a poset $\sem{A}$, and the denotation of a computation
+    type $\Ret A$ will be the lift $\li \sem{A}$, (i.e., the free error domain on $\sem{A}$). % Ret A is our only computation type
+    We refer to this semantics as the \emph{step-indexed semantics}.
+
+    %The denotation of a closed term of type $B$ will be as an element of $\li \sem{B}$.
+
+    \item We then show how to go from the above step-indexed semantics to a set-based
+    semantics which is still intensional in that the denotations of terms that differ only in
+    their number of ``steps'' will not be equal. The denotations here are a type of
+    coinductive ``Machine'' that at each step of computation can either return a result,
+    error, or continue running. We call this the \emph{Machine semantics}.
+    %
+    The passage from step-indexed semantics to the coinductive semantics
+    will make use of clock quantification; see below for details.
+
+    \item Finally, we collapse the above intensional Machine-based semantics to an
+    extensional semantics, so-called because at this point the information about the
+    precise number of steps a Machine has taken has been lost. We care only whether the
+    Machine runs to a value or error, or whether it diverges. Of course, we cannot
+    in general decide whether a given Machine will halt, so the semantic objects here
+    are pairs of a proposition $P$ and a function taking a proof of $P$ to an element of
+    the poset.
+
+\end{enumerate}
+    
+The benefit to working synthetically in step 1 above is that the construction of the logical
+relation that proves canonicity for the intensional syntax can be carried out much like
+any normal, non-step-indexed logical relation.
+
+
+\section{Unary Canonicity}
+
+We first want to show soundness:
+
+\begin{lemma}[Soundness]
+    In the Machine semantics, none of the following are equal: $\mho, \zro, \suc M, \omega$,
+    where $\omega$ represents a diverging program.
+\end{lemma}
+
+Next we use a logical relations argument to establish the following:
+
+\begin{lemma}
+    $M_i \Dwn^n v_?$ iff $M_i = \delta^n(\qte{v_?})$
+\end{lemma}
+
+We will need the following key property relating erasure to the semantics:
+
+\begin{lemma}
+    If $\erase{M_i} = M$ and $\erase{M_i'} = M'$, and $M = M'$, 
+    then $| \sem{M_i} | = | \sem{M_i'} |$.
+\end{lemma}
+
+The idea of the proof is that since $M_i$ and $M_i'$ have equal erasures
+(in the extensional equational theory), we can recover from the proof that their
+erasures are equal a series of equational rules (e.g., $\beta$ equality), and
+apply the intensional analogues of those rules to $M_i$ to ensure that $M_i$ and $M_i'$
+differ syntactically only in their number of $\theta$'s.
+
+    
+
+\section{Graduality}
+
+
+
+
+
+
+\end{document}
