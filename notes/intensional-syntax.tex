@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{tikz-cd}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
+
+\newcommand{\later}{{\vartriangleright\hspace{-2px}}}
+\newcommand{\nxt}{\texttt{next}}
+
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\gfix}{\texttt{gfix}}
+
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\laterhat}{\widehat{\later}}
+\newcommand{\El}{\mathsf{El}}
+
+\newcommand{\lift}{L_\mho}
+\newcommand{\lifthat}{\widehat{L_\mho}}
+
+\newcommand{\To}{\Rightarrow}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\Set}{\texttt{Set}}
+\newcommand{\Yo}{\mathsf{Yo}}
+\newcommand{\Hom}{\mathsf{Hom}}
+
+\newcommand{\inl}{\texttt{inl}}
+\newcommand{\inr}{\texttt{inr}}
+\newcommand{\alt}{\,|\,}
+
+\begin{document}
+
+\title{Intensional Syntax}
+\author{Max S. New and Eric Giovannini}
+
+\maketitle
+
+\begin{mathpar}
+  \begin{array}{rcl}
+    \textrm{Value Types} & ::= & \mathbb N \alt D \alt A \rightharpoonup A'\alt \later A\\
+    \textrm{Comp Types} & ::= & \mathcal L A
+  \end{array}
+\end{mathpar}
+
+What are the rules for $\later$?
+
+\begin{mathpar}
+  \inferrule
+  {\Gamma \vdash V : A}
+  {\Gamma \vdash \nxt\, V : \later A}
+
+  \inferrule
+  {}
+  {\Gamma \vdash \theta : \later A \rightharpoonup A}
+
+  \theta(\nxt x) = \theta(y); \texttt{ret}\, x
+\end{mathpar}
+
+\end{document}
