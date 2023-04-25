@@ -1,0 +1,208 @@
+\section{Introduction}
+  
+% gradual typing, graduality
+\subsection{Gradual Typing and Graduality}
+One of the principal categories on which type systems of programming languages are classified
+is that of static versus dynamic type discipline.
+In static typing, the code is type-checked at compile time, while in a dynamic typing,
+the type checking is deferred to run-time. Both approaches have benefits: with static typing,
+the programmer is assured that if the program passes the type-checker, their program
+is free of type errors. Meanwhile, dynamic typing allows the programmer to rapidly prototype
+their application code without needing to commit to fixed type signatures for their functions.
+
+\emph{Gradually-typed languages} \cite{siek-taha06} allow for both disciplines
+to be used in the same codebase, and support interoperability between statically-typed
+and dynamically-typed code.
+This flexibility allows programmers to begin their projects in a dynamic style and
+enjoy the benefits of dynamic typing related to rapid prototyping and easy modification
+while the codebase ``solidifies''. Over time, as parts of the code become more mature
+and the programmer is more certain of what the types should be, the code can be
+\emph{gradually} migrated to a statically typed style without needing to start the project
+over in a completely differnt language.
+
+Gradually-typed languages should satisfy two intuitive properties.
+First, the interaction between the static and dynamic components of the codebase
+should be safe -- i.e., should preserve the guarantees made by the static types.
+In particular, while statically-typed code can error at runtime in a gradually-typed language,
+such an error can always be traced back to a dynamically-typed term that
+violated the typing contract imposed by statically typed code.
+% In other words, in the statically-typed portions of the codebase, type soundness must be preserved.
+Second, gradually-typed langugaes should support the smooth migration from dynamic typing
+to static typing, in that the programmer can initially leave off the
+typing annotations and provide them later without altering the meaning of the
+program.
+
+% Graduality property
+Formally speaking, gradually typed languages should satisfy the 
+\emph{dynamic gradual guarantee}, originally defined by Siek, Vitousek, Cimini,
+and Boyland \cite{siek_et_al:LIPIcs:2015:5031}.
+This property is also referred to as \emph{graduality}, by analogy with parametricity.
+Intuitively, graduality says that going from a dynamic to static style should not
+introduce changes in the meaning of the program.
+More specifically, making the types more precise by adding typing annotations
+% (replacing $\dyn$ with a more specific type
+%such as integers)
+will either result in the same behavior as the original, less precise program,
+or will result in a type error.
+
+
+\subsection{Current Approaches to Proving Graduality}
+Current approaches to proving graduality include the methods of Abstracting Gradual Typing
+\cite{garcia-clark-tanter2016} and the formal tools of the Gradualier \cite{cimini-siek2016}.
+These allow the language developer to start with a statically typed langauge and derive a
+gradually typed language that satisfies the gradual guarantee. The downside to these approaches
+is that the semantics of the resulting languages are too lazy: the frameworks consider only
+the $\beta$ rules and not the $\eta$ equalities. Furthermore, while these frameworks do prove
+graduality, they do not show the correctness of the equational theory, which is equally important
+to sound gradual typing. For example, programmers often refactor their code without thinking about
+whether the refactoring has broken the semantics of the program. 
+It is the validity of the laws in the equational theory that guarantees that such refactorings are sound. 
+Similarly, correctness of compiler optimizations rests on the validity of the corresponding equations
+from the equational theory. It is therefore important that the langages that claim to be gradually typed
+have provably correct equational theories.
+
+%The downside is that
+%not all gradually typed languages can be derived from these frameworks, and moreover, in both
+%approaches the semantics is derived from the static type system as opposed to the alternative
+%in which the semantics determines the type checking. Without a clear semantic interpretation of type
+%dynamism, it becomes difficult to extend these techniques to new language features such as polymorphism.
+
+% Proving graduality via LR
+New and Ahmed \cite{new-ahmed2018}
+have developed a semantic approach to specifying type dynamism in terms of
+\emph{embedding-projection pairs}, which allows for a particularly elegant formulation of the
+gradual guarantee.
+Moreover, their axiomatic account of program equivalence allows for type-based reasoning
+about program equivalences.
+%
+In this approach, a logical relation is constructed and shown to be sound with respect to
+the notion of observational approximation that specifies when one program is more precise than another.
+The downside of this approach is that each new language requires a different logical relation
+to prove graduality. Furthermore, the logical relations tend to be quite complicated due
+to a technical requirement known as \emph{step-indexing}.
+As a result, developments using this approach tend to require vast effort, with the
+corresponding technical reports having 50+ pages of proofs.
+
+An alternative approach, which we investigate in this paper, is provided by
+\emph{synthetic guarded domain theory}.
+The tecnhiques of synthetic guarded domain theory allow us to internalize the
+step-index reasoning normally required in logical relations proofs of graduality,
+ultimately allowing us to specify the logical relation in a manner that looks nearly
+identical to a typical, non-step-indexed logical relation.
+
+In this paper, we report on work we have done to mechanize proofs of graduality and
+correctness of equational theories using SGDT techniques in Agda.
+Our goal in this work is to mechanize these proofs in a reusable way,
+thereby providing a framework to use to more easily and
+conveniently prove that existing languages satsify graduality and have
+sound equational theories. Moreover, the aim is for designers of new languages
+to utlize the framework to facilitate the design of new provably-correct
+gradually-typed languages with nontrivial features.
+
+
+\subsection{Proving Graduality in SGDT}
+\textbf{TODO:} This section should probably be moved to after the relevant background has been introduced.
+
+% TODO introduce the idea of cast calculus and explicit casts?
+
+In this paper, we will utilize SGDT techniques to prove graduality for a particularly
+simple gradually-typed cast calculus, the gradually-typed lambda calculus.
+This is the usual simply-typed lambda calculus with a dynamic type $\dyn$ such that
+$A \ltdyn\, \dyn$ for all types $A$, as well as upcasts and downcasts between any types
+$A$ and $B$ such that $A \ltdyn B$. The complete definition will be provided in
+Section \ref{sec:GTLC}.
+The graduality theorem is shown below.
+
+
+% \begin{theorem}[Graduality]
+%   If $M \ltdyn N : \nat$, then either:
+%   \begin{enumerate}
+%     \item $M = \mho$
+%     \item $M = N = \zro$
+%     \item $M = N = \suc n$ for some $n$
+%     \item $M$ and $N$ diverge
+%   \end{enumerate}
+% \end{theorem}
+
+
+\begin{theorem}[Graduality]
+  If $\cdot \vdash M \ltdyn N : \nat$, then
+  \begin{enumerate}
+    \item $M \Downarrow$ iff $N \Downarrow$
+    \item If $M \Downarrow v_?$ and $N \Downarrow v'_?$ then either $v_? = \mho$, or $v_? = v'_?$.
+  \end{enumerate}
+\end{theorem}
+
+Details can be found in later sections, but we provide a brief explanation of the terminology and notation:
+
+\begin{itemize}
+  \item $M \ltdyn N : \nat$ means $M$ and $N$ are terms of type $\nat$ such that
+  $M$ is ``syntactically more precise'' than $N$, or equivalently, $N$ is 
+  ``more dynamic'' than $M$. Intuitively this means that $M$ and $N$ are the
+  same except that in some places where $M$ has explicit typing annotations,
+  $N$ has $\dyn$ instead.
+  \item $\cdot \Downarrow$ is a relation on terms that is defined such that $M \Downarrow$ means
+  that $M$ terminates, either with a run-time error or a value $n$ of type $\nat$.
+  \item $\mho$ is a syntactic representation of a run-time type error, which
+  happens, for example, when a programmer tries to call a function with a value whose type
+  is found to be incompatible with the argument type of the function.
+  \item $v_?$ is shorthand for the syntactic representation of a term that is either equal to
+  $\mho$, or equal to the syntactic representation of a value $n$ of type $\nat$.
+\end{itemize}
+
+% We also should be able to show that $\mho$, $\zro$, and $\suc\, N$ are not equal.
+
+Our first step toward proving graduality is to formulate an \emph{step-sensitive}, or \emph{intensional},
+gradual lambda calculus, which we call $\intlc$, in which the computation steps taken by a term are made explicit.
+The ``normal'' gradual lambda calculus for which we want to prove graduality will be called the
+\emph{step-insensitive}, or \emph{extensional}, gradual lambda calculus, denoted $\extlc$.
+We will define an erasure function $\erase{\cdot} : \intlc \to \extlc$ which takes a program in the intensional lambda calculus
+and ``forgets'' the syntactic information about the steps to produce a term in the extensional calculus.
+
+Every term $M_e$ in $\extlc$ will have a corresponding program $M_i$ in $\intlc$ such that
+$\erase{M_i} = M_e$. Moreover, we will show that if $M_e \ltdyn_e M_e'$ in the extensional theory,
+then there exists terms $M_i$ and $M_i'$ such that $\erase{M_i}=M_e$, $\erase{M_i'}=M_e'$ and
+$M_i \ltdyn_i M_i'$ in the intensional theory.
+
+We formulate and prove an analogous graduality theorem for the intensional lambda calculus.
+We define an interpretation of the intensional lambda calculus into a model in which we prove
+various results. Using the observation above, given $M_e \ltdyn M_e' : \nat$, we can find
+intensional programs $M_i$ and $M_i'$ that erase to them and are such that $M_i \ltdyn M_i'$.
+We will then apply the intensional graduality theorem to $M_i$ and $M_i'$, and translate the result
+back to $M_e$ and $M_e'$.
+
+\subsection{Contributions}
+Our main contribution is a reusable framework in Guarded Cubical Agda for developing machine-checked proofs
+of graduality of a cast calculus.
+To demonstrate the feasability and utility of our approach, we have used the framework to prove
+graduality for the simply-typed gradual lambda calculus. Along the way, we have developed an ``intensional" theory
+of graduality that is of independent interest.
+
+
+\subsection{Overview of Remainder of Paper}
+
+In Section \ref{sec:technical-background}, we provide technical background on gradually typed languages and
+on synthetic guarded domain theory.
+% 
+In Section \ref{sec:GTLC}, we introduce the gradually-typed cast calculus
+for which we will prove graduality. Important here are the notions of syntactic
+type precision and term precision. We introduce both the \emph{extensional} gradual lambda calculus
+($\extlc$) and the \emph{intensional} gradual lambda calculus ($\intlc$).
+%
+In Section \ref{sec:domain-theory}, we define several fundamental constructions
+internal to SGDT that will be needed when we give a denotational semantics to
+our intensional lambda calculus.
+This includes the notion of Predomains as well as the concept
+of EP-Pairs.
+%
+In Section \ref{sec:semantics}, we define the denotational semantics for the
+intensional gradually-typed lambda calculus using the domain theoretic constructions in the
+previous section.
+%
+In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
+extensional gradual lambda calculus, which will make use of prove properties we prove about
+ the intensional gradual lambda calculus.
+%
+In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
+to the traditional step-indexing approach, as well as possibilities for future work.
+

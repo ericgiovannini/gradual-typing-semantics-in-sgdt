@@ -1,0 +1,286 @@
+\section{Technical Background}\label{sec:technical-background}
+
+\subsection{Gradual Typing}
+
+% Cast calculi
+In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
+the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
+forms of the language (e.g., pattern matching, field reference, etc.).
+Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
+type checking is made explicit through the insertion of \emph{type casts}.
+
+% Up and down casts
+In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
+$A$ is a \emph{more precise} type than $B$.
+There a dynamic type $\dyn$ with the property that $A \ltdyn\, \dyn$ for all $A$.
+%
+If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
+and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
+Upcasts always succeed, while downcasts may fail at runtime.
+%
+% Syntactic term precision
+We also have a notion of \emph{syntactic term precision}.
+If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
+$M \ltdyn N : A \ltdyn B$ to mean that $M$ is more precise than $N$, i.e., $M$ and $N$
+behave the same except that $M$ may error more.
+
+% Modeling the dynamic type as a recursive sum type?
+% Observational equivalence and approximation?
+
+% synthetic guarded domain theory, denotational semantics therein
+
+\subsection{Difficulties in Prior Semantics}
+  % Difficulties in prior semantics
+
+  In this work, we compare our approach to proving graduality to the approach
+  introduced by New and Ahmed \cite{new-ahmed2018} which constructs a step-indexed
+  logical relations model and shows that this model is sound with respect to their
+  notion of contextual error approximation.
+
+  Because the dynamic type is modeled as a non-well-founded
+  recursive type, their logical relation needs to be paramterized by natural numbers
+  to restore well-foundedness. This technique is known as a \emph{step-indexed logical relation}.
+  Reasoning about step-indexed logical relations
+  can be tedious and error-prone, and there are some very subtle aspects that must
+  be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
+  relation for the gradually-typed lambda calculus.
+
+  In particular, the prior approach of New and Ahmed requires two separate logical
+  relations for terms, one in which the steps of the left-hand term are counted,
+  and another in which the steps of the right-hand term are counted.
+  Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
+  related in both of the one-sided logical relations. Having two separate logical relations
+  complicates the statement of the lemmas used to prove graduality, becasue any statement that
+  involves a term stepping needs to take into account whether we are counting steps on the left
+  or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
+  as fundamental and seemingly straightforward as transitivty.
+
+  Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
+  index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
+  But this does not actually hold: we requrie that one of the two pairs of terms
+  be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
+  Which pair is required to satisfy this depends on which logical relation we are considering,
+  (i.e., is it counting steps on the left or on the right),
+  and so any argument that uses transitivity needs to consider two cases, one
+  where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
+  be related for all $i$. % This may not even be possible to show in some scenarios!
+
+  % These complications introduced by step-indexing lead one to wonder whether there is a
+  % way of proving graduality without relying on tedious arguments involving natural numbers.
+  % An alternative approach, which we investigate in this paper, is provided by
+  % \emph{synthetic guarded domain theory}, as discussed below.
+  % Synthetic guarded domain theory allows the resulting logical relation to look almost
+  % identical to a typical, non-step-indexed logical relation.
+
+\subsection{Synthetic Guarded Domain Theory}
+One way to avoid the tedious reasoning associated with step-indexing is to work
+axiomatically inside of a logical system that can reason about non-well-founded recursive
+constructions while abstracting away the specific details of step-indexing required
+if we were working analytically.
+The system that proves useful for this purpose is called \emph{synthetic guarded
+domain theory}, or SGDT for short. We provide a brief overview here, but more
+details can be found in \cite{birkedal-mogelberg-schwinghammer-stovring2011}.
+
+SGDT offers a synthetic approach to domain theory that allows for guarded recursion
+to be expressed syntactically via a type constructor $\later : \type \to \type$ 
+(pronounced ``later''). The use of a modality to express guarded recursion
+was introduced by Nakano \cite{Nakano2000}.
+%
+Given a type $A$, the type $\later A$ represents an element of type $A$
+that is available one time step later. There is an operator $\nxt : A \to\, \later A$
+that ``delays'' an element available now to make it available later.
+We will use a tilde to denote a term of type $\later A$, e.g., $\tilde{M}$.
+
+% TODO later is an applicative functor, but not a monad
+
+There is a \emph{guarded fixpoint} operator
+
+\[
+  \fix : \forall T, (\later T \to T) \to T.
+\]
+
+That is, to construct a term of type $T$, it suffices to assume that we have access to
+such a term ``later'' and use that to help us build a term ``now''.
+This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
+In particular, this axiom applies to propositions $P : \texttt{Prop}$; proving
+a statement in this manner is known as $\lob$-induction.
+
+The operators $\later$, $\next$, and $\fix$ described above can be indexed by objects
+called \emph{clocks}. A clock serves as a reference relative to which steps are counted.
+For instance, given a clock $k$ and type $T$, the type $\later^k T$ represents a value of type
+$T$ one unit of time in the future according to clock $k$.
+If we only ever had one clock, then we would not need to bother defining this notion.
+However, the notion of \emph{clock quantification} is crucial for encoding coinductive types using guarded
+recursion, an idea first introduced by Atkey and McBride \cite{atkey-mcbride2013}.
+
+
+% Clocked Cubical Type Theory
+\subsubsection{Ticked Cubical Type Theory}
+% TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions?
+
+In Ticked Cubical Type Theory \cite{TODO}, there is an additional sort
+called \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
+as evidence that one unit of time has passed according to the clock $k$.
+The type $\later A$ is represented as a function from ticks of a clock $k$ to $A$.
+The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
+to emphasize the dependence.
+
+% TODO next as a function that ignores its input tick argument?
+
+The rules for tick abstraction and application are similar to those of dependent
+$\Pi$ types. 
+In particular, if we have a term $M$ of type $\later^k A$, and we
+have available in the context a tick $t' : \tick k$, then we can apply the tick to $M$ to get
+a term $M[t'] : A[t'/t]$. We will also write tick application as $M_t$.
+Conversely, if in a context $\Gamma, t : \tick k$ we have that $M$ has type $A$,
+then in context $\Gamma$ we have $\lambda t.M$ has type $\later A$. % TODO dependent version?
+
+The statements in this paper have been formalized in a variant of Agda called
+Guarded Cubical Agda \cite{TODO}, an implementation of Clocked Cubical Type Theory.
+
+
+% TODO axioms (clock irrelevance, tick irrelevance)?
+
+
+\subsubsection{The Topos of Trees Model}
+
+The topos of trees model provides a useful intuition for reasoning in SGDT 
+\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
+This section presupposes knowledge of category theory and can be safely skipped without
+disrupting the continuity.
+
+The topos of trees $\calS$ is the presheaf category $\Set^{\omega^o}$. 
+%
+We assume a universe $\calU$ of types, with encodings for operations such
+as sum types (written as $\widehat{+}$). There is also an operator 
+$\laterhat \colon \later \calU \to \calU$ such that 
+$\El(\laterhat(\nxt A)) =\,\, \later \El(A)$, where $\El$ is the type corresponding
+to the code $A$.
+
+An object $X$ is a family $\{X_i\}$ of sets indexed by natural numbers,
+along with restriction maps $r^X_i \colon X_{i+1} \to X_i$ (see Figure \ref{fig:topos-of-trees-object}).
+These should be thought of as ``sets changing over time", where $X_i$ is the view of the set if we have $i+1$
+time steps to reason about it.
+We can also think of an ongoing computation, with $X_i$ representing the potential results of the computation
+after it has run for $i+1$ steps.
+
+\begin{figure}
+  % https://q.uiver.app/?q=WzAsNSxbMiwwLCJYXzIiXSxbMCwwLCJYXzAiXSxbMSwwLCJYXzEiXSxbMywwLCJYXzMiXSxbNCwwLCJcXGRvdHMiXSxbMiwxLCJyXlhfMCIsMl0sWzAsMiwicl5YXzEiLDJdLFszLDAsInJeWF8yIiwyXSxbNCwzLCJyXlhfMyIsMl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{X_0} \& {X_1} \& {X_2} \& {X_3} \& \dots
+	\arrow["{r^X_0}"', from=1-2, to=1-1]
+	\arrow["{r^X_1}"', from=1-3, to=1-2]
+	\arrow["{r^X_2}"', from=1-4, to=1-3]
+	\arrow["{r^X_3}"', from=1-5, to=1-4]
+\end{tikzcd}\]
+  \caption{An example of an object in the topos of trees.}
+  \label{fig:topos-of-trees-object}
+\end{figure}
+
+A morphism from $\{X_i\}$ to $\{Y_i\}$ is a family of functions $f_i \colon X_i \to Y_i$
+that commute with the restriction maps in the obvious way, that is,
+$f_i \circ r^X_i = r^Y_i \circ f_{i+1}$ (see Figure \ref{fig:topos-of-trees-morphism}).
+
+\begin{figure}
+% https://q.uiver.app/?q=WzAsMTAsWzIsMCwiWF8yIl0sWzAsMCwiWF8wIl0sWzEsMCwiWF8xIl0sWzMsMCwiWF8zIl0sWzQsMCwiXFxkb3RzIl0sWzAsMSwiWV8wIl0sWzEsMSwiWV8xIl0sWzIsMSwiWV8yIl0sWzMsMSwiWV8zIl0sWzQsMSwiXFxkb3RzIl0sWzIsMSwicl5YXzAiLDJdLFswLDIsInJeWF8xIiwyXSxbMywwLCJyXlhfMiIsMl0sWzQsMywicl5YXzMiLDJdLFs2LDUsInJeWV8wIiwyXSxbNyw2LCJyXllfMSIsMl0sWzgsNywicl5ZXzIiLDJdLFs5LDgsInJeWV8zIiwyXSxbMSw1LCJmXzAiLDJdLFsyLDYsImZfMSIsMl0sWzAsNywiZl8yIiwyXSxbMyw4LCJmXzMiLDJdXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{X_0} \& {X_1} \& {X_2} \& {X_3} \& \dots \\
+	{Y_0} \& {Y_1} \& {Y_2} \& {Y_3} \& \dots
+	\arrow["{r^X_0}"', from=1-2, to=1-1]
+	\arrow["{r^X_1}"', from=1-3, to=1-2]
+	\arrow["{r^X_2}"', from=1-4, to=1-3]
+	\arrow["{r^X_3}"', from=1-5, to=1-4]
+	\arrow["{r^Y_0}"', from=2-2, to=2-1]
+	\arrow["{r^Y_1}"', from=2-3, to=2-2]
+	\arrow["{r^Y_2}"', from=2-4, to=2-3]
+	\arrow["{r^Y_3}"', from=2-5, to=2-4]
+	\arrow["{f_0}"', from=1-1, to=2-1]
+	\arrow["{f_1}"', from=1-2, to=2-2]
+	\arrow["{f_2}"', from=1-3, to=2-3]
+	\arrow["{f_3}"', from=1-4, to=2-4]
+\end{tikzcd}\]
+  \caption{An example of a morphism in the topos of trees.}
+  \label{fig:topos-of-trees-morphism}
+\end{figure}
+
+
+The type operator $\later$ is defined on an object $X$ by
+$(\later X)_0 = 1$ and $(\later X)_{i+1} = X_i$.
+The restriction maps are given by $r^\later_0 =\, !$, where $!$ is the
+unique map into $1$, and $r^\later_{i+1} = r^X_i$.
+The morphism $\nxt^X \colon X \to \later X$ is defined pointwise by
+$\nxt^X_0 =\, !$, and $\nxt^X_{i+1} = r^X_i$. It is easily checked that
+this satisfies the commutativity conditions required of a morphism in $\calS$.
+%
+Given a morphism $f \colon \later X \to X$, i.e., a family of functions
+$f_i \colon (\later X)_i \to X_i$ that commute with the restrictions in the appropriate way,
+we define $\fix(f) \colon 1 \to X$ pointwise
+by $\fix(f)_i = f_{i} \circ \dots \circ f_0$.
+This can be visualized as a diagram in the category of sets as shown in
+Figure \ref{fig:topos-of-trees-fix}.
+% Observe that the fixpoint is a \emph{global element} in the topos of trees.
+% Global elements allow us to view the entire computation on a global level.
+
+
+% https://q.uiver.app/?q=WzAsOCxbMSwwLCJYXzAiXSxbMiwwLCJYXzEiXSxbMywwLCJYXzIiXSxbMCwwLCIxIl0sWzAsMSwiWF8wIl0sWzEsMSwiWF8xIl0sWzIsMSwiWF8yIl0sWzMsMSwiWF8zIl0sWzMsNCwiZl8wIl0sWzAsNSwiZl8xIl0sWzEsNiwiZl8yIl0sWzIsNywiZl8zIl0sWzAsMywiISIsMl0sWzEsMCwicl5YXzAiLDJdLFsyLDEsInJeWF8xIiwyXSxbNSw0LCJyXlhfMCJdLFs2LDUsInJeWF8xIl0sWzcsNiwicl5YXzIiXV0=
+% \[\begin{tikzcd}[ampersand replacement=\&]
+% 	1 \& {X_0} \& {X_1} \& {X_2} \\
+% 	{X_0} \& {X_1} \& {X_2} \& {X_3}
+% 	\arrow["{f_0}", from=1-1, to=2-1]
+% 	\arrow["{f_1}", from=1-2, to=2-2]
+% 	\arrow["{f_2}", from=1-3, to=2-3]
+% 	\arrow["{f_3}", from=1-4, to=2-4]
+% 	\arrow["{!}"', from=1-2, to=1-1]
+% 	\arrow["{r^X_0}"', from=1-3, to=1-2]
+% 	\arrow["{r^X_1}"', from=1-4, to=1-3]
+% 	\arrow["{r^X_0}", from=2-2, to=2-1]
+% 	\arrow["{r^X_1}", from=2-3, to=2-2]
+% 	\arrow["{r^X_2}", from=2-4, to=2-3]
+% \end{tikzcd}\]
+
+% \begin{figure}
+%   % https://q.uiver.app/?q=WzAsMTksWzEsMiwiWF8wIl0sWzIsMywiWF8xIl0sWzMsMSwiMSJdLFswLDEsIjEiXSxbMCwyLCJYXzAiXSxbMSwzLCJYXzEiXSxbMSwxLCIxIl0sWzIsMSwiMSJdLFsyLDIsIlhfMCJdLFsyLDQsIlhfMiJdLFszLDIsIlhfMCJdLFszLDMsIlhfMSJdLFszLDQsIlhfMiJdLFszLDUsIlhfMyJdLFs0LDIsIlxcY2RvdHMiXSxbMCwwLCJcXGZpeChmKV8wIl0sWzEsMCwiXFxmaXgoZilfMSJdLFsyLDAsIlxcZml4KGYpXzIiXSxbMywwLCJcXGZpeChmKV8zIl0sWzMsNCwiZl8wIl0sWzAsNSwiZl8xIl0sWzYsMCwiZl8wIl0sWzcsOCwiZl8wIl0sWzgsMSwiZl8xIl0sWzEsOSwiZl8yIl0sWzIsMTAsImZfMCJdLFsxMCwxMSwiZl8xIl0sWzExLDEyLCJmXzIiXSxbMTIsMTMsImZfMyJdXQ==
+%   \[\begin{tikzcd}[ampersand replacement=\&]
+%     {\fix(f)_0} \& {\fix(f)_1} \& {\fix(f)_2} \& {\fix(f)_3} \\
+%     1 \& 1 \& 1 \& 1 \\
+%     {X_0} \& {X_0} \& {X_0} \& {X_0} \& \cdots \\
+%     \& {X_1} \& {X_1} \& {X_1} \\
+%     \&\& {X_2} \& {X_2} \\
+%     \&\&\& {X_3}
+%     \arrow["{f_0}", from=2-1, to=3-1]
+%     \arrow["{f_1}", from=3-2, to=4-2]
+%     \arrow["{f_0}", from=2-2, to=3-2]
+%     \arrow["{f_0}", from=2-3, to=3-3]
+%     \arrow["{f_1}", from=3-3, to=4-3]
+%     \arrow["{f_2}", from=4-3, to=5-3]
+%     \arrow["{f_0}", from=2-4, to=3-4]
+%     \arrow["{f_1}", from=3-4, to=4-4]
+%     \arrow["{f_2}", from=4-4, to=5-4]
+%     \arrow["{f_3}", from=5-4, to=6-4]
+%   \end{tikzcd}\]
+%   \caption{The first few approximations to the guarded fixpoint of $f$.}
+%   \label{fig:topos-of-trees-fix-approx}
+% \end{figure}
+
+
+\begin{figure}
+  % https://q.uiver.app/?q=WzAsNixbMywwLCIxIl0sWzAsMiwiWF8wIl0sWzIsMiwiWF8xIl0sWzQsMiwiWF8yIl0sWzYsMiwiWF8zIl0sWzgsMiwiXFxkb3RzIl0sWzIsMSwicl5YXzAiXSxbNCwzLCJyXlhfMiJdLFswLDEsIlxcZml4KGYpXzAiLDFdLFswLDIsIlxcZml4KGYpXzEiLDFdLFswLDMsIlxcZml4KGYpXzIiLDFdLFswLDQsIlxcZml4KGYpXzMiLDFdLFswLDUsIlxcY2RvdHMiLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMywyLCJyXlhfMSJdLFs1LDQsInJeWF8zIl1d
+  \[\begin{tikzcd}[ampersand replacement=\&,column sep=2.25em]
+    \&\&\& 1 \\
+    \\
+    {X_0} \&\& {X_1} \&\& {X_2} \&\& {X_3} \&\& \dots
+    \arrow["{r^X_0}", from=3-3, to=3-1]
+    \arrow["{r^X_2}", from=3-7, to=3-5]
+    \arrow["{\fix(f)_0}"{description}, from=1-4, to=3-1]
+    \arrow["{\fix(f)_1}"{description}, from=1-4, to=3-3]
+    \arrow["{\fix(f)_2}"{description}, from=1-4, to=3-5]
+    \arrow["{\fix(f)_3}"{description}, from=1-4, to=3-7]
+    \arrow["\cdots"{marking}, draw=none, from=1-4, to=3-9]
+    \arrow["{r^X_1}", from=3-5, to=3-3]
+    \arrow["{r^X_3}", from=3-9, to=3-7]
+  \end{tikzcd}\]
+  \caption{The guarded fixpoint of $f$.}
+  \label{fig:topos-of-trees-fix}
+\end{figure}
+
+% TODO global elements?

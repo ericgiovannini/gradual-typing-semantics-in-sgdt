@@ -24,7 +24,7 @@
 \newcommand{\nat}{\text{Nat}}
 \newcommand{\bool}{\text{Bool}}
 \newcommand{\ra}{\rightharpoonup}
-\newcommand{\Ret}{\mathsf{Ret}}
+\newcommand{\Ret}[1]{\mathsf{Ret\,}{#1}}
 \newcommand{\hole}[1]{\bullet \colon {#1}}
 
 
@@ -44,11 +44,15 @@
 
 \newcommand{\Lift}{\text{Lift}}
 
-\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
+%\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
+\newcommand{\rel}{\mathrel{\circ\mkern-6mu-\mkern-6mu\bullet}}
 \newcommand{\ltdyn}{\sqsubseteq}
 \newcommand{\gtdyn}{\sqsupseteq}
 \newcommand{\equidyn}{\mathrel{\gtdyn\ltdyn}}
 \newcommand{\gamlt}{\Gamma^\ltdyn}
+\newcommand{\deltalt}{\Delta^\ltdyn}
+\newcommand{\relcomp}{\odot}
+
 \newcommand{\hasty}[3]{{#1} \vdash {#2} \colon {#3}}
 \newcommand{\etmprec}[4]{{#1} \vdash {#2} \ltdyn_e {#3} \colon {#4}}
 \newcommand{\itmprec}[4]{{#1} \vdash {#2} \ltdyn_i {#3} \colon {#4}}

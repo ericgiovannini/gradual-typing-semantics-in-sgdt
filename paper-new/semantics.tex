@@ -1,0 +1,196 @@
+\section{Domain-Theoretic Constructions}\label{sec:domain-theory}
+
+In this section, we discuss the fundamental objects of the model into which we will embed
+the intensional lambda calculus and inequational theory. It is important to remember that
+the constructions in this section are entirely independent of the syntax described in the
+previous section; the notions defined here exist in their own right as purely mathematical
+constructs. In the next section, we will link the syntax and semantics via an interpretation
+function.
+
+\subsection{The Lift Monad}
+
+When thinking about how to model intensional gradually-typed programs, we must consider
+their possible behaviors. On the one hand, we have \emph{failure}: a program may fail
+at run-time because of a type error. In addition to this, a program may ``think'',
+i.e., take a step of computation. If a program thinks forever, then it never returns a value,
+so we can think of the idea of thinking as a way of intensionally modelling \emph{partiality}.
+
+With this in mind, we can describe a semantic object that models these behaviors: a monad
+for embedding computations that has cases for failure and ``thinking''.
+Previous work has studied such a construct in the setting of the latter, called the lift
+monad \cite{mogelberg-paviotti2016}; here, we augment it with the additional effect of failure.
+
+For a type $A$, we define the \emph{lift monad with failure} $\li A$, which we will just call
+the \emph{lift monad}, as the following datatype:
+
+\begin{align*}
+  \li A &:= \\
+  &\eta \colon A \to \li A \\
+  &\mho \colon \li A \\
+  &\theta \colon \later (\li A) \to \li A
+\end{align*}
+
+Unless otherwise mentioned, all constructs involving $\later$ or $\fix$
+are understood to be with repsect to a fixed clock $k$. So for the above, we really have for each
+clock $k$ a type $\li^k A$ with respect to that clock.
+
+Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
+
+\[ \li A \cong A + 1 + \later \li A. \]
+
+An element of $\li A$ should be viewed as a computation that can either (1) return a value (via $\eta$),
+(2) raise an error and stop (via $\mho$), or (3) think for a step (via $\theta$).
+%
+Notice there is a computation $\fix \theta$ of type $\li A$. This represents a computation
+that thinks forever and never returns a value.
+
+Since we claimed that $\li A$ is a monad, we need to define the monadic operations
+and show that they repect the monadic laws. The return is just $\eta$, and extend
+is defined via by guarded recursion by cases on the input.
+% It is instructive to give at least one example of a use of guarded recursion, so
+% we show below how to define extend:
+% TODO
+%
+%
+Verifying that the monadic laws hold requires \lob-induction and is straightforward.
+
+The lift monad has the following universal property. Let $f$ be a function from $A$ to $B$,
+where $B$ is a $\later$-algebra, i.e., there is $\theta_B \colon \later B \to B$.
+Further suppose that $B$ is also an ``error-algebra'', that is, an algebra of the
+constant functor $1 \colon \text{Type} \to \text{Type}$ mapping all types to Unit.
+This latter statement amounts to saying that there is a map $\text{Unit} \to B$, so $B$ has a
+distinguished ``error element" $\mho_B \colon B$.
+
+Then there is a unique homomorphism of algebras $f' \colon \li A \to B$ such that
+$f' \circ \eta = f$. The function $f'(l)$ is defined via guarded fixpoint by cases on $l$. 
+In the $\mho$ case, we simply return $\mho_B$.
+In the $\theta(\tilde{l})$ case, we will return
+
+\[\theta_B (\lambda t . (f'_t \, \tilde{l}_t)). \]
+
+Recalling that $f'$ is a guaded fixpoint, it is available ``later'' and by
+applying the tick we get a function we can apply ``now''; for the argument,
+we apply the tick to $\tilde{l}$ to get a term of type $\li A$.
+
+
+%\subsubsection{Model-Theoretic Description}
+%We can describe the lift monad in the topos of trees model as follows.
+
+
+\subsection{Predomains}
+
+The next important construction is that of a \emph{predomain}. A predomain is intended to
+model the notion of error ordering that we want terms to have. Thus, we define a predomain $A$
+as a partially-ordered set, which consists of a type which we denote $\ty{A}$ and a reflexive,
+transitive, and antisymmetric relation $\le_P$ on $A$.
+
+For each type we want to represent, we define a predomain for the corresponding semantic
+type. For instance, we define a predomain for natural numbers, a predomain for the
+dynamic type, a predomain for functions, and a predomain for the lift monad. We
+describe each of these below.
+
+We define monotone functions between predomain as expected. Given predomains
+$A$ and $B$, we write $f \colon A \monto B$ to indicate that $f$ is a monotone
+function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(a_2)$.
+
+\begin{itemize}
+  \item There is a predomain Nat for natural numbers, where the ordering is equality.
+  
+  \item There is a predomain Dyn to represent the dynamic type. The underlying type
+  for this predomain is defined by guarded fixpoint to be such that
+  $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \ty{\Dyn})$.
+  This definition is valid because the occurrences of Dyn are guarded by the $\later$.
+  The ordering is defined via guarded recursion by cases on the argument, using the
+  ordering on $\mathbb{N}$ and the ordering on monotone functions described below.
+
+  \item For a predomain $A$, there is a predomain $\li A$ for the ``lift'' of $A$
+  using the lift monad. We use the same notation for $\li A$ when $A$ is a type
+  and $A$ is a predomain, since the context should make clear which one we are referring to.
+  The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
+  type of $A$.
+  The ordering on $\li A$ is the ``step-sensitive error-ordering'' which we describe in
+  \ref{subsec:lock-step}.
+
+  \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
+  from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
+  The ordering is such that $f$ is below $g$ if for all $a$ in $\ty{A_i}$, we have
+  $f(a)$ is below $g(a)$ in the ordering for $A_o$. 
+\end{itemize}
+
+
+
+\subsection{Step-Sensitive Error Ordering}\label{subsec:lock-step}
+
+As mentioned, the ordering on the lift of a predomain $A$ is called the
+\emph{step-sensitive error-ordering} (also called ``lock-step error ordering''),
+the idea being that two computations $l$ and $l'$ are related if they are in
+lock-step with regard to their intensional behavior, up to $l$ erroring.
+Formally, we define this ordering as follows:
+
+\begin{itemize}
+  \item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
+  \item 	$\mho \ltls l$ for all $l$ 
+  \item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
+          $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+\end{itemize}
+
+We also define a heterogeneous version of this ordering between the lifts of two
+different predomains $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
+
+\subsection{Step-Insensitive Relation}
+
+We define another ordering on $\li A$, called the ``step-insensitive ordering'' or
+``weak bisimilarity'', written $l \bisim l'$.
+Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delays''.
+We introduce the notation $x \sim_A y$ to mean $x \le_A y$ and $y \le_A x$.
+
+The weak bisimilarity relation is defined by guarded fixpoint as follows:
+
+\begin{align*}
+  &\mho \bisim \mho \\
+%
+  &\eta\, x \bisim \eta\, y \text{ if } 
+    x \sim_A y \\
+%		
+  &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+    \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+%	
+  &\theta\, \tilde{x} \bisim \mho \text{ if } 
+    \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+    (\theta\, \tilde{x} = \delta^n(\eta\, x))
+  \text { for some $n$ and $x : \ty{A}$ such that $x \sim_A y$ } \\
+%
+  &\mho \bisim \theta\, \tilde{y} \text { if } 
+    \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\eta\, x \bisim \theta\, \tilde{y} \text { if }
+    (\theta\, \tilde{y} = \delta^n (\eta\, y))
+  \text { for some $n$ and $y : \ty{A}$ such that $x \sim_A y$ }
+\end{align*}
+
+\subsection{Error Domains}
+
+
+\subsection{Globalization}
+
+Recall that in the above definitions, any occurrences of $\later$ were with
+repsect to a fixed clock $k$. Intuitively, this corresponds to a step-indexed set.
+It will be necessary to consider the ``globalization'' of these definitions,
+i.e., the ``global'' behavior of the type over all potential time steps.
+This is accomplished in the type theory by \emph{clock quantification} \cite{atkey-mcbride2013},
+whereby given a type $X$ parameterized by a clock $k$, we consider the type
+$\forall k. X[k]$. This corresponds to leaving the step-indexed world and passing to
+the usual semantics in the category of sets.
+
+
+\section{Semantics}\label{sec:semantics}
+
+
+\subsection{Relational Semantics}
+
+\subsubsection{Term Precision via the Step-Sensitive Error Ordering}
+% Homogeneous vs heterogeneous term precision
+
+% \subsection{Logical Relations Semantics}
