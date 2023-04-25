@@ -2,16 +2,16 @@
   
 % gradual typing, graduality
 \subsection{Gradual Typing and Graduality}
-One of the principal categories on which type systems of programming languages are classified
-is that of static versus dynamic type discipline.
-In static typing, the code is type-checked at compile time, while in a dynamic typing,
+One of the principal ways of categorizing type systems of programming languages is
+whether they are \emph{static} or \emph{dynamic}.
+In static typing, the code is type-checked at compile time, while in dynamic typing,
 the type checking is deferred to run-time. Both approaches have benefits: with static typing,
 the programmer is assured that if the program passes the type-checker, their program
 is free of type errors. Meanwhile, dynamic typing allows the programmer to rapidly prototype
 their application code without needing to commit to fixed type signatures for their functions.
 
-\emph{Gradually-typed languages} \cite{siek-taha06} allow for both disciplines
-to be used in the same codebase, and support interoperability between statically-typed
+\emph{Gradually-typed languages} \cite{siek-taha06} allow for both static and dynamic typing disciplines
+to be used in the same codebase, and support smooth interoperability between statically-typed
 and dynamically-typed code.
 This flexibility allows programmers to begin their projects in a dynamic style and
 enjoy the benefits of dynamic typing related to rapid prototyping and easy modification
@@ -53,9 +53,9 @@ These allow the language developer to start with a statically typed langauge and
 gradually typed language that satisfies the gradual guarantee. The downside to these approaches
 is that the semantics of the resulting languages are too lazy: the frameworks consider only
 the $\beta$ rules and not the $\eta$ equalities. Furthermore, while these frameworks do prove
-graduality, they do not show the correctness of the equational theory, which is equally important
-to sound gradual typing. For example, programmers often refactor their code without thinking about
-whether the refactoring has broken the semantics of the program. 
+graduality of the resulting languages, they do not show the correctness of the equational theory,
+which is equally important to sound gradual typing. For example, programmers often refactor their
+code without thinking about whether the refactoring has broken the semantics of the program. 
 It is the validity of the laws in the equational theory that guarantees that such refactorings are sound. 
 Similarly, correctness of compiler optimizations rests on the validity of the corresponding equations
 from the equational theory. It is therefore important that the langages that claim to be gradually typed
@@ -101,7 +101,7 @@ gradually-typed languages with nontrivial features.
 
 
 \subsection{Proving Graduality in SGDT}
-\textbf{TODO:} This section should probably be moved to after the relevant background has been introduced.
+\textbf{TODO:} This section should probably be moved to after the relevant background has been introduced?
 
 % TODO introduce the idea of cast calculus and explicit casts?
 
