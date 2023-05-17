@@ -1,3 +1,4 @@
 name: gradual-typing-sgdt
 include: .
 depend: cubical
+flags: --cubical
