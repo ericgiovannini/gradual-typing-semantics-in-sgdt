@@ -10,14 +10,10 @@ open import Common.Later hiding (next)
 module Syntax.Types  where
 
 open import Cubical.Foundations.Prelude renaming (comp to compose)
-open import Cubical.Data.Nat hiding (_·_) renaming (ℕ to Nat)
+open import Cubical.Data.Nat
 open import Cubical.Relation.Nullary
 open import Cubical.Foundations.Function
 open import Cubical.Data.Prod hiding (map)
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Data.List
-  using (List ; length ; map ; _++_ ; cons-inj₁ ; cons-inj₂)
-  renaming ([] to · ; _∷_ to _::_)
 open import Cubical.Data.Empty renaming (rec to exFalso)
 
 open import Syntax.Context as Context
@@ -36,10 +32,12 @@ data iCtx : Type where
   Empty : iCtx
   Full : iCtx
 
+endpt-fun : ∀ {ℓ} → (iCtx → Type ℓ) → Type ℓ
+endpt-fun {ℓ} A = Interval → A Full → A Empty
 
 data Ty : iCtx -> Type
 
-ty-endpt : Interval -> Ty Full -> Ty Empty
+ty-endpt : endpt-fun Ty
 
 _⊑_ : Ty Empty -> Ty Empty -> Type
 A ⊑ B = Σ[ c ∈ Ty Full ] ((ty-endpt l c ≡ A) × (ty-endpt r c ≡ B))
@@ -108,7 +106,7 @@ TyCtx : iCtx → Type (ℓ-suc ℓ-zero)
 TyCtx Ξ = Ctx (Ty Ξ)
 
 -- Endpoints of a full context
-ctx-endpt : (p : Interval) -> TyCtx Full -> TyCtx Empty
+ctx-endpt : endpt-fun TyCtx
 ctx-endpt p = Context.map (ty-endpt p)
 
 CompCtx : (Δ Γ : TyCtx Full)
@@ -143,5 +141,3 @@ ctx-refl = Context.map ty-refl
 -- context are the typing context itself.
 ctx-endpt-refl : {Γ : TyCtx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
 ctx-endpt-refl {Γ} p = Ctx≡ _ _ refl (funExt λ x → ty-endpt-refl {A = Γ .el x} p)
-
-
