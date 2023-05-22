@@ -16,6 +16,8 @@ open import Cubical.Data.Unit
 open import Cubical.Data.FinSet
 open import Cubical.Data.FinSet.Constructors
 
+open import Cubical.Categories.Category
+
 private
   variable
     ℓ ℓ' ℓ'' : Level
@@ -104,7 +106,31 @@ module _ {A : Type ℓ} where
     finProdSubsts : (∀ (x : X .fst) → substitution B (Γs x)) → substitution B (finProd X Γs)
     finProdSubsts γs (x , y) = γs x y
 
+  -- I think this is the free cartesian category on a set of generating objects
+  -- A Renaming is a mapping of names that preserves the typing
+  Renaming : Ctx A → Ctx A → Type _
+  Renaming Γ Δ = ∀ (x : Δ .var) → Σ[ ρ⟨x⟩ ∈ Γ .var ] Γ .el ρ⟨x⟩ ≡ Δ .el x
+
+  idRen : ∀ Γ → Renaming Γ Γ
+  idRen Γ = λ x → x , refl
+
+  compRen : ∀ {Γ Δ Ξ} → Renaming Δ Ξ → Renaming Γ Δ → Renaming Γ Ξ
+  compRen ρ σ x = (σ (ρ x .fst) .fst) , (σ (ρ x .fst) .snd ∙ ρ x .snd)
+
+  module _ (isSetA : isSet A) where
+    open Category
+    RenamingCat : Category _ _
+    RenamingCat .ob = Ctx A
+    RenamingCat .Hom[_,_] = Renaming
+    RenamingCat .id {Γ} = idRen Γ
+    RenamingCat ._⋆_ {Γ}{Δ}{Ξ} f g = compRen {Γ}{Δ}{Ξ} g f
+    RenamingCat .⋆IdL {Γ}{Δ} ρ = funExt (λ x → Σ≡Prop (λ y → isSetA (Γ .el y) (Δ .el x)) refl)
+    RenamingCat .⋆IdR {Γ}{Δ} ρ = funExt (λ x → Σ≡Prop (λ y → isSetA (Γ .el y) (Δ .el x)) refl)
+    RenamingCat .⋆Assoc {Γ}{Δ}{Ξ}{Z} ρ σ τ = funExt (λ x → Σ≡Prop ((λ y → isSetA (Γ .el y) (Z .el x))) refl)
+    RenamingCat .isSetHom {Γ}{Δ} = isSetΠ (λ x → isSetΣ (isFinSet→isSet (Γ .isFinSetVar)) λ y → isProp→isSet (isSetA (Γ .el y) (Δ .el x)))
+
 map : ∀ {A : Type ℓ}{A' : Type ℓ'} → (A → A') → Ctx A → Ctx A'
 map f Γ .var = Γ .var
 map f Γ .isFinSetVar = Γ .isFinSetVar
 map f Γ .el x = f (Γ .el x)
+
