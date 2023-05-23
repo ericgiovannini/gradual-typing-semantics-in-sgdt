@@ -13,10 +13,9 @@ open import Cubical.Foundations.Prelude renaming (comp to compose)
 open import Cubical.Data.Nat
 open import Cubical.Relation.Nullary
 open import Cubical.Foundations.Function
+open import Cubical.Data.List
 open import Cubical.Data.Prod hiding (map)
 open import Cubical.Data.Empty renaming (rec to exFalso)
-
-open import Syntax.Context as Context
 
 private
  variable
@@ -132,44 +131,83 @@ ty-endpt-refl {dyn} p = refl
 ty-endpt-refl {A ⇀ B} p = cong₂ _⇀_ (ty-endpt-refl p) (ty-endpt-refl p)
 
 -- ############### Contexts ###############
-open Ctx
 
-TyCtx : iCtx → Type (ℓ-suc ℓ-zero)
-TyCtx Ξ = Ctx (Ty Ξ)
+Ctx : iCtx -> Type
+Ctx Ξ = List (Ty Ξ)
 
 -- Endpoints of a full context
-ctx-endpt : endpt-fun TyCtx
-ctx-endpt p = Context.map (ty-endpt p)
+ctx-endpt : (p : Interval) -> Ctx Full -> Ctx Empty
+ctx-endpt p = map (ty-endpt p)
 
-CompCtx : (Δ Γ : TyCtx Full)
-        -> (pf : ctx-endpt l Δ ≡ ctx-endpt r Γ)
-        -> TyCtx Full
-CompCtx Δ Γ pf .var = Δ .var
-CompCtx Δ Γ pf .isFinSetVar = Δ .isFinSetVar
-CompCtx Δ Γ pf .el x = comp (Δ .el x)
-                            (Γ .el (transport (cong var pf) x))
-                            λ i → pf i .el (transport-filler (cong var pf) x i)
+-- CompCtx : (Δ Γ : Ctx Full) -> (pf : ctx-endpt l Δ ≡ ctx-endpt r Γ) ->
+--   Ctx Full
+-- CompCtx Δ Γ pf = {!!}
 
--- -- "Contains" relation stating that a context Γ contains a type T
--- data _∋_ : ∀ {Ξ} -> Ctx Ξ -> Ty Ξ -> Set where
---   vz : ∀ {Ξ Γ S} -> _∋_ {Ξ} (S :: Γ) S
---   vs : ∀ {Ξ Γ S T} (x : _∋_ {Ξ} Γ T) -> (S :: Γ ∋ T)
+-- "Contains" relation stating that a context Γ contains a type T
+data _∋_ : ∀ {Ξ} -> Ctx Ξ -> Ty Ξ -> Set where
+  vz : ∀ {Ξ Γ S} -> _∋_ {Ξ} (S ∷ Γ) S
+  vs : ∀ {Ξ Γ S T} (x : _∋_ {Ξ} Γ T) -> (S ∷ Γ ∋ T)
 
--- infix 4 _∋_
+infix 4 _∋_
 
--- ∋-ctx-endpt : {Γ : Ctx Full} {c : Ty Full} -> (p : Interval) ->
---   (Γ ∋ c) -> ((ctx-endpt p Γ) ∋ (ty-endpt p c))
--- ∋-ctx-endpt p vz = vz
--- ∋-ctx-endpt p (vs Γ∋c) = vs (∋-ctx-endpt p Γ∋c)
+∋-ctx-endpt : {Γ : Ctx Full} {c : Ty Full} -> (p : Interval) ->
+  (Γ ∋ c) -> ((ctx-endpt p Γ) ∋ (ty-endpt p c))
+∋-ctx-endpt p vz = vz
+∋-ctx-endpt p (vs Γ∋c) = vs (∋-ctx-endpt p Γ∋c)
 
 
 
 -- View a "normal" typing context Γ as a type precision context where the derivation
 -- corresponding to each type A in Γ is just the reflexivity precision derivation A ⊑ A.
-ctx-refl : TyCtx Empty -> TyCtx Full
-ctx-refl = Context.map ty-refl
+ctx-refl : Ctx Empty -> Ctx Full
+ctx-refl = map ty-refl
+--ctx-refl · = ·
+--ctx-refl (A :: Γ) = ty-refl A :: ctx-refl Γ
 
 -- For a given typing context, the endpoints of the corresponding reflexivity precision
 -- context are the typing context itself.
-ctx-endpt-refl : {Γ : TyCtx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
-ctx-endpt-refl {Γ} p = Ctx≡ _ _ refl (funExt λ x → ty-endpt-refl {A = Γ .el x} p)
+ctx-endpt-refl : {Γ : Ctx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
+ctx-endpt-refl {[]} p = refl
+ctx-endpt-refl {A ∷ Γ} p = cong₂ _∷_  (ty-endpt-refl p) (ctx-endpt-refl p)
+
+-- open Ctx
+
+-- TyCtx : iCtx → Type (ℓ-suc ℓ-zero)
+-- TyCtx Ξ = Ctx (Ty Ξ)
+
+-- -- Endpoints of a full context
+-- ctx-endpt : endpt-fun TyCtx
+-- ctx-endpt p = Context.map (ty-endpt p)
+
+-- CompCtx : (Δ Γ : TyCtx Full)
+--         -> (pf : ctx-endpt l Δ ≡ ctx-endpt r Γ)
+--         -> TyCtx Full
+-- CompCtx Δ Γ pf .var = Δ .var
+-- CompCtx Δ Γ pf .isFinSetVar = Δ .isFinSetVar
+-- CompCtx Δ Γ pf .el x = comp (Δ .el x)
+--                             (Γ .el (transport (cong var pf) x))
+--                             λ i → pf i .el (transport-filler (cong var pf) x i)
+
+-- -- -- "Contains" relation stating that a context Γ contains a type T
+-- -- data _∋_ : ∀ {Ξ} -> Ctx Ξ -> Ty Ξ -> Set where
+-- --   vz : ∀ {Ξ Γ S} -> _∋_ {Ξ} (S :: Γ) S
+-- --   vs : ∀ {Ξ Γ S T} (x : _∋_ {Ξ} Γ T) -> (S :: Γ ∋ T)
+
+-- -- infix 4 _∋_
+
+-- -- ∋-ctx-endpt : {Γ : Ctx Full} {c : Ty Full} -> (p : Interval) ->
+-- --   (Γ ∋ c) -> ((ctx-endpt p Γ) ∋ (ty-endpt p c))
+-- -- ∋-ctx-endpt p vz = vz
+-- -- ∋-ctx-endpt p (vs Γ∋c) = vs (∋-ctx-endpt p Γ∋c)
+
+
+
+-- -- View a "normal" typing context Γ as a type precision context where the derivation
+-- -- corresponding to each type A in Γ is just the reflexivity precision derivation A ⊑ A.
+-- ctx-refl : TyCtx Empty -> TyCtx Full
+-- ctx-refl = Context.map ty-refl
+
+-- -- For a given typing context, the endpoints of the corresponding reflexivity precision
+-- -- context are the typing context itself.
+-- ctx-endpt-refl : {Γ : TyCtx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
+-- ctx-endpt-refl {Γ} p = Ctx≡ _ _ refl (funExt λ x → ty-endpt-refl {A = Γ .el x} p)
