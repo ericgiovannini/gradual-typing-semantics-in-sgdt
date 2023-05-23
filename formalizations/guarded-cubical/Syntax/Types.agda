@@ -1,12 +1,6 @@
-{-# OPTIONS --cubical --rewriting --guarded -W noUnsupportedIndexedMatch #-}
-
+{-# OPTIONS --cubical -W noUnsupportedIndexedMatch #-}
  -- to allow opening this module in other files while there are still holes
-{-# OPTIONS --allow-unsolved-metas #-}
-{-# OPTIONS --lossy-unification #-}
-
-
-open import Common.Later hiding (next)
-
+-- {-# OPTIONS --allow-unsolved-metas #-}
 module Syntax.Types  where
 
 open import Cubical.Foundations.Prelude renaming (comp to compose)
@@ -57,34 +51,35 @@ module _ where
   open import Cubical.Data.Sum
   open import Cubical.Data.Unit
 
-  X = Unit
-  S : Unit → Type
-  S tt = Unit ⊎ (Unit ⊎ Unit)
-  P : ∀ x → S x → Type
-  P tt (inl x) = ⊥
-  P tt (inr (inl x)) = ⊥
-  P tt (inr (inr x)) = Unit ⊎ Unit
-  inX : ∀ x → (s : S x) → P x s → X
-  inX x s p = tt
-  W = IW S P inX tt
+  private
+    X = Unit
+    S : Unit → Type
+    S tt = Unit ⊎ (Unit ⊎ Unit)
+    P : ∀ x → S x → Type
+    P tt (inl x) = ⊥
+    P tt (inr (inl x)) = ⊥
+    P tt (inr (inr x)) = Unit ⊎ Unit
+    inX : ∀ x → (s : S x) → P x s → X
+    inX x s p = tt
+    W = IW S P inX tt
 
-  Ty→W : Ty Empty → W
-  Ty→W nat = node (inl tt) exFalso
-  Ty→W dyn = node (inr (inl tt)) exFalso
-  Ty→W (A ⇀ B) = node (inr (inr tt)) trees where
-    trees : Unit ⊎ Unit → W
-    trees (inl x) = Ty→W A
-    trees (inr x) = Ty→W B
+    Ty→W : Ty Empty → W
+    Ty→W nat = node (inl tt) exFalso
+    Ty→W dyn = node (inr (inl tt)) exFalso
+    Ty→W (A ⇀ B) = node (inr (inr tt)) trees where
+      trees : Unit ⊎ Unit → W
+      trees (inl x) = Ty→W A
+      trees (inr x) = Ty→W B
 
-  W→Ty : W → Ty Empty
-  W→Ty (node (inl x) subtree) = nat
-  W→Ty (node (inr (inl x)) subtree) = dyn
-  W→Ty (node (inr (inr x)) subtree) = W→Ty (subtree (inl tt)) ⇀ W→Ty (subtree (inr tt))
+    W→Ty : W → Ty Empty
+    W→Ty (node (inl x) subtree) = nat
+    W→Ty (node (inr (inl x)) subtree) = dyn
+    W→Ty (node (inr (inr x)) subtree) = W→Ty (subtree (inl tt)) ⇀ W→Ty (subtree (inr tt))
 
-  rtr : (x : Ty Empty) → W→Ty (Ty→W x) ≡ x
-  rtr nat = refl
-  rtr dyn = refl
-  rtr (A ⇀ B) = cong₂ _⇀_ (rtr A) (rtr B)
+    rtr : (x : Ty Empty) → W→Ty (Ty→W x) ≡ x
+    rtr nat = refl
+    rtr dyn = refl
+    rtr (A ⇀ B) = cong₂ _⇀_ (rtr A) (rtr B)
     
   isSetTy : isSet (Ty Empty)
   isSetTy = isSetRetract Ty→W W→Ty rtr (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit)) tt)
