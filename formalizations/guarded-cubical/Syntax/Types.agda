@@ -7,44 +7,86 @@ open import Cubical.Foundations.Prelude renaming (comp to compose)
 open import Cubical.Data.Nat
 open import Cubical.Relation.Nullary
 open import Cubical.Foundations.Function
-open import Cubical.Data.List
+open import Cubical.Data.List hiding (nil)
 open import Cubical.Data.Prod hiding (map)
 open import Cubical.Data.Empty renaming (rec to exFalso)
 
-private
- variable
-   ℓ : Level
-
-
 -- Types --
+data Ty : Type where
+  nat : Ty
+  dyn : Ty
+  _⇀_ : Ty -> Ty -> Ty
 
-data Interval : Type where
-  l r : Interval
+private -- should we make this public???
+ variable
+   R R' S S' T T' U U' : Ty
 
-data iCtx : Type where
-  Empty : iCtx
-  Full : iCtx
+data _⊑_ : Ty → Ty → Type where
+  nat : nat ⊑ nat
+  dyn : dyn ⊑ dyn
+  _⇀_ : R ⊑ R' → S ⊑ S' → (R ⇀ S) ⊑ (R' ⇀ S')
+  inj-nat : nat ⊑ dyn
+  inj-arr : (dyn ⇀ dyn) ⊑ dyn
+  trans   : R ⊑ S → S ⊑ T → R ⊑ T
+  -- this is not provable bc we can do a trans with an id relation
+  -- might cause issues later though...
+  isProp⊑ : isProp (R ⊑ S)
 
-endpt-fun : ∀ {ℓ} → (iCtx → Type ℓ) → Type ℓ
-endpt-fun {ℓ} A = Interval → A Full → A Empty
+refl-⊑ : ∀ S → S ⊑ S
+refl-⊑ nat = nat
+refl-⊑ dyn = dyn
+refl-⊑ (S ⇀ T) = refl-⊑ S ⇀ refl-⊑ T
 
-data Ty : iCtx -> Type
+record TyPrec : Type where
+  field
+    ty-left  : Ty
+    ty-right : Ty
+    ty-prec  : ty-left ⊑ ty-right
 
-ty-endpt : endpt-fun Ty
+open TyPrec
 
-_⊑_ : Ty Empty -> Ty Empty -> Type
-A ⊑ B = Σ[ c ∈ Ty Full ] ((ty-endpt l c ≡ A) × (ty-endpt r c ≡ B))
+refl-TP : ∀ (S : Ty) → TyPrec
+refl-TP S = record { ty-left = S ; ty-right = S ; ty-prec = refl-⊑ S }
 
-data Ty where
-  nat : ∀ {Ξ} -> Ty Ξ
-  dyn : ∀ {Ξ} -> Ty Ξ
-  _⇀_ : ∀ {Ξ} -> Ty Ξ -> Ty Ξ -> Ty Ξ
-  inj-nat : Ty Full
-  inj-arr : Ty Full
-  comp : ∀ (c : Ty Full) -> (d : Ty Full) ->
-    (ty-endpt l c ≡ ty-endpt r d) -> Ty Full
-  -- isProp⊑ : ∀ {A B : Ty }
+Ctx = List Ty
+private
+  variable
+    Γ Γ' Δ Δ' Θ Θ' : Ctx
 
+-- Couldn't find anything in the stdlib. Data.List.Dependent is close
+-- but only works for one parameter
+data _⊑ctx_ : Ctx → Ctx → Type where
+  [] : [] ⊑ctx []
+  _∷_ : S ⊑ S' → Γ ⊑ctx Γ' → (S ∷ Γ) ⊑ctx (S' ∷ Γ')
+
+refl-⊑ctx : ∀ Γ → Γ ⊑ctx Γ
+refl-⊑ctx [] = []
+refl-⊑ctx (S ∷ Γ) = (refl-⊑ S) ∷ (refl-⊑ctx Γ)
+
+trans-⊑ctx : Γ ⊑ctx Δ → Δ ⊑ctx Θ → Γ ⊑ctx Θ
+trans-⊑ctx [] [] = []
+trans-⊑ctx (c ∷ C) (d ∷ D) = (trans c d) ∷ (trans-⊑ctx C D)
+
+record CtxPrec : Type where
+  field
+    ctx-left : Ctx
+    ctx-right : Ctx
+    ctx-prec : ctx-left ⊑ctx ctx-right
+
+open CtxPrec
+nil : CtxPrec
+nil .ctx-left = []
+nil .ctx-right = []
+nil .ctx-prec = []
+
+cons : TyPrec → CtxPrec → CtxPrec
+cons c C .ctx-left = c .ty-left ∷ C .ctx-left
+cons c C .ctx-right = c .ty-right ∷ C .ctx-right
+cons c C .ctx-prec = (ty-prec c) ∷ (ctx-prec C)
+
+refl-CP : Ctx → CtxPrec
+refl-CP [] = nil
+refl-CP (S ∷ Γ) = cons (refl-TP S) (refl-CP Γ)
 module _ where
   open import Cubical.Foundations.HLevels
   open import Cubical.Data.W.Indexed
@@ -53,17 +95,17 @@ module _ where
 
   private
     X = Unit
-    S : Unit → Type
-    S tt = Unit ⊎ (Unit ⊎ Unit)
-    P : ∀ x → S x → Type
+    St : Unit → Type
+    St tt = Unit ⊎ (Unit ⊎ Unit)
+    P : ∀ x → St x → Type
     P tt (inl x) = ⊥
     P tt (inr (inl x)) = ⊥
     P tt (inr (inr x)) = Unit ⊎ Unit
-    inX : ∀ x → (s : S x) → P x s → X
+    inX : ∀ x → (s : St x) → P x s → X
     inX x s p = tt
-    W = IW S P inX tt
+    W = IW St P inX tt
 
-    Ty→W : Ty Empty → W
+    Ty→W : Ty → W
     Ty→W nat = node (inl tt) exFalso
     Ty→W dyn = node (inr (inl tt)) exFalso
     Ty→W (A ⇀ B) = node (inr (inr tt)) trees where
@@ -71,138 +113,15 @@ module _ where
       trees (inl x) = Ty→W A
       trees (inr x) = Ty→W B
 
-    W→Ty : W → Ty Empty
+    W→Ty : W → Ty
     W→Ty (node (inl x) subtree) = nat
     W→Ty (node (inr (inl x)) subtree) = dyn
     W→Ty (node (inr (inr x)) subtree) = W→Ty (subtree (inl tt)) ⇀ W→Ty (subtree (inr tt))
 
-    rtr : (x : Ty Empty) → W→Ty (Ty→W x) ≡ x
+    rtr : (x : Ty) → W→Ty (Ty→W x) ≡ x
     rtr nat = refl
     rtr dyn = refl
     rtr (A ⇀ B) = cong₂ _⇀_ (rtr A) (rtr B)
-    
-  isSetTy : isSet (Ty Empty)
+
+  isSetTy : isSet Ty
   isSetTy = isSetRetract Ty→W W→Ty rtr (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit)) tt)
-
-ty-endpt p nat = nat
-ty-endpt p dyn = dyn
-ty-endpt p (cin ⇀ cout) = ty-endpt p cin ⇀ ty-endpt p cout
-ty-endpt l inj-nat = nat
-ty-endpt r inj-nat = dyn
-ty-endpt l inj-arr = (dyn ⇀ dyn) -- inj-arr : (dyn -> dyn) ⊑ dyn
-ty-endpt r inj-arr = dyn
-ty-endpt l (comp c d _) = ty-endpt l d
-ty-endpt r (comp c d _) = ty-endpt r c
-
-_[_/i] : Ty Full -> Interval -> Ty Empty
-c [ p /i] = ty-endpt p c
-
-ty-left : Ty Full -> Ty Empty
-ty-left = ty-endpt l
-
-ty-right : Ty Full -> Ty Empty
-ty-right = ty-endpt r
-
-CompTyRel : Type
-CompTyRel = Σ (Ty Full × Ty Full)
-  λ { (c' , c) -> (ty-left c') ≡ (ty-right c) }
-
-CompTyRel-comp : CompTyRel -> Ty Full
-CompTyRel-comp ((c' , c) , pf) = comp c' c pf
-
-CompTyRel-endpt : Interval -> CompTyRel -> Ty Full
-CompTyRel-endpt l ((c , d) , _) = c
-CompTyRel-endpt r ((c , d) , _) = d
-
--- Given a "normal" type A, view it as its reflexivity precision derivation c : A ⊑ A.
-ty-refl : Ty Empty -> Ty Full
-ty-refl nat = nat
-ty-refl dyn = dyn
-ty-refl (Ai ⇀ Ao) = ty-refl Ai ⇀ ty-refl Ao
-
-ty-endpt-refl : {A : Ty Empty} -> (p : Interval) -> ty-endpt p (ty-refl A) ≡ A
-ty-endpt-refl {nat} p = refl
-ty-endpt-refl {dyn} p = refl
-ty-endpt-refl {A ⇀ B} p = cong₂ _⇀_ (ty-endpt-refl p) (ty-endpt-refl p)
-
--- ############### Contexts ###############
-
-Ctx : iCtx -> Type
-Ctx Ξ = List (Ty Ξ)
-
--- Endpoints of a full context
-ctx-endpt : (p : Interval) -> Ctx Full -> Ctx Empty
-ctx-endpt p = map (ty-endpt p)
-
--- CompCtx : (Δ Γ : Ctx Full) -> (pf : ctx-endpt l Δ ≡ ctx-endpt r Γ) ->
---   Ctx Full
--- CompCtx Δ Γ pf = {!!}
-
--- "Contains" relation stating that a context Γ contains a type T
-data _∋_ : ∀ {Ξ} -> Ctx Ξ -> Ty Ξ -> Set where
-  vz : ∀ {Ξ Γ S} -> _∋_ {Ξ} (S ∷ Γ) S
-  vs : ∀ {Ξ Γ S T} (x : _∋_ {Ξ} Γ T) -> (S ∷ Γ ∋ T)
-
-infix 4 _∋_
-
-∋-ctx-endpt : {Γ : Ctx Full} {c : Ty Full} -> (p : Interval) ->
-  (Γ ∋ c) -> ((ctx-endpt p Γ) ∋ (ty-endpt p c))
-∋-ctx-endpt p vz = vz
-∋-ctx-endpt p (vs Γ∋c) = vs (∋-ctx-endpt p Γ∋c)
-
-
-
--- View a "normal" typing context Γ as a type precision context where the derivation
--- corresponding to each type A in Γ is just the reflexivity precision derivation A ⊑ A.
-ctx-refl : Ctx Empty -> Ctx Full
-ctx-refl = map ty-refl
---ctx-refl · = ·
---ctx-refl (A :: Γ) = ty-refl A :: ctx-refl Γ
-
--- For a given typing context, the endpoints of the corresponding reflexivity precision
--- context are the typing context itself.
-ctx-endpt-refl : {Γ : Ctx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
-ctx-endpt-refl {[]} p = refl
-ctx-endpt-refl {A ∷ Γ} p = cong₂ _∷_  (ty-endpt-refl p) (ctx-endpt-refl p)
-
--- open Ctx
-
--- TyCtx : iCtx → Type (ℓ-suc ℓ-zero)
--- TyCtx Ξ = Ctx (Ty Ξ)
-
--- -- Endpoints of a full context
--- ctx-endpt : endpt-fun TyCtx
--- ctx-endpt p = Context.map (ty-endpt p)
-
--- CompCtx : (Δ Γ : TyCtx Full)
---         -> (pf : ctx-endpt l Δ ≡ ctx-endpt r Γ)
---         -> TyCtx Full
--- CompCtx Δ Γ pf .var = Δ .var
--- CompCtx Δ Γ pf .isFinSetVar = Δ .isFinSetVar
--- CompCtx Δ Γ pf .el x = comp (Δ .el x)
---                             (Γ .el (transport (cong var pf) x))
---                             λ i → pf i .el (transport-filler (cong var pf) x i)
-
--- -- -- "Contains" relation stating that a context Γ contains a type T
--- -- data _∋_ : ∀ {Ξ} -> Ctx Ξ -> Ty Ξ -> Set where
--- --   vz : ∀ {Ξ Γ S} -> _∋_ {Ξ} (S :: Γ) S
--- --   vs : ∀ {Ξ Γ S T} (x : _∋_ {Ξ} Γ T) -> (S :: Γ ∋ T)
-
--- -- infix 4 _∋_
-
--- -- ∋-ctx-endpt : {Γ : Ctx Full} {c : Ty Full} -> (p : Interval) ->
--- --   (Γ ∋ c) -> ((ctx-endpt p Γ) ∋ (ty-endpt p c))
--- -- ∋-ctx-endpt p vz = vz
--- -- ∋-ctx-endpt p (vs Γ∋c) = vs (∋-ctx-endpt p Γ∋c)
-
-
-
--- -- View a "normal" typing context Γ as a type precision context where the derivation
--- -- corresponding to each type A in Γ is just the reflexivity precision derivation A ⊑ A.
--- ctx-refl : TyCtx Empty -> TyCtx Full
--- ctx-refl = Context.map ty-refl
-
--- -- For a given typing context, the endpoints of the corresponding reflexivity precision
--- -- context are the typing context itself.
--- ctx-endpt-refl : {Γ : TyCtx Empty} -> (p : Interval) -> ctx-endpt p (ctx-refl Γ) ≡ Γ
--- ctx-endpt-refl {Γ} p = Ctx≡ _ _ refl (funExt λ x → ty-endpt-refl {A = Γ .el x} p)

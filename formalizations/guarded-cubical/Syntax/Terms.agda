@@ -11,40 +11,43 @@ open import Cubical.Foundations.Function
 open import Cubical.Data.Prod hiding (map)
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.List
-
 open import Cubical.Data.Empty renaming (rec to exFalso)
 
 open import Syntax.Types
 
-SynType = Ty Empty
-TyPrec = Ty Full
-
-TypeCtx = Ctx Empty
-PrecCtx = Ctx Full
+open TyPrec
 
 private
  variable
-   ℓ ℓ' ℓ'' : Level
-   Δ Γ Θ Z : TypeCtx
-   R S T U : SynType
+   Δ Γ Θ Z : Ctx
+   R S T U : Ty
 
 -- Values, Computations and Evaluation contexts,
 -- quotiented by βη equivalence but *not* by order equivalence (i.e., up/dn laws)
-data Subst : (Δ : TypeCtx) (Γ : TypeCtx) → Type
-data Val : (Γ : TypeCtx) (A : SynType) → Type
-data EvCtx : (Γ : TypeCtx) (A : SynType) (B : SynType) → Type
-data Comp : (Γ : TypeCtx) (A : SynType) → Type
+data Subst : (Δ : Ctx) (Γ : Ctx) → Type
+data Val : (Γ : Ctx) (S : Ty) → Type
+data EvCtx : (Γ : Ctx) (S : Ty) (T : Ty) → Type
+data Comp : (Γ : Ctx) (S : Ty) → Type
+
+private
+  variable
+    γ : Subst Δ Γ
+    δ : Subst Θ Δ
+    θ : Subst Z Θ
+
+    V V' : Val Γ S
+    M M' N N' : Comp Γ S
+    E E' F F' : EvCtx Γ S T
 
 -- This isn't actually induction-recursion, this is just a hack to get
 -- around limitations of Agda's mutual recursion for HITs
 -- https://github.com/agda/agda/issues/5362
-_[_]v : Val Γ S → Subst Δ Γ → Val Δ S
-_[_]c : Comp Γ S → Subst Δ Γ → Comp Δ S
-_[_]e : EvCtx Γ S T → Subst Δ Γ → EvCtx Δ S T
-_[_]∙ : EvCtx Γ S T → Comp Γ S → Comp Γ T
-var : Val (S ∷ Γ) S
-ret : Comp [ S ] S
-app : Comp (S ∷ (S ⇀ T) ∷ []) T
+_[_]vP : Val Γ S → Subst Δ Γ → Val Δ S
+_[_]cP : Comp Γ S → Subst Δ Γ → Comp Δ S
+_[_]∙P : EvCtx Γ S T → Comp Γ S → Comp Γ T
+varP : Val (S ∷ Γ) S
+retP : Comp [ S ] S
+appP : Comp (S ∷ (S ⇀ T) ∷ []) T
 
 -- Explicit substitutions roughly following https://arxiv.org/pdf/1809.08646.pdf
 -- but with some changes
@@ -58,102 +61,95 @@ data Subst where
   -- Subst is a cat
   ids : Subst Γ Γ
   _∘s_ : Subst Δ Θ → Subst Γ Δ → Subst Γ Θ
-  ∘IdL : (γ : Subst Γ Γ) → ids ∘s γ ≡ γ
-  ∘IdR : (γ : Subst Γ Γ) → γ ∘s ids ≡ γ
-  ∘Assoc : (γ : Subst Δ Γ) (δ : Subst Θ Δ)(θ : Subst Z Θ) → γ ∘s (δ ∘s θ) ≡ (γ ∘s δ) ∘s θ
+  ∘IdL : ids ∘s γ ≡ γ
+  ∘IdR : γ ∘s ids ≡ γ
+  ∘Assoc : γ ∘s (δ ∘s θ) ≡ (γ ∘s δ) ∘s θ
 
   -- [] is terminal
   !s : Subst Γ []
-  []η : (γ : Subst Γ []) → γ ≡ !s
+  []η : γ ≡ !s
 
   -- universal property of S ∷ Γ
   -- β (other one is in Val), η and naturality
   _,s_ : Subst Γ Δ → Val Γ S → Subst Γ (S ∷ Δ)
   wk : Subst (S ∷ Γ) Γ
-  wkβ : (δ : Subst Γ Δ)(V : Val Γ S) → wk ∘s (δ ,s V) ≡ δ
-  ,sη : (δ : Subst Γ (S ∷ Δ)) → δ ≡ (wk ∘s δ ,s var [ δ ]v)
+  wkβ : wk ∘s (δ ,s V) ≡ δ
+  ,sη : δ ≡ (wk ∘s δ ,s varP [ δ ]vP)
 
 -- copied from similar operators
 infixl 4 _,s_
 infixr 9 _∘s_
 
 data Val where
+  -- values form a presheaf over substitutions
+  _[_]v : Val Γ S → Subst Δ Γ → Val Δ S
+  substId : V [ ids ]v ≡ V
+  substAssoc : V [ δ ∘s γ ]v ≡ (V [ δ ]v) [ γ ]v
+
   -- with explicit substitutions we only need the one variable, which we can combine with weakening
-  varPrim : Val (S ∷ Γ) S
-  varβ : (δ : Subst Γ Δ) (V : Val Γ S) → var [ δ ,s V ]v ≡ V
+  var : Val (S ∷ Γ) S
+  varβ : var [ δ ,s V ]v ≡ V
 
   -- by making these function symbols we avoid more substitution equations
   zro : Val [] nat
   suc : Val [ nat ] nat
 
   lda : Comp (S ∷ Γ) T -> Val Γ (S ⇀ T) -- TODO: prove substitution under lambdas is admissible
-  fun-η : (V : Val Γ (S ⇀ T))
-        -- V = λ x. V x
-        → V ≡ lda (app [ (!s ,s (V [ wk ]v)) ,s var ]c)
+  -- V = λ x. V x
+  fun-η : V ≡ lda (appP [ (!s ,s (V [ wk ]v)) ,s var ]cP)
 
   up : (S⊑T : TyPrec) -> Val [ ty-left S⊑T ] (ty-right S⊑T)
 
-  -- values form a presheaf over substitutions
-  _[_]v' : Val Γ S → Subst Δ Γ → Val Δ S
-  substId : (V : Val Γ S) → V [ ids ]v ≡ V
-  substAssoc : (V : Val Δ S) (δ : Subst Γ Δ)(γ : Subst Θ Γ)
-          → V [ δ ∘s γ ]v ≡ (V [ δ ]v) [ γ ]v
-
   isSetVal : isSet (Val Γ S)
 
-_[_]v = _[_]v'
-var = varPrim
+_[_]vP = _[_]v
+varP = var
 
 data EvCtx where
   ∙E : EvCtx Γ S S
   _∘E_ : EvCtx Γ T U → EvCtx Γ S T → EvCtx Γ S U
-  ∘IdL : (E : EvCtx Γ S T) → ∙E ∘E E ≡ E
-  ∘IdR : (E : EvCtx Γ S T) → E ∘E ∙E ≡ E
-  ∘Assoc : (E : EvCtx Γ T U) (F : EvCtx Γ S T)(G : EvCtx Γ R S)
-         → E ∘E (F ∘E G) ≡ (E ∘E F) ∘E G
+  ∘IdL : ∙E ∘E E ≡ E
+  ∘IdR : E ∘E ∙E ≡ E
+  ∘Assoc : E ∘E (F ∘E F') ≡ (E ∘E F) ∘E F'
 
-  _[_]e' : EvCtx Γ S T → Subst Δ Γ → EvCtx Δ S T
-  substId : (E : EvCtx Γ S T) → E [ ids ]e ≡ E
-  substAssoc : (E : EvCtx Γ S T)(γ : Subst Δ Γ)(δ : Subst Θ Δ)
-            → E [ γ ∘s δ ]e ≡ E [ γ ]e [ δ ]e
+  _[_]e : EvCtx Γ S T → Subst Δ Γ → EvCtx Δ S T
+  substId : E [ ids ]e ≡ E
+  substAssoc : E [ γ ∘s δ ]e ≡ E [ γ ]e [ δ ]e
 
-  ∘substDist : (E : EvCtx Γ T U)(F : EvCtx Γ S T)(γ : Subst Δ Γ)
-             → (E ∘E F) [ γ ]e ≡ (E [ γ ]e) ∘E (F [ γ ]e)
+  ∘substDist : (E ∘E F) [ γ ]e ≡ (E [ γ ]e) ∘E (F [ γ ]e)
 
   bind : Comp (S ∷ Γ) T → EvCtx Γ S T
   -- E[∙] ≡ x <- ∙; E[ret x]
-  ret-η : (E : EvCtx Γ S T) → E ≡ bind (E [ wk ]e [ ret [ !s ,s var ]c ]∙)
+  ret-η : E ≡ bind (E [ wk ]e [ retP [ !s ,s var ]cP ]∙P)
 
   dn : (S⊑T : TyPrec) → EvCtx Γ (ty-right S⊑T) (ty-left S⊑T)
 
   isSetEvCtx : isSet (EvCtx Γ S T)
 
 data Comp where
-  _[_]∙' : EvCtx Γ S T → Comp Γ S → Comp Γ T
-  plugId : (M : Comp Γ S) → ∙E [ M ]∙ ≡ M
-  plugAssoc : (M : Comp Γ S)(E : EvCtx Γ S T)(F : EvCtx Γ T U) → (F ∘E E) [ M ]∙ ≡ F [ E [ M ]∙ ]∙
+  _[_]∙ : EvCtx Γ S T → Comp Γ S → Comp Γ T
+  plugId : ∙E [ M ]∙ ≡ M
+  plugAssoc : (F ∘E E) [ M ]∙ ≡ F [ E [ M ]∙ ]∙
 
-  _[_]c' : Comp Δ S → Subst Γ Δ → Comp Γ S
+  _[_]c : Comp Δ S → Subst Γ Δ → Comp Γ S
   -- presheaf
-  substId : (M : Comp Γ S) → M [ ids ]c ≡ M
-  substAssoc : (M : Comp Δ S) (δ : Subst Γ Δ)(γ : Subst Θ Γ)
-         → M [ δ ∘s γ ]c ≡ (M [ δ ]c) [ γ ]c
+  substId : M [ ids ]c ≡ M
+  substAssoc : M [ δ ∘s γ ]c ≡ (M [ δ ]c) [ γ ]c
 
   -- Interchange law
-  substPlugDist : (E : EvCtx Γ S T) (M : Comp Γ S) → (γ : Subst Δ Γ)
-                → (E [ M ]∙) [ γ ]c ≡ (E [ γ ]e) [ M [ γ ]c ]∙
+  substPlugDist : (E [ M ]∙) [ γ ]c ≡ (E [ γ ]e) [ M [ γ ]c ]∙
 
   err : Comp [] S
   -- E[err] ≡ err
-  strictness : (E : EvCtx Γ S T) → E [ err [ !s ]c ]∙ ≡ err [ !s ]c
+  strictness : E [ err [ !s ]c ]∙ ≡ err [ !s ]c
 
-  retPrim : Comp [ S ] S
+  ret : Comp [ S ] S
   -- x <- ret x; M ≡ M
-  ret-β : (M : Comp (S ∷ Γ) T) → (bind M [ wk ]e [ ret [ !s ,s var ]c ]∙) ≡ M
+  ret-β : (bind M [ wk ]e [ ret [ !s ,s var ]c ]∙) ≡ M
 
-  appPrim : Comp (S ∷ S ⇀ T ∷ []) T
+  app : Comp (S ∷ S ⇀ T ∷ []) T
   -- (λ x. M) x ≡ M
-  fun-β : (M : Comp (S ∷ Γ) T) → app [ (!s ,s ((lda M) [ wk ]v)) ,s var ]c ≡ M
+  fun-β : app [ (!s ,s ((lda M) [ wk ]v)) ,s var ]c ≡ M
 
   matchNat : Comp Γ S → Comp (nat ∷ Γ) S → Comp (nat ∷ Γ) S
   -- match 0 Kz (x . Ks) ≡ Kz
@@ -163,14 +159,13 @@ data Comp where
   matchNatβs : (Kz : Comp Γ S)(Ks : Comp (nat ∷ Γ) S) (V : Val Γ nat)
              → matchNat Kz Ks [ ids ,s (suc [ !s ,s V ]v) ]c ≡ (Ks [ ids ,s V ]c)
   -- M[x] ≡ match x (M[0/x]) (x. M[S x/x])
-  matchNatη : (M : Comp (nat ∷ Γ) S) → M ≡ matchNat (M [ ids ,s (zro [ !s ]v) ]c) (M [ wk ,s (suc [ !s ,s var ]v) ]c)
+  matchNatη : M ≡ matchNat (M [ ids ,s (zro [ !s ]v) ]c) (M [ wk ,s (suc [ !s ,s var ]v) ]c)
 
   isSetComp : isSet (Comp Γ S)
-app = appPrim
-ret = retPrim
-_[_]c = _[_]c'
-_[_]e = _[_]e'
-_[_]∙ = _[_]∙'
+appP = app
+retP = ret
+_[_]cP = _[_]c
+_[_]∙P = _[_]∙
 
 -- More ordinary term constructors are admissible
 -- up, dn, zro, suc, err, app, bind
@@ -179,45 +174,60 @@ app' Vf Va = app [ !s ,s Vf ,s Va ]c
 
 -- As well as substitution principles for them
 !s-nat : (γ : Subst Γ []) → !s ∘s γ ≡ !s
-!s-nat γ = []η _
+!s-nat γ = []η
 
 ,s-nat : (δ : Subst Θ Δ) (γ : Subst Δ Γ) (V : Val Δ S)
        → (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
 ,s-nat δ γ V =
-  ,sη _
-  ∙ cong₂ _,s_ (∘Assoc _ _ _ ∙ cong (_∘s δ) (wkβ _ _))
-               (substAssoc _ _ _ ∙ cong _[ δ ]v (varβ _ _))
+  ,sη
+  ∙ cong₂ _,s_ (∘Assoc ∙ cong (_∘s δ) wkβ)
+               (substAssoc ∙ cong _[ δ ]v varβ)
 
 -- Some examples for functions
 app'-nat : (γ : Subst Δ Γ) (Vf : Val Γ (S ⇀ T)) (Va : Val Γ S)
          → app' Vf Va [ γ ]c ≡ app' (Vf [ γ ]v) (Va [ γ ]v)
 app'-nat γ Vf Va =
-  sym (substAssoc _ _ _)
-  ∙ cong (app [_]c) (,s-nat _ _ _ ∙ cong₂ _,s_ (,s-nat _ _ _ ∙ cong₂ _,s_ ([]η _) refl) refl)
+  sym substAssoc
+  ∙ cong (app [_]c) (,s-nat _ _ _ ∙ cong₂ _,s_ (,s-nat _ _ _ ∙ cong₂ _,s_ []η refl) refl)
 
 lda-nat : (γ : Subst Δ Γ) (M : Comp (S ∷ Γ) T)
         → (lda M) [ γ ]v ≡ lda (M [ γ ∘s wk ,s var ]c)
 lda-nat {Δ = Δ}{Γ = Γ}{S = S} γ M =
-  fun-η _
-  ∙ cong lda (cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym ([]η (!s ∘s the-subst))) (sym (substAssoc _ _ _)
-                                                                                    ∙ cong (lda M [_]v) (sym (wkβ _ var))
-                                                                                    ∙ substAssoc _ _ _))
-                                                      (sym (varβ (γ ∘s wk) _))
+  fun-η
+  ∙ cong lda (cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym ([]η)) (sym substAssoc
+                                                                                    ∙ cong (lda M [_]v) (sym wkβ)
+                                                                                    ∙ substAssoc))
+                                                      (sym varβ)
                               ∙ cong (_,s (var [ the-subst ]v)) (sym (,s-nat _ _ _))
                               ∙ sym (,s-nat _ _ _))
-             ∙ substAssoc _ _ _
-             ∙ cong (_[ the-subst ]c) (fun-β _)) where
+             ∙ substAssoc
+             ∙ cong (_[ the-subst ]c) fun-β) where
   the-subst : Subst (S ∷ Δ) (S ∷ Γ)
   the-subst = γ ∘s wk ,s var
 
 fun-β' : (M : Comp (S ∷ Γ) T) (V : Val Γ S)
        → app' (lda M) V ≡ M [ ids ,s V ]c
 fun-β' M V =
-  cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym ([]η _)) ((sym (substId _) ∙ cong (lda M [_]v) (sym (wkβ _ _))) ∙ substAssoc _ _ _) ∙ sym (,s-nat _ _ _))
-                              (sym (varβ _ _))
+  cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym []η) ((sym substId ∙ cong (lda M [_]v) (sym wkβ)) ∙ substAssoc) ∙ sym (,s-nat _ _ _))
+                              (sym varβ)
                   ∙ sym (,s-nat _ _ _))
-  ∙ substAssoc _ _ _
-  ∙ cong (_[ ids ,s V ]c) (fun-β _)
+  ∙ substAssoc
+  ∙ cong (_[ ids ,s V ]c) fun-β
 
-fun-η' : (V : Val Γ (S ⇀ T)) → V ≡ lda (app' (V [ wk ]v) var)
+fun-η' : V ≡ lda (app' (V [ wk ]v) var)
 fun-η' = fun-η
+
+err' : Comp Γ S
+err' = err [ !s ]c
+
+ret' : Val Γ S → Comp Γ S
+ret' V = ret [ !s ,s V ]c
+
+up' : ∀ S⊑T → Val Γ (ty-left S⊑T) → Val Γ (ty-right S⊑T)
+up' S⊑T V = up S⊑T [ !s ,s V ]v
+
+upC : ∀ S⊑T → Val Γ (ty-left S⊑T) → Comp Γ (ty-right S⊑T)
+upC S⊑T V = ret' (up' S⊑T V)
+
+upE : ∀ S⊑T → EvCtx Γ (ty-left S⊑T) (ty-right S⊑T)
+upE S⊑T = bind (ret' (up' S⊑T var))
