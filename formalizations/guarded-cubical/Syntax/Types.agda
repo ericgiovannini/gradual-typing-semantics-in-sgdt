@@ -44,9 +44,16 @@ record TyPrec : Type where
     ty-prec  : ty-left ⊑ ty-right
 
 open TyPrec
+mkTyPrec : S ⊑ T → TyPrec
+mkTyPrec p = record { ty-left = _ ; ty-right = _ ; ty-prec = p }
 
 refl-TP : ∀ (S : Ty) → TyPrec
 refl-TP S = record { ty-left = S ; ty-right = S ; ty-prec = refl-⊑ S }
+
+_⇀TP_ : TyPrec → TyPrec → TyPrec
+(c ⇀TP d) .ty-left = ty-left c ⇀ ty-left d
+(c ⇀TP d) .ty-right = ty-right c ⇀ ty-right d
+(c ⇀TP d) .ty-prec = c .ty-prec ⇀ d .ty-prec
 
 Ctx = List Ty
 private
@@ -87,6 +94,7 @@ cons c C .ctx-prec = (ty-prec c) ∷ (ctx-prec C)
 refl-CP : Ctx → CtxPrec
 refl-CP [] = nil
 refl-CP (S ∷ Γ) = cons (refl-TP S) (refl-CP Γ)
+
 module _ where
   open import Cubical.Foundations.HLevels
   open import Cubical.Data.W.Indexed

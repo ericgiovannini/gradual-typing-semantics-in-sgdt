@@ -71,7 +71,7 @@ data EvCtx⊑ where
 
   dn-L : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (ty-prec S⊑T) (dn S⊑T) ∙E
   dn-R : ∀ S⊑T → EvCtx⊑ [] (ty-prec S⊑T) (refl-⊑ (ty-left S⊑T)) ∙E (dn S⊑T)
-  retractionR : ∀ S⊑T → EvCtx⊑ (refl-⊑ (ty-right S⊑T) ∷ []) (refl-⊑ (ty-right S⊑T)) (refl-⊑ (ty-right S⊑T)) ∙E (upE S⊑T ∘E dn S⊑T)
+  retractionR : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (refl-⊑ (ty-right S⊑T)) ∙E (upE S⊑T ∘E dn S⊑T)
 
   trans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' → EvCtx⊑ (trans-⊑ctx C C') (trans b b') (trans c c') E E''
   isProp⊑ : isProp (EvCtx⊑ C c d E E')
@@ -112,4 +112,35 @@ M ≈m M' = Comp⊑-homo M M' × Comp⊑-homo M' M
 _≈e_ : (E E' : EvCtx Γ S T) → Type _
 E ≈e E' = EvCtx⊑-homo E E' × EvCtx⊑-homo E' E
 
--- TODO: show up, down are monotone, derive semantics of function casts
+up-monotone : (S⊑S' : S ⊑ S')(S⊑T : S ⊑ T)(S'⊑T' : S' ⊑ T') (T⊑T' : T ⊑ T')
+            → Val⊑ (S⊑T ∷ []) S'⊑T' (up (mkTyPrec S⊑S')) (up (mkTyPrec T⊑T'))
+up-monotone {S}{S'}{T}{T'} S⊑S' S⊑T S'⊑T' T⊑T' =
+  transport (λ i → Val⊑ (split-dom (~ i) ∷ []) (split-cod (~ i)) (substId {V = up (mkTyPrec S⊑S')} i) (varβ {δ = !s}{V = (up (mkTyPrec T⊑T'))} i))
+  (trans (up-L (mkTyPrec (S⊑S'))) (var {C = []})
+  [ transport (λ i → Subst⊑ (trans S⊑T (refl-⊑ T) ∷ []) (swap-middle i) (ids1-expand (~ i)) (!s ,s up (mkTyPrec T⊑T')))
+    (!s ,s trans ((var {C = []})) (up-R (mkTyPrec T⊑T'))) ]v)
+  where
+    split-cod : S'⊑T' ≡ trans (refl-⊑ _) S'⊑T'
+    split-cod = isProp⊑ _ _
+
+    split-dom : S⊑T ≡ trans S⊑T (refl-⊑ _)
+    split-dom = isProp⊑ _ _
+
+    swap-middle : Path ((S ∷ []) ⊑ctx (T' ∷ [])) (trans S⊑T T⊑T' ∷ []) (trans S⊑S' S'⊑T' ∷ [])
+    swap-middle i = (isProp⊑ (trans S⊑T T⊑T') (trans S⊑S' S'⊑T') i) ∷ []
+
+-- TODO: show down is monotone
+
+⇀-up-uniqueness : ∀ S⊑S' T⊑T' →
+  up (S⊑S' ⇀TP T⊑T')
+  ≈v lda (bind' (dn' S⊑S' (ret' var)) -- downcast the input
+         (bind' (app' var2 var) -- apply the original function
+         (ret' (up' T⊑T' var))) ) -- upcast the output
+⇀-up-uniqueness S⊑S' T⊑T' =
+  ( {!!}
+  , {!!})
+
+⇀-dn-uniqueness : ∀ S⊑S' T⊑T' →
+  dn (S⊑S' ⇀TP T⊑T')
+  ≈e bind (ret' (lda (dn' T⊑T' (app' var1 (up' S⊑S' var)))))
+⇀-dn-uniqueness = {!!}

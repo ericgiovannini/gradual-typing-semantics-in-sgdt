@@ -116,13 +116,14 @@ data EvCtx where
   substId : E [ ids ]e ≡ E
   substAssoc : E [ γ ∘s δ ]e ≡ E [ γ ]e [ δ ]e
 
+  ∙substDist : ∙E {S = S} [ γ ]e ≡ ∙E
   ∘substDist : (E ∘E F) [ γ ]e ≡ (E [ γ ]e) ∘E (F [ γ ]e)
 
   bind : Comp (S ∷ Γ) T → EvCtx Γ S T
   -- E[∙] ≡ x <- ∙; E[ret x]
   ret-η : E ≡ bind (E [ wk ]e [ retP [ !s ,s var ]cP ]∙P)
 
-  dn : (S⊑T : TyPrec) → EvCtx Γ (ty-right S⊑T) (ty-left S⊑T)
+  dn : (S⊑T : TyPrec) → EvCtx [] (ty-right S⊑T) (ty-left S⊑T)
 
   isSetEvCtx : isSet (EvCtx Γ S T)
 
@@ -176,19 +177,23 @@ app' Vf Va = app [ !s ,s Vf ,s Va ]c
 !s-nat : (γ : Subst Γ []) → !s ∘s γ ≡ !s
 !s-nat γ = []η
 
-,s-nat : (δ : Subst Θ Δ) (γ : Subst Δ Γ) (V : Val Δ S)
-       → (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
-,s-nat δ γ V =
-  ,sη
-  ∙ cong₂ _,s_ (∘Assoc ∙ cong (_∘s δ) wkβ)
-               (substAssoc ∙ cong _[ δ ]v varβ)
+!s-ext : {γ : Subst Γ []} → γ ≡ δ
+!s-ext = []η ∙ sym []η
+
+,s-nat : (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
+,s-nat =
+  ,sη ∙ cong₂ _,s_ (∘Assoc ∙ cong₂ (_∘s_) wkβ refl)
+               (substAssoc ∙ cong₂ _[_]v varβ refl)
+
+,s-ext : wk ∘s γ ≡ wk ∘s δ → (var [ γ ]v ≡ var [ δ ]v) → γ ≡ δ
+,s-ext wkp varp = ,sη ∙ cong₂ _,s_ wkp varp ∙ sym ,sη
 
 -- Some examples for functions
 app'-nat : (γ : Subst Δ Γ) (Vf : Val Γ (S ⇀ T)) (Va : Val Γ S)
          → app' Vf Va [ γ ]c ≡ app' (Vf [ γ ]v) (Va [ γ ]v)
 app'-nat γ Vf Va =
   sym substAssoc
-  ∙ cong (app [_]c) (,s-nat _ _ _ ∙ cong₂ _,s_ (,s-nat _ _ _ ∙ cong₂ _,s_ []η refl) refl)
+  ∙ cong (app [_]c) (,s-nat ∙ cong₂ _,s_ (,s-nat  ∙ cong₂ _,s_ []η refl) refl)
 
 lda-nat : (γ : Subst Δ Γ) (M : Comp (S ∷ Γ) T)
         → (lda M) [ γ ]v ≡ lda (M [ γ ∘s wk ,s var ]c)
@@ -198,8 +203,8 @@ lda-nat {Δ = Δ}{Γ = Γ}{S = S} γ M =
                                                                                     ∙ cong (lda M [_]v) (sym wkβ)
                                                                                     ∙ substAssoc))
                                                       (sym varβ)
-                              ∙ cong (_,s (var [ the-subst ]v)) (sym (,s-nat _ _ _))
-                              ∙ sym (,s-nat _ _ _))
+                              ∙ cong (_,s (var [ the-subst ]v)) (sym ,s-nat)
+                              ∙ sym ,s-nat)
              ∙ substAssoc
              ∙ cong (_[ the-subst ]c) fun-β) where
   the-subst : Subst (S ∷ Δ) (S ∷ Γ)
@@ -208,9 +213,9 @@ lda-nat {Δ = Δ}{Γ = Γ}{S = S} γ M =
 fun-β' : (M : Comp (S ∷ Γ) T) (V : Val Γ S)
        → app' (lda M) V ≡ M [ ids ,s V ]c
 fun-β' M V =
-  cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym []η) ((sym substId ∙ cong (lda M [_]v) (sym wkβ)) ∙ substAssoc) ∙ sym (,s-nat _ _ _))
+  cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ (sym []η) ((sym substId ∙ cong (lda M [_]v) (sym wkβ)) ∙ substAssoc) ∙ sym ,s-nat)
                               (sym varβ)
-                  ∙ sym (,s-nat _ _ _))
+                  ∙ sym ,s-nat)
   ∙ substAssoc
   ∙ cong (_[ ids ,s V ]c) fun-β
 
@@ -223,6 +228,29 @@ err' = err [ !s ]c
 ret' : Val Γ S → Comp Γ S
 ret' V = ret [ !s ,s V ]c
 
+bind' : Comp Γ S → Comp (S ∷ Γ) T → Comp Γ T
+bind' M K = bind K [ M ]∙
+
+bind-nat : (bind M) [ γ ]e ≡ bind (M [ γ ∘s wk ,s var ]c)
+bind-nat {M = M} {γ = γ} = ret-η ∙ cong bind (cong (_[ ret [ !s ,s var ]c ]∙) (sym substAssoc)
+                             ∙ cong₂ _[_]∙ (cong (bind M [_]e) (sym wkβ) ∙ substAssoc)
+                                           (cong (ret [_]c) (cong₂ _,s_ !s-ext (sym varβ) ∙ sym ,s-nat) ∙ substAssoc)
+                             ∙ sym substPlugDist
+                             ∙ cong (_[ γ ∘s wk ,s var ]c) ret-β)
+
+bind'-nat : (bind' M N) [ γ ]c ≡ bind' (M [ γ ]c) (N [ γ ∘s wk ,s var ]c)
+bind'-nat = substPlugDist ∙ cong₂ _[_]∙ bind-nat refl
+
+ret-β' : bind' (ret' V) M ≡ (M [ ids ,s V ]c)
+ret-β' =
+  (cong₂ _[_]∙ ((sym substId ∙ cong₂ _[_]e refl (sym wkβ)) ∙ substAssoc)
+               (cong (ret [_]c) (,s-ext !s-ext (varβ ∙ (sym varβ ∙ sym varβ) ∙ cong (var [_]v) (sym ,s-nat))) ∙ substAssoc)
+  ∙ sym substPlugDist)
+  ∙ cong₂ _[_]c ret-β refl
+
+ret-η' : M ≡ bind' M (ret' var)
+ret-η' = sym plugId ∙ cong₂ _[_]∙ (ret-η ∙ cong bind (cong₂ _[_]∙ ∙substDist refl ∙ plugId)) refl
+
 up' : ∀ S⊑T → Val Γ (ty-left S⊑T) → Val Γ (ty-right S⊑T)
 up' S⊑T V = up S⊑T [ !s ,s V ]v
 
@@ -231,3 +259,31 @@ upC S⊑T V = ret' (up' S⊑T V)
 
 upE : ∀ S⊑T → EvCtx Γ (ty-left S⊑T) (ty-right S⊑T)
 upE S⊑T = bind (ret' (up' S⊑T var))
+
+dn' : ∀ S⊑T → Comp Γ (ty-right S⊑T) → Comp Γ (ty-left S⊑T)
+dn' S⊑T M = dn S⊑T [ !s ]e [ M ]∙
+
+ids1-expand : Path (Subst (S ∷ []) (S ∷ [])) ids (!s ,s var)
+ids1-expand = ,sη ∙ cong₂ _,s_ []η substId
+
+var0 : Val (S ∷ Γ) S
+var0 = var
+
+var1 : Val (S ∷ T ∷ Γ) T
+var1 = var [ wk ]v
+
+var2 : Val (S ∷ T ∷ U ∷ Γ) U
+var2 = var1 [ wk ]v
+
+wk-expand : Path (Subst (S ∷ T ∷ []) (T ∷ [])) wk (!s ,s var1)
+wk-expand = ,s-ext !s-ext (sym varβ)
+
+big-η-expand-fun : ∀ (V : Val [ U ] (S ⇀ T)) →
+  V ≡ lda (bind' (ret' var)
+          (bind' (app' (V [ !s ,s var2 ]v) var)
+          (ret' var)))
+big-η-expand-fun V =
+  fun-η ∙ cong lda ((ret-η'
+  ∙ cong₂ bind'
+    (cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ !s-ext (cong (V [_]v) (wk-expand ∙ ,s-ext !s-ext (varβ ∙ (((sym substId ∙ cong₂ _[_]v refl (sym wkβ)) ∙ substAssoc) ∙ cong₂ _[_]v (sym varβ) refl) ∙ sym substAssoc)) ∙ substAssoc) ∙ sym ,s-nat) (sym varβ) ∙ sym ,s-nat) ∙ substAssoc)
+    (cong (ret [_]c) (,s-ext !s-ext (((varβ ∙ sym varβ) ∙ cong₂ _[_]v (sym varβ) refl) ∙ sym substAssoc)) ∙ substAssoc) ∙ sym bind'-nat) ∙ sym ret-β')
