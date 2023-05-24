@@ -30,10 +30,10 @@ private
 
 -- Values, Computations and Evaluation contexts,
 -- quotiented by βη equivalence but *not* by order equivalence (i.e., up/dn laws)
-data Subst : (Δ : TypeCtx) (Γ : TypeCtx) → Type (ℓ-suc ℓ-zero)
-data Val : (Γ : TypeCtx) (A : SynType) → Type (ℓ-suc ℓ-zero)
-data EvCtx : (Γ : TypeCtx) (A : SynType) (B : SynType) → Type (ℓ-suc ℓ-zero)
-data Comp : (Γ : TypeCtx) (A : SynType) → Type (ℓ-suc ℓ-zero)
+data Subst : (Δ : TypeCtx) (Γ : TypeCtx) → Type
+data Val : (Γ : TypeCtx) (A : SynType) → Type
+data EvCtx : (Γ : TypeCtx) (A : SynType) (B : SynType) → Type
+data Comp : (Γ : TypeCtx) (A : SynType) → Type
 
 -- This isn't actually induction-recursion, this is just a hack to get
 -- around limitations of Agda's mutual recursion for HITs
