@@ -12,6 +12,8 @@ open import Cubical.Foundations.Function
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Empty hiding (rec)
 
+open import Common.Common
+
 private
   variable
     l : Level
@@ -70,6 +72,9 @@ inj-θ : {X : Set} -> (lx~ ly~ : ▹ (L℧ X)) ->
 inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
+
+-- Monadic structure
+
 ret : {X : Set} -> X -> L℧ X
 ret = η
 
@@ -86,8 +91,6 @@ ext f = fix (ext' f)
 bind : L℧ A -> (A -> L℧ B) -> L℧ B
 bind {A} {B} la f = ext f la
 
-mapL : (A -> B) -> L℧ A -> L℧ B
-mapL f la = bind la (λ a -> ret (f a))
 
 unfold-ext : (f : A -> L℧ B) -> ext f ≡ ext' f (next (ext f))
 unfold-ext f = fix-eq (ext' f)
@@ -117,6 +120,31 @@ ext-theta f l =
   θ (fix (ext' f) <$> l) ∎
 
 
+
+monad-unit-l : ∀ (a : A) (f : A -> L℧ B) -> ext f (ret a) ≡ f a
+monad-unit-l = ext-eta
+
+monad-unit-r : (la : L℧ A) -> ext ret la ≡ la
+monad-unit-r = fix lem
+  where
+    lem : ▹ ((la : L℧ A) -> ext ret la ≡ la) ->
+          (la : L℧ A) -> ext ret la ≡ la
+    lem IH (η x) = monad-unit-l x ret
+    lem IH ℧ = ext-err ret
+    lem IH (θ x) = fix (ext' ret) (θ x)
+                     ≡⟨ ext-theta ret x ⟩
+                   θ (fix (ext' ret) <$> x)
+                     ≡⟨ refl ⟩
+                   θ ((λ la -> ext ret la) <$> x)
+                     ≡⟨ (λ i → θ λ t → IH t (x t) i) ⟩
+                   θ (id <$> x)
+                     ≡⟨ refl ⟩
+                   θ x ∎
+
+
+mapL : (A -> B) -> L℧ A -> L℧ B
+mapL f la = bind la (λ a -> ret (f a))
+
 mapL-eta : (f : A -> B) (a : A) ->
   mapL f (η a) ≡ η (f a)
 mapL-eta f a = ext-eta a λ a → ret (f a)
@@ -124,4 +152,8 @@ mapL-eta f a = ext-eta a λ a → ret (f a)
 mapL-theta : (f : A -> B) (la~ : ▹ (L℧ A)) ->
   mapL f (θ la~) ≡ θ (mapL f <$> la~)
 mapL-theta f la~ = ext-theta (ret ∘ f) la~
+
+
+mapL-id : (la : L℧ A) -> mapL id la ≡ la
+mapL-id la = monad-unit-r la
 

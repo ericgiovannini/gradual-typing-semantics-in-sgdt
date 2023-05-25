@@ -26,6 +26,7 @@ open import Common.Common
 
 open import Semantics.Lift k
 open import Semantics.Predomains
+open import Semantics.PredomainInternalHom
 open import Semantics.Monotone.Base
 open import Semantics.Monotone.Lemmas k
 
@@ -67,7 +68,73 @@ mComp = record {
         λ a1 a2 a1≤a2 ->
           f1≤f2 (MonFun.f fAB1 a1) (MonFun.f fAB2 a2)
             (fAB1≤fAB2 a1 a2 a1≤a2) }
-     
+
+
+
+π1 : {A B : Predomain} -> ⟨ (A ×d B) ==> A ⟩
+π1 {A} {B} = record {
+  f = g;
+  isMon = g-mon }
+  where
+    g : ⟨ A ×d B ⟩ -> ⟨ A ⟩
+    g (a , b) = a
+
+    g-mon  : {p1 p2 : ⟨ A ×d B ⟩} → rel (A ×d B) p1 p2 → rel A (g p1) (g p2)
+    g-mon {γ1 , a1} {γ2 , a2} (a1≤a2 , b1≤b2) = a1≤a2
+
+
+π2 : {A B : Predomain} -> ⟨ (A ×d B) ==> B ⟩
+π2 {A} {B} = record {
+  f = g;
+  isMon = g-mon }
+  where
+    g : ⟨ A ×d B ⟩ -> ⟨ B ⟩
+    g (a , b) = b
+
+    g-mon  : {p1 p2 : ⟨ A ×d B ⟩} → rel (A ×d B) p1 p2 → rel B (g p1) (g p2)
+    g-mon {γ1 , a1} {γ2 , a2} (a1≤a2 , b1≤b2) = b1≤b2
+
+
+
+Pair : {A B : Predomain} -> ⟨ A ==> B ==> (A ×d B) ⟩
+Pair {A} = record {
+  f = λ a →
+    record {
+      f = λ b -> a , b ;
+      isMon = λ b1≤b2 → (reflexive A a) , b1≤b2 } ;
+  isMon = λ {a1} {a2} a1≤a2 b1 b2 b1≤b2 → a1≤a2 , b1≤b2 }
+
+
+
+ -- map and ap functions for later as monotone functions
+Map▹ : {A B : Predomain} ->
+  ⟨ A ==> B ⟩ -> ⟨ ▸''_ k A ==> ▸''_ k B ⟩
+Map▹ {A} {B} f = record {
+  f = map▹ (MonFun.f f) ;
+  isMon = λ {a1} {a2} a1≤a2 t → isMon f (a1≤a2 t) }
+
+Ap▹ : {A B : Predomain} ->
+  ⟨ (▸''_ k (A ==> B)) ==> (▸''_ k A ==> ▸''_ k B) ⟩
+Ap▹ {A} {B} = record { f = UAp▹ ; isMon = UAp▹-mon }
+  where
+    UAp▹ : {A B : Predomain} ->
+      ⟨ ▸''_ k (A ==> B) ⟩ -> ⟨ ▸''_ k A ==> ▸''_ k B ⟩
+    UAp▹ {A} {B} f~ = record {
+      f = _⊛_ λ t → MonFun.f (f~ t) ;
+      isMon = λ {a1} {a2} a1≤a2 t → isMon (f~ t) (a1≤a2 t) }
+
+    UAp▹-mon : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
+      ▸ (λ t -> rel (A ==> B) (f1~ t) (f2~ t)) ->
+      rel ((▸''_ k A) ==> (▸''_ k B)) (UAp▹ f1~) (UAp▹ f2~)
+    UAp▹-mon {f1~} {f2~} f1~≤f2~ a1~ a2~ a1~≤a2~ t = f1~≤f2~ t (a1~ t) (a2~ t) (a1~≤a2~ t)
+
+
+
+
+Next : {A : Predomain} ->
+  ⟨ A ==> ▸''_ k A ⟩
+Next = record { f = next ; isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 }
+
 
 
   -- 𝕃's return as a monotone function
@@ -84,6 +151,7 @@ _~->_ : {A B C D : Predomain} ->
     ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
 pre ~-> post = {!!}
   -- λ f -> mCompU post (mCompU f pre)
+
 
 
   -- Extending a monotone function to 𝕃
@@ -213,6 +281,10 @@ IntroArg' {Γ} {B} {B'} fΓB fBB' = S Γ (With2nd fBB') fΓB
 IntroArg : {Γ B B' : Predomain} ->
   ⟨ B ==> B' ⟩ -> ⟨ (Γ ==> B) ==> (Γ ==> B') ⟩
 IntroArg f = Curry (mCompU f App)
+
+IntroArg1' : {Γ Γ' B : Predomain} ->
+    ⟨ Γ' ==> Γ ⟩ -> ⟨ Γ ==> B ⟩ -> ⟨ Γ' ==> B ⟩
+IntroArg1' f = {!!}
 
 
 PairAssocLR : {A B C : Predomain} ->

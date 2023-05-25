@@ -47,6 +47,26 @@ record MonRel {ℓ' : Level} (X Y : Predomain) : Type (ℓ-suc ℓ') where
     isAntitone : ∀ {x x' y} -> R x y -> x' ≤X x -> R x' y
     isMonotone : ∀ {x y y'} -> R x y -> y ≤Y y' -> R x y'
 
+module MonReasoning {ℓ' : Level} {X Y : Predomain} where
+  --open MonRel
+  module X = PosetStr (X .snd)
+  module Y = PosetStr (Y .snd)
+  _≤X_ = X._≤_
+  _≤Y_ = Y._≤_
+  
+  
+  -- _Anti⟨_⟩_: R x y -> x'≤X x -> R x' y
+  [_]_Anti⟨_⟩_ : (S : MonRel {ℓ'} X Y) ->
+    (x' : ⟨ X ⟩) -> {x : ⟨ X ⟩} -> {y : ⟨ Y ⟩} ->
+    x' ≤X x -> (S .MonRel.R) x y -> (S .MonRel.R) x' y
+  [ S ] x' Anti⟨ x'≤x ⟩ x≤y = S .MonRel.isAntitone x≤y x'≤x
+
+
+  [_]_Mon⟨_⟩_ : (S : MonRel {ℓ'} X Y) ->
+    (x : ⟨ X ⟩) -> {y y' : ⟨ Y ⟩} ->
+    (S .MonRel.R) x y -> y ≤Y y' -> (S .MonRel.R x y')
+  [ S ] x Mon⟨ x≤y ⟩ y≤y' = S .MonRel.isMonotone x≤y y≤y'
+
 predomain-monrel : (X : Predomain) -> MonRel X X
 predomain-monrel X = record {
   R = rel X ;

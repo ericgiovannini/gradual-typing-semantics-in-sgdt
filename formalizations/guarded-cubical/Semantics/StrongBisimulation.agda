@@ -34,7 +34,8 @@ open import Agda.Primitive
 open import Common.Common
 open import Semantics.Predomains
 open import Semantics.Lift k
-open import Semantics.ErrorDomains
+-- open import Semantics.ErrorDomains
+open import Semantics.PredomainInternalHom
 
 private
   variable
@@ -44,151 +45,6 @@ private
 private
   ▹_ : Set l → Set l
   ▹_ A = ▹_,_ k A
-
-
-
-
-
--- Flat predomain from a set
-
-flat : hSet ℓ-zero -> Predomain
-flat h = ⟨ h ⟩ ,
-         (posetstr _≡_ (isposet (str h) (str h)
-           (λ _ → refl)
-           (λ a b c a≡b b≡c → a ≡⟨ a≡b ⟩ b ≡⟨ b≡c ⟩ c ∎)
-           λ a b a≡b _ → a≡b))
-
-𝔹 : Predomain
-𝔹 = flat (Bool , isSetBool)
-
-ℕ : Predomain
-ℕ = flat (Nat , isSetℕ)
-
-UnitP : Predomain
-UnitP = flat (Unit , isSetUnit)
-
-
-
--- Predomains from arrows (need to ensure monotonicity)
-
--- Ordering on functions between predomains. This does not require that the
--- functions are monotone.
-fun-order-het : (P1 P1' P2 P2' : Predomain) ->
-  (⟨ P1 ⟩ -> ⟨ P1' ⟩ -> Type) ->
-  (⟨ P2 ⟩ -> ⟨ P2' ⟩ -> Type) ->
-  (⟨ P1 ⟩ -> ⟨ P2 ⟩) -> (⟨ P1' ⟩ -> ⟨ P2' ⟩) -> Type ℓ-zero
-fun-order-het P1 P1' P2 P2' rel-P1P1' rel-P2P2' fP1P2 fP1'P2' =
-  (p : ⟨ P1 ⟩) -> (p' : ⟨ P1' ⟩) ->
-  rel-P1P1' p p' ->
-  rel-P2P2' (fP1P2 p) (fP1'P2' p')
-
-
--- TODO can define this in terms of fun-order-het
-fun-order : (P1 P2 : Predomain) -> (⟨ P1 ⟩ -> ⟨ P2 ⟩) -> (⟨ P1 ⟩ -> ⟨ P2 ⟩) -> Type ℓ-zero
-fun-order P1 P2 f1 f2 =
-  (x y : ⟨ P1 ⟩) -> x ≤P1 y -> (f1 x) ≤P2 (f2 y)
-  where
-    module P1 = PosetStr (P1 .snd)
-    module P2 = PosetStr (P2 .snd)
-    _≤P1_ = P1._≤_
-    _≤P2_ = P2._≤_
-
-{-
-mon-fun-order-refl : {P1 P2 : Predomain} ->
-  (f : ⟨ P1 ⟩ -> ⟨ P2 ⟩) ->
-  ({x y : ⟨ P1 ⟩} -> rel P1 x y -> rel P2 (f x) (f y)) ->
-  fun-order P1 P2 f f
-mon-fun-order-refl {P1} {P2} f f-mon = λ x y x≤y → f-mon x≤y
--}
-  
-
-fun-order-trans : {P1 P2 : Predomain} ->
-  (f g h : ⟨ P1 ⟩ -> ⟨ P2 ⟩) ->
-  fun-order P1 P2 f g ->
-  fun-order P1 P2 g h ->
-  fun-order P1 P2 f h
-fun-order-trans {P1} {P2} f g h f≤g g≤h =
-  λ x y x≤y ->
-    P2.is-trans (f x) (g x) (h y)
-    (f≤g x x (reflexive P1 x))
-    (g≤h x y x≤y)
-   where
-     module P1 = PosetStr (P1 .snd)
-     module P2 = PosetStr (P2 .snd)
-
-
-
-mon-fun-order : (P1 P2 : Predomain) -> MonFun P1 P2 → MonFun P1 P2 → Type ℓ-zero
-mon-fun-order P1 P2 mon-f1 mon-f2 =
-  fun-order P1 P2 (MonFun.f mon-f1) (MonFun.f mon-f2)
-   where
-     module P1 = PosetStr (P1 .snd)
-     module P2 = PosetStr (P2 .snd)
-     _≤P1_ = P1._≤_
-     _≤P2_ = P2._≤_
-
-
-mon-fun-order-refl : {P1 P2 : Predomain} ->
-  (f : MonFun P1 P2) ->
-  fun-order P1 P2 (MonFun.f f) (MonFun.f f)
-mon-fun-order-refl f = λ x y x≤y -> MonFun.isMon f x≤y
-
-mon-fun-order-trans : {P1 P2 : Predomain} ->
-  (f g h : MonFun P1 P2) ->
-  mon-fun-order P1 P2 f g ->
-  mon-fun-order P1 P2 g h ->
-  mon-fun-order P1 P2 f h
-mon-fun-order-trans {P1} {P2} f g h f≤g g≤h =
-  fun-order-trans {P1} {P2} (MonFun.f f) (MonFun.f g) (MonFun.f h) f≤g g≤h
-
-
--- Predomain of monotone functions between two predomains
-arr' : Predomain -> Predomain -> Predomain
-arr' P1 P2 =
-  MonFun P1 P2 ,
-  -- (⟨ P1 ⟩ -> ⟨ P2 ⟩) ,
-  (posetstr
-    (mon-fun-order P1 P2)
-    (isposet {!!} {!!}
-      mon-fun-order-refl
-      
-      -- TODO can use fun-order-trans
-      (λ f1 f2 f3 Hf1-f2 Hf2-f3 x y H≤xy ->
-      -- Goal: f1 .f x ≤P2 f3 .f y
-       P2.is-trans (f1 .f x) (f2 .f x) (f3 .f y)
-         (Hf1-f2 x x (IsPoset.is-refl (P1.isPoset) x))
-         (Hf2-f3 x y H≤xy))
-      {!!}))
-  where
-    open MonFun
-    module P1 = PosetStr (P1 .snd)
-    module P2 = PosetStr (P2 .snd)
-
-
-_==>_ : Predomain -> Predomain -> Predomain
-A ==> B = arr' A B
-
-infixr 20 _==>_
-
-
-
--- TODO show that this is a monotone relation
-
--- TODO define version where the arguments are all monotone relations
--- instead of arbitrary relations
-
-FunRel : {A A' B B' : Predomain} ->
-  MonRel {ℓ-zero} A A' ->
-  MonRel {ℓ-zero} B B' ->
-  MonRel {ℓ-zero} (A ==> B) (A' ==> B')
-FunRel {A} {A'} {B} {B'} RAA' RBB' =
-  record {
-    R = λ f f' → fun-order-het A A' B B'
-                   (MonRel.R RAA') (MonRel.R RBB')
-                   (MonFun.f f) (MonFun.f f') ;
-    isAntitone = {!!} ;
-    isMonotone = λ {f} {f'} {g'} f≤f' f'≤g' a a' a≤a' →
-      MonRel.isMonotone RBB' (f≤f' a a' a≤a') {!!} } -- (f'≤g' a' a' (reflexive A' a')) }
 
 
 
@@ -240,6 +96,10 @@ module LiftRelation
 
      ord-bot : (lb : L℧ ⟨ B ⟩) -> ℧ ≾ lb
      ord-bot lb = transport (sym (λ i → unfold-≾ i ℧ lb)) tt
+
+     ord-θ-monotone : {la~ : ▹ L℧ ⟨ A ⟩} -> {lb~ : ▹ L℧ ⟨ B ⟩} ->
+       ▸ (λ t -> la~ t ≾ lb~ t) -> θ la~ ≾ θ lb~
+     ord-θ-monotone H = ≾'->≾ H
 
 
 -- Predomain to lift predomain
@@ -373,100 +233,6 @@ module LiftRelMon
 
 
 
--- Product of predomains
-
-
--- We can't use Cubical.Data.Prod.Base for products, because this version of _×_
--- is not a subtype of the degenerate sigma type Σ A (λ _ → B), and this is needed
--- when we define the lookup function.
--- So we instead use Cubical.Data.Sigma.
-
--- These aren't included in Cubical.Data.Sigma, so we copy the
--- definitions from Cubical.Data.Prod.Base.
-proj₁ : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → A × B → A
-proj₁ (x , _) = x
-
-proj₂ : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → A × B → B
-proj₂ (_ , x) = x
-
-
-infixl 21 _×d_
-_×d_  : Predomain -> Predomain -> Predomain
-A ×d B =
-  (⟨ A ⟩ × ⟨ B ⟩) ,
-  (posetstr order {!!})
-  where
-    module A = PosetStr (A .snd)
-    module B = PosetStr (B .snd)
-   
-
-    prod-eq : {a1 a2 : ⟨ A ⟩} -> {b1 b2 : ⟨ B ⟩} ->
-      (a1 , b1) ≡ (a2 , b2) -> (a1 ≡ a2) × (b1 ≡ b2)
-    prod-eq p = (λ i → proj₁ (p i)) , λ i -> proj₂ (p i)
-
-    isSet-prod : isSet (⟨ A ⟩ × ⟨ B ⟩)
-    isSet-prod (a1 , b1) (a2 , b2) p1 p2 =
-      let (p-a1≡a2 , p-b1≡b2) = prod-eq p1 in
-      let (p'-a1≡a2 , p'-b1≡b2) = prod-eq p2 in
-      {!!}
-
-    order : ⟨ A ⟩ × ⟨ B ⟩ -> ⟨ A ⟩ × ⟨ B ⟩ -> Type ℓ-zero
-    order (a1 , b1) (a2 , b2) = (a1 A.≤ a2) × (b1 B.≤ b2)
-
-    order-refl : BinaryRelation.isRefl order
-    order-refl = λ (a , b) → reflexive A a , reflexive B b
-
-    order-trans : BinaryRelation.isTrans order
-    order-trans (a1 , b1) (a2 , b2) (a3 , b3) (a1≤a2 , b1≤b2) (a2≤a3 , b2≤b3) =
-      (IsPoset.is-trans A.isPoset a1 a2 a3 a1≤a2 a2≤a3) ,
-       IsPoset.is-trans B.isPoset b1 b2 b3 b1≤b2 b2≤b3
-    
-
-    is-poset : IsPoset order
-    is-poset = isposet
-      isSet-prod
-      {!!}
-      order-refl
-      order-trans
-      {!!}
-
-
-
-π1 : {A B : Predomain} -> ⟨ (A ×d B) ==> A ⟩
-π1 {A} {B} = record {
-  f = g;
-  isMon = g-mon }
-  where
-    g : ⟨ A ×d B ⟩ -> ⟨ A ⟩
-    g (a , b) = a
-
-    g-mon  : {p1 p2 : ⟨ A ×d B ⟩} → rel (A ×d B) p1 p2 → rel A (g p1) (g p2)
-    g-mon {γ1 , a1} {γ2 , a2} (a1≤a2 , b1≤b2) = a1≤a2
-
-
-π2 : {A B : Predomain} -> ⟨ (A ×d B) ==> B ⟩
-π2 {A} {B} = record {
-  f = g;
-  isMon = g-mon }
-  where
-    g : ⟨ A ×d B ⟩ -> ⟨ B ⟩
-    g (a , b) = b
-
-    g-mon  : {p1 p2 : ⟨ A ×d B ⟩} → rel (A ×d B) p1 p2 → rel B (g p1) (g p2)
-    g-mon {γ1 , a1} {γ2 , a2} (a1≤a2 , b1≤b2) = b1≤b2
-
-
-
-Pair : {A B : Predomain} -> ⟨ A ==> B ==> (A ×d B) ⟩
-Pair {A} = record {
-  f = λ a →
-    record {
-      f = λ b -> a , b ;
-      isMon = λ b1≤b2 → (reflexive A a) , b1≤b2 } ;
-  isMon = λ {a1} {a2} a1≤a2 b1 b2 b1≤b2 → a1≤a2 , b1≤b2 }
-
-
-
 
 
 -- Induced equivalence relation on a Predomain
@@ -548,8 +314,6 @@ module Bisimilarity (d : Predomain) where
   unfold-≈ : _≈_ ≡ Inductive._≈'_ (next _≈_)
   unfold-≈ = fix-eq Inductive._≈'_
 
-  
-  
 
   module Properties where
     open Inductive (next _≈_)

@@ -25,8 +25,9 @@ open import Semantics.Predomains
 open import Semantics.Lift k
 open import Semantics.Monotone.Base
 open import Semantics.StrongBisimulation k
-open import Syntax.GradualSTLC
-open import Syntax.SyntacticTermPrecision k
+open import Semantics.PredomainInternalHom
+-- open import Syntax.GradualSTLC
+-- open import Syntax.SyntacticTermPrecision k
 
 private
   variable
