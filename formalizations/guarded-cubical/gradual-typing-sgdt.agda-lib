@@ -1,4 +1,4 @@
 name: gradual-typing-sgdt
 include: .
-depend: cubical
+depend: cubical multi-poly-cats
 flags: --cubical
