@@ -2,21 +2,23 @@
 module Semantics.Abstract.TermModel.Convenient where
 
 -- A convenient model of the term language is
--- 1. A cartesian closed category
+-- 1. A bicartesian closed category
 -- 2. Equipped with a strong monad
 -- 3. An object modeling the numbers with models of the con/dtors
--- 4. An object modeling the dynamic type with models of the up/dn casts that are independent of the derivation
+-- 4. An object modeling the dynamic type with models of the inj casts
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
+open import Cubical.Categories.Functors.Constant
+open import Cubical.Categories.NaturalTransformation as NT hiding (NatTrans)
 open import Cubical.Categories.Limits.Terminal
 open import Cubical.Categories.Limits.BinProduct
+open import Cubical.Categories.Limits.BinProduct.More
 open import Cubical.Categories.Limits.BinCoproduct
 open import Cubical.Categories.Monad.Base
 open import Cubical.Categories.Exponentials
 
-open import Cubical.Categories.Presheaf.Representable
 open import Semantics.Abstract.TermModel.Strength
 
 private
@@ -28,7 +30,7 @@ open Functor
 open BinCoproduct
 open BinProduct
 
-record Model ℓ ℓ' ℓ'' : Type (ℓ-suc (ℓ-max ℓ (ℓ-max ℓ' ℓ''))) where
+record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
     -- A cartesian closed category
     cat : Category ℓ ℓ'
@@ -36,24 +38,28 @@ record Model ℓ ℓ' ℓ'' : Type (ℓ-suc (ℓ-max ℓ (ℓ-max ℓ' ℓ''))) 
     binProd : BinProducts cat
     exponentials : Exponentials cat binProd
     binCoprod : BinCoproducts cat
+    monad : Monad cat
+    strength : Strength cat term binProd monad
+
+
+  -- TODO: rename Notation and make similar modules for terminal, coprod
+  open Notation cat binProd public
+  open ExpNotation cat binProd exponentials public
+  open StrengthNotation cat term binProd monad strength public
 
   𝟙 = term .fst
-
-  _×_ : (a b : cat .ob) → cat .ob
-  a × b = binProd a b .binProdOb
 
   _+_ : (a b : cat .ob) → cat .ob
   a + b = binCoprod a b .binCoprodOb
 
-  _⇒_ : (a b : cat .ob) → cat .ob
-  a ⇒ b = ExponentialF cat binProd exponentials ⟅ a , b ⟆
+  σ1 : {a b : cat .ob} → cat [ a , a + b ]
+  σ1 = binCoprod _ _ .binCoprodInj₁
+  σ2 : {a b : cat .ob} → cat [ b , a + b ]
+  σ2 = binCoprod _ _ .binCoprodInj₂
+  _||_ : {a b c : cat .ob} → cat [ a , c ] → cat [ b , c ] → cat [ a + b , c ]
+  f1 || f2 = binCoprod _ _ .univProp f1 f2 .fst .fst
 
-  field
-    -- with a strong monad
-    monad : Monad cat
-    strength : Strength cat term binProd monad
   T = monad .fst
-
 
   _⇀_ : (a b : cat .ob) → cat .ob
   a ⇀ b = a ⇒ T ⟅ b ⟆
@@ -71,3 +77,13 @@ record Model ℓ ℓ' ℓ'' : Type (ℓ-suc (ℓ-max ℓ (ℓ-max ℓ' ℓ''))) 
     -- arbitrary morphisms
     inj : cat [ nat + (dyn ⇀ dyn) , dyn ]
     prj : cat [ dyn , T ⟅ nat + (dyn ⇀ dyn) ⟆ ]
+
+    -- and the error of course!
+    -- err : 1 ⇀ A
+    -- naturality says err ≡ T f ∘ err
+    -- not sure if that's exactly right...
+    err : NT.NatTrans (Constant _ _ 𝟙) T
+
+  ℧ : ∀ {Γ d} → cat [ Γ , T ⟅ d ⟆ ]
+  ℧ {Γ} = NT.NatTrans.N-ob err _ ∘⟨ cat ⟩ terminalArrow cat term Γ
+

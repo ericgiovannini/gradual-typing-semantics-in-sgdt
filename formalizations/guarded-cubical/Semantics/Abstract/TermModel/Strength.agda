@@ -54,3 +54,17 @@ module _ (C : Category ℓ ℓ') (term : Terminal C) (bp : BinProducts C) (T : M
   open import Cubical.Data.Sigma
   Strength : Type _
   Strength = Σ[ σ ∈ StrengthTrans ] (StrengthUnitor σ × (StrengthAssoc σ × (StrengthUnit σ × StrengthMult σ)))
+
+  -- The reason strength is useful is because we get "strong bind"
+  -- C [ Γ × a , T b ] → C [ Γ , T a ] → C [ Γ , T b ]
+  module StrengthNotation (str : Strength) where
+    open Notation _ bp renaming (_×_ to _×c_)
+    σ = str .fst
+    -- TODO: move this upstream in Monad.Notation
+    _∘k_ : ∀ {a b c} → C [ b , T .fst ⟅ c ⟆ ] → C [ a , T .fst ⟅ b ⟆ ] → C [ a , T .fst ⟅ c ⟆ ]
+    f ∘k g = (IsMonad.bind (T .snd)) .N-ob _ f ∘⟨ C ⟩ g
+
+    strong-bind : ∀ {Γ a b} → C [ Γ ×c a , T .fst ⟅ b ⟆ ] → C [ Γ , T .fst ⟅ a ⟆ ] → C [ Γ , T .fst ⟅ b ⟆ ]
+    strong-bind f m = f ∘k σ .N-ob _ ∘⟨ C ⟩ (C .id ,p m)
+
+    _∘sk_ = strong-bind
