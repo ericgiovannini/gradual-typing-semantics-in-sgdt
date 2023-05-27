@@ -66,17 +66,8 @@ record Model ℓ ℓ' ℓ'' : Type (ℓ-suc (ℓ-max ℓ (ℓ-max ℓ' ℓ''))) 
     -- now the dyn stuff
     -- a model of dyn/casts
     dyn : cat .ob
-    -- type precision
-    _⊑_ : (cat .ob) → (cat .ob) → Type ℓ''
-    isReflexive⊑  : ∀ {a} → a ⊑ a
-    isTransitive⊑ : ∀ {a b c} → a ⊑ b → b ⊑ c → a ⊑ c
-    isProp⊑ : ∀ {a b} → isProp (a ⊑ b)
 
-    -- monotonicity of type constructors
-    prod-is-monotone : ∀ {a a' b b'} → a ⊑ a' → b ⊑ b' → (a × b) ⊑ (a' × b')
-    parfun-is-monotone : ∀ {a a' b b'} → a ⊑ a' → b ⊑ b' → (a ⇀ b) ⊑ (a' ⇀ b')
-    inj-nat : nat ⊑ dyn
-    inj-arr : (dyn ⇀ dyn) ⊑ dyn
-
-    up : ∀ {a b} → a ⊑ b → cat [ a , b ]
-    dn : ∀ {a b} → a ⊑ b → cat [ b , T ⟅ a ⟆ ]
+    -- at this point we will model injection and projection as
+    -- arbitrary morphisms
+    inj : cat [ nat + (dyn ⇀ dyn) , dyn ]
+    prj : cat [ dyn , T ⟅ nat + (dyn ⇀ dyn) ⟆ ]
