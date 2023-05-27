@@ -26,16 +26,33 @@ data _⊑_ : Ty → Ty → Type where
   dyn : dyn ⊑ dyn
   _⇀_ : R ⊑ R' → S ⊑ S' → (R ⇀ S) ⊑ (R' ⇀ S')
   inj-nat : nat ⊑ dyn
-  inj-arr : (dyn ⇀ dyn) ⊑ dyn
-  trans   : R ⊑ S → S ⊑ T → R ⊑ T
-  -- this is not provable bc we can do a trans with an id relation
-  -- might cause issues later though...
-  isProp⊑ : isProp (R ⊑ S)
+  inj-arr : S ⊑ (dyn ⇀ dyn) → S ⊑ dyn
 
 refl-⊑ : ∀ S → S ⊑ S
 refl-⊑ nat = nat
 refl-⊑ dyn = dyn
 refl-⊑ (S ⇀ T) = refl-⊑ S ⇀ refl-⊑ T
+
+trans-⊑ : S ⊑ T → T ⊑ U → S ⊑ U
+trans-⊑ nat nat = nat
+trans-⊑ dyn dyn = dyn
+trans-⊑ inj-nat dyn = inj-nat
+trans-⊑ (inj-arr c) dyn = inj-arr c
+trans-⊑ (c ⇀ c') (d ⇀ d') = trans-⊑ c d ⇀ trans-⊑ c' d'
+trans-⊑ nat inj-nat = inj-nat
+trans-⊑ (c ⇀ c') (inj-arr d) = inj-arr (trans-⊑ (c ⇀ c') d)
+
+isPropTy⊑ : isProp (S ⊑ T)
+isPropTy⊑ nat nat = refl
+isPropTy⊑ dyn dyn = refl
+isPropTy⊑ (c ⇀ c') (d ⇀ d') = cong₂ _⇀_ (isPropTy⊑ c d) (isPropTy⊑ c' d')
+isPropTy⊑ inj-nat inj-nat = refl
+isPropTy⊑ (inj-arr c) (inj-arr d) = cong inj-arr (isPropTy⊑ c d)
+
+dyn-⊤ : S ⊑ dyn
+dyn-⊤ {nat} = inj-nat
+dyn-⊤ {dyn} = dyn
+dyn-⊤ {S ⇀ S₁} = inj-arr (dyn-⊤ ⇀ dyn-⊤)
 
 record TyPrec : Type where
   field
@@ -72,7 +89,7 @@ refl-⊑ctx (S ∷ Γ) = (refl-⊑ S) ∷ (refl-⊑ctx Γ)
 
 trans-⊑ctx : Γ ⊑ctx Δ → Δ ⊑ctx Θ → Γ ⊑ctx Θ
 trans-⊑ctx [] [] = []
-trans-⊑ctx (c ∷ C) (d ∷ D) = (trans c d) ∷ (trans-⊑ctx C D)
+trans-⊑ctx (c ∷ C) (d ∷ D) = (trans-⊑ c d) ∷ (trans-⊑ctx C D)
 
 record CtxPrec : Type where
   field

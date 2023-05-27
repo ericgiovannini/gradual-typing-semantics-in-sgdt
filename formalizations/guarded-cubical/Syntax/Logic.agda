@@ -60,7 +60,7 @@ data Val⊑ where
   up-L : ∀ S⊑T → Val⊑ ((ty-prec S⊑T) ∷ []) (refl-⊑ (ty-right S⊑T)) (up S⊑T) var
   up-R : ∀ S⊑T → Val⊑ ((refl-⊑ (ty-left S⊑T)) ∷ []) (ty-prec S⊑T) var (up S⊑T)
 
-  trans : Val⊑ C c V V' → Val⊑ D d V' V'' → Val⊑ (trans-⊑ctx C D) (trans c d) V V''
+  trans : Val⊑ C c V V' → Val⊑ D d V' V'' → Val⊑ (trans-⊑ctx C D) (trans-⊑ c d) V V''
   isProp⊑ : isProp (Val⊑ C c V V')
 
 data EvCtx⊑ where
@@ -73,7 +73,7 @@ data EvCtx⊑ where
   dn-R : ∀ S⊑T → EvCtx⊑ [] (ty-prec S⊑T) (refl-⊑ (ty-left S⊑T)) ∙E (dn S⊑T)
   retractionR : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (refl-⊑ (ty-right S⊑T)) ∙E (upE S⊑T ∘E dn S⊑T)
 
-  trans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' → EvCtx⊑ (trans-⊑ctx C C') (trans b b') (trans c c') E E''
+  trans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' → EvCtx⊑ (trans-⊑ctx C C') (trans-⊑ b b') (trans-⊑ c c') E E''
   isProp⊑ : isProp (EvCtx⊑ C c d E E')
 
 data Comp⊑ where
@@ -85,7 +85,7 @@ data Comp⊑ where
 
   err⊥ : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) err' M
 
-  trans : Comp⊑ C c M M' → Comp⊑ D d M' M'' → Comp⊑ (trans-⊑ctx C D) (trans c d) M M''
+  trans : Comp⊑ C c M M' → Comp⊑ D d M' M'' → Comp⊑ (trans-⊑ctx C D) (trans-⊑ c d) M M''
   isProp⊑ : isProp (Comp⊑ C c M M')
 
 Subst⊑-homo : (γ γ' : Subst Δ Γ) → Type _
@@ -117,17 +117,17 @@ up-monotone : (S⊑S' : S ⊑ S')(S⊑T : S ⊑ T)(S'⊑T' : S' ⊑ T') (T⊑T' 
 up-monotone {S}{S'}{T}{T'} S⊑S' S⊑T S'⊑T' T⊑T' =
   transport (λ i → Val⊑ (split-dom (~ i) ∷ []) (split-cod (~ i)) (substId {V = up (mkTyPrec S⊑S')} i) (varβ {δ = !s}{V = (up (mkTyPrec T⊑T'))} i))
   (trans (up-L (mkTyPrec (S⊑S'))) (var {C = []})
-  [ transport (λ i → Subst⊑ (trans S⊑T (refl-⊑ T) ∷ []) (swap-middle i) (ids1-expand (~ i)) (!s ,s up (mkTyPrec T⊑T')))
+  [ transport (λ i → Subst⊑ (trans-⊑ S⊑T (refl-⊑ T) ∷ []) (swap-middle i) (ids1-expand (~ i)) (!s ,s up (mkTyPrec T⊑T')))
     (!s ,s trans ((var {C = []})) (up-R (mkTyPrec T⊑T'))) ]v)
   where
-    split-cod : S'⊑T' ≡ trans (refl-⊑ _) S'⊑T'
-    split-cod = isProp⊑ _ _
+    split-cod : S'⊑T' ≡ trans-⊑ (refl-⊑ _) S'⊑T'
+    split-cod = isPropTy⊑ _ _
 
-    split-dom : S⊑T ≡ trans S⊑T (refl-⊑ _)
-    split-dom = isProp⊑ _ _
+    split-dom : S⊑T ≡ trans-⊑ S⊑T (refl-⊑ _)
+    split-dom = isPropTy⊑ _ _
 
-    swap-middle : Path ((S ∷ []) ⊑ctx (T' ∷ [])) (trans S⊑T T⊑T' ∷ []) (trans S⊑S' S'⊑T' ∷ [])
-    swap-middle i = (isProp⊑ (trans S⊑T T⊑T') (trans S⊑S' S'⊑T') i) ∷ []
+    swap-middle : Path ((S ∷ []) ⊑ctx (T' ∷ [])) (trans-⊑ S⊑T T⊑T' ∷ []) (trans-⊑ S⊑S' S'⊑T' ∷ [])
+    swap-middle i = (isPropTy⊑ (trans-⊑ S⊑T T⊑T') (trans-⊑ S⊑S' S'⊑T') i) ∷ []
 
 -- TODO: show down is monotone
 
