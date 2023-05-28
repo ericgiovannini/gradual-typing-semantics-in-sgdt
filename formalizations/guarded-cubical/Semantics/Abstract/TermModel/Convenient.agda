@@ -29,6 +29,7 @@ open Category
 open Functor
 open BinCoproduct
 open BinProduct
+open IsMonad
 
 record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
@@ -66,6 +67,9 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   f1 || f2 = binCoprod _ _ .univProp f1 f2 .fst .fst
 
   T = monad .fst
+
+  ret : ∀ {a} → cat [ a , T ⟅ a ⟆ ]
+  ret = monad .snd .η .NT.NatTrans.N-ob _
 
   _⇀_ : (a b : cat .ob) → cat .ob
   a ⇀ b = a ⇒ T ⟅ b ⟆

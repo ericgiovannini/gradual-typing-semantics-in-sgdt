@@ -1,7 +1,8 @@
 {-# OPTIONS --cubical #-}
 module Semantics.Abstract.TermModel.Strength where
 
-{- Strength of a functor between *cartesian* categories -}
+{- Strength of a monad an a *cartesian* category -}
+{- TODO: generalize to monoidal -}
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category
@@ -60,6 +61,14 @@ module _ (C : Category ℓ ℓ') (term : Terminal C) (bp : BinProducts C) (T : M
   module StrengthNotation (str : Strength) where
     open Notation _ bp renaming (_×_ to _×c_)
     σ = str .fst
+
+
+    strength-η : StrengthUnit σ
+    strength-η = str .snd .snd .snd .fst
+
+    strength-μ : StrengthMult σ
+    strength-μ = str .snd .snd .snd .snd
+
     -- TODO: move this upstream in Monad.Notation
     _∘k_ : ∀ {a b c} → C [ b , T .fst ⟅ c ⟆ ] → C [ a , T .fst ⟅ b ⟆ ] → C [ a , T .fst ⟅ c ⟆ ]
     f ∘k g = (IsMonad.bind (T .snd)) .N-ob _ f ∘⟨ C ⟩ g
@@ -68,3 +77,4 @@ module _ (C : Category ℓ ℓ') (term : Terminal C) (bp : BinProducts C) (T : M
     strong-bind f m = f ∘k σ .N-ob _ ∘⟨ C ⟩ (C .id ,p m)
 
     _∘sk_ = strong-bind
+    -- TODO: lemma for how strength interacts with bind
