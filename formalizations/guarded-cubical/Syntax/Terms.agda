@@ -64,6 +64,7 @@ data Subst where
   ∘IdL : ids ∘s γ ≡ γ
   ∘IdR : γ ∘s ids ≡ γ
   ∘Assoc : γ ∘s (δ ∘s θ) ≡ (γ ∘s δ) ∘s θ
+  isSetSubst : isSet (Subst Δ Γ)
 
   -- [] is terminal
   !s : Subst Γ []

@@ -49,6 +49,12 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
   𝟙 = term .fst
 
+  !t : ∀ {a} → cat [ a , 𝟙 ]
+  !t = terminalArrow cat term _
+
+  𝟙η : ∀ {a} → (f : cat [ a , 𝟙 ]) → f ≡ !t
+  𝟙η f = sym (terminalArrowUnique cat {T = term} f)
+
   _+_ : (a b : cat .ob) → cat .ob
   a + b = binCoprod a b .binCoprodOb
 
