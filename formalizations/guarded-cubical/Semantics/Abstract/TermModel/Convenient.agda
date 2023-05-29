@@ -40,13 +40,13 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     exponentials : Exponentials cat binProd
     binCoprod : BinCoproducts cat
     monad : Monad cat
-    strength : Strength cat term binProd monad
+    strength : Strength cat binProd monad
 
 
   -- TODO: rename Notation and make similar modules for terminal, coprod
   open Notation cat binProd public
   open ExpNotation cat binProd exponentials public
-  open StrengthNotation cat term binProd monad strength public
+  open StrengthNotation cat binProd monad strength public
 
   𝟙 = term .fst
 
