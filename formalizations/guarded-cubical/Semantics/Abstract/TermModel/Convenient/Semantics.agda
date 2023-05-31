@@ -16,13 +16,14 @@ open import Cubical.Categories.Limits.Terminal
 open import Cubical.Categories.Limits.BinProduct
 open import Cubical.Categories.Limits.BinCoproduct
 open import Cubical.Categories.Monad.Base
+open import Cubical.Categories.Comonad.Instances.Environment
 open import Cubical.Categories.Exponentials
 open import Cubical.Data.List hiding ([_])
 
-open import Semantics.Abstract.TermModel.Strength
 open import Syntax.Types
 open import Syntax.Terms
 open import Semantics.Abstract.TermModel.Convenient
+open import Semantics.Abstract.TermModel.Convenient.Linear
 
 private
   variable
@@ -48,6 +49,8 @@ module _ (𝓜 : Model ℓ ℓ') where
   module 𝓜 = Model 𝓜
   module T = IsMonad (𝓜.monad .snd)
   ⇒F = ExponentialF 𝓜.cat 𝓜.binProd 𝓜.exponentials
+  open StrengthNotation 𝓜
+
   ⟦_⟧ty : Ty → 𝓜.cat .ob
   ⟦ nat ⟧ty = 𝓜.nat
   ⟦ dyn ⟧ty = 𝓜.dyn
@@ -57,16 +60,15 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦_⟧p : S ⊑ R → 𝓜.cat [ ⟦ R ⟧ty , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
   ⟦_⟧p' : S ⊑ R → 𝓜.cat [ 𝓜.T ⟅ ⟦ R ⟧ty ⟆ , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
 
-
   ⟦ nat ⟧e = 𝓜.cat .id
   ⟦ dyn ⟧e = 𝓜.cat .id
   -- The most annoying one because it's not from bifunctoriality, more like separate functoriality
   -- λ f . λ x . x'  <- p x;
   --             y'  <- app(f,x');
   --             η (e y')
-  ⟦ c ⇀ d ⟧e     = 𝓜.lda ((𝓜.ret ∘⟨ 𝓜.cat ⟩ ⟦ d ⟧e) 𝓜.∘k
-                         (𝓜.app' (𝓜.π₁ ∘⟨ 𝓜.cat ⟩ 𝓜.π₁) 𝓜.π₂ 𝓜.∘sk
-                         (⟦ c ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂)))
+  ⟦ c ⇀ d ⟧e     = 𝓜.lda ((𝓜.ret ∘⟨ 𝓜.cat ⟩ ⟦ d ⟧e) ∘⟨ ClosedLinear ⟩
+                         𝓜.app ∘⟨ Linear _ ⟩
+                         wkClosed _ ⟪ ⟦ c ⟧p ⟫)
   ⟦ inj-nat ⟧e   = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ1
   ⟦ inj-arr c ⟧e = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ2 ∘⟨ 𝓜.cat ⟩ ⟦ c ⟧e
 
@@ -74,8 +76,8 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ dyn ⟧p = 𝓜.ret
   -- = η ∘ (⟦ c ⟧e ⇒ ⟦ d ⟧p')
   ⟦ c ⇀ d ⟧p     = 𝓜.ret ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
-  ⟦ inj-nat ⟧p   = (𝓜.ret 𝓜.|| 𝓜.℧) 𝓜.∘k 𝓜.prj
-  ⟦ inj-arr c ⟧p = (𝓜.℧ 𝓜.|| ⟦ c ⟧p) 𝓜.∘k 𝓜.prj
+  ⟦ inj-nat ⟧p   = (𝓜.ret 𝓜.|| 𝓜.℧) ∘⟨ ClosedLinear ⟩ 𝓜.prj
+  ⟦ inj-arr c ⟧p = (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ ClosedLinear ⟩ 𝓜.prj
 
   ⟦ c ⟧p' = T.bind .N-ob _ ⟦ c ⟧p
 
@@ -88,7 +90,7 @@ module _ (𝓜 : Model ℓ ℓ') where
 
   ⟦_⟧S : Subst Δ Γ → 𝓜.cat [ ⟦ Δ ⟧ctx , ⟦ Γ ⟧ctx ]
   ⟦_⟧V : Val Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
-  ⟦_⟧E : EvCtx Γ R S → 𝓜.cat [ ⟦ Γ ⟧ctx 𝓜.× ⟦ R ⟧ty , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
+  ⟦_⟧E : EvCtx Γ R S → Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty , ⟦ S ⟧ty ]
   ⟦_⟧C : Comp Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
 
   ⟦ ids ⟧S = 𝓜.cat .id
@@ -116,21 +118,20 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ up S⊑T ⟧V = ⟦ S⊑T .ty-prec  ⟧e ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
   ⟦ isSetVal V V' p q i j ⟧V = 𝓜.cat .isSetHom ⟦ V ⟧V ⟦ V' ⟧V (cong ⟦_⟧V p) (cong ⟦_⟧V q) i j
 
-  -- | TODO: potential for generalization
-  -- | This is a general construction of a category from a strong monad, the "simple Kleisli slice"
-  ⟦ ∙E ⟧E = 𝓜.ret ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
-  ⟦ E ∘E F ⟧E = {!!}
-  ⟦ ∘IdL i ⟧E = {!!}
-  ⟦ ∘IdR i ⟧E = {!!}
-  ⟦ ∘Assoc i ⟧E = {!!}
-  ⟦ E [ γ ]e ⟧E = {!!}
+  ⟦ ∙E ⟧E = Linear _ .id
+  ⟦ E ∘E F ⟧E = ⟦ E ⟧E ∘⟨ Linear _ ⟩ ⟦ F ⟧E
+  ⟦ ∘IdL {E = E} i ⟧E = Linear _ .⋆IdR ⟦ E ⟧E i
+  ⟦ ∘IdR {E = E} i ⟧E = Linear _ .⋆IdL ⟦ E ⟧E i
+  ⟦ ∘Assoc {E = E}{F = F}{F' = F'} i ⟧E = Linear _ .⋆Assoc ⟦ F' ⟧E ⟦ F ⟧E ⟦ E ⟧E i
+  ⟦ E [ γ ]e ⟧E = (⟦ γ ⟧S ^*) ⟪ ⟦ E ⟧E ⟫
+  -- TODO: upstream, show change-of-comonad is functorial in the morphism of distributive laws
   ⟦ substId i ⟧E = {!!}
   ⟦ substAssoc i ⟧E = {!!}
-  ⟦ ∙substDist i ⟧E = {!!}
-  ⟦ ∘substDist i ⟧E = {!!}
-  ⟦ bind x ⟧E = {!!}
+  ⟦ ∙substDist {γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-id i
+  ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-seq ⟦ F ⟧E ⟦ E ⟧E i
+  ⟦ bind M ⟧E = ⟦ M ⟧C
   ⟦ ret-η i ⟧E = {!!}
-  ⟦ dn S⊑T ⟧E = ⟦ S⊑T .ty-prec ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
+  ⟦ dn S⊑T ⟧E = wkClosed 𝓜.𝟙 ⟪ ⟦ S⊑T .ty-prec ⟧p ⟫
   ⟦ isSetEvCtx E F p q i j ⟧E = 𝓜.cat .isSetHom ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j
 
   ⟦_⟧C = {!!}

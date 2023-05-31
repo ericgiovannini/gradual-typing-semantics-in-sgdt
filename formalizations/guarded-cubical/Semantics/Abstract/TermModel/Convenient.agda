@@ -18,8 +18,7 @@ open import Cubical.Categories.Limits.BinProduct.More
 open import Cubical.Categories.Limits.BinCoproduct
 open import Cubical.Categories.Monad.Base
 open import Cubical.Categories.Exponentials
-
-open import Semantics.Abstract.TermModel.Strength
+open import Cubical.Categories.Monad.Strength.Cartesian
 
 private
   variable
@@ -33,20 +32,20 @@ open IsMonad
 
 record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
-    -- A cartesian closed category
+    -- a bicartesian closed category
     cat : Category ℓ ℓ'
     term : Terminal cat
     binProd : BinProducts cat
     exponentials : Exponentials cat binProd
     binCoprod : BinCoproducts cat
+    -- with a strong monad
     monad : Monad cat
-    strength : Strength cat binProd monad
+    strength : Strength binProd monad
 
 
   -- TODO: rename Notation and make similar modules for terminal, coprod
   open Notation cat binProd public
   open ExpNotation cat binProd exponentials public
-  open StrengthNotation cat binProd monad strength public
 
   𝟙 = term .fst
 
