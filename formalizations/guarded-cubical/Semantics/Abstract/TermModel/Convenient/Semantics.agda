@@ -24,6 +24,7 @@ open import Syntax.Types
 open import Syntax.Terms
 open import Semantics.Abstract.TermModel.Convenient
 open import Semantics.Abstract.TermModel.Convenient.Linear
+open import Semantics.Abstract.TermModel.Convenient.Linear.Properties
 
 private
   variable
@@ -50,6 +51,7 @@ module _ (𝓜 : Model ℓ ℓ') where
   module T = IsMonad (𝓜.monad .snd)
   ⇒F = ExponentialF 𝓜.cat 𝓜.binProd 𝓜.exponentials
   open StrengthNotation 𝓜
+  open StrengthLemmas 𝓜
 
   ⟦_⟧ty : Ty → 𝓜.cat .ob
   ⟦ nat ⟧ty = 𝓜.nat
@@ -124,9 +126,8 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ ∘IdR {E = E} i ⟧E = Linear _ .⋆IdL ⟦ E ⟧E i
   ⟦ ∘Assoc {E = E}{F = F}{F' = F'} i ⟧E = Linear _ .⋆Assoc ⟦ F' ⟧E ⟦ F ⟧E ⟦ E ⟧E i
   ⟦ E [ γ ]e ⟧E = (⟦ γ ⟧S ^*) ⟪ ⟦ E ⟧E ⟫
-  -- TODO: upstream, show change-of-comonad is functorial in the morphism of distributive laws
-  ⟦ substId i ⟧E = {!!}
-  ⟦ substAssoc i ⟧E = {!!}
+  ⟦ substId {E = E} i ⟧E = id^* {E = ⟦ E ⟧E} i
+  ⟦ substAssoc {E = E}{γ = γ}{δ = δ} i ⟧E = comp^* {γ = ⟦ γ ⟧S} {δ = ⟦ δ ⟧S} {E = ⟦ E ⟧E} i
   ⟦ ∙substDist {γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-id i
   ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-seq ⟦ F ⟧E ⟦ E ⟧E i
   ⟦ bind M ⟧E = ⟦ M ⟧C
