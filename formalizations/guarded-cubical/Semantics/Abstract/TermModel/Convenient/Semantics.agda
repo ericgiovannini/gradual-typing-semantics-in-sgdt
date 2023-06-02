@@ -23,6 +23,7 @@ open import Cubical.Data.List hiding ([_])
 open import Syntax.Types
 open import Syntax.Terms
 open import Semantics.Abstract.TermModel.Convenient
+open import Semantics.Abstract.TermModel.Convenient.Computations
 
 private
   variable
@@ -65,18 +66,18 @@ module _ (𝓜 : Model ℓ ℓ') where
   --             η (e y')
   ⟦ c ⇀ d ⟧e     = 𝓜.lda ((𝓜.ClLinear .id ∘⟨ 𝓜.cat ⟩ ⟦ d ⟧e) ∘⟨ 𝓜.ClLinear ⟩
                          𝓜.app ∘⟨ 𝓜.Linear _ ⟩
-                         {!!})
+                         ⟦ c ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂)
   ⟦ inj-nat ⟧e   = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ1
   ⟦ inj-arr c ⟧e = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ2 ∘⟨ 𝓜.cat ⟩ ⟦ c ⟧e
 
   ⟦ nat ⟧p = 𝓜.ClLinear .id
   ⟦ dyn ⟧p = 𝓜.ClLinear .id
   -- = η ∘ (⟦ c ⟧e ⇒ ⟦ d ⟧p')
-  ⟦ c ⇀ d ⟧p     = {!!} -- 𝓜.ret ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
-  ⟦ inj-nat ⟧p   = {!!} -- (𝓜.ret 𝓜.|| 𝓜.℧) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
-  ⟦ inj-arr c ⟧p = {!!} -- (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
+  ⟦ c ⇀ d ⟧p     = 𝓜.ClLinear .id ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
+  ⟦ inj-nat ⟧p   = (𝓜.ClLinear .id 𝓜.|| 𝓜.℧) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
+  ⟦ inj-arr c ⟧p = (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
 
-  ⟦ c ⟧p' = {!!} -- 𝓜.bind .N-ob _ ⟦ c ⟧p
+  ⟦ c ⟧p' = 𝓜.clBind ⟦ c ⟧p
 
   ⟦_⟧ctx : Ctx → 𝓜.cat .ob
   ⟦ [] ⟧ctx = 𝓜.𝟙
@@ -85,10 +86,10 @@ module _ (𝓜 : Model ℓ ℓ') where
   -- The term syntax
   -- substitutions, values, ev ctxts, terms
 
-  ⟦_⟧S : Subst Δ Γ → 𝓜.cat [ ⟦ Δ ⟧ctx , ⟦ Γ ⟧ctx ]
-  ⟦_⟧V : Val Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
-  ⟦_⟧E : EvCtx Γ R S → 𝓜.Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty , ⟦ S ⟧ty ]
-  ⟦_⟧C : Comp Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , 𝓜.T ⟦ S ⟧ty ]
+  ⟦_⟧S : Subst Δ Γ   → 𝓜.cat [ ⟦ Δ ⟧ctx , ⟦ Γ ⟧ctx ]
+  ⟦_⟧V : Val Γ S     → 𝓜.cat [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
+  ⟦_⟧E : EvCtx Γ R S → 𝓜.Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty  , ⟦ S ⟧ty ]
+  ⟦_⟧C : Comp Γ S    → 𝓜.ClLinear        [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
 
   ⟦ ids ⟧S = 𝓜.cat .id
   ⟦ γ ∘s δ ⟧S = ⟦ γ ⟧S ∘⟨ 𝓜.cat ⟩ ⟦ δ ⟧S
@@ -131,4 +132,26 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ dn S⊑T ⟧E = ⟦ S⊑T .ty-prec ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
   ⟦ isSetEvCtx E F p q i j ⟧E = 𝓜.cat .isSetHom ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j
 
-  ⟦ M ⟧C = {!M!}
+  ⟦ E [ M ]∙ ⟧C = (COMP _ 𝓜 ⟪ ⟦ E ⟧E ⟫) ⟦ M ⟧C
+  ⟦ plugId {M = M} i ⟧C = (COMP _ 𝓜 .F-id i) ⟦ M ⟧C
+  ⟦ plugAssoc {F = F}{E = E}{M = M} i ⟧C = (COMP _ 𝓜 .F-seq ⟦ E ⟧E ⟦ F ⟧E i) ⟦ M ⟧C
+
+  ⟦ M [ γ ]c ⟧C = ⟦ M ⟧C ∘⟨ 𝓜.cat ⟩ ⟦ γ ⟧S
+  ⟦ substId {M = M} i ⟧C = 𝓜.cat .⋆IdL ⟦ M ⟧C i
+  ⟦ substAssoc {M = M}{δ = δ}{γ = γ} i ⟧C = 𝓜.cat .⋆Assoc ⟦ γ ⟧S ⟦ δ ⟧S ⟦ M ⟧C i
+  ⟦ substPlugDist {E = E}{M = M}{γ = γ} i ⟧C = COMP-Enriched 𝓜 ⟦ γ ⟧S ⟦ M ⟧C ⟦ E ⟧E i
+  ⟦ err ⟧C = 𝓜.℧
+  ⟦ strictness {E = E} i ⟧C = 𝓜.℧-homo ⟦ E ⟧E {!i!}
+
+  ⟦ ret ⟧C = 𝓜.Linear _ .id
+  ⟦ ret-β i ⟧C = {!!}
+
+  ⟦ app ⟧C = {!!}
+  ⟦ fun-β i ⟧C = {!!}
+
+  ⟦ matchNat Mz Ms ⟧C = {!!}
+  ⟦ matchNatβz Mz Ms i ⟧C = {!!}
+  ⟦ matchNatβs Mz Ms V i ⟧C = {!!}
+  ⟦ matchNatη i ⟧C = {!!}
+
+  ⟦ isSetComp M N p q i j ⟧C = 𝓜.cat .isSetHom ⟦ M ⟧C ⟦ N ⟧C (cong ⟦_⟧C p) (cong ⟦_⟧C q) i j

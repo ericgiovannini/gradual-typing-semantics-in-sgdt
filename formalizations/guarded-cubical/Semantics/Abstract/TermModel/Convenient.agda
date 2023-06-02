@@ -18,7 +18,7 @@ open import Cubical.Categories.Limits.BinProduct
 open import Cubical.Categories.Limits.BinProduct.More
 open import Cubical.Categories.Limits.BinCoproduct
 open import Cubical.Categories.Exponentials
-open import Cubical.Categories.Monad.ExtensionSystem
+open import Cubical.Categories.Monad.ExtensionSystem as Monad
 open import Cubical.Categories.Comonad.Instances.Environment
 open import Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem
 
@@ -66,6 +66,7 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   -- TODO: should this go into notation?
   Linear = PKleisli
   ClLinear = Kleisli cat (StrongMonad→Monad binProd term monad)
+  clBind = G cat (StrongMonad→Monad binProd term monad) .F-hom
 
   field
     -- a weak model of the natural numbers, but good enough for our syntax
@@ -93,4 +94,3 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     ℧-homo : ∀ {Γ a b} → (f : Linear Γ [ a , b ])
            -- define this explicitly as a profunctor?
            → bind f ∘⟨ cat ⟩ ((cat .id ,p ℧)) ≡ ℧
-
