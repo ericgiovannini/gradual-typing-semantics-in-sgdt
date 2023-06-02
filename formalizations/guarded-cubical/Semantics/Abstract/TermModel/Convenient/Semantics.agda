@@ -23,8 +23,6 @@ open import Cubical.Data.List hiding ([_])
 open import Syntax.Types
 open import Syntax.Terms
 open import Semantics.Abstract.TermModel.Convenient
-open import Semantics.Abstract.TermModel.Convenient.Linear
-open import Semantics.Abstract.TermModel.Convenient.Linear.Properties
 
 private
   variable
@@ -48,10 +46,7 @@ private
 
 module _ (𝓜 : Model ℓ ℓ') where
   module 𝓜 = Model 𝓜
-  module T = IsMonad (𝓜.monad .snd)
   ⇒F = ExponentialF 𝓜.cat 𝓜.binProd 𝓜.exponentials
-  open StrengthNotation 𝓜
-  open StrengthLemmas 𝓜
 
   ⟦_⟧ty : Ty → 𝓜.cat .ob
   ⟦ nat ⟧ty = 𝓜.nat
@@ -59,8 +54,8 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ S ⇀ T ⟧ty = ⟦ S ⟧ty 𝓜.⇀ ⟦ T ⟧ty
 
   ⟦_⟧e : S ⊑ R → 𝓜.cat [ ⟦ S ⟧ty , ⟦ R ⟧ty ]
-  ⟦_⟧p : S ⊑ R → 𝓜.cat [ ⟦ R ⟧ty , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
-  ⟦_⟧p' : S ⊑ R → 𝓜.cat [ 𝓜.T ⟅ ⟦ R ⟧ty ⟆ , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
+  ⟦_⟧p : S ⊑ R → 𝓜.ClLinear [ ⟦ R ⟧ty , ⟦ S ⟧ty ]
+  ⟦_⟧p' : S ⊑ R → 𝓜.cat [ 𝓜.T ⟦ R ⟧ty , 𝓜.T ⟦ S ⟧ty ]
 
   ⟦ nat ⟧e = 𝓜.cat .id
   ⟦ dyn ⟧e = 𝓜.cat .id
@@ -68,20 +63,20 @@ module _ (𝓜 : Model ℓ ℓ') where
   -- λ f . λ x . x'  <- p x;
   --             y'  <- app(f,x');
   --             η (e y')
-  ⟦ c ⇀ d ⟧e     = 𝓜.lda ((𝓜.ret ∘⟨ 𝓜.cat ⟩ ⟦ d ⟧e) ∘⟨ ClosedLinear ⟩
-                         𝓜.app ∘⟨ Linear _ ⟩
-                         wkClosed _ ⟪ ⟦ c ⟧p ⟫)
+  ⟦ c ⇀ d ⟧e     = 𝓜.lda ((𝓜.ClLinear .id ∘⟨ 𝓜.cat ⟩ ⟦ d ⟧e) ∘⟨ 𝓜.ClLinear ⟩
+                         𝓜.app ∘⟨ 𝓜.Linear _ ⟩
+                         {!!})
   ⟦ inj-nat ⟧e   = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ1
   ⟦ inj-arr c ⟧e = 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ2 ∘⟨ 𝓜.cat ⟩ ⟦ c ⟧e
 
-  ⟦ nat ⟧p = 𝓜.ret
-  ⟦ dyn ⟧p = 𝓜.ret
+  ⟦ nat ⟧p = 𝓜.ClLinear .id
+  ⟦ dyn ⟧p = 𝓜.ClLinear .id
   -- = η ∘ (⟦ c ⟧e ⇒ ⟦ d ⟧p')
-  ⟦ c ⇀ d ⟧p     = 𝓜.ret ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
-  ⟦ inj-nat ⟧p   = (𝓜.ret 𝓜.|| 𝓜.℧) ∘⟨ ClosedLinear ⟩ 𝓜.prj
-  ⟦ inj-arr c ⟧p = (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ ClosedLinear ⟩ 𝓜.prj
+  ⟦ c ⇀ d ⟧p     = {!!} -- 𝓜.ret ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
+  ⟦ inj-nat ⟧p   = {!!} -- (𝓜.ret 𝓜.|| 𝓜.℧) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
+  ⟦ inj-arr c ⟧p = {!!} -- (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
 
-  ⟦ c ⟧p' = T.bind .N-ob _ ⟦ c ⟧p
+  ⟦ c ⟧p' = {!!} -- 𝓜.bind .N-ob _ ⟦ c ⟧p
 
   ⟦_⟧ctx : Ctx → 𝓜.cat .ob
   ⟦ [] ⟧ctx = 𝓜.𝟙
@@ -92,8 +87,8 @@ module _ (𝓜 : Model ℓ ℓ') where
 
   ⟦_⟧S : Subst Δ Γ → 𝓜.cat [ ⟦ Δ ⟧ctx , ⟦ Γ ⟧ctx ]
   ⟦_⟧V : Val Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
-  ⟦_⟧E : EvCtx Γ R S → Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty , ⟦ S ⟧ty ]
-  ⟦_⟧C : Comp Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , 𝓜.T ⟅ ⟦ S ⟧ty ⟆ ]
+  ⟦_⟧E : EvCtx Γ R S → 𝓜.Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty , ⟦ S ⟧ty ]
+  ⟦_⟧C : Comp Γ S → 𝓜.cat [ ⟦ Γ ⟧ctx , 𝓜.T ⟦ S ⟧ty ]
 
   ⟦ ids ⟧S = 𝓜.cat .id
   ⟦ γ ∘s δ ⟧S = ⟦ γ ⟧S ∘⟨ 𝓜.cat ⟩ ⟦ δ ⟧S
@@ -120,19 +115,20 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ up S⊑T ⟧V = ⟦ S⊑T .ty-prec  ⟧e ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
   ⟦ isSetVal V V' p q i j ⟧V = 𝓜.cat .isSetHom ⟦ V ⟧V ⟦ V' ⟧V (cong ⟦_⟧V p) (cong ⟦_⟧V q) i j
 
-  ⟦ ∙E ⟧E = Linear _ .id
-  ⟦ E ∘E F ⟧E = ⟦ E ⟧E ∘⟨ Linear _ ⟩ ⟦ F ⟧E
-  ⟦ ∘IdL {E = E} i ⟧E = Linear _ .⋆IdR ⟦ E ⟧E i
-  ⟦ ∘IdR {E = E} i ⟧E = Linear _ .⋆IdL ⟦ E ⟧E i
-  ⟦ ∘Assoc {E = E}{F = F}{F' = F'} i ⟧E = Linear _ .⋆Assoc ⟦ F' ⟧E ⟦ F ⟧E ⟦ E ⟧E i
-  ⟦ E [ γ ]e ⟧E = (⟦ γ ⟧S ^*) ⟪ ⟦ E ⟧E ⟫
-  ⟦ substId {E = E} i ⟧E = id^* {E = ⟦ E ⟧E} i
-  ⟦ substAssoc {E = E}{γ = γ}{δ = δ} i ⟧E = comp^* {γ = ⟦ γ ⟧S} {δ = ⟦ δ ⟧S} {E = ⟦ E ⟧E} i
-  ⟦ ∙substDist {γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-id i
-  ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E = (⟦ γ ⟧S ^*) .F-seq ⟦ F ⟧E ⟦ E ⟧E i
+  ⟦ ∙E ⟧E = 𝓜.Linear _ .id
+  ⟦ E ∘E F ⟧E = ⟦ E ⟧E ∘⟨ 𝓜.Linear _ ⟩ ⟦ F ⟧E
+  ⟦ ∘IdL {E = E} i ⟧E = 𝓜.Linear _ .⋆IdR ⟦ E ⟧E i
+  ⟦ ∘IdR {E = E} i ⟧E = 𝓜.Linear _ .⋆IdL ⟦ E ⟧E i
+  ⟦ ∘Assoc {E = E}{F = F}{F' = F'} i ⟧E = 𝓜.Linear _ .⋆Assoc ⟦ F' ⟧E ⟦ F ⟧E ⟦ E ⟧E i
+  ⟦ E [ γ ]e ⟧E = (𝓜.pull ⟦ γ ⟧S) ⟪ ⟦ E ⟧E ⟫
+  ⟦ substId {E = E} i ⟧E = 𝓜.id^* i ⟪ ⟦ E ⟧E ⟫
+  ⟦ substAssoc {E = E}{γ = γ}{δ = δ} i ⟧E = 𝓜.comp^* ⟦ γ ⟧S ⟦ δ ⟧S i ⟪ ⟦ E ⟧E ⟫
+  ⟦ ∙substDist {γ = γ} i ⟧E = (𝓜.pull ⟦ γ ⟧S) .F-id i
+    
+  ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E = 𝓜.pull ⟦ γ ⟧S .F-seq ⟦ F ⟧E ⟦ E ⟧E i
   ⟦ bind M ⟧E = ⟦ M ⟧C
   ⟦ ret-η i ⟧E = {!!}
-  ⟦ dn S⊑T ⟧E = wkClosed 𝓜.𝟙 ⟪ ⟦ S⊑T .ty-prec ⟧p ⟫
+  ⟦ dn S⊑T ⟧E = ⟦ S⊑T .ty-prec ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
   ⟦ isSetEvCtx E F p q i j ⟧E = 𝓜.cat .isSetHom ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j
 
-  ⟦_⟧C = {!!}
+  ⟦ M ⟧C = {!M!}

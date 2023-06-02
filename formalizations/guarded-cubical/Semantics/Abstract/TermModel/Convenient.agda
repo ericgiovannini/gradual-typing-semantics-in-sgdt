@@ -13,12 +13,14 @@ open import Cubical.Categories.Functor
 open import Cubical.Categories.Functors.Constant
 open import Cubical.Categories.NaturalTransformation as NT hiding (NatTrans)
 open import Cubical.Categories.Limits.Terminal
+open import Cubical.Categories.Limits.Terminal.More
 open import Cubical.Categories.Limits.BinProduct
 open import Cubical.Categories.Limits.BinProduct.More
 open import Cubical.Categories.Limits.BinCoproduct
-open import Cubical.Categories.Monad.Base
 open import Cubical.Categories.Exponentials
-open import Cubical.Categories.Monad.Strength.Cartesian
+open import Cubical.Categories.Monad.ExtensionSystem
+open import Cubical.Categories.Comonad.Instances.Environment
+open import Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem
 
 private
   variable
@@ -28,7 +30,6 @@ open Category
 open Functor
 open BinCoproduct
 open BinProduct
-open IsMonad
 
 record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
@@ -39,21 +40,15 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     exponentials : Exponentials cat binProd
     binCoprod : BinCoproducts cat
     -- with a strong monad
-    monad : Monad cat
-    strength : Strength binProd monad
+    monad : StrongExtensionSystem binProd
 
 
   -- TODO: rename Notation and make similar modules for terminal, coprod
   open Notation cat binProd public
   open ExpNotation cat binProd exponentials public
-
-  𝟙 = term .fst
-
-  !t : ∀ {a} → cat [ a , 𝟙 ]
-  !t = terminalArrow cat term _
-
-  𝟙η : ∀ {a} → (f : cat [ a , 𝟙 ]) → f ≡ !t
-  𝟙η f = sym (terminalArrowUnique cat {T = term} f)
+  open TerminalNotation cat term public
+  open StrongMonadNotation binProd monad public
+  open EnvNotation binProd public
 
   _+_ : (a b : cat .ob) → cat .ob
   a + b = binCoprod a b .binCoprodOb
@@ -65,13 +60,12 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   _||_ : {a b c : cat .ob} → cat [ a , c ] → cat [ b , c ] → cat [ a + b , c ]
   f1 || f2 = binCoprod _ _ .univProp f1 f2 .fst .fst
 
-  T = monad .fst
-
-  ret : ∀ {a} → cat [ a , T ⟅ a ⟆ ]
-  ret = monad .snd .η .NT.NatTrans.N-ob _
-
   _⇀_ : (a b : cat .ob) → cat .ob
-  a ⇀ b = a ⇒ T ⟅ b ⟆
+  a ⇀ b = a ⇒ T b
+
+  -- TODO: should this go into notation?
+  Linear = PKleisli
+  ClLinear = Kleisli cat (StrongMonad→Monad binProd term monad)
 
   field
     -- a weak model of the natural numbers, but good enough for our syntax
@@ -84,15 +78,19 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
 
     -- at this point we will model injection and projection as
     -- arbitrary morphisms
-    inj : cat [ nat + (dyn ⇀ dyn) , dyn ]
-    prj : cat [ dyn , T ⟅ nat + (dyn ⇀ dyn) ⟆ ]
+    inj : cat      [ nat + (dyn ⇀ dyn) , dyn ]
+    prj : ClLinear [ dyn , nat + (dyn ⇀ dyn) ]
 
     -- and the error of course!
     -- err : 1 ⇀ A
     -- naturality says err ≡ T f ∘ err
     -- not sure if that's exactly right...
-    err : NT.NatTrans (Constant _ _ 𝟙) T
+    err : ∀ {a} → cat [ 𝟙 , a ]
+  ℧ : ∀ {Γ a} → cat [ Γ , T a ]
+  ℧ = err ∘⟨ cat ⟩ !t
 
-  ℧ : ∀ {Γ d} → cat [ Γ , T ⟅ d ⟆ ]
-  ℧ {Γ} = NT.NatTrans.N-ob err _ ∘⟨ cat ⟩ terminalArrow cat term Γ
+  field
+    ℧-homo : ∀ {Γ a b} → (f : Linear Γ [ a , b ])
+           -- define this explicitly as a profunctor?
+           → bind f ∘⟨ cat ⟩ ((cat .id ,p ℧)) ≡ ℧
 
