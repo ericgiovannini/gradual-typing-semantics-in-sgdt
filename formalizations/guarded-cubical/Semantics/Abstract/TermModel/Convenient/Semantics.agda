@@ -128,7 +128,16 @@ module _ (𝓜 : Model ℓ ℓ') where
     
   ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E = 𝓜.pull ⟦ γ ⟧S .F-seq ⟦ F ⟧E ⟦ E ⟧E i
   ⟦ bind M ⟧E = ⟦ M ⟧C
-  ⟦ ret-η i ⟧E = {!!}
+  -- E ≡
+  -- bind (E [ wk ]e [ retP [ !s ,s var ]c ]∙)
+  ⟦ ret-η {Γ}{R}{S}{E} i ⟧E = explicit i where
+    explicit : ⟦ E ⟧E
+               ≡ 𝓜.bindP (𝓜.pull 𝓜.π₁ ⟪ ⟦ E ⟧E ⟫) ∘⟨ 𝓜.cat ⟩ (𝓜.cat .id 𝓜.,p (𝓜.retP ∘⟨ 𝓜.cat ⟩ (𝓜.!t 𝓜.,p 𝓜.π₂)))
+    explicit = sym (cong₂ (comp' 𝓜.cat) (sym 𝓜.bind-natural) refl
+      ∙  sym (𝓜.cat .⋆Assoc _ _ _)
+      ∙ cong₂ (comp' 𝓜.cat) refl (𝓜.,p-natural ∙ cong₂ 𝓜._,p_ (sym (𝓜.cat .⋆Assoc _ _ _) ∙ cong₂ (comp' 𝓜.cat) refl 𝓜.×β₁ ∙ 𝓜.cat .⋆IdL _)
+        (𝓜.×β₂ ∙ cong₂ (comp' 𝓜.cat) refl (cong₂ 𝓜._,p_ 𝓜.𝟙η' refl) ∙ 𝓜.η-natural {γ = 𝓜.!t}))
+      ∙ 𝓜.bindP-l)
   ⟦ dn S⊑T ⟧E = ⟦ S⊑T .ty-prec ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
   ⟦ isSetEvCtx E F p q i j ⟧E = 𝓜.cat .isSetHom ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j
 
@@ -140,11 +149,32 @@ module _ (𝓜 : Model ℓ ℓ') where
   ⟦ substId {M = M} i ⟧C = 𝓜.cat .⋆IdL ⟦ M ⟧C i
   ⟦ substAssoc {M = M}{δ = δ}{γ = γ} i ⟧C = 𝓜.cat .⋆Assoc ⟦ γ ⟧S ⟦ δ ⟧S ⟦ M ⟧C i
   ⟦ substPlugDist {E = E}{M = M}{γ = γ} i ⟧C = COMP-Enriched 𝓜 ⟦ γ ⟧S ⟦ M ⟧C ⟦ E ⟧E i
-  ⟦ err ⟧C = 𝓜.℧
-  ⟦ strictness {E = E} i ⟧C = 𝓜.℧-homo ⟦ E ⟧E {!i!}
+  ⟦ err ⟧C = 𝓜.err
+  ⟦ strictness {E = E} i ⟧C = 𝓜.℧-homo ⟦ E ⟧E i
 
-  ⟦ ret ⟧C = 𝓜.Linear _ .id
-  ⟦ ret-β i ⟧C = {!!}
+  ⟦ ret ⟧C = 𝓜.retP
+  -- (bind M [ wk ]e [ ret [ !s ,s var ]c ]∙)
+  -- ≡ bind (π₂ ^* M) ∘ (id , ret [ !s ,s var ]c)
+  -- ≡ bind (π₂ ^* M) ∘ (id , id ∘ (! , π₂))
+  -- ≡ π₂ ^* bind M ∘ (id , (! , π₂))
+  -- ≡ M
+  ⟦ ret-β {S}{T}{Γ}{M = M} i ⟧C = explicit i where
+    explicit :
+    -- pull γ ⟪ f ⟫ = f ∘ ((γ ∘⟨ C ⟩ π₁) ,p π₂)
+    -- pull π₁ ⟪ f ⟫ = f ∘ ((π₁ ∘⟨ C ⟩ π₁) ,p π₂)
+      𝓜.bindP ((𝓜.pull 𝓜.π₁) ⟪ ⟦ M ⟧C ⟫)
+        ∘⟨ 𝓜.cat ⟩ (𝓜.cat .id 𝓜.,p (𝓜.retP ∘⟨ 𝓜.cat ⟩ (𝓜.!t 𝓜.,p 𝓜.π₂)))
+      ≡ ⟦ M ⟧C
+    explicit =
+      cong₂ (comp' 𝓜.cat) (sym 𝓜.bind-natural) refl
+      ∙ (sym (𝓜.cat .⋆Assoc _ _ _)
+      -- (π₁ ∘ π₁ ,p π₂) ∘ ((𝓜.cat .id) ,p (η ∘ !t , π₂))
+      -- (π₁ ∘ π₁ ,p π₂) ∘ ((𝓜.cat .id) ,p (η ∘ !t , π₂))
+      ∙ cong₂ (comp' 𝓜.cat) refl (𝓜.,p-natural ∙ cong₂ 𝓜._,p_ (sym (𝓜.cat .⋆Assoc _ _ _) ∙ cong₂ (comp' 𝓜.cat) refl 𝓜.×β₁ ∙ 𝓜.cat .⋆IdL _) 𝓜.×β₂))
+      -- ret ∘ (!t , π₂)
+      -- ≡ ret ∘ (π₁ ∘ !t , π₂)
+      ∙ cong₂ (comp' (𝓜.With ⟦ Γ ⟧ctx)) refl (cong₂ (comp' 𝓜.cat) refl (cong₂ 𝓜._,p_ 𝓜.𝟙η' refl) ∙ 𝓜.η-natural {γ = 𝓜.!t})
+      ∙ 𝓜.bindP-l
 
   ⟦ app ⟧C = {!!}
   ⟦ fun-β i ⟧C = {!!}

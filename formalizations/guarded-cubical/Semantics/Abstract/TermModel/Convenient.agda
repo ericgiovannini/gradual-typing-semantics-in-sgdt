@@ -93,4 +93,5 @@ record Model ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   field
     ℧-homo : ∀ {Γ a b} → (f : Linear Γ [ a , b ])
            -- define this explicitly as a profunctor?
-           → bind f ∘⟨ cat ⟩ ((cat .id ,p ℧)) ≡ ℧
+           -- f ∘⟨ Linear Γ ⟩ (F ℧) ≡ F ℧
+           → bindP f ∘⟨ cat ⟩ ((cat .id ,p ℧)) ≡ ℧

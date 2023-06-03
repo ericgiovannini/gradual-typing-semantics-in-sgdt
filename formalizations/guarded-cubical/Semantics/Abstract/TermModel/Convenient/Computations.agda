@@ -34,7 +34,7 @@ module _ (𝓜 : Model ℓ ℓ') where
   open StrongExtensionSystem
   COMP : ∀ Γ → Functor (Linear Γ) (SET ℓ')
   COMP Γ .F-ob a = (ClLinear [ Γ , a ]) , cat .isSetHom
-  COMP Γ .F-hom E M = bind E ∘⟨ cat ⟩ (cat .id ,p M)
+  COMP Γ .F-hom E M = bindP E ∘⟨ cat ⟩ (cat .id ,p M)
   COMP Γ .F-id = funExt λ M → cong₂ (comp' cat) (ExtensionSystemFor.bind-r (monad .systems Γ)) refl ∙ ×β₂
   COMP Γ .F-seq f g = funExt (λ M → cong₂ (cat ._⋆_) refl (sym (ExtensionSystemFor.bind-comp (monad .systems Γ)))
     ∙ sym (cat .⋆Assoc _ _ _) ∙ cong₂ (comp' cat) refl (,p-natural ∙ cong₂ _,p_ ×β₁ refl) )
