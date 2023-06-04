@@ -1,5 +1,6 @@
 \documentclass[acmsmall,screen]{acmart}
 \usepackage{mathpartir}
+\usepackage{stmaryrd}
 \usepackage{tikz-cd}
 
 %% Rights management information.  This information is sent to you
@@ -23,42 +24,170 @@
 
 \begin{document}
 
-\title{Denotational Semantics for Gradual Typing in Synthetic Guarded Domain Theory}
+\newcommand{\sem}[1]{\llbracket{}{#1}\rrbracket{}}
+\newcommand{\opsemGMNV}[4]{#1 \vDash #2 \Downarrow^{#3} #4}
+\newcommand{\opsemMV}[2]{\opsemGMNV \gamma {#1} n {#2}}
+\newcommand{\opsemMNV}[3]{\opsemGMNV \gamma {#1} {#2} {#3}}
+
+\title{Compositional Mechanized Metatheory for Gradual Typing using Synthetic Guarded Domain Theory}
 \author{Eric Giovannini}
 \author{Max S. New}
 
 \begin{abstract}
-  We develop a denotational semantics for a gradually typed language
-  with effects that is adequate and proves the graduality theorem.
-  %
-  The denotational semantics is constructed using \emph{synthetic
-  guarded domain theory} working in a type theory with a later
-  modality and clock quantification.
-  %
-  This provides a remarkably simple presentation of the semantics,
-  where gradual types are interpreted as ordinary types in our ambient
-  type theory equipped with an ordinary preorder structure to model
-  the error ordering.
-  %
-  This avoids the complexities of classical domain-theoretic models
-  (New and Licata) or logical relations models using explicit
-  step-indexing (New and Ahmed).
-  %
-  In particular, we avoid a major technical complexity of New and
-  Ahmed that require two logical relations to prove the graduality
-  theorem.
+  We develop a semantics for a gradually typed lambda calculus with
+  effects that and prove the validity of type-based equational
+  reasoning as well as the graduality theorem. Improving on prior
+  work, we use a compositional denotational semantics in category of
+  preordered sets and monotone functions to develop the theory
+  modularly. This means that nearly all theorems and constructions
+  come from general facts about the category of preordered sets and
+  almost no metatheory is specific to gradually typed languages.
 
-  By working synthetically we can treat the domains in which gradual
-  types are interpreted as if they were ordinary sets. This allows us
-  to give a ``na\"ive'' presentation of gradual typing where each
-  gradual type is modeled as a well-behaved subset of the universal
-  domain used to model the dynamic type, and type precision is modeled
-  as simply a subset relation.
-  %
-  This provides a rich semantic setting in which to 
+  The main challenge is in developing a suitable model for the dynamic
+  type, which requires solving a domain equation. We avoid the
+  complexities of both traditional order-theoretic domain theory and
+  explicit step-indexed models by using the recently developed
+  technique of synthetic guarded domain theory in a guarded type
+  theory. This makes constructing solutions to guarded domain
+  equations trivial, and allows us to carry out the equivalent of a
+  step-indexed logical relation without using explicit step-indexing
+  while still maintaining the full expressivity of dependent type
+  theory as our metatheoretic setting.
+
+  Finally, the entire semantics has been mechanized in the proof
+  assistant Guarded Cubical Agda, with much of the semantics entirely
+  in reusable extensions to the standard category theory library. This
+  provides a foundation for reusable modular mechanized metatheory of
+  gradual typing and other effectful denotational semantics.
 \end{abstract}
 
 \section{Introduction}
+
+Gradually typed languages provide a unified setting in which dynamic
+and statically typed programming styles can be accommodated along with
+free interoperability between static and dynamically typed components.
+
+The metatheory of gradually typed languages is considered especially
+challenging, as it inherently involves (1) general recursion and at
+least an error effect distinct from non-termination (2) the
+verification of type-based equational reasoning to demonstrate the
+soundness of static typing and (3) proving graduality, a relational
+property of program semantics that establishes that increasing the
+amount of static typing in a program results in a refinement of
+program behavior. Most prior work to this metatheory relies on purely
+operational approaches: an operational semantics for the language is
+developed and a simulation-based argument is given for
+graduality. These have the advantage of being fairly elementary and so
+amenable to direct mechanization in a proof assistant but at the cost
+of lacking reusability. Furthermore, equational aspects of the
+language are for the most part ignored. A second line of prior work is
+to develop generic operational frameworks in which the above can be
+carried out: the gradualizer as well as Abstracting Gradual
+Typing. These are reusable techniques that apply across languages but
+still do not address equational theory and . Finally a third line of
+prior work gives a semantic theory of gradual typing based on the idea
+that casts form embedding-projection pairs in a 2-categorical
+semantics. This approach has been formalized in two ways: one using
+classical denotational semantics based on complete partial orders
+(CPOs) and another based on step-indexed logical relations over an
+untyped operational semantics. This approach has similar benefits of
+abstraction to the AGT framework, but suffers from a lack of
+reusability. First, classical domain theory is believed to be unable
+to model higher-order references, a feature of all practical gradually
+typed languages. Second, the proofs based on step-indexed logical
+relations, while known to scale to higher-order references are
+relatively unstructured and complex. While inspired by the
+embedding-projection pair semantics, several components of the proof
+that work in the CPO-based semantics break down in the step-indexed
+setting for unclear reasons. This work also tends to have a high level
+of tedious proof overhead in practice as evidenced that most papers
+using this approach include tech reports of repetitive paper proofs
+that typically dwarf the size of the paper itself.
+
+In this current work it is our goal to combine the benefits of the
+previous approaches: we desire the compositionality and reusability of
+the domain theoretic semantics, the genericity of abstracting gradual
+typing and the gradualizer, the easy mechanizability of the elementary
+operational techniques as well as the generality of step-indexed
+approaches.
+
+\section{Call-by-value Gradual Cast Calculus: Syntax and Axioms}
+
+\subsection{}
+
+\section{A Compositional ``Operational'' Semantics}
+
+We start by giving a concrete description of the semantics our
+denotational approach provides in the style of a monadic
+interpreter.
+
+The values of a syntactic type $A$ in the GCC are interpreted as
+elements of a set $\sem A$: values of number type are interpreted as
+numbers, values of function type are interpreted as functions with a
+monadic output and value of the dynamic type are interpreted in a complex
+set that contains numbers and functions as subsets.
+
+For now for concreteness we will work with a simple monad that
+supports only errors and divergence with observable computational
+steps. This can be described as the composition of two monads $T X =
+L(X_\mho)$ where $LX$ is Capretta's coinductive delay monad and
+$X_\mho$ is simply the maybe monad where we call the additional
+element $\mho$ to connote that it is intended to represent a runtime
+error.
+%
+Capretta's delay monad is a coinductive set defined as the greatest
+solution to the equation $L X \cong \textrm{Done}(X)+
+\textrm{Running}(LX)$. That is an element is either done with a
+produced $X$ or takes an observable computational step. Taking the
+greatest fixed point rather than least fixed point allows for the
+possibility of a program that runs forever.
+%
+We think of this as a computational process that requires external
+``fuel'' to execute: either the process is complete and we receive a
+final value or the computation requires an additional fuel to continue
+executing.
+%
+
+For each computation $\Gamma \vdash M : A$ we define a 4-place
+relation $\opsemGMNV \gamma M n V$ where $\gamma \in
+\sem{\Gamma}$, $n \in \mathbb N$ and $V \in \sem{A}$. Further this
+relation is a decidable partial function when considering $M,\gamma,n$
+as inputs and $V$ as an output and is a partial function when
+considering $M,\gamma$ as inputs and $n$ as an output.
+
+\begin{mathpar}
+  \opsemMNV {\texttt{zro}} 0 0
+
+  \inferrule
+      {\opsemMNV M n m}
+      {\opsemMNV {\texttt{suc}(M)} n {m+1}}
+
+  \inferrule
+  {R(V_i,n,V_o) \iff \opsemGMNV {(\gamma, x\mapsto V_i)} M n {V_o}}
+  {\opsemMNV {\lambda x. M} 0 R}
+\end{mathpar}
+As well as two 
+
+of values, computations, upcasts and downcasts in GCC mutually recursively 
+
+%% This can be equivalently described without
+%% mention of coinduction as follows. First, let $X_\ohm$ be the maybe
+%% monad but where we call the additional element $\ohm$ to connote that
+%% the extra element represents divergence rather than error. Then an
+%% element of the delay monad $l \in L X$ is a function $l : \mathbb N
+%% \to X_\ohm$ that is defined on at most one input. The intuition is
+%% that an element $l$ represents a computational procedure that when
+%% executed may possibly diverge or run in some finite number of steps to
+%% a value in $X$. Applying $l$ to a number $n$ is asking the question 
+
+%% : an element of $L_\mho X$ is a
+%% function $\mathbb N \to X_{\ohm}$ 
+
+\subsection{Abstracting GCC Semantics}
+
+
+
+
 
 % gradual typing, graduality
 
