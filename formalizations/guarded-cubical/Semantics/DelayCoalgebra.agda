@@ -2,7 +2,10 @@
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS -W noUnsupportedIndexedMatch #-}
 
-module Results.DelayCoalgebra where
+ -- to allow opening this module in other files while there are still holes
+{-# OPTIONS --allow-unsolved-metas #-}
+
+module Semantics.DelayCoalgebra where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -16,7 +19,7 @@ open import Cubical.Foundations.Isomorphism
 
 import Cubical.Data.Equality as Eq
 
-open import Results.Delay
+open import Semantics.Delay
 
 private
   variable
@@ -114,7 +117,7 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
   DelayCoalgFinal : {ℓc : Level} -> (c : Coalg ℓ) ->
     isContr (Σ[ h ∈ (c .V -> Delay X) ] unfold-delay ∘ h ≡ liftSum h ∘ c. un) -- isContr (CoalgMorphism c DelayCoalg)
   DelayCoalgFinal c =
-    (fun , (funExt commute)) , {!!}
+    (fun , (funExt commute)) , unique' (fun , (funExt commute))
     where
       
       fun : c .V -> Delay X
@@ -131,8 +134,8 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
       unique' : (s s' : Σ[ h ∈ (c .V → Delay X) ]
                     (unfold-delay ∘ (h) ≡ liftSum h ∘ (c .un))) ->
         s ≡ s'
-      unique' (h , com) (h' , com') = {!!}
-        -- Σ≡Prop (λ g -> isPropΠ (λ v -> {!!})) (funExt eq-fun)
+      unique' (h , com) (h' , com') =
+        Σ≡Prop (λ g -> isSetΠ (λ v -> isSet⊎ isSetX (isSetDelay isSetX)) _ _) (funExt eq-fun)
         where
           eq-fun : (v : c .V) -> h v ≡ h' v
           view (eq-fun v i) with c .un v in eq
@@ -168,47 +171,3 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
                 s1 ≡ s2
               goal .(running (h v')) .(running (h' v')) Eq.refl Eq.refl =
                 cong running (eq-fun v')
-
-             
-
-              
-
-
-{-
-      unique : (s : Σ[ h' ∈ (c .V → Delay X) ] (unfold-delay ∘ h' ≡ liftSum h' ∘ c .un)) →
-        (fun , funExt commute) ≡ s
-      unique (h' , com') = Σ≡Prop (λ g -> isSetΠ (λ v -> isSet⊎ isSetX (isSetDelay isSetX)) _ _) (funExt aux)
-        where
-          -- aux : (v : c .V) → fun v ≡ h' v
-          -- aux v with c .un v
-          -- ... | inl x = λ i -> {!!}
-          -- ... | inr x = {!!}
-
-          aux : (v : c .V) → fun v ≡ h' v
-          view (aux v i) with c. un v in eq
-          ... | inl x =
-            let com-v = funExtS⁻ com' v in
-            let eq' = lem1 (view (h' v)) x
-                        (com-v ∙ λ j -> liftSum h' (Eq.eqToPath eq j)) in
-            sym eq' i
-          ... | inr v' =
-            let com-v = funExtS⁻ com' v in
-            {-let eq' = lem2 (view (h' v)) (fun v')
-                        (com-v ∙ (λ j -> liftSum h' (Eq.eqToPath eq j)) ∙ cong inr (sym (aux v'))) in
-            sym eq' i -}
-            view (goal _ eq {!!})
-              where
-                goal : ∀ w -> w Eq.≡ inr v' -> (fun v') ≡ (h' v')
-                goal w Eq.refl = λ j -> (aux v' j) -- view (aux v')
--}
-
-  --  NTS: liftSum h' (c .un v) ≡ inr (fun v')
-  --  Have : c .un v Eq.≡ inr v'
-  --
-  --  Substituting, NTS:
-  --    liftSum h' (inr v') ≡ inr (fun v')
-  --  i.e.
-  --    inr (h' v') ≡ inr (fun v')
-  --  i.e.
-  --    h' v' ≡ fun v'
-        
