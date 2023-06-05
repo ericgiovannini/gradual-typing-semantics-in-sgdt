@@ -1,23 +1,22 @@
 {-# OPTIONS --safe #-}
 
-module Common.Monotone where
+-- TODO: This could be generalized to handle monotone functions on
+-- both preorders and posets.
+
+module Common.Preorder.Monotone where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Categories.Category
-open import Cubical.Categories.Functor
-open import Cubical.Relation.Binary.Base
-open import Cubical.Foundations.Function
+open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.Foundations.Structure
-
 open import Cubical.Foundations.HLevels
-open import Cubical.Reflection.Base hiding (_$_)
-open import Cubical.Reflection.RecordEquiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Relation.Binary.Base
+open import Cubical.Reflection.Base
+open import Cubical.Reflection.RecordEquiv
 open import Cubical.Data.Sigma
 
-
-open import Common.Preorder
+open import Common.Preorder.Base
 
 open BinaryRelation
 
@@ -26,28 +25,6 @@ private
   variable
     ℓ ℓ' : Level
 
-
--- Helper functions
-
--- The relation associated to a preorder X
-rel : (X : Preorder ℓ ℓ') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ')
-rel X = PreorderStr._≤_ (X .snd)
-
-reflexive : (X : Preorder ℓ ℓ') -> (x : ⟨ X ⟩) -> (rel X x x)
-reflexive X x = IsPreorder.is-refl (PreorderStr.isPreorder (str X)) x
-
-transitive : (X : Preorder ℓ ℓ') -> (x y z : ⟨ X ⟩) ->
-  rel X x y -> rel X y z -> rel X x z
-transitive X x y z x≤y y≤z =
-  IsPreorder.is-trans (PreorderStr.isPreorder (str X)) x y z x≤y y≤z
-
-isSet-preorder : (X : Preorder ℓ ℓ') -> isSet ⟨ X ⟩
-isSet-preorder X = IsPreorder.is-set (PreorderStr.isPreorder (str X))
-
-isPropValued-preorder : (X : Preorder ℓ ℓ') ->
-  isPropValued (PreorderStr._≤_ (str X))
-isPropValued-preorder X = IsPreorder.is-prop-valued
-  (PreorderStr.isPreorder (str X))
 
 
 -- If Y is a set, then functions into Y form a set
@@ -139,14 +116,14 @@ module _ {ℓ ℓ' : Level} where
 
   -- Equality of monotone functions is equivalent to equality of the
   -- underlying functions.
-  EqMon' : {X Y : Preorder ℓ ℓ'} -> (f g : MonFun' X Y) ->
+  eqMon' : {X Y : Preorder ℓ ℓ'} -> (f g : MonFun' X Y) ->
     MonFun'.f f ≡ MonFun'.f g -> f ≡ g
-  EqMon' {X} {Y} f g p = isoFunInjective MonFun'IsoΣ f g
+  eqMon' {X} {Y} f g p = isoFunInjective MonFun'IsoΣ f g
     (Σ≡Prop (λ h → isPropΠ3 (λ y z q → isPropValued-preorder Y (h y) (h z))) p)
 
-  EqMon : {X Y : Preorder ℓ ℓ'} -> (f g : MonFun X Y) ->
+  eqMon : {X Y : Preorder ℓ ℓ'} -> (f g : MonFun X Y) ->
     MonFun.f f ≡ MonFun.f g -> f ≡ g
-  EqMon {X} {Y} f g p = isoFunInjective isoMonFunMonFun' f g (EqMon' _ _ p)
+  eqMon {X} {Y} f g p = isoFunInjective isoMonFunMonFun' f g (eqMon' _ _ p)
 
   -- isSet for Sigma
   isSetSigma : {X Y : Preorder ℓ ℓ'} -> isSet (Sigma X Y)

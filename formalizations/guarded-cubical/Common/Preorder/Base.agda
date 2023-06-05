@@ -1,7 +1,7 @@
 {-# OPTIONS --safe #-}
 {-# OPTIONS --cubical #-}
 
-module Common.Preorder where
+module Common.Preorder.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -143,3 +143,25 @@ module PreorderReasoning (P' : Preorder ℓ ℓ') where
 
  infixr 0 _≤⟨_⟩_
  infix  1 _◾
+
+
+-- Some convenience functions
+
+rel : (X : Preorder ℓ ℓ') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ')
+rel X = PreorderStr._≤_ (X .snd)
+
+reflexive : (X : Preorder ℓ ℓ') -> (x : ⟨ X ⟩) -> (rel X x x)
+reflexive X x = IsPreorder.is-refl (PreorderStr.isPreorder (str X)) x
+
+transitive : (X : Preorder ℓ ℓ') -> (x y z : ⟨ X ⟩) ->
+  rel X x y -> rel X y z -> rel X x z
+transitive X x y z x≤y y≤z =
+  IsPreorder.is-trans (PreorderStr.isPreorder (str X)) x y z x≤y y≤z
+
+isSet-preorder : (X : Preorder ℓ ℓ') -> isSet ⟨ X ⟩
+isSet-preorder X = IsPreorder.is-set (PreorderStr.isPreorder (str X))
+
+isPropValued-preorder : (X : Preorder ℓ ℓ') ->
+  isPropValued (PreorderStr._≤_ (str X))
+isPropValued-preorder X = IsPreorder.is-prop-valued
+  (PreorderStr.isPreorder (str X))
