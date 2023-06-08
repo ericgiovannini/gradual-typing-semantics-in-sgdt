@@ -11,45 +11,171 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Empty hiding (rec)
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Data.Sum
+open import Cubical.Data.Unit renaming (Unit to ⊤)
+open import Cubical.Foundations.Transport
 
 open import Common.Common
 
 private
   variable
-    l : Level
-    A B : Set l
+    ℓ : Level
+    A B : Set ℓ
 private
-  ▹_ : Set l → Set l
+  ▹_ : Set ℓ → Set ℓ
   ▹_ A = ▹_,_ k A
 
 
-  -- Lift monad
-
-data L℧ (X : Set) : Set where
+-- Lift + Error monad
+data L℧ (X : Type ℓ) : Type ℓ where
   η : X → L℧ X
   ℧ : L℧ X
   θ : ▹ (L℧ X) → L℧ X
 
+-- Lift monad (no error)
+data L (X : Type ℓ) : Type ℓ where
+  η : X -> L X
+  θ : ▹ (L X) -> L X
 
 -- Delay function
-δ : {X : Type} -> L℧ X -> L℧ X
-δ = θ ∘ next
+δ : {X : Type ℓ} -> L℧ X -> L℧ X
+δ = L℧.θ ∘ (next {k = k})
+
+
+L℧-iso : {X : Type} -> Iso (L℧ X) ((X ⊎ ⊤) ⊎ (▹ (L℧ X)))
+L℧-iso {X} = iso f g sec retr
+  where
+    f : L℧ X → (X ⊎ ⊤) ⊎ (▹ L℧ X)
+    f (η x) = inl (inl x)
+    f ℧ = inl (inr tt)
+    f (θ lx~) = inr lx~
+
+    g : (X ⊎ ⊤) ⊎ (▹ L℧ X) -> L℧ X
+    g (inl (inl x)) = η x
+    g (inl (inr tt)) = ℧
+    g (inr lx~) = θ lx~
+
+    sec : section f g
+    sec (inl (inl x)) = refl
+    sec (inl (inr tt)) = refl
+    sec (inr lx~) = refl
+
+    retr : retract f g
+    retr (η x) = refl
+    retr ℧ = refl
+    retr (θ x) = refl
+
+
+
+Iso-L : {X : Type ℓ} -> Iso (L X) (X ⊎ (▹ (L X)))
+Iso-L {X = X} = iso to inv sec retr
+  where
+    to : L X → X ⊎ (▹ L X)
+    to (η x) = inl x
+    to (θ l~) = inr l~
+
+    inv : X ⊎ (▹ L X) → L X
+    inv (inl x) = η x
+    inv (inr l~) = θ l~
+
+    sec : section to inv
+    sec (inl x) = refl
+    sec (inr l~) = refl
+
+    retr : retract to inv
+    retr (η x) = refl
+    retr (θ l~) = refl
+
+L-unfold : {X : Type ℓ} -> L X ≡ X ⊎ (▹ (L X))
+L-unfold = isoToPath Iso-L
+
+
+-- Defining L using a guarded fixpoint
+L-fix : Type ℓ -> Type ℓ
+L-fix X = fix {k} λ L' -> X ⊎ (▸ λ t -> L' t)
+
+-- L-fixpoint-iso : {X : Type ℓ} -> Iso (L-fixpoint X) 
+L-fix-unfold : {X : Type ℓ} -> L-fix X ≡ (X ⊎ (▹ (L-fix X)))
+L-fix-unfold = fix-eq _
+
+
+L-fix-eq' : {X : Type ℓ} -> ▸ (λ t -> (L-fix X ≡ L X)) -> L-fix X ≡ L X
+L-fix-eq' {X = X} IH = L-fix X ≡⟨ L-fix-unfold ⟩
+  ((X ⊎ (▹ (L-fix X)))) ≡⟨ (λ i -> X ⊎ (▸ λ t -> IH t i)) ⟩
+  ((X ⊎ (▹ (L X)))) ≡⟨ sym L-unfold ⟩
+  L X ∎
+
+-- Note: ▸ (λ t -> L-fix X ≡ L X) is equivalent to ▸ (next (L-fix X ≡ L X))
+-- which is equivalent to ▹ (L-fix X ≡ L X)
+
+-- IH : ▸ (λ t' → L-fix X ≡ L X)  a.k.a. ▹ (L-fix X ≡ L X)
+-- So λ i -> X ⊎ (▸ λ t -> IH t i) has type
+-- (X ⊎ (▸ λ t -> L-fix X)) ≡ (X ⊎ (▸ λ t -> L X)) i.e.
+-- (X ⊎ (▹ L-fix X)) ≡ (X ⊎ (▹ L X))
+
+L-fix-eq : {X : Type ℓ} -> L-fix X ≡ L X
+L-fix-eq = fix L-fix-eq'
+
+L-fix-iso : {X : Type ℓ} -> Iso (L-fix X) (L X)
+L-fix-iso = pathToIso L-fix-eq
+
+
+
+
+    
+
+{-
+Iso-L-fix : {X : Type ℓ} -> Iso (L-fix X) (L X)
+Iso-L-fix {X = X} = iso to inv sec {!!}
+  where
+    to' : ▹ ((X ⊎ (▹ (L-fix X))) -> L X) -> (X ⊎ (▹ (L-fix X))) -> L X
+    to' _   (inl x) = η x
+    to' rec (inr l~) = θ λ t -> rec t (inr l~)
+
+    to : L-fix X -> L X
+    to lx = fix to' (transport L-fix-unfold lx)
+
+    inv : L X -> L-fix X
+    inv' : L X -> (X ⊎ (▹ (L-fix X)))
+
+    inv lx = transport (sym L-fix-unfold) (inv' lx)
+    inv' (η x) = inl x
+    inv' (θ l~) = inr (λ t -> inv (l~ t))
+
+    sec' : ▹ ((y : L X) -> to' (next (fix to')) (inv' y) ≡ y) ->
+              (y : L X) -> to' (next (fix to')) (inv' y) ≡ y
+    sec' _ (η x) = refl
+    sec' IH (θ l~) = {!!}
+
+    sec : section to inv
+    sec (η x) = {!!}
+    sec (θ l~) = {!!}
+-}
+  
+
+
 
 -- Similar to caseNat,
 -- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
-caseL℧ : {X : Set} -> {ℓ : Level} -> {A : Type ℓ} ->
-  (aη a℧ aθ : A) → (L℧ X) → A
+caseL℧ : {X : Type} -> {A : Type ℓ} -> (aη a℧ aθ : A) → L℧ X → A
 caseL℧ aη a℧ aθ (η x) = aη
 caseL℧ aη a℧ aθ ℧ = a℧
 caseL℧ a0 a℧ aθ (θ lx~) = aθ
 
+
 -- Similar to znots and snotz, defined at
 -- https://agda.github.io/cubical/Cubical.Data.Nat.Properties.html
-℧≠θ : {X : Set} -> {lx~ : ▹ (L℧ X)} -> ¬ (℧ ≡ θ lx~)
-℧≠θ {X} {lx~} eq = subst (caseL℧ X (L℧ X) ⊥) eq ℧
+℧≠θ : {X : Type} -> {lx~ : ▹ (L℧ X)} -> ¬ (℧ ≡ θ lx~)
+℧≠θ {X = X} {lx~ = lx~} eq = subst (caseL℧ X (L℧ X) ⊥) eq ℧
 
-θ≠℧ : {X : Set} -> {lx~ : ▹ (L℧ X)} -> ¬ (θ lx~ ≡ ℧)
-θ≠℧ {X} {lx~} eq = subst (caseL℧ X ⊥ (L℧ X)) eq (θ lx~)
+η≠℧ : {X : Type} -> {x : X} -> ¬ (η x ≡ ℧)
+η≠℧ {X = X} {x = x} eq = subst (caseL℧ X ⊥ ⊥) eq x
+
+η≠θ : {X : Type} -> {x : X} -> {lx~ : ▹ (L℧ X)} -> ¬ (L℧.η x ≡ θ lx~)
+η≠θ {X = X} {x = x} {lx~ = lx~} eq = subst (caseL℧ X ⊥ ⊥) eq x
+
+
 
 
 -- TODO: Does this make sense?
@@ -75,7 +201,7 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
 
 -- Monadic structure
 
-ret : {X : Set} -> X -> L℧ X
+ret : {X : Type ℓ} -> X -> L℧ X
 ret = η
 
 
