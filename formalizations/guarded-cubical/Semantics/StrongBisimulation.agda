@@ -222,7 +222,7 @@ module LiftRelMon
         MonRel.isAntitone RAB la≤lb la'≤la
       antitone' IH {la} {℧} {lb} la≤lb la'≤la = tt
       antitone' IH {θ la2~} {θ la1~} {θ lb~} la≤lb la'≤la =
-        λ t → ≾'->≾ (IH t {!!} {!!})
+        λ t → ≾'->≾ {!!}
 
       monotone : {!!}
       monotone = {!!}
@@ -434,9 +434,9 @@ module Bisimilarity (d : Predomain) where
 
 
     fixθ-lem1 : (n : Nat) ->
-      (▹ (¬ (θ {Nat} (next (fix θ)) ≡ (δ ^ n) ℧))) ->
-          ¬ (θ {Nat} (next (fix θ)) ≡ (δ ^ n) ℧)
-    fixθ-lem1 zero    _  H-eq =  θ≠℧ H-eq
+      (▹ (¬ (θ {X = Nat} (next (fix θ)) ≡ (δ ^ n) ℧))) ->
+          ¬ (θ {X = Nat} (next (fix θ)) ≡ (δ ^ n) ℧)
+    fixθ-lem1 zero    _  H-eq =  ℧≠θ (sym H-eq)
     fixθ-lem1 (suc n) IH H-eq =
        let tmp = inj-θ (next (fix θ)) (next ((δ ^ n) ℧)) H-eq in {!!}
      
