@@ -130,7 +130,7 @@ up-monotone {S}{S'}{T}{T'} S⊑S' S⊑T S'⊑T' T⊑T' =
     swap-middle i = (isPropTy⊑ (trans-⊑ S⊑T T⊑T') (trans-⊑ S⊑S' S'⊑T') i) ∷ []
 
 -- TODO: show down is monotone
-
+-- EXERCISE
 ⇀-up-uniqueness : ∀ S⊑S' T⊑T' →
   up (S⊑S' ⇀TP T⊑T')
   ≈v lda (bind' (dn' S⊑S' (ret' var)) -- downcast the input

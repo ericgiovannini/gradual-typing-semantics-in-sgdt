@@ -78,7 +78,17 @@ module _ (ℓ : Level) where
       -- have: p.r-holds .snd:       p .nr ≡ 0
       -- have: p.splits-n    : p.nr + p.nq ≡ n
       -- want: p.nq ≡ n
-  
+   
+  lemCompRelR : ∀ x y n → (R : ClockedRel X Y ℓ)
+              → CompClockedRel R idCR x y n
+              → R x y n
+  lemCompRelR x y' n R p = transport path (p .r-holds) where
+    path' : p .nr ≡ n
+    path' = transport (λ i → p .q-holds .snd .lower i + p .nr ≡ n) (+-comm (p .nq) (p .nr) ∙  p .splits-n )
+
+    path : R x (p .y) (p .nr) ≡ R x y' n
+    path i = R x (p .q-holds .fst i) (path' i)
+
   CLOCKED-REL : Category (ℓ-suc ℓ) (ℓ-suc ℓ)
   CLOCKED-REL .ob = hSet ℓ
   CLOCKED-REL .Hom[_,_] X Y =
@@ -103,7 +113,18 @@ module _ (ℓ : Level) where
                    ; r-holds = refl , lift refl
                    ; q-holds = r
                    }) ∣₁)
-  CLOCKED-REL .⋆IdR = {!!}
+  CLOCKED-REL .⋆IdR (R , isPropR) =
+    Σ≡Prop (λ _ → isPropIsPropositional _)
+      (funExt λ x → funExt λ y → funExt λ n →
+        hPropExt isPropPropTrunc (isPropR _ _ _) (Trunc.elim (λ _ → isPropR _ _ _) (λ z → lemCompRelR x y n R z)) λ r →
+        ∣ record
+            { nr = n
+            ; nq = 0
+            ; y = y
+            ; splits-n = +-zero n
+            ; r-holds = r
+            ; q-holds = refl , (lift refl)
+            } ∣₁)
   CLOCKED-REL .⋆Assoc = {!!}
   CLOCKED-REL .isSetHom {x = X}{y = Y} =
     isSetRetract {B = (x : ⟨ X ⟩) → (y : ⟨ Y ⟩) → (n : ℕ) → hProp ℓ}
