@@ -14,6 +14,8 @@ open import Cubical.Core.Everything
 open import Cubical.Foundations.Everything
 
 open import Cubical.Data.Nat
+open import Cubical.Data.Bool
+open import Cubical.Data.Sigma
 
 module Prims where
   primitive
@@ -128,11 +130,14 @@ next-Mt≡M' : {A : Type} -> (M : ▹ k , A) -> (t : Tick k) ->
   next (M t) ≡ M
 next-Mt≡M' M t = next-Mt≡M M t
 
+-- Property of next
+next-injective-later : {k : Clock} -> {A : Type} -> (x y : A) ->
+  next {k = k} x ≡ next y -> ▸_ {k} λ t -> (x ≡ y)
+next-injective-later x y eq = λ t i → eq i t
 
 
 
-
--- Clock-related postulates.
+-- Clock-related postulates and results.
 
 clock-ext : {ℓ : Level} {A : (k : Clock) -> Type ℓ} -> {M N : (k : Clock) -> A k} →
   (∀ k → M k ≡ N k) → M ≡ N
@@ -140,21 +145,20 @@ clock-ext eq i k = eq k i
 
 
 -- "Dependent" forcing (where the type can mention the clock).
--- This seems to be the correct type of the force function.
 
 postulate
-  force' : {A : Clock -> Type} -> (∀ k → (▹ k , A k)) → (∀ (k : Clock) → A k)
+  force' : {ℓ : Level} -> {A : Clock -> Type ℓ} -> (∀ k → (▹ k , A k)) → (∀ (k : Clock) → A k)
   -- original (non-dependent) version:
   -- force'-beta : ∀ {A : Type} (x : A) → force' (λ k -> next x) ≡ λ k → x
 
   -- "Reduction" rules:
 
   -- Builds in clock extensionality
-  force'-beta : ∀ {A : Clock -> Type} (f : ∀ k -> A k) →
+  force'-beta : ∀ {ℓ : Level} -> {A : Clock -> Type ℓ} (f : ∀ k -> A k) →
     force' (λ k -> next (f k)) ≡ f
 
   -- Builds in clock extensionality
-  next-force' :     ∀ {A : Clock -> Type} (f : ∀ k -> ▹ k , A k) ->
+  next-force' : ∀ {ℓ : Level} -> {A : Clock -> Type ℓ} (f : ∀ k -> ▹ k , A k) ->
     (λ k -> next (force' f k)) ≡ f
 
   --next-force' :     ∀ {A : Clock -> Type} (f : ∀ k -> ▹ k , A k) ->
@@ -167,7 +171,11 @@ force-iso = iso force' (λ f k → next (f k))
   next-force'
   -- (λ f → clock-ext (λ k → next-force' f k))
 
-
+-- Using force, we can show that next is injective "globally".
+next-∀k-inj : {A : Type} -> (x y : A) ->
+ ((k : Clock) -> next {k = k} x ≡ next y) ->
+ (∀ (k : Clock) -> (x ≡ y))
+next-∀k-inj x y H = force' (λ k' -> next-injective-later x y (H k'))
 
 postulate
   k0 : Clock
@@ -185,27 +193,33 @@ clock-irrel A =
   M k ≡ M k'
 
 
-∀kA->A : (A : Type) ->
+∀kA->A : {ℓ : Level} -> (A : Type ℓ) ->
   (∀ (k : Clock) -> A) -> A
 ∀kA->A A f = f k0
 
 -- If A is clock irrelevant, then the above map is inverse
 -- to the map A -> ∀ k . A.
-Iso-∀kA-A : {A : Type} -> clock-irrel A -> Iso (∀ (k : Clock) -> A) A
-Iso-∀kA-A {A} H-irrel-A = iso
+Iso-∀kA-A : {ℓ : Level} -> {A : Type ℓ} -> clock-irrel A -> Iso (∀ (k : Clock) -> A) A
+Iso-∀kA-A {A = A} H-irrel-A = iso
   (∀kA->A A)
   (λ a k -> a)
   (λ a → refl)
   (λ f → clock-ext (λ k → H-irrel-A f k0 k))
 
+∀kA≡A : {A : Type} -> clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
+∀kA≡A H = isoToPath (Iso-∀kA-A H)
+
+{-
+postulate clk-irrel-beta : {ℓ : Level} -> {A : Type ℓ} -> (H : clock-irrel A) (k k' : Clock) (a : A) -> (λ k -> a) ≣ a
+-- clk-irrel-beta H k k' a i = {!!}
+-}
 
 postulate
   nat-clock-irrel : clock-irrel ℕ
-  type-clock-irrel : clock-irrel Type
+  bool-clock-irrel : clock-irrel Bool
 
 
-
-
+  -- type-clock-irrel : clock-irrel Type
 
 
 
