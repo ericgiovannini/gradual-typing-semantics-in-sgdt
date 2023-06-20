@@ -9,6 +9,7 @@ module Semantics.Lift (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.HLevels
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Empty hiding (rec)
 open import Cubical.Foundations.Isomorphism
@@ -17,10 +18,11 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Transport
 
 open import Common.Common
+open import Common.LaterProperties
 
 private
   variable
-    ℓ : Level
+    ℓ ℓ' : Level
     A B : Set ℓ
 private
   ▹_ : Set ℓ → Set ℓ
@@ -43,28 +45,37 @@ data L (X : Type ℓ) : Type ℓ where
 δ = L℧.θ ∘ (next {k = k})
 
 
-L℧-iso : {X : Type} -> Iso (L℧ X) ((X ⊎ ⊤) ⊎ (▹ (L℧ X)))
-L℧-iso {X} = iso f g sec retr
+L℧→sum : {X : Type ℓ} -> L℧ X → (X ⊎ ⊤) ⊎ (▹ L℧ X)
+L℧→sum (η x) = inl (inl x)
+L℧→sum ℧ = inl (inr tt)
+L℧→sum (θ lx~) = inr lx~
+
+sum→L℧ : {X : Type ℓ} -> (X ⊎ ⊤) ⊎ (▹ L℧ X) -> L℧ X
+sum→L℧ (inl (inl x)) = η x
+sum→L℧ (inl (inr tt)) = ℧
+sum→L℧ (inr lx~) = θ lx~
+
+L℧-iso : {X : Type ℓ} -> Iso (L℧ X) ((X ⊎ ⊤) ⊎ (▹ (L℧ X)))
+L℧-iso {X = X} = iso L℧→sum sum→L℧ sec retr
   where
-    f : L℧ X → (X ⊎ ⊤) ⊎ (▹ L℧ X)
-    f (η x) = inl (inl x)
-    f ℧ = inl (inr tt)
-    f (θ lx~) = inr lx~
-
-    g : (X ⊎ ⊤) ⊎ (▹ L℧ X) -> L℧ X
-    g (inl (inl x)) = η x
-    g (inl (inr tt)) = ℧
-    g (inr lx~) = θ lx~
-
-    sec : section f g
+   
+    sec : section L℧→sum sum→L℧
     sec (inl (inl x)) = refl
     sec (inl (inr tt)) = refl
     sec (inr lx~) = refl
 
-    retr : retract f g
+    retr : retract L℧→sum sum→L℧
     retr (η x) = refl
     retr ℧ = refl
     retr (θ x) = refl
+
+-- isSet for Lift
+isSetL℧ : {X : Type ℓ} -> isSet X -> isSet (L℧ X)
+isSetL℧ {X = X} isSetX = fix isSetL℧'
+  where
+    isSetL℧' : ▹ (isSet (L℧ X)) -> isSet (L℧ X)
+    isSetL℧' IH = isSetRetract L℧→sum sum→L℧ (Iso.leftInv L℧-iso)
+      (isSet⊎ (isSet⊎ isSetX isSetUnit) (isSet▹ IH))
 
 
 
@@ -156,9 +167,11 @@ Iso-L-fix {X = X} = iso to inv sec {!!}
 
 
 
+
+
 -- Similar to caseNat,
 -- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
-caseL℧ : {X : Type} -> {A : Type ℓ} -> (aη a℧ aθ : A) → L℧ X → A
+caseL℧ : {X : Type ℓ} -> {A : Type ℓ'} -> (aη a℧ aθ : A) → L℧ X → A
 caseL℧ aη a℧ aθ (η x) = aη
 caseL℧ aη a℧ aθ ℧ = a℧
 caseL℧ a0 a℧ aθ (θ lx~) = aθ
@@ -166,25 +179,28 @@ caseL℧ a0 a℧ aθ (θ lx~) = aθ
 
 -- Similar to znots and snotz, defined at
 -- https://agda.github.io/cubical/Cubical.Data.Nat.Properties.html
-℧≠θ : {X : Type} -> {lx~ : ▹ (L℧ X)} -> ¬ (℧ ≡ θ lx~)
-℧≠θ {X = X} {lx~ = lx~} eq = subst (caseL℧ X (L℧ X) ⊥) eq ℧
+℧≠θ : {X : Type ℓ} -> {lx~ : ▹ (L℧ X)} -> ¬ (℧ ≡ θ lx~)
+℧≠θ {X = X} {lx~ = lx~} eq =
+  rec* (subst (caseL℧ X (L℧ X) ⊥*) eq ℧) -- subst (caseL℧ X (L℧ X) ⊥) eq ℧
 
-η≠℧ : {X : Type} -> {x : X} -> ¬ (η x ≡ ℧)
-η≠℧ {X = X} {x = x} eq = subst (caseL℧ X ⊥ ⊥) eq x
+η≠℧ : {X : Type ℓ} -> {x : X} -> ¬ (η x ≡ ℧)
+η≠℧ {X = X} {x = x} eq =
+  rec* (subst (caseL℧ X ⊥* ⊥*) eq x) -- subst (caseL℧ X ⊥ ⊥) eq x
 
-η≠θ : {X : Type} -> {x : X} -> {lx~ : ▹ (L℧ X)} -> ¬ (L℧.η x ≡ θ lx~)
-η≠θ {X = X} {x = x} {lx~ = lx~} eq = subst (caseL℧ X ⊥ ⊥) eq x
+η≠θ : {X : Type ℓ} -> {x : X} -> {lx~ : ▹ (L℧ X)} -> ¬ (L℧.η x ≡ θ lx~)
+η≠θ {X = X} {x = x} {lx~ = lx~} eq =
+  rec* (subst (caseL℧ X ⊥* ⊥*) eq x) -- subst (caseL℧ X ⊥ ⊥) eq x
 
 
 
 
 -- TODO: Does this make sense?
-pred : {X : Set} -> (lx : L℧ X) -> ▹ (L℧ X)
+pred : {X : Type ℓ} -> (lx : L℧ X) -> ▹ (L℧ X)
 pred (η x) = next ℧
 pred ℧ = next ℧
 pred (θ lx~) = lx~
 
-pred-def : {X : Set} -> (def : ▹ (L℧ X)) -> (lx : L℧ X) -> ▹ (L℧ X)
+pred-def : {X : Type ℓ} -> (def : ▹ (L℧ X)) -> (lx : L℧ X) -> ▹ (L℧ X)
 pred-def def (η x) = def
 pred-def def ℧ = def
 pred-def def (θ lx~) = lx~
@@ -192,7 +208,7 @@ pred-def def (θ lx~) = lx~
 
 -- TODO: This uses the pred function above, and I'm not sure whether that
 -- function makes sense.
-inj-θ : {X : Set} -> (lx~ ly~ : ▹ (L℧ X)) ->
+inj-θ : {X : Type ℓ} -> (lx~ ly~ : ▹ (L℧ X)) ->
   θ lx~ ≡ θ ly~ ->
   ▸ (λ t -> lx~ t ≡ ly~ t)
 inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
