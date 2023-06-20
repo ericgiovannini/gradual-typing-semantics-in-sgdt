@@ -1,5 +1,4 @@
 {-# OPTIONS --cubical --rewriting --guarded #-}
-{-# OPTIONS --guardedness #-}
 
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
@@ -43,8 +42,8 @@ open import Semantics.Lift
 
 private
   variable
-    l : Level
-    X : Type l
+    ℓ ℓ' : Level
+    X : Type ℓ
 
 -- Lift monad
 open Semantics.StrongBisimulation
@@ -53,7 +52,7 @@ open Semantics.StrongBisimulation
 -- "Global" definitions
 -- TODO in the general setting, X should have type Clock -> Type
 -- and L℧F X should be equal to ∀ k -> L℧ k (X k)
-L℧F : (X : Type) -> Type
+L℧F : (X : Type ℓ) -> Type ℓ
 L℧F X = ∀ (k : Clock) -> L℧ k X
 
 □ : Type -> Type
@@ -125,11 +124,11 @@ Unit-clock-irrel M k k' with M k | M k'
 ∀kL℧-▹-Iso = force-iso
 
 
-bool2ty : Type -> Type -> Bool -> Type
+bool2ty : Type ℓ -> Type ℓ -> Bool -> Type ℓ
 bool2ty A B true = A
 bool2ty A B false = B
 
-bool2ty-eq : {X : Type} {A B : X -> Type} ->
+bool2ty-eq : {X : Type ℓ} {A B : X -> Type ℓ'} ->
   (b : Bool) ->
   (∀ (x : X) -> bool2ty (A x) (B x) b) ≡
   bool2ty (∀ x -> A x) (∀ x -> B x) b
@@ -138,8 +137,8 @@ bool2ty-eq {X} {A} {B} false = refl
 
 
 
-Iso-⊎-ΣBool : {A B : Type} -> Iso (A ⊎ B) (Σ Bool (λ b -> bool2ty A B b))
-Iso-⊎-ΣBool {A} {B} = iso to inv sec retr
+Iso-⊎-ΣBool : {A B : Type ℓ} -> Iso (A ⊎ B) (Σ Bool (λ b -> bool2ty A B b))
+Iso-⊎-ΣBool {A = A} {B = B} = iso to inv sec retr
   where
     to : A ⊎ B → Σ Bool (λ b -> bool2ty A B b)
     to (inl a) = true , a
@@ -180,19 +179,19 @@ MLTT-choice : {S : Type} -> {A : S -> Type} -> {B : (s : S) -> A s -> Type} ->
       (Σ[ x ∈ (∀ s -> A s) ] ( ∀ s -> B s (x s) ))
 MLTT-choice = Σ-Π-Iso
 
-Eq-Iso : {A B : Type} ->
+Eq-Iso : {A B : Type ℓ} ->
   A ≡ B -> Iso A B
-Eq-Iso {A} {B} H-eq = subst (Iso A) H-eq idIso
+Eq-Iso {A = A} {B = B} H-eq = subst (Iso A) H-eq idIso
 -- same as: transport (cong (Iso A) H-eq) idIso
 
 
 
-Iso-∀clock-Σ : {A : Type} -> {B : A -> Clock -> Type} ->
+Iso-∀clock-Σ : {A : Type ℓ} -> {B : A -> Clock -> Type ℓ'} ->
   clock-irrel A ->
   Iso
     (∀ (k : Clock) -> Σ A (λ a -> B a k))
     (Σ A (λ a -> ∀ (k : Clock) -> B a k))
-Iso-∀clock-Σ {A} {B} H-clk-irrel =
+Iso-∀clock-Σ {A = A} {B = B} H-clk-irrel =
   (∀ (k : Clock) -> Σ A (λ a -> B a k))
      Iso⟨ Σ-Π-Iso {A = Clock} {B = λ _ -> A} {C = λ k a -> B a k} ⟩
      
@@ -205,10 +204,10 @@ Iso-∀clock-Σ {A} {B} H-clk-irrel =
   (Σ A (λ a -> ∀ (k : Clock) -> B a k)) ∎Iso
 
 -- Action of the above isomorphism
-Iso-∀clock-Σ-fun : {A : Type} {B : A -> Clock -> Type} ->
+Iso-∀clock-Σ-fun : {A : Type ℓ} {B : A -> Clock -> Type ℓ'} ->
   (H : clock-irrel A) ->
   (f : (k : Clock) -> Σ A (λ a -> B a k)) ->
-  Iso.fun (Iso-∀clock-Σ {A} {B} H) f ≡ (fst (f k0) , {!!})
+  Iso.fun (Iso-∀clock-Σ {A = A} {B = B} H) f ≡ (fst (f k0) , {!!})
 Iso-∀clock-Σ-fun {A} {B} H f = {!!}
 
 {- Note:
@@ -226,11 +225,11 @@ Iso-∀clock-Σ-fun {A} {B} H f = {!!}
 
 
 
-Iso-Π-⊎-clk : {A B : Clock -> Type} ->
+Iso-Π-⊎-clk : {A B : Clock -> Type ℓ} ->
   Iso
     ((k : Clock) -> (A k ⊎ B k))
     (((k : Clock) -> A k) ⊎ ((k : Clock) -> B k))
-Iso-Π-⊎-clk {A} {B} =
+Iso-Π-⊎-clk {A = A} {B = B} =
   (∀ (k : Clock) -> (A k ⊎ B k))
     Iso⟨ codomainIsoDep (λ k -> Iso-⊎-ΣBool) ⟩
   (∀ (k : Clock) -> Σ[ b ∈ Bool ] bool2ty (A k) (B k) b )
@@ -249,29 +248,6 @@ Iso-Π-⊎-clk-fun {A} {B} {f} = {!!}
 
 
 
-L℧-iso : {k : Clock} -> {X : Type} -> Iso (L℧ k X) ((X ⊎ ⊤) ⊎ (▹_,_ k (L℧ k X)))
-L℧-iso {k} {X} = iso f g sec retr
-  where
-    f : L℧ k X → (X ⊎ ⊤) ⊎ (▹ k , L℧ k X)
-    f (η x) = inl (inl x)
-    f ℧ = inl (inr tt)
-    f (θ lx~) = inr lx~
-
-    g : (X ⊎ ⊤) ⊎ (▹ k , L℧ k X) -> L℧ k X
-    g (inl (inl x)) = η x
-    g (inl (inr tt)) = ℧
-    g (inr lx~) = θ lx~
-
-    sec : section f g
-    sec (inl (inl x)) = refl
-    sec (inl (inr tt)) = refl
-    sec (inr lx~) = refl
-
-    retr : retract f g
-    retr (η x) = refl
-    retr ℧ = refl
-    retr (θ x) = refl
-
 
 
 
@@ -279,7 +255,7 @@ L℧F-iso : {X : Type} -> Iso (L℧F X) (((□ X) ⊎ ⊤) ⊎ (L℧F X))
 L℧F-iso {X} =
   (∀ k -> L℧ k X)
 
-          Iso⟨ codomainIsoDep (λ k -> L℧-iso) ⟩
+          Iso⟨ codomainIsoDep (λ k -> L℧-iso k ) ⟩
   
   (∀ k -> (X ⊎ ⊤) ⊎ (▹_,_ k (L℧ k X)))
 
@@ -336,7 +312,7 @@ L℧F-iso-η-inv : {X : Type} ->
   (l : L℧F X) -> (x : □ X) -> Iso.fun L℧F-iso l ≡ (inl (inl x)) ->
   l ≡ (ηF x)
 L℧F-iso-η-inv l x H = isoFunInjective L℧F-iso l (ηF x)
-  (Iso.fun L℧F-iso l ≡⟨ H  ⟩
+  (Iso.fun L℧F-iso l ≡⟨ H ⟩
   inl (inl x)        ≡⟨ sym (L℧F-iso-η x) ⟩
   Iso.fun L℧F-iso (ηF x) ∎)
 
