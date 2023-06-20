@@ -216,34 +216,3 @@ module AdequacyBisim where
 
 
 
-module DynExp where
-
-  open import Semantics.SemanticsNew
-  open import Semantics.PredomainInternalHom
-  open import Semantics.StrongBisimulation
-  open LiftPredomain
-  open import Semantics.Monotone.Base
-  open import Semantics.Monotone.MonFunCombinators
-  open import Cubical.Relation.Binary.Poset
-  open import Semantics.Predomains
-
-
-  DynUnfold : Iso
-    (∀ k -> ⟨ DynP k ⟩)
-    (Nat ⊎ (∀ k -> ⟨ DynP k ==> 𝕃 k (DynP k) ⟩))
-  DynUnfold = {!!}
-
-
-  dyn-clk : (k k' : Clock) -> ⟨ DynP k ==> DynP k' ⟩
-  dyn-clk = {!!}
-
-
-  𝔽𝕃 : (Clock -> Predomain) -> Predomain
-  𝔽𝕃 f = 𝔽 (λ k → 𝕃 k (f k))
-
-  dyn-eqn : Iso
-    ⟨ (ℕ ⊎d (𝔽 (λ k -> DynP k ==> 𝕃 k (DynP k) ))) ⟩
-    ⟨ (ℕ ⊎d (𝔽 DynP)) ==> 𝔽𝕃 DynP ⟩
-  dyn-eqn = {!!}
-    
-
