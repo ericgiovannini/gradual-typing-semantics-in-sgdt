@@ -125,7 +125,45 @@ module _ (ℓ : Level) where
             ; r-holds = r
             ; q-holds = refl , (lift refl)
             } ∣₁)
-  CLOCKED-REL .⋆Assoc = {!!}
+  CLOCKED-REL .⋆Assoc {x = X}{y = Y}{z = Z}{w = W} (R , isPropR) (S , isPropS) (T , isPropT) = Σ≡Prop (λ _ → isPropIsPropositional _)
+    (funExt λ x → funExt λ w → funExt λ n →
+      hPropExt isPropPropTrunc isPropPropTrunc 
+        (Trunc.elim (λ _ → isPropPropTrunc) λ x' →
+          Trunc.elim (λ _  → isPropPropTrunc)
+           (λ r' →  ∣ record
+             { nr = r' .nr
+             ; nq = r' .nq + x' .nq
+             ; y = r' .y
+             ; splits-n = +-assoc (r' .nr) (r' .nq) (x' .nq) ∙  (λ i → r' .splits-n i + x' .nq) ∙ x' .splits-n
+             ; r-holds = r' .r-holds
+             ; q-holds = ∣ record
+                             { nr = r' .nq
+                             ; nq = x' .nq
+                             ; y = x' .y
+                             ; splits-n = refl
+                             ; r-holds = r' .q-holds
+                             ; q-holds = x' .q-holds
+                             } ∣₁
+             } ∣₁
+        ) (x' .r-holds))
+        (Trunc.elim (λ _ → isPropPropTrunc) (λ x' →
+          Trunc.elim (λ _ → isPropPropTrunc)
+            (λ l' → ∣ record
+             { nr = x' .nr + l' .nr
+             ; nq = l' .nq
+             ; y = l' .y
+             ; splits-n =  sym (+-assoc (x' .nr) (l' .nr) (l' .nq)) ∙ (λ i → x' .nr + l' .splits-n i) ∙ x' .splits-n
+             ; r-holds = ∣ record
+                             { nr = x' .nr
+                             ; nq = l' .nr
+                             ; y = x' .y
+                             ; splits-n = refl
+                             ; r-holds = x' .r-holds
+                             ; q-holds = l' .r-holds
+                             } ∣₁
+             ; q-holds = l' .q-holds
+             } ∣₁)
+          (x' .q-holds))))
   CLOCKED-REL .isSetHom {x = X}{y = Y} =
     isSetRetract {B = (x : ⟨ X ⟩) → (y : ⟨ Y ⟩) → (n : ℕ) → hProp ℓ}
       (λ (R , isPropR) x y n → (R x y n , isPropR x y n))
