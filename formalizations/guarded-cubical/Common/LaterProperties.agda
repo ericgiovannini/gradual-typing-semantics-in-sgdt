@@ -70,6 +70,9 @@ path-x-f-next-x {k = k} {A = A} {f = f} = (fix f , fix-eq f) , unique
           {!!} ≡⟨ {!!} ⟩
           {!!} ≡⟨ {!!} ⟩
           (cong f λ i -> λ t -> q i) ∎
+
+        eq' : PathP (λ i → q i ≡ f (next (q i))) (fix-eq f) p-h
+        eq' = compPathL→PathP {!!}
          
         eq : PathP (λ i → q i ≡ f (next (q i))) (fix-eq f) p-h
         eq = transport (sym (PathP≡doubleCompPathˡ q (fix-eq f) p-h (cong f (λ i -> λ t -> q i))))
@@ -87,16 +90,38 @@ fixpoints-unique = {!!}
 
 
 
+-- If we have an equality later, then this induces an equality now
+eq▹ : {k : Clock} {ℓ : Level} {X : Type ℓ} ->
+  (x~ y~ : ▹ k , X) ->
+  ▸ (λ t -> x~ t ≡ y~ t) -> x~ ≡ y~
+eq▹ x~ y~ eq~ i t = eq~ t i
 
+-- Dependent version:
+eq▸ : {k : Clock} {ℓ : Level} {X : ▹ k , Type ℓ} ->
+  (x~ y~ : ▸ X) ->
+  ▸ (λ t -> x~ t ≡ y~ t) -> x~ ≡ y~
+eq▸ x~ y~ eq~ i t = eq~ t i
+
+-- If we know that X is a prop later, then we can conclude that
+-- ▹ X is a prop now.
+-- Dependent version:
+isProp▸ : {k : Clock} {ℓ : Level} {X : ▹ k , Type ℓ} ->
+  ▸ (λ t -> isProp (X t)) -> isProp (▸ λ t -> X t)
+isProp▸ H x~ y~ i t = H t (x~ t) (y~ t) i
+
+
+-- If we know that X is a set later, then we can conclude that
+-- ▹ X is a set now.
 isSet▹ : {k : Clock} {ℓ : Level} {X : Type ℓ} ->
   ▹ k , (isSet X) -> isSet (▹ k ,  X)
 isSet▹ H x~ y~ p1 p2 i j t =
   H t (x~ t) (y~ t) (λ l -> p1 l t) (λ l -> p2 l t) i j
 
--- Dependent version
+-- Dependent version of the above
 isSet▸ : {k : Clock} {ℓ : Level} {X : ▹ k , Type ℓ} ->
   ▸ (λ t -> isSet (X t)) -> isSet (▸ λ t -> X t)
-isSet▸ H x~ y~ p1 p2 i j t = H t (x~ t) (y~ t) (λ l -> p1 l t) (λ l -> p2 l t) i j
+isSet▸ H x~ y~ p1 p2 i j t =
+  H t (x~ t) (y~ t) (λ l -> p1 l t) (λ l -> p2 l t) i j
 
 
 
