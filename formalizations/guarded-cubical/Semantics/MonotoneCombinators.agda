@@ -48,6 +48,33 @@ private
 
 
 open MonFun
+open import Semantics.Concrete.MonotonicityProofs
+
+
+mTransport : {A B : Poset ℓ ℓ'} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
+mTransport {A} {B} eq = record {
+  f = λ b → transport (λ i -> ⟨ eq i ⟩) b ;
+  isMon = λ {b1} {b2} b1≤b2 → rel-transport eq b1≤b2 }
+
+
+mTransportSym : {A B : Poset ℓ ℓ'} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
+mTransportSym {A} {B} eq = record {
+  f = λ b → transport (λ i -> ⟨ sym eq i ⟩) b ;
+  isMon = λ {b1} {b2} b1≤b2 → rel-transport (sym eq) b1≤b2 }
+
+mTransportDomain : {A B C : Poset ℓ ℓ'} ->
+  (eq : A ≡ B) ->
+  MonFun A C ->
+  MonFun B C
+mTransportDomain {A} {B} {C} eq f = record {
+  f = g eq f;
+  isMon = mon-transport-domain eq f }
+  where
+    g : {A B C : Poset ℓ ℓ'} ->
+      (eq : A ≡ B) ->
+      MonFun A C ->
+      ⟨ B ⟩ -> ⟨ C ⟩
+    g eq f b = MonFun.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
 
 
 
@@ -276,16 +303,19 @@ Comp Γ f g = {!!}
 
 
 
-module Clocked (k : Clock) where
+module ClockedCombinators (k : Clock) where
   private
     ▹_ : Type ℓ → Type ℓ
     ▹_ A = ▹_,_ k A
 
   open import Semantics.Lift k
-  open import Semantics.Concrete.MonotonicityProofs k
+  open import Semantics.Concrete.MonotonicityProofs
   open import Semantics.LockStepErrorOrdering k
-  open LiftPoset
 
+
+  open LiftPoset
+  open ClockedProofs k
+  
 
   -- map and ap functions for later as monotone functions
   Map▹ :
@@ -314,6 +344,10 @@ module Clocked (k : Clock) where
   Next : {A : Poset ℓ ℓ'} ->
     ⟨ A ==> ▸''_ k A ⟩
   Next = record { f = next ; isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 }
+
+  mθ : {A : Poset ℓ ℓ'} ->
+    ⟨ ▸''_ k (𝕃 A) ==> 𝕃 A ⟩
+  mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone {!!} }
 
 
   -- 𝕃's return as a monotone function
