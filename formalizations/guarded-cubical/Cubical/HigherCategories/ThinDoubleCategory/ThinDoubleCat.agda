@@ -1,6 +1,4 @@
-
-{-# OPTIONS --lossy-unification #-}
-
+{-# OPTIONS --safe #-}
 module Cubical.HigherCategories.ThinDoubleCategory.ThinDoubleCat where
 
 open import Cubical.Foundations.Prelude
@@ -10,10 +8,12 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Data.Sigma
 
 open import Cubical.Categories.Category
+open import Cubical.Categories.Constructions.BinProduct
+open import Cubical.Categories.Displayed.Preorder
 
 private
   variable
-    ℓ ℓ' : Level
+    ℓ ℓ' ℓ'' ℓ''' : Level
 
 
 -- Double categories for which there is at most one two-cell for
@@ -45,13 +45,22 @@ toCat ob mor = record {
   ⋆Assoc = mor .⋆Assoc ;
   isSetHom = mor .isSetHom }
 
-record ThinDoubleCat ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
+CatToMorphisms : (C : Category ℓ ℓ') → MorphismsForObj (C .Category.ob) ℓ'
+CatToMorphisms C .Hom[_,_] = Category.Hom[_,_] C
+CatToMorphisms C .id = Category.id C
+CatToMorphisms C ._⋆_ = Category._⋆_ C
+CatToMorphisms C .⋆IdL = Category.⋆IdL C
+CatToMorphisms C .⋆IdR = Category.⋆IdR C
+CatToMorphisms C .⋆Assoc = Category.⋆Assoc C
+CatToMorphisms C .isSetHom = Category.isSetHom C
+
+record ThinDoubleCat ℓ ℓ' ℓ'' ℓ''' : Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ') (ℓ-max ℓ'' ℓ'''))) where
   field
     ob : Type ℓ
 
     -- Horizontal and vertical morphisms and properties
-    Horiz : MorphismsForObj ob ℓ'
     Vert : MorphismsForObj ob ℓ'
+    Horiz : MorphismsForObj ob ℓ''
 
   -- Horizontal and vertical hom sets
   HomH[_,_] = MorphismsForObj.Hom[_,_] Horiz
@@ -71,7 +80,7 @@ record ThinDoubleCat ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     2Cell : {x x' y y' : ob} ->
       (f : HomH[ x , y ])  (f' : HomH[ x' , y' ]) ->
       (p : HomV[ x , x' ]) (q : HomV[ y , y' ]) ->
-      Type ℓ'
+      Type ℓ'''
 
 
     -- Horizontal identity 2-cells
@@ -145,20 +154,25 @@ record ThinDoubleCat ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
   VCat : Category ℓ ℓ'
   VCat = toCat ob Vert
 
-  HCat : Category ℓ ℓ'
+  HCat : Category ℓ ℓ''
   HCat = toCat ob Horiz
 
-
+  open Preorderᴰ
+  Squares : Preorderᴰ (VCat ×C VCat) ℓ'' ℓ'''
+  Squares .ob[_] (A , B) = HCat [ A , B ]
+  Squares .Hom[_][_,_] (f , g) R S = 2Cell R S f g
+  Squares .idᴰ = 2idV _
+  Squares ._⋆ᴰ_ = _2⋆V_
+  Squares .isPropHomᴰ = thin _ _ _ _
 
 open ThinDoubleCat
 
 -- Helpful syntax/notation
-_H[_,_] : (C : ThinDoubleCat ℓ ℓ') → (x y : C .ob) → Type ℓ'
-_H[_,_] = HomH[_,_]
-
-_V[_,_] : (C : ThinDoubleCat ℓ ℓ') → (x y : C .ob) → Type ℓ'
+_V[_,_] : (C : ThinDoubleCat ℓ ℓ' ℓ'' ℓ''') → (x y : C .ob) → Type ℓ'
 _V[_,_] = HomV[_,_]
 
+_H[_,_] : (C : ThinDoubleCat ℓ ℓ' ℓ'' ℓ''') → (x y : C .ob) → Type ℓ''
+_H[_,_] = HomH[_,_]
 
 -- TODO
 -- Unit, associtivity, and interchange properties for 2-cells follow
