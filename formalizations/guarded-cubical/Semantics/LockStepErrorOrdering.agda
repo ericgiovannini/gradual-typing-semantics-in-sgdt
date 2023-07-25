@@ -34,7 +34,6 @@ open import Common.Common
 open import Common.Poset.Convenience
 open import Common.Poset.MonotoneRelation
 open import Semantics.Lift k
--- open import Semantics.ErrorDomains
 open import Semantics.PredomainInternalHom
 
 private
@@ -117,6 +116,7 @@ module LiftComp
   open R-LALC.Inductive (next R-LALC._≾_) renaming (_≾'_ to _≾'AC_)
   
 
+  -- If la L(R ∘ S) lc, then la (LR ∘ LS) lc
   liftComp→compLift' :
     ▹ ((la : L℧ A) (lc : L℧ C) -> la ≾'AC lc -> compRel _≾'AB_ _≾'BC_ la lc) ->
        (la : L℧ A) (lc : L℧ C) -> la ≾'AC lc -> compRel _≾'AB_ _≾'BC_ la lc
@@ -145,8 +145,8 @@ module LiftComp
 module LiftRelTransHet
   (A B C : Poset ℓ ℓ')
   -- {ℓ'' : Level}
-  (R : MonRel A B {ℓ''})
-  (S : MonRel B C {ℓ''}) where
+  (R : MonRel A B ℓ'')
+  (S : MonRel B C ℓ'') where
 
   module R-LALB = LiftRelation ⟨ A ⟩ ⟨ B ⟩ (MonRel.R R)
   module R-LBLC = LiftRelation ⟨ B ⟩ ⟨ C ⟩ (MonRel.R S)
@@ -233,7 +233,10 @@ module LiftPoset (A : Poset ℓ ℓ') where
   -- ▹ (∀ a b . ∀ (p₁ q₁ : a ≾' b) . p₁ ≡ q₁)
 
   ord-prop : BinaryRelation.isPropValued _≾_
-  ord-prop = {!!}
+  ord-prop = prop-≾'→prop-≾ (fix ord-prop')
+    where
+      prop-≾'→prop-≾ : BinaryRelation.isPropValued _≾'_ -> BinaryRelation.isPropValued _≾_
+      prop-≾'→prop-≾ = transport (λ i -> BinaryRelation.isPropValued (sym unfold-≾ i))
 
   ord-refl-ind : ▹ ((a : L℧ ⟨ A ⟩) -> a ≾ a) ->
                     (a : L℧ ⟨ A ⟩) -> a ≾ a
@@ -309,16 +312,17 @@ module LiftPoset (A : Poset ℓ ℓ') where
 -}
 
 
-module LiftMonRel (A B : Poset ℓ ℓ') (R : MonRel A B {ℓ''}) where
+module LiftMonRel (A B : Poset ℓ ℓ') (R : MonRel A B ℓ'') where
   module LR = LiftRelation ⟨ A ⟩ ⟨ B ⟩ (MonRel.R R)
   open LiftPoset
   open MonRel
   
-  ℝ : MonRel (𝕃 A) (𝕃 B) {ℓ''}
+  ℝ : MonRel (𝕃 A) (𝕃 B) ℓ''
   ℝ = record {
     R = LR._≾_ ;
-    isAntitone = {!!} ;
-    isMonotone = {!!} }
+    is-prop-valued = {!!} ;
+    is-antitone = {!!} ;
+    is-monotone = {!!} }
 
 
 {-
