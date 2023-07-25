@@ -8,9 +8,11 @@ module Common.Common where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.HLevels
 open import Cubical.Data.Nat hiding (_^_) renaming (ℕ to Nat)
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
+open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 
 
@@ -39,6 +41,21 @@ inl≠inr {_} {_} {A} {B} a b eq = transport (cong (diagonal ⊤ ⊥) eq) tt
     diagonal Left Right (inl a) = Left
     diagonal Left Right (inr b) = Right
 
+
+
+-- Definitions about relations and two-cells
+
+compRel : {ℓ ℓ' : Level} -> {X Y Z : Type ℓ} ->
+  (R1 : X -> Y -> Type ℓ') ->
+  (R2 : Y -> Z -> Type ℓ') ->
+  (X -> Z -> Type (ℓ-max ℓ ℓ'))
+compRel {ℓ} {ℓ'} {X} {Y} {Z} R1 R2 x z = Σ[ y ∈ Y ] R1 x y × R2 y z
+
+isPropValuedRel : {A : Type ℓA} {B : Type ℓB} ->
+  (R : A -> B -> Type ℓR) -> Type (ℓ-max (ℓ-max ℓA ℓB) ℓR)
+isPropValuedRel {A = A} {B = B} R =
+  (x : A) -> (y : B) -> isProp (R x y)
+
 TwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD} ->
 -- {A C : Type ℓ} -> {B D : Type ℓ'}
   (R : A -> B -> Type ℓR) ->
@@ -48,5 +65,15 @@ TwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD} ->
   Type (ℓ-max (ℓ-max (ℓ-max ℓA ℓB) ℓR) ℓS)
 -- Type (ℓ-max (ℓ-max (ℓ-max ℓ ℓ') ℓR) ℓS)
 TwoCell R S f g = ∀ a b -> R a b -> S (f a) (g b)
+
+isPropTwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD} ->
+  {R : A -> B -> Type ℓR} ->
+  {S : C -> D -> Type ℓS}
+  {f : A -> C} ->
+  {g : B -> D} ->
+  isPropValuedRel S ->
+  isProp (TwoCell R S f g)
+isPropTwoCell isPropValuedS =
+  isPropΠ3 (λ a b aRb -> isPropValuedS _ _)
 
 
