@@ -119,11 +119,7 @@ Case' f g = record {
 Case : ⟨ (A ==> C) ==> (B ==> C) ==> ((A ⊎p B) ==> C) ⟩
 Case = {!!}
 
--- Lifting a monotone function functorially
-_~->_ : {A B C D : Poset ℓ ℓ'} ->
-    ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
-pre ~-> post = {!!}
-  -- λ f -> mCompU post (mCompU f pre)
+
 
 
 
@@ -299,6 +295,12 @@ infixl 20 _∘m_
 Comp : (Γ : Poset ℓ ℓ') -> {A B C : Poset ℓ ℓ'} ->
     ⟨ Γ ×p B ==> C ⟩ -> ⟨ Γ ×p A ==> B ⟩ -> ⟨ Γ ×p A ==> C ⟩
 Comp Γ f g = {!!}
+
+
+-- Lifting a monotone function functorially
+_~->_ : {A B C D : Poset ℓ ℓ'} ->
+    ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
+pre ~-> post = Curry ((mCompU post App) ∘m (With2nd pre))
 
 
 
