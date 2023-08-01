@@ -25,6 +25,9 @@ open import Cubical.Categories.Monad.Base
 open import Cubical.Categories.Comonad.Instances.Environment
 open import Cubical.Categories.Exponentials
 open import Cubical.Data.List hiding ([_])
+open import Cubical.Data.Nat renaming ( ℕ to Nat )
+
+open import Cubical.Data.Empty as ⊥
 
 open import Syntax.Types
 -- open import Syntax.Terms
@@ -42,13 +45,13 @@ open import Common.Poset.Monotone
 open import Common.Poset.Constructions
 open import Semantics.MonotoneCombinators
   hiding (S) renaming (Comp to Compose)
-open import Semantics.Lift k renaming (θ to θL)
+open import Semantics.Lift k renaming (θ to θL ; ret to Return)
 open import Semantics.Concrete.Dyn k
 open import Semantics.LockStepErrorOrdering k
 open import Semantics.RepresentationSemantics k
 
 open LiftPoset
-open Clocked k renaming (Δ to Del)
+open ClockedCombinators k renaming (Δ to Del)
 
 private
   variable
@@ -88,7 +91,7 @@ module _ where
 
   ⟦_⟧S : Subst Δ Γ   → MonFun ⟦ Δ ⟧ctx ⟦ Γ ⟧ctx -- 𝓜.cat [ ⟦ Δ ⟧ctx , ⟦ Γ ⟧ctx ]
   ⟦_⟧V : Val Γ S     → MonFun ⟦ Γ ⟧ctx ⟦ S ⟧ty -- 𝓜.cat [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
-  ⟦_⟧E : EvCtx Γ R S → MonFun (⟦ Γ ⟧ctx ×p 𝕃 ⟦ R ⟧ty) (𝕃 ⟦ S ⟧ty) -- ???
+  ⟦_⟧E : EvCtx Γ R S → MonFun (⟦ Γ ⟧ctx ×p ⟦ R ⟧ty) (𝕃 ⟦ S ⟧ty) -- ???
     -- 𝓜.Linear ⟦ Γ ⟧ctx [ ⟦ R ⟧ty  , ⟦ S ⟧ty ]
   ⟦_⟧C : Comp Γ S    → MonFun ⟦ Γ ⟧ctx (𝕃 ⟦ S ⟧ty) -- 𝓜.ClLinear [ ⟦ Γ ⟧ctx , ⟦ S ⟧ty ]
 
@@ -97,42 +100,113 @@ module _ where
 
   ⟦ ids ⟧S = MonId -- 𝓜.cat .id
   ⟦ γ ∘s δ ⟧S = mCompU ⟦ γ ⟧S ⟦ δ ⟧S -- ⟦ γ ⟧S ∘⟨ 𝓜.cat ⟩ ⟦ δ ⟧S
-  ⟦ ∘IdL {γ = γ} i ⟧S = eqMon (mCompU MonId ⟦ γ ⟧S) ⟦ γ ⟧S refl i -- 𝓜.cat .⋆IdR ⟦ γ ⟧S i
-  ⟦ ∘IdR {γ = γ} i ⟧S = eqMon (mCompU ⟦ γ ⟧S MonId) ⟦ γ ⟧S refl i -- 𝓜.cat .⋆IdL ⟦ γ ⟧S i
-  ⟦ ∘Assoc {γ = γ}{δ = δ}{θ = θ} i ⟧S =
-    eqMon (mCompU ⟦ γ ⟧S (mCompU ⟦ δ ⟧S ⟦ θ ⟧S)) (mCompU (mCompU ⟦ γ ⟧S ⟦ δ ⟧S) ⟦ θ ⟧S) refl i -- 𝓜.cat .⋆Assoc ⟦ θ ⟧S ⟦ δ ⟧S ⟦ γ ⟧S i
+  ⟦ ∘IdL {γ = γ} i ⟧S = eqMon (mCompU MonId ⟦ γ ⟧S) ⟦ γ ⟧S refl i -- eqMon (mCompU MonId ⟦ γ ⟧S) ⟦ γ ⟧S refl i -- 𝓜.cat .⋆IdR ⟦ γ ⟧S i
+  ⟦ ∘IdR {γ = γ} i ⟧S = eqMon (mCompU ⟦ γ ⟧S MonId) ⟦ γ ⟧S refl i -- eqMon (mCompU ⟦ γ ⟧S MonId) ⟦ γ ⟧S refl i -- 𝓜.cat .⋆IdL ⟦ γ ⟧S i
+  ⟦ ∘Assoc {γ = γ}{δ = δ}{θ = θ} i ⟧S = eqMon (mCompU ⟦ γ ⟧S (mCompU ⟦ δ ⟧S ⟦ θ ⟧S)) (mCompU (mCompU ⟦ γ ⟧S ⟦ δ ⟧S) ⟦ θ ⟧S) refl i
+     -- 𝓜.cat .⋆Assoc ⟦ θ ⟧S ⟦ δ ⟧S ⟦ γ ⟧S i
   ⟦ !s ⟧S = UnitP! -- 𝓜.!t
   ⟦ []η {γ = γ} i ⟧S = eqMon ⟦ γ ⟧S UnitP! refl i -- 𝓜.𝟙η ⟦ γ ⟧S i
   ⟦ γ ,s V ⟧S = PairFun ⟦ γ ⟧S ⟦ V ⟧V -- ⟦ γ ⟧S 𝓜.,p ⟦ V ⟧V
   ⟦ wk ⟧S = π1 -- 𝓜.π₁
-  ⟦ wkβ {δ = γ}{V = V} i ⟧S = eqMon (mCompU π1 (PairFun ⟦ γ ⟧S ⟦ V ⟧V)) ⟦ γ ⟧S refl i -- 𝓜.×β₁ {f = ⟦ γ ⟧S}{g = ⟦ V ⟧V} i
-  ⟦ ,sη {δ = γ} i ⟧S = eqMon ⟦ γ ⟧S (PairFun (mCompU π1 ⟦ γ ⟧S) (mCompU π2 ⟦ γ ⟧S)) refl i -- 𝓜.×η {f = ⟦ γ ⟧S} i
+  ⟦ wkβ {δ = γ}{V = V} i ⟧S = eqMon (mCompU π1 (PairFun ⟦ γ ⟧S ⟦ V ⟧V)) ⟦ γ ⟧S refl i  -- -- 𝓜.×β₁ {f = ⟦ γ ⟧S}{g = ⟦ V ⟧V} i
+  ⟦ ,sη {δ = γ} i ⟧S = eqMon ⟦ γ ⟧S (PairFun (mCompU π1 ⟦ γ ⟧S) (mCompU π2 ⟦ γ ⟧S)) refl i --  -- 𝓜.×η {f = ⟦ γ ⟧S} i
   ⟦ isSetSubst γ γ' p q i j ⟧S = MonFunIsSet ⟦ γ ⟧S ⟦ γ' ⟧S (cong ⟦_⟧S p) (cong ⟦_⟧S q) i j -- follows because MonFun is a set
-  -- 𝓜.cat .isSetHom ⟦ γ ⟧S ⟦ γ' ⟧S (cong ⟦_⟧S p) (cong ⟦_⟧S q) i j
+  ⟦ isPosetSubst {γ = γ} {γ' = γ'} x x₁ i ⟧S = {!!}
 
 
   
 
   ⟦ V [ γ ]v ⟧V = mCompU ⟦ V ⟧V ⟦ γ ⟧S
   ⟦ substId {V = V} i ⟧V = eqMon (mCompU ⟦ V ⟧V MonId) ⟦ V ⟧V refl i
-  ⟦ substAssoc {V = V}{δ = δ}{γ = γ} i ⟧V =
-    eqMon (mCompU ⟦ V ⟧V (mCompU ⟦ δ ⟧S ⟦ γ ⟧S)) (mCompU (mCompU ⟦ V ⟧V ⟦ δ ⟧S) ⟦ γ ⟧S) refl i
+  ⟦ substAssoc {V = V}{δ = δ}{γ = γ} i ⟧V = eqMon (mCompU ⟦ V ⟧V (mCompU ⟦ δ ⟧S ⟦ γ ⟧S)) (mCompU (mCompU ⟦ V ⟧V ⟦ δ ⟧S) ⟦ γ ⟧S) refl i
   ⟦ var ⟧V = π2
   ⟦ varβ {δ = γ}{V = V} i ⟧V = eqMon (mCompU π2 ⟦ γ ,s V ⟧S) ⟦ V ⟧V refl i
   ⟦ zro ⟧V = Zero
   ⟦ suc ⟧V = Suc
   ⟦ lda M ⟧V = Curry ⟦ M ⟧C
-  ⟦ fun-η {V = V} i ⟧V =
-    eqMon  ⟦ V ⟧V (Curry ⟦ appP [ !s ,s (V [ wk ]v) ,s var ]cP ⟧C) {!!} {!!}
+  ⟦ fun-η {V = V} i ⟧V = {!!} -- eqMon ⟦ V ⟧V (Curry
+      --   (mCompU (mCompU (mCompU App π2) PairAssocLR)
+       --   (PairFun (PairFun UnitP! (mCompU ⟦ V ⟧V π1)) π2))) (funExt λ x → eqMon _ _ refl) i
+    -- eqMon  ⟦ V ⟧V (Curry ⟦ appP [ !s ,s (V [ wk ]v) ,s var ]cP ⟧C) {!!} i
+    -- V ≡ lda (appP [ (!s ,s (V [ wk ]v)) ,s var ]cP)
   ⟦ up S⊑T ⟧V = {!!}
-  ⟦ δl S⊑T ⟧V = {!!}
-  ⟦ δr S⊑T ⟧V = {!!}
-  ⟦ isSetVal V V' p q i j ⟧V = {!!}
+  ⟦ δl S⊑T ⟧V = π2
+  ⟦ δr S⊑T ⟧V = π2
+  ⟦ isSetVal V V' p q i j ⟧V = MonFunIsSet ⟦ V ⟧V ⟦ V' ⟧V (cong ⟦_⟧V p) (cong ⟦_⟧V q) i j
   ⟦ isPosetVal x x₁ i ⟧V = {!!}
 
 
+  ⟦ ∙E {Γ = Γ} ⟧E = mCompU mRet π2 -- mCompU mRet π2
+  ⟦ E ∘E F ⟧E = mExt' _ ⟦ E ⟧E ∘m ⟦ F ⟧E
+  ⟦ ∘IdL {E = E} i ⟧E = eqMon (mExt' _ (mCompU mRet π2) ∘m ⟦ E ⟧E) ⟦ E ⟧E (funExt (λ x → monad-unit-r (MonFun.f ⟦ E ⟧E x))) i 
+  ⟦ ∘IdR {E = E} i ⟧E = eqMon (mExt' _ ⟦ E ⟧E ∘m mCompU mRet π2) ⟦ E ⟧E (funExt (λ x → monad-unit-l _ _)) i
+  ⟦ ∘Assoc {E = E}{F = F}{F' = F'} i ⟧E = eqMon (mExt' _ ⟦ E ⟧E ∘m (mExt' _ ⟦ F ⟧E ∘m ⟦ F' ⟧E)) (mExt' _ (mExt' _ ⟦ E ⟧E ∘m ⟦ F ⟧E) ∘m ⟦ F' ⟧E) (funExt (λ x → monad-assoc _ _ _)) i 
+  ⟦ E [ γ ]e ⟧E = mCompU ⟦ E ⟧E (PairFun (mCompU ⟦ γ ⟧S π1) π2)
+  ⟦ substId {E = E} i ⟧E = eqMon (mCompU ⟦ E ⟧E (PairFun (mCompU MonId π1) π2)) ⟦ E ⟧E refl i
+  ⟦ substAssoc {E = E}{γ = γ}{δ = δ} i ⟧E =
+    eqMon (mCompU ⟦ E ⟧E (PairFun (mCompU (mCompU ⟦ γ ⟧S ⟦ δ ⟧S) π1) π2))
+          (mCompU (mCompU ⟦ E ⟧E (PairFun (mCompU ⟦ γ ⟧S π1) π2)) (PairFun (mCompU ⟦ δ ⟧S π1) π2))
+          refl i   
+  ⟦ ∙substDist {γ = γ} i ⟧E = eqMon (mCompU (mCompU mRet π2) (PairFun (mCompU ⟦ γ ⟧S π1) π2)) {!!} refl i 
+  ⟦ ∘substDist {E = E}{F = F}{γ = γ} i ⟧E =
+               eqMon (mCompU (mExt' _ ⟦ E ⟧E ∘m ⟦ F ⟧E) (PairFun (mCompU ⟦ γ ⟧S π1) π2))
+               (mExt' _ (mCompU ⟦ E ⟧E (PairFun (mCompU ⟦ γ ⟧S π1) π2)) ∘m mCompU ⟦ F ⟧E (PairFun (mCompU ⟦ γ ⟧S π1) π2)) refl i
+  -- (E ∘E F) [ γ ]e ≡ (E [ γ ]e) ∘E (F [ γ ]e)
+  ⟦ bind M ⟧E = ⟦ M ⟧C
+
+  -- E ≡ bind (E [ wk ]e [ retP [ !s ,s var ]cP ]∙P)
+  ⟦ ret-η {Γ}{R}{S}{E} i ⟧E = eqMon ⟦ E ⟧E (Bind (⟦ Γ ⟧ctx ×p ⟦ R ⟧ty)
+         (mCompU (mCompU mRet π2) (PairFun UnitP! π2))
+         (mCompU ⟦ E ⟧E (PairFun (mCompU π1 π1) π2))) (funExt (λ x → {!!})) i
+    {-- explicit i where
+      explicit : ⟦ E ⟧E
+                 ≡ 𝓜.bindP (𝓜.pull 𝓜.π₁ ⟪ ⟦ E ⟧E ⟫) ∘⟨ 𝓜.cat ⟩ (𝓜.cat .id 𝓜.,p (𝓜.retP ∘⟨ 𝓜.cat ⟩ (𝓜.!t 𝓜.,p 𝓜.π₂)))
+      explicit = sym (cong₂ (comp' 𝓜.cat) (sym 𝓜.bind-natural) refl
+        ∙  sym (𝓜.cat .⋆Assoc _ _ _)
+        ∙ cong₂ (comp' 𝓜.cat) refl (𝓜.,p-natural ∙ cong₂ 𝓜._,p_ (sym (𝓜.cat .⋆Assoc _ _ _) ∙ cong₂ (comp' 𝓜.cat) refl 𝓜.×β₁ ∙ 𝓜.cat .⋆IdL _)
+          (𝓜.×β₂ ∙ cong₂ (comp' 𝓜.cat) refl (cong₂ 𝓜._,p_ 𝓜.𝟙η' refl) ∙ 𝓜.η-natural {γ = 𝓜.!t}))
+        ∙ 𝓜.bindP-l) --}
+  ⟦ dn S⊑T ⟧E = {!!} -- ⟦ S⊑T .ty-prec ⟧p ∘⟨ 𝓜.cat ⟩ 𝓜.π₂
+  ⟦ isSetEvCtx E F p q i j ⟧E =  MonFunIsSet ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j  -- 𝓜.cat .isSetHom ⟦ E ⟧E ⟦ F ⟧E (cong ⟦_⟧E p) (cong ⟦_⟧E q) i j
+  ⟦ δl S⊑T ⟧E = mCompU mRet π2  
+  ⟦ δr S⊑T ⟧E = mCompU mRet π2  
+  ⟦ isPosetEvCtx x x₁ i ⟧E =  {!eqMon ?!}
 
 
+
+  ⟦ _[_]∙ {Γ = Γ} E M ⟧C = Bind  ⟦ Γ ⟧ctx ⟦ M ⟧C ⟦ E ⟧E
+  ⟦ plugId {M = M} i ⟧C = eqMon (Bind _ ⟦ M ⟧C (mCompU mRet π2)) ⟦ M ⟧C (funExt (λ x → monad-unit-r (U ⟦ M ⟧C x))) i
+  ⟦ plugAssoc {F = F}{E = E}{M = M} i ⟧C =  eqMon (Bind _ ⟦ M ⟧C (mExt' _ ⟦ F ⟧E ∘m ⟦ E ⟧E)) (Bind _ (Bind _ ⟦ M ⟧C ⟦ E ⟧E) ⟦ F ⟧E) (funExt (λ x → {!!})) i  
+  ⟦ M [ γ ]c ⟧C =   mCompU ⟦ M ⟧C ⟦ γ ⟧S  -- ⟦ M ⟧C ∘⟨ 𝓜.cat ⟩ ⟦ γ ⟧S
+  ⟦ substId {M = M} i ⟧C = eqMon (mCompU ⟦ M ⟧C MonId) ⟦ M ⟧C refl i  -- 𝓜.cat .⋆IdL ⟦ M ⟧C i
+  ⟦ substAssoc {M = M}{δ = δ}{γ = γ} i ⟧C = eqMon (mCompU ⟦ M ⟧C (mCompU ⟦ δ ⟧S ⟦ γ ⟧S)) (mCompU (mCompU ⟦ M ⟧C ⟦ δ ⟧S) ⟦ γ ⟧S) refl i -- 𝓜.cat .⋆Assoc ⟦ γ ⟧S ⟦ δ ⟧S ⟦ M ⟧C i
+  ⟦ substPlugDist {E = E}{M = M}{γ = γ} i ⟧C = eqMon (mCompU (Bind _ ⟦ M ⟧C ⟦ E ⟧E) ⟦ γ ⟧S) (Bind _ (mCompU ⟦ M ⟧C ⟦ γ ⟧S) (mCompU ⟦ E ⟧E (PairFun (mCompU ⟦ γ ⟧S π1) π2))) refl i
+  ⟦ err {S = S} ⟧C = K _ ℧ -- mCompU mRet {!!}  -- 𝓜.err
+  ⟦ strictness {E = E} i ⟧C = eqMon (Bind _ (mCompU (K UnitP ℧) UnitP!) ⟦ E ⟧E) (mCompU (K UnitP ℧) UnitP!) {!!} i -- 𝓜.℧-homo ⟦ E ⟧E i
+  -- i = i0 ⊢ Bind ⟦ Γ ⟧ctx (mCompU (K UnitP ℧) UnitP!) ⟦ E ⟧E
+  -- i = i1 ⊢ mCompU (K UnitP ℧) UnitP!
+  ⟦ ret ⟧C = mCompU mRet π2
+  ⟦ ret-β {S}{T}{Γ}{M = M} i ⟧C = eqMon (Bind (⟦ Γ ⟧ctx ×p ⟦ T ⟧ty)
+         (mCompU (mCompU mRet π2) (PairFun UnitP! π2))
+         (mCompU ⟦ M ⟧C (PairFun (mCompU π1 π1) π2))) ⟦ M ⟧C (funExt (λ x → monad-unit-l _ _)) i
+  ⟦ app ⟧C = mCompU (mCompU App π2) PairAssocLR
+  ⟦ fun-β {M = M} i ⟧C = eqMon (mCompU (mCompU (mCompU App π2) PairAssocLR)
+         (PairFun (PairFun UnitP! (mCompU (Curry ⟦ M ⟧C) π1)) π2)) ⟦ M ⟧C refl i
+  ⟦ matchNat Mz Ms ⟧C = record { f = λ { (Γ , zero) → MonFun.f ⟦ Mz ⟧C Γ ; (Γ , suc n) → MonFun.f ⟦ Ms ⟧C (Γ , n) } ;
+             isMon = λ { {Γ1 , zero} {Γ2 , zero} (Γ1≤Γ2 , n1≤n2) → MonFun.isMon ⟦ Mz ⟧C Γ1≤Γ2 ;
+                         {Γ1 , zero} {Γ2 , suc n2} (Γ1≤Γ2 , n1≤n2) → rec (znots n1≤n2) ;
+                         {Γ1 , suc n1} {Γ2 , zero} (Γ1≤Γ2 , n1≤n2) → rec (snotz n1≤n2) ;
+                         {Γ1 , suc n1} {Γ2 , suc n2} (Γ1≤Γ2 , n1≤n2) → MonFun.isMon ⟦ Ms ⟧C (Γ1≤Γ2 , injSuc n1≤n2)} }
+  ⟦ matchNatβz Mz Ms i ⟧C = eqMon (mCompU {! !} (PairFun MonId (mCompU Zero UnitP!))) ⟦ Mz ⟧C refl i
+  ⟦ matchNatβs Mz Ms V i ⟧C = {!   !}
+  ⟦ matchNatη i ⟧C = {!   !}
+
+  ⟦ isSetComp M N p q i j ⟧C = MonFunIsSet ⟦ M ⟧C ⟦ N ⟧C (cong ⟦_⟧C p) (cong ⟦_⟧C q) i j  -- 𝓜.cat .isSetHom ⟦ M ⟧C ⟦ N ⟧C (cong ⟦_⟧C p) (cong ⟦_⟧C q) i j
+  ⟦ isPosetComp x x₁ i ⟧C = {!   !}
+
+
+  
+  
 
 
 
@@ -156,10 +230,10 @@ module _ where
   ⟦ inj-arr c ⟧e = mCompU InjArr ⟦ c ⟧e -- 𝓜.inj ∘⟨ 𝓜.cat ⟩ 𝓜.σ2 ∘⟨ 𝓜.cat ⟩ ⟦ c ⟧e
 
 
-  ⟦ nat ⟧p = Clocked.mRet k
-  ⟦ dyn ⟧p = Clocked.mRet k
+  ⟦ nat ⟧p = mRet
+  ⟦ dyn ⟧p = mRet
   -- = η ∘ (⟦ c ⟧e ⇒ ⟦ d ⟧p')
-  ⟦ c ⇀ d ⟧p     = {!!} -- 𝓜.ClLinear .id ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
+  ⟦ c ⇀ d ⟧p     = mCompU (mCompU mRet {!!}) (Bind _ {!⟦ c ⇀ d ⟧e !} {!!}) -- 𝓜.ClLinear .id ∘⟨ 𝓜.cat ⟩ ⇒F ⟪ ⟦ c ⟧e , ⟦ d ⟧p' ⟫
   ⟦ inj-nat ⟧p   = {!!} -- (𝓜.ClLinear .id 𝓜.|| 𝓜.℧) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
   ⟦ inj-arr c ⟧p = {!!} -- (𝓜.℧ 𝓜.|| ⟦ c ⟧p) ∘⟨ 𝓜.ClLinear ⟩ 𝓜.prj
 
