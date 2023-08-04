@@ -283,6 +283,9 @@ monad-unit-r = fix lem
                      ≡⟨ refl ⟩
                    θ x ∎
 
+monad-assoc : {A B C : Type} -> (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A) -> ext g (ext f la) ≡ ext (λ x -> ext g (f x)) la
+monad-assoc = {!!}
+
 
 mapL : (A -> B) -> L℧ A -> L℧ B
 mapL f la = bind la (λ a -> ret (f a))
