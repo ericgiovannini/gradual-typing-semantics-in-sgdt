@@ -49,11 +49,13 @@ path-x-f-next-x {k = k} {A = A} {f = f} = (fix f , fix-eq f) , unique
     unique : (y : Σ[ x ∈ A ] (x ≡ f (next x))) → (fix f , fix-eq f) ≡ y
     unique (h , p-h) = ΣPathP (q , eq)
       where
-        q' = λ r ->      
-          fix f ≡⟨ fix-eq f ⟩
-          f (next (fix f)) ≡⟨ cong f (λ i -> λ t -> r t i) ⟩ -- or: ≡⟨ (λ i -> f (λ t -> r t i)) ⟩
-          f (next h) ≡⟨ sym p-h ⟩
-          h ∎
+        -- q'' = λ r ->      
+        --   fix f ≡⟨ fix-eq f ⟩
+        --   f (next (fix f)) ≡⟨ cong f (λ i -> λ t -> r t i) ⟩ -- or: ≡⟨ (λ i -> f (λ t -> r t i)) ⟩
+        --   f (next h) ≡⟨ sym p-h ⟩
+        --   h ∎
+
+        q' = λ r -> (fix-eq f) ∙ cong f (λ i -> λ t -> r t i) ∙ sym p-h
 
        -- r : ▹ (fix f ≡ h), so (λ i -> f (λ t -> r t i)) has type
        -- f (λ t -> fix f) ≡ f (λ t -> h) i.e.
@@ -64,11 +66,14 @@ path-x-f-next-x {k = k} {A = A} {f = f} = (fix f , fix-eq f) , unique
 
         lem : sym (fix-eq f) ∙ (q' (next q)) ∙ p-h ≡ cong f (λ i -> λ t -> q i)
         lem =
-          sym (fix-eq f) ∙ (q' (next q)) ∙ p-h                                       ≡⟨ {!!} ⟩
-          sym (fix-eq f) ∙ (fix-eq f ∙ cong f (λ i -> λ t -> q i) ∙ sym p-h) ∙ p-h   ≡⟨ {!!} ⟩
-          (sym (fix-eq f) ∙ fix-eq f) ∙ cong f (λ i -> λ t -> q i) ∙ (sym p-h ∙ p-h) ≡⟨ {!!} ⟩
-          {!!} ≡⟨ {!!} ⟩
-          {!!} ≡⟨ {!!} ⟩
+          sym (fix-eq f) ∙ (q' (next q)) ∙ p-h                                       ≡⟨ refl ⟩
+          sym (fix-eq f) ∙ (fix-eq f ∙ cong f (λ i -> λ t -> q i) ∙ sym p-h) ∙ p-h   ≡⟨ (λ j -> (sym (fix-eq f)) ∙ assoc (fix-eq f) (cong f (λ i -> λ t -> q i) ∙ sym p-h) p-h (~ j))  ⟩
+          sym (fix-eq f) ∙ fix-eq f ∙ (cong f (λ i -> λ t -> q i) ∙ sym p-h) ∙ p-h   ≡⟨ (λ j -> (sym (fix-eq f) ∙ fix-eq f ∙ assoc (cong f (λ i -> λ t -> q i)) (sym p-h) p-h (~ j))) ⟩
+          sym (fix-eq f) ∙ fix-eq f ∙ cong f (λ i -> λ t -> q i) ∙ sym p-h ∙ p-h ≡⟨ refl ⟩
+          sym (fix-eq f) ∙ fix-eq f ∙ cong f (λ i -> λ t -> q i) ∙ (sym p-h ∙ p-h) ≡⟨ assoc (sym (fix-eq f)) (fix-eq f) (cong f (λ i -> λ t -> q i) ∙ (sym p-h ∙ p-h)) ⟩
+          (sym (fix-eq f) ∙ fix-eq f) ∙ cong f (λ i -> λ t -> q i) ∙ (sym p-h ∙ p-h) ≡⟨ (λ j -> lCancel (fix-eq f) j ∙ cong f (λ i -> λ t -> q i) ∙ lCancel p-h j) ⟩
+          refl ∙ cong f (λ i -> λ t -> q i) ∙ refl ≡⟨ (λ j -> refl ∙ rUnit (cong f (λ i -> λ t -> q i)) (~ j)) ⟩
+          refl ∙ cong f (λ i -> λ t -> q i) ≡⟨ sym (lUnit (cong f (λ i -> λ t -> q i))) ⟩
           (cong f λ i -> λ t -> q i) ∎
 
         eq' : PathP (λ i → q i ≡ f (next (q i))) (fix-eq f) p-h
@@ -76,7 +81,9 @@ path-x-f-next-x {k = k} {A = A} {f = f} = (fix f , fix-eq f) , unique
          
         eq : PathP (λ i → q i ≡ f (next (q i))) (fix-eq f) p-h
         eq = transport (sym (PathP≡doubleCompPathˡ q (fix-eq f) p-h (cong f (λ i -> λ t -> q i))))
-          (doubleCompPath≡compPath (sym q) (fix-eq f) (cong f (λ i -> λ t -> q i)) ∙ {!!})
+          (doubleCompPath≡compPath (sym q) (fix-eq f) (cong f (λ i -> λ t -> q i)) ∙ (λ i → {!!}))
+        
+        
         
 
 
