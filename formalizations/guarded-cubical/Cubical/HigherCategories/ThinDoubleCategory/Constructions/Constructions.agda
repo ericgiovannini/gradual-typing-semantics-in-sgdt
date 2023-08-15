@@ -7,7 +7,8 @@ module Cubical.HigherCategories.ThinDoubleCategory.Constructions.Constructions w
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
-
+open import Cubical.Data.Unit.Base
+open import Cubical.Data.Unit.Properties
 
 open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.Limits.BinProduct
@@ -31,6 +32,7 @@ open import Cubical.Categories.Instances.Sets
 open import Cubical.Foundations.HLevels
 open import Cubical.Categories.Functor.Base
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
 
 private
   variable
@@ -119,9 +121,24 @@ module _ (C : ThinDoubleCat ℓ ℓ' ℓ'' ℓ''') where
     Term : (t : 1Terminal (VCat C)) ->
       Type (ℓ-max (ℓ-max (ℓ-max ℓ'' ℓ''') (ℓ-max ℓ ℓ)) (ℓ-max ℓ' ℓ'))
     Term t = Terminalᴰ (Preorderᴰ→Catᴰ (Squares C))
-      (transport {!!} (terminalToUniversalElement t ×UE terminalToUniversalElement t))
+      (transport 
+        (cong (λ p -> UniversalElement (VCat C ×C VCat C) p) 
+          (sym (cong (λ u -> Constant ( ( VCat C ×C VCat C ) ^op) (SET ℓ-zero) u) (Σ≡Prop (λ _ -> isPropIsSet) (isoToPath (iso to inv sec retr)))
+                 ∙ Const-product {C = (VCat C) ^op} {D = (VCat C) ^op} {x = (Unit , isSetUnit)})))
+        (terminalToUniversalElement t ×UE terminalToUniversalElement t))
+          where
+            to : Unit -> Σ Unit (λ _ → Unit)
+            to x = x , x
 
+            inv : Σ Unit (λ _ → Unit) -> Unit
+            inv x = x .fst
 
+            sec : section to inv
+            sec x = refl
+
+            retr : retract to inv
+            retr x = refl
+ 
       -- "manual" way
       -- (Preorderᴰ→Catᴰ (Squares C)) (terminalToUniversalElement
       --   ((fst t , fst t) ,
