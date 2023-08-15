@@ -31,7 +31,9 @@ postulate
 private
   variable
     l : Level
-    A B : Set l
+    l' : Level
+    A : Set l
+    B : Set l'
     k : Clock
 
 ▹_,_ : Clock → Set l → Set l
@@ -68,7 +70,7 @@ abstract
   fix-eq : ∀ {l} {A : Set l} → (f : ▹ k , A → A) → fix f ≡ f (next (fix f))
   fix-eq f = cong f (pfix f)
 
-later-ext : ∀ {A : ▹ k , Set} → {f g : ▸ A} → (▸ \ a → f a ≡ g a) → f ≡ g
+later-ext : ∀ {ℓ : Level} -> {A : ▹ k , Type ℓ} → {f g : ▸ A} → (▸ \ a → f a ≡ g a) → f ≡ g
 later-ext eq i a = eq a i
 
 transpLater : ∀ (A : I → ▹ k , Set) → ▸ (A i0) → ▸ (A i1)
@@ -97,7 +99,7 @@ postulate
 -- There is likely a better way to do this, see
 -- https://arxiv.org/pdf/2102.01969.pdf (in particular Section 3.2).
 postulate
-  tick-irrelevance : {A : Type} -> (M : ▹ k , A) (t t' : Tick k) ->
+  tick-irrelevance : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) (t t' : Tick k) ->
     M t ≡ M t'
 
   tr' : {A : Type} -> (M : ▹ k , A) ->
@@ -121,12 +123,12 @@ postulate
 
 
 -- This relies on tick irrelevance.
-next-Mt≡M : {A : Type} -> (M : ▹ k , A) ->
+next-Mt≡M : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) ->
   ▸ λ t -> (next (M t) ≡ M)
 next-Mt≡M M t = later-ext (λ t' → tick-irrelevance M t t')
 
 
-next-Mt≡M' : {A : Type} -> (M : ▹ k , A) -> (t : Tick k) ->
+next-Mt≡M' : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) -> (t : Tick k) ->
   next (M t) ≡ M
 next-Mt≡M' M t = next-Mt≡M M t
 
