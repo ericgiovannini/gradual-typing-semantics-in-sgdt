@@ -3,6 +3,7 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
+open import Common.Common
 open import Common.Later
 
 module Semantics.Lift (k : Clock) where
@@ -16,6 +17,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Sum
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Transport
+open import Cubical.Data.Nat hiding (_^_)
 
 open import Common.Common
 open import Common.LaterProperties
@@ -23,7 +25,7 @@ open import Common.LaterProperties
 private
   variable
     ℓ ℓ' : Level
-    A B : Set ℓ
+    A B C : Type ℓ
 private
   ▹_ : Set ℓ → Set ℓ
   ▹_ A = ▹_,_ k A
@@ -215,6 +217,9 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
 
+
+
+
 -- Monadic structure
 
 ret : {X : Type ℓ} -> X -> L℧ X
@@ -283,8 +288,68 @@ monad-unit-r = fix lem
                      ≡⟨ refl ⟩
                    θ x ∎
 
-monad-assoc : {A B C : Type} -> (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A) -> ext g (ext f la) ≡ ext (λ x -> ext g (f x)) la
+monad-assoc : {A B C : Type} -> (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A) ->
+  ext g (ext f la) ≡ ext (λ x -> ext g (f x)) la
 monad-assoc = {!!}
+
+
+{-
+monad-assoc-def =
+  {A B C : Type} ->
+  (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A) ->
+  bind (bind la f) g ≡ bind la (λ x -> bind (f x) g)
+
+monad-assoc : monad-assoc-def
+monad-assoc = fix lem
+  where
+    lem : ▹ monad-assoc-def -> monad-assoc-def
+
+    -- Goal: bind (bind (η x) f) g ≡ bind (η x) (λ y → bind (f y) g)
+    lem IH f g (η x) =
+      bind ((bind (η x) f)) g                    ≡⟨ (λ i → bind (bind-eta x f i) g) ⟩
+      bind (f x) g                               ≡⟨ sym (bind-eta x (λ y -> bind (f y) g)) ⟩
+      bind (η x) (λ y → bind (f y) g) ∎
+
+
+    -- Goal: bind (bind ℧ f) g ≡ bind ℧ (λ x → bind (f x) g)
+    lem IH f g ℧ =
+      bind (bind ℧ f) g           ≡⟨ (λ i → bind (bind-err f i) g) ⟩
+      bind ℧ g                    ≡⟨ bind-err g ⟩
+      ℧                           ≡⟨ sym (bind-err (λ x -> bind (f x) g)) ⟩
+      bind ℧ (λ x → bind (f x) g) ∎
+
+
+    -- Goal: bind (bind (θ x) f) g ≡ bind (θ x) (λ y → bind (f y) g)
+    -- IH: ▹ (bind (bind la f) g ≡ bind la (λ x -> bind (f x) g))
+    lem IH f g (θ x) =
+       bind (bind (θ x) f) g
+                              ≡⟨ (λ i → bind (bind-theta f x i) g) ⟩
+
+       bind (θ (ext f <$> x)) g
+                              ≡⟨ bind-theta g (ext f <$> x) ⟩
+
+                                               -- we can put map-comp in the hole here and refine (but it's wrong)
+       θ ( ext g <$> (ext f <$> x) )
+                             ≡⟨ refl ⟩ 
+
+       θ ( (ext g ∘ ext f) <$> x )
+                             ≡⟨ refl ⟩
+
+       θ ( ((λ lb -> bind lb g) ∘ (λ la -> bind la f)) <$> x )
+                             ≡⟨ refl ⟩ -- surprised that this works
+
+       θ ( (λ la -> bind (bind la f) g)  <$> x )
+                             ≡⟨ (λ i → θ (λ t → IH t f g (x t) i)) ⟩
+
+       θ ( (λ la -> bind la (λ y -> bind (f y) g)) <$> x )
+                             ≡⟨ refl ⟩
+
+       θ ( (ext (λ y -> bind (f y) g)) <$> x )
+                             ≡⟨ sym (bind-theta ((λ y -> bind (f y) g)) x) ⟩
+                             
+       bind (θ x) (λ y → bind (f y) g) ∎
+-}
+
 
 
 mapL : (A -> B) -> L℧ A -> L℧ B
@@ -294,11 +359,94 @@ mapL-eta : (f : A -> B) (a : A) ->
   mapL f (η a) ≡ η (f a)
 mapL-eta f a = ext-eta a λ a → ret (f a)
 
+mapL-℧ : (f : A -> B) ->
+  mapL f ℧ ≡ ℧
+mapL-℧ f = ext-err (ret ∘ f)
+
 mapL-theta : (f : A -> B) (la~ : ▹ (L℧ A)) ->
   mapL f (θ la~) ≡ θ (mapL f <$> la~)
 mapL-theta f la~ = ext-theta (ret ∘ f) la~
 
 
-mapL-id : (la : L℧ A) -> mapL id la ≡ la
+mapL-id : (la : L℧ A) -> mapL id la ≡ la -- mapL id_A ≡ id_LA
 mapL-id la = monad-unit-r la
+
+mapL-comp' : (g : B -> C) (f : A -> B) -> -- mapL (g ∘ f) ≡ mapL g ∘ mapL f
+  ▹ ((la : L℧ A) -> mapL (g ∘ f) la ≡ (mapL g ∘ mapL f) la) ->
+     (la : L℧ A) -> mapL (g ∘ f) la ≡ (mapL g ∘ mapL f) la
+mapL-comp' g f _ (η x) = lem1 ∙ sym lem2
+  where
+    lem1 : mapL (g ∘ f) (η x) ≡ η (g (f x))
+    lem1 = mapL-eta _ _
+
+    lem2 : (mapL g ∘ mapL f) (η x) ≡ η (g (f x))
+    lem2 = (cong (mapL g) (mapL-eta f x)) ∙ mapL-eta g (f x)
+    
+mapL-comp' g f _ ℧ = lem1 ∙ sym lem2
+  where
+    lem1 : mapL (g ∘ f) ℧ ≡ ℧
+    lem1 = mapL-℧ _
+
+    lem2 : (mapL g ∘ mapL f) ℧ ≡ ℧
+    lem2 = (cong (mapL g) (mapL-℧ _)) ∙ mapL-℧ _
+
+mapL-comp' g f IH (θ la~) = lem1 ∙ sym lem2
+  where
+    lem1 : mapL (g ∘ f) (θ la~) ≡ θ (mapL (g ∘ f) <$> la~)
+    lem1 = mapL-theta _ _
+
+    lem2 : (mapL g ∘ mapL f) (θ la~) ≡ θ (mapL (g ∘ f) <$> la~)
+    lem2 = cong (mapL g) (mapL-theta _ _) ∙
+           mapL-theta g (mapL f <$> la~) ∙
+           λ i -> θ λ t -> sym (IH t (la~ t)) i -- θ (mapL g <$> (mapL f <$> la~)) ≡ θ (mapL (g ∘ f) <$> la~)
+
+-- for lem2:
+--
+-- (mapL g ∘ mapL f) (θ la~) = mapL g (θ (mapL f <$> la~))    [by applying mapL-theta on the inside]
+--                           = θ ((mapL g <$> mapL f <$> la~) [by applying mapL-theta on the inside]
+--                           = θ ((mapL g ∘ mapL f) <$> la~)  [by definition of <$>]
+--                           = θ (λ t -> (mapL g ∘ mapL f) (la~ t))  [by definition of <$>]
+--                           = θ (λ t -> mapL (g ∘ f) (la~ t))  [by IH]
+--                           = θ (mapL (g ∘ f) <$> la~)         [by definition of <$>]
+
+mapL-comp : (g : B -> C) (f : A -> B) -> (la : L℧ A) ->
+  mapL (g ∘ f) la ≡ (mapL g ∘ mapL f) la
+mapL-comp g f = fix (mapL-comp' g f)
+
+-- Strong monadic structure
+
+retStrong : {Γ X : Type ℓ} -> Γ -> X -> L℧ X
+retStrong γ x = ret x
+
+extStrong' : {Γ X Y : Type ℓ} ->
+  (Γ -> X -> L℧ Y) ->
+  ▹ (Γ -> L℧ X -> L℧ Y) -> (Γ -> L℧ X -> L℧ Y)
+extStrong' f rec γ (η x) = f γ x
+extStrong' f rec _ ℧ = ℧
+extStrong' f rec γ (θ l-la) = θ (λ t -> rec t γ (l-la t))
+
+extStrong : {Γ X Y : Type ℓ} -> (Γ -> X -> L℧ Y) -> (Γ -> L℧ X -> L℧ Y)
+extStrong f = fix (extStrong' f)
+
+
+-- Commuting condition between theta and delta
+
+theta-delta-comm : {X : Type ℓ} (lx~ : ▹ L℧ X) ->
+  θ (λ t -> δ (lx~ t)) ≡ δ (θ (λ t -> lx~ t))
+theta-delta-comm lx~ = θ (λ t -> δ (lx~ t)) ≡⟨ refl ⟩
+  θ (λ t -> θ (next (lx~ t))) ≡⟨ (λ i -> θ (λ t -> θ (next-Mt≡M lx~ t i))) ⟩
+  θ (λ t -> θ lx~) ≡⟨ refl ⟩
+  θ (next (θ lx~)) ≡⟨ refl ⟩
+  δ (θ lx~) ∎
+
+theta-delta-n-comm : {X : Type ℓ} (lx~ : ▹ L℧ X) (n : ℕ) ->
+  θ (λ t -> (δ ^ n) (lx~ t)) ≡ (δ ^ n) (θ (λ t -> lx~ t))
+theta-delta-n-comm lx~ zero = refl
+theta-delta-n-comm lx~ (suc n) =
+-- Goal: θ (λ t → δ ((δ ^ n) (lx~ t))) ≡ δ ((δ ^ n) (θ lx~))
+  θ (λ t → δ ((δ ^ n) (lx~ t)))
+    ≡⟨ theta-delta-comm (λ t → (δ ^ n) (lx~ t)) ⟩ -- i.e δ^n ∘ lx~
+  δ (θ (λ t → ((δ ^ n) (lx~ t))))
+    ≡⟨ cong δ (theta-delta-n-comm lx~ n) ⟩
+  δ ((δ ^ n) (θ lx~)) ∎
 
