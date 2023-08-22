@@ -267,7 +267,6 @@ ext-theta f l =
   θ (fix (ext' f) <$> l) ∎
 
 
-
 monad-unit-l : ∀ (a : A) (f : A -> L℧ B) -> ext f (ret a) ≡ f a
 monad-unit-l = ext-eta
 
@@ -291,6 +290,52 @@ monad-unit-r = fix lem
 monad-assoc : {A B C : Type} -> (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A) ->
   ext g (ext f la) ≡ ext (λ x -> ext g (f x)) la
 monad-assoc = {!!}
+
+
+
+ext-comp-ret : (f : L℧ A -> L℧ B) (a : A) (n : ℕ) ->
+     ext (f ∘ ret) ((δ ^ n) (η a)) ≡ (δ ^ n) (f (η a))
+ext-comp-ret f a zero = ext-eta a (f ∘ ret)
+ext-comp-ret f a (suc n) =
+  ext (f ∘ ret) (δ ((δ ^ n) (η a)))
+    ≡⟨ ext-theta (f ∘ ret) _ ⟩
+  θ (ext (f ∘ ret) <$> (next ((δ ^ n) (η a))))
+    ≡⟨ refl ⟩
+  θ (λ t -> ext (f ∘ ret) (next ((δ ^ n) (η a)) t))
+    ≡⟨ refl ⟩
+  δ (ext (f ∘ ret) ((δ ^ n) (η a)))
+    ≡⟨ cong δ (ext-comp-ret f a n) ⟩
+  δ ((δ ^ n) (f (η a))) ∎
+
+
+-- Need f to preserve ℧ and preserve θ...
+ext-comp-ret' : (f : L℧ A -> L℧ B) ->
+  ▹ ((la : L℧ A) ->  ext (f ∘ ret) la ≡ f la) ->
+     (la : L℧ A) ->  ext (f ∘ ret) la ≡ f la
+ext-comp-ret' f IH (η a) = ext-eta a (f ∘ ret)
+ext-comp-ret' f IH ℧ = {!!}
+ext-comp-ret' f IH (θ la~) = {!!}
+
+
+-- Ext commutes with delay
+ext-delay : (f : A -> L℧ B) (la : L℧ A) (n : ℕ) ->
+  ext f ((δ ^ n) la) ≡ (δ ^ n) (ext f la)
+ext-delay f la zero = refl
+ext-delay f la (suc n) =
+  ext f (δ ((δ ^ n) la))
+    ≡⟨ refl ⟩
+  ext f (θ (next ((δ ^ n) la)))
+    ≡⟨ ext-theta f _ ⟩
+  θ (ext f <$> next ((δ ^ n) la))
+    ≡⟨ refl ⟩
+  θ (λ t -> ext f (next ((δ ^ n) la) t))
+    ≡⟨ refl ⟩
+  θ (λ t -> ext f ((δ ^ n) la))
+    ≡⟨ (λ i -> θ λ t -> ext-delay f la n i) ⟩
+  θ (λ t -> (δ ^ n) (ext f la))
+    ≡⟨ refl ⟩
+  δ ((δ ^ n) (ext f la)) ∎
+
 
 
 {-
@@ -412,6 +457,12 @@ mapL-comp' g f IH (θ la~) = lem1 ∙ sym lem2
 mapL-comp : (g : B -> C) (f : A -> B) -> (la : L℧ A) ->
   mapL (g ∘ f) la ≡ (mapL g ∘ mapL f) la
 mapL-comp g f = fix (mapL-comp' g f)
+
+-- MapL commutes with delta
+mapL-delay : (f : A -> B) (la : L℧ A) (n : ℕ) ->
+  mapL f ((δ ^ n) la) ≡ (δ ^ n) (mapL f la)
+mapL-delay f la n = ext-delay (ret ∘ f) la n
+
 
 -- Strong monadic structure
 
