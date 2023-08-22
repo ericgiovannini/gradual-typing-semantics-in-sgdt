@@ -142,8 +142,8 @@ open ClockedCombinators k
   P = LiftPoset.𝕃 (A .P) ;
   Perturb = nat-monoid ×M A .Perturb ;
   perturb =
-    fix f' , -- f' (next f) / fix f'
-    fix {!!} }
+    fix f' ,
+    transport isHomEq isHomPerturb }
     where
       MA = nat-monoid ×M A .Perturb
       open LiftPoset
@@ -155,7 +155,7 @@ open ClockedCombinators k
         f = λ { (η a) -> (δ ^ n) (η (MonFun.f (ptb-fun A ma) a)) ;
                  ℧ -> (δ ^ n) ℧ ;
                 (θ la~) -> θ (λ t -> MonFun.f (rec t ((n , ma))) (la~ t))} ;
-        isMon = λ x → {!!} }
+        isMon = λ {ma} {ma'} ma≤ma' → {!!} }
       f : ⟨ MA ⟩ -> MonFun (𝕃 (A .P)) (𝕃 (A .P))
       f ma = fix f' ma
 
@@ -171,27 +171,16 @@ open ClockedCombinators k
 
       δ-mapL : ∀ (n : Nat) (ma : ⟨ A .Perturb ⟩) -> (δ ^ n) ∘ mapL (MonFun.f (ptb-fun A ma)) ≡ mapL (MonFun.f (ptb-fun A ma)) ∘ (δ ^ n)
       δ-mapL zero ma = refl
-      δ-mapL (suc n) ma = δ ∘ ((δ ^ n) ∘ mapL (MonFun.f (ptb-fun A ma))) ≡⟨ cong (λ m -> δ ∘ m ) (δ-mapL n ma) ⟩
-                          δ ∘ mapL (MonFun.f (ptb-fun A ma)) ∘ (δ ^ n) ≡⟨ cong (λ m -> m ∘ (δ ^ n)) (δ-mapL-comm ma) ⟩
-                          mapL (MonFun.f (ptb-fun A ma)) ∘ (δ ∘ (δ ^ n)) ∎
-
-      
-
-      {- funExt λ la -> (δ ∘ ((δ ^ n) ∘ mapL (MonFun.f (ptb-fun A ma)))) la
-                                         ≡⟨ cong (λ m -> (δ ∘ m) la) (δ-mapL n ma) ⟩ 
-                                         (δ ∘ mapL (MonFun.f (ptb-fun A ma)) ∘ (δ ^ n)) la
-                                         ≡⟨ {!!} ⟩
-                                         (mapL (MonFun.f (ptb-fun A ma)) ∘ (δ ∘ (δ ^ n))) la ∎ -}
-                                         
-      
+      δ-mapL (suc n) ma =  cong (λ m -> δ ∘ m ) (δ-mapL n ma) ∙ cong (λ m -> m ∘ (δ ^ n)) (δ-mapL-comm ma)
 
       perturb≡map' :  ∀ (n : Nat) (ma : ⟨ A .Perturb ⟩) -> (▹ (MonFun.f (f' (next f) (n , ma)) ≡ (δ ^ n) ∘  mapL (MonFun.f (ptb-fun A ma)))
                                                        -> MonFun.f (f' (next f) (n , ma)) ≡ (δ ^ n) ∘  mapL (MonFun.f (ptb-fun A ma)))
       perturb≡map' n ma IH = funExt (λ { (η a) -> cong (δ ^ n) (sym (mapL-eta (MonFun.f (ptb-fun A ma)) a)) ;
                                      ℧ -> cong (δ ^ n) (sym (ext-err _)) ;
-                                     (θ la) -> sym ( {!!} ≡⟨ cong (δ ^ n) (mapL-theta (MonFun.f (ptb-fun A ma)) la) ⟩
-                                                     {!!} ≡⟨ {!!} ⟩ {!!} )
-                                                     --(δ ^ n) (θ (mapL (MonFun.f (ptb-fun A ma)) <$> la))
+                                     (θ la) -> cong (λ f -> θ λ t -> MonFun.f (f (n , ma)) (la t)) unfold-f
+                                               ∙ (λ i → θ (λ t -> IH t i (la t)))
+                                               ∙ theta-delta-n-comm (λ t -> mapL (MonFun.f (ptb-fun A ma)) (la t)) n
+                                               ∙ cong (δ ^ n) (sym (mapL-theta (MonFun.f (ptb-fun A ma)) la))
                                    })
 
       perturb≡map : ∀ (n : Nat) (ma : ⟨ A .Perturb ⟩) -> MonFun.f (f' (next f) (n , ma)) ≡ (δ ^ n) ∘  mapL (MonFun.f (ptb-fun A ma))
@@ -202,25 +191,19 @@ open ClockedCombinators k
                                             ∙ (cong (λ a → mapL (MonFun.f a)) (perturb A .snd .presε))
                                             ∙ funExt (λ x → mapL-id x)))
                                  λ { (n , ma) (n' , ma') ->
-                                   eqMon _ _ (_ ≡⟨ perturb≡map (n + n') ( CommMonoid→Monoid (A .Perturb) .snd ._·_ ma ma') ⟩
-                                              _ ≡⟨ cong ( λ h -> (δ ^ (n + n')) ∘ (mapL (MonFun.f h) )) (perturb A .snd .pres· ma ma') ⟩
-                                              (δ ^ (n + n')) ∘ mapL ((MonFun.f (ptb-fun A ma)) ∘ (MonFun.f (ptb-fun A ma')))
-                                              ≡⟨ cong (λ h -> (δ ^ (n + n')) ∘ h) (funExt λ y -> λ i -> mapL-comp (MonFun.f (ptb-fun A ma)) ((MonFun.f (ptb-fun A ma'))) y i) ⟩
-                                              (δ ^ (n + n')) ∘ (mapL (MonFun.f (ptb-fun A ma)) ∘ mapL (MonFun.f (ptb-fun A ma'))) ≡⟨ (cong (λ d -> d ∘ _) (sym (δ-splits-n n n'))) ⟩
-                                              δ ^ n ∘ δ ^ n' ∘ mapL (MonFun.f (ptb-fun A ma)) ∘ mapL (MonFun.f (ptb-fun A ma'))
-                                              ≡⟨ cong (λ m -> (δ ^ n) ∘ m ∘ mapL (MonFun.f (ptb-fun A ma'))) (δ-mapL n' ma) ⟩
-                                              δ ^ n ∘ mapL (MonFun.f (ptb-fun A ma)) ∘ δ ^ n' ∘ mapL (MonFun.f (ptb-fun A ma'))
-                                              ≡⟨ cong₂ (λ a b → a ∘ b) (sym (perturb≡map n ma)) (sym (perturb≡map n' ma')) ⟩ _ ∎ ) }
-       {-
-       ( ? ≡⟨ perturb≡map (n + n') ( CommMonoid→Monoid (A .Perturb) .snd ._·_ ma ma') ⟩
-         ? ≡⟨ cong ( λ h -> (δ ^ (n + n')) ∘ (mapL (MonFun.f h) )) (perturb A .snd .pres· ma ma') ⟩
-         ? ≡⟨ cong (λ h -> (δ ^ (n + n')) ∘ h) {!!} ⟩
-         ? ≡⟨ {!!} ⟩  )
-       -}
+                                   eqMon _ _ (perturb≡map (n + n') ( CommMonoid→Monoid (A .Perturb) .snd ._·_ ma ma')
+                                             ∙ cong ( λ h -> (δ ^ (n + n')) ∘ (mapL (MonFun.f h) )) (perturb A .snd .pres· ma ma')
+                                             ∙ cong (λ h -> (δ ^ (n + n')) ∘ h) (funExt λ y -> λ i -> mapL-comp (MonFun.f (ptb-fun A ma)) ((MonFun.f (ptb-fun A ma'))) y i)
+                                             ∙ cong (λ d -> d ∘ _) (sym (δ-splits-n n n'))
+                                             ∙ cong (λ m -> (δ ^ n) ∘ m ∘ mapL (MonFun.f (ptb-fun A ma'))) (δ-mapL n' ma)
+                                             ∙ cong₂ (λ a b → a ∘ b) (sym (perturb≡map n ma)) (sym (perturb≡map n' ma'))) }
 
+      isHomEq : IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) (f' (next f)) (EndoMonFun (𝕃 (A .P)) .snd)
+               ≡ IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) (fix f') (EndoMonFun (𝕃 (A .P)) .snd)
+      isHomEq = cong (λ f -> IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) f (EndoMonFun (𝕃 (A .P)) .snd)) (sym unfold-f)
       
 
-      isHom' : ( ▹ IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) (f' (next f)) (EndoMonFun (𝕃 (A .P)) .snd))
+     {- isHom' : ( ▹ IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) (f' (next f)) (EndoMonFun (𝕃 (A .P)) .snd))
               -> IsMonoidHom (CommMonoid→Monoid (nat-monoid ×M A .Perturb) .snd) (f' (next f)) (EndoMonFun (𝕃 (A .P)) .snd)
       isHom' IH = monoidequiv
         (eqMon _ _ (funExt (λ { (η a) -> let pfA = cong (MonFun.f) (perturb A .snd .presε) in  cong η (funExt⁻ pfA a);
@@ -233,8 +216,7 @@ open ClockedCombinators k
                     ∙ (λ i → funExt (λ x → cong (λ m -> (δ ^ m) x) (+-comm n' n)) i _)) ;
            (θ la) -> {!!};
            ℧ -> {!!} }
-        )}
-        -- ((λ x → θ (λ _ → x)) ^ (n + n')) ℧ ≡ (λ ℧ → (δ ^ n) ℧) (δ ^ n' ℧)
+        )} -}
 
 --MonFun A A' -> MonFun B B' -> MonFun (A × B) (A'× B')
 _×PWP_ : PosetWithPtb ℓ ℓ' ℓ'' -> PosetWithPtb ℓ ℓ' ℓ'' -> PosetWithPtb ℓ (ℓ-max ℓ' ℓ') ℓ''
@@ -260,7 +242,7 @@ A ×PWP B = record {
 --
 -- Monotone functions on Posets with Perturbations
 --
-PosetWithPtb-Vert : {ℓ ℓ' ℓ'' : Level} (P1 P2 : PosetWithPtb ℓ ℓ' ℓ'') -> Type {!!} -- (ℓ-max ℓ ℓ')
+PosetWithPtb-Vert : {ℓ ℓ' ℓ'' : Level} (P1 P2 : PosetWithPtb ℓ ℓ' ℓ'') -> Type (ℓ-max ℓ ℓ')
 PosetWithPtb-Vert P1 P2 = MonFun (P1 .P) (P2 .P)
 -- TODO should there be a condition on preserving the perturbations?
 
