@@ -17,9 +17,13 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
 
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+
 open import Common.Later
 open import Common.Poset.Monotone
 open import Common.Poset.Convenience
+open import Common.LaterProperties
 
 open BinaryRelation
 open MonFun
@@ -58,6 +62,25 @@ UnitP = flat (Unit , isSetUnit)
 -- unique monotone function into UnitP
 UnitP! : {A : Poset ℓ ℓ'} -> MonFun A UnitP
 UnitP! = record { f = λ _ -> tt ; isMon = λ _ → refl }
+
+
+-- Lifting a poset to higher universe level
+LiftPoset : {ℓ1 ℓ1' : Level} (X : Poset ℓ1 ℓ1') ->
+  (ℓ2 ℓ2' : Level) -> Poset (ℓ-max ℓ1 ℓ2) (ℓ-max ℓ1' ℓ2')
+LiftPoset {ℓ1 = ℓ1} {ℓ1' = ℓ1'} X ℓ2 ℓ2' =
+  (Lift {i = ℓ1} {j = ℓ2} ⟨ X ⟩) ,
+  posetstr (λ {(lift x) (lift y) -> Lift {j = ℓ2'} (x X.≤ y) })
+  (isposet
+    (isOfHLevelLift 2 X.is-set)
+    (λ {(lift x) (lift y) (lift p) (lift q) →
+      cong lift (X.is-prop-valued x y p q)})
+    (λ {(lift x) → lift (X.is-refl x)})
+    (λ {(lift x) (lift y) (lift z) (lift x≤y) (lift y≤z) ->
+      lift (X.is-trans x y z x≤y y≤z)})
+    (λ {(lift x) (lift y) (lift x≤y) (lift y≤x) ->
+      cong lift (X.is-antisym x y x≤y y≤x)}))
+    where
+      module X = PosetStr (X .snd)
 
 
 
@@ -183,10 +206,10 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ'B = ℓ'B} A B =
     order-antisym : BinaryRelation.isAntisym order
     order-antisym = {!!}
 
-σ1 : {A B : Poset ℓ ℓ'} -> ⟨ A ==> (A ⊎p B) ⟩
+σ1 : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} -> ⟨ A ==> (A ⊎p B) ⟩
 σ1 = record { f = λ a -> inl a ; isMon = λ {x} {y} x≤y → lift x≤y }
 
-σ2 : {A B : Poset ℓ ℓ'} -> ⟨ B ==> (A ⊎p B) ⟩
+σ2 : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} -> ⟨ B ==> (A ⊎p B) ⟩
 σ2 = record { f = λ b -> inr b ; isMon = λ {x} {y} x≤y → lift x≤y }
 
 
@@ -228,7 +251,7 @@ module _ (k : Clock) where
       isset = λ x y p1 p2 i j t → isSet-poset X (x t) (y t) (λ i' -> p1 i' t) (λ i' -> p2 i' t) i j
 
       propValued : isPropValued ord
-      propValued = {!!}
+      propValued = λ a b p q → isProp▸ (λ t -> isPropValued-poset X (a t) (b t)) p q
 
       ord-refl : (a : ▹ ⟨ X ⟩) -> ord a a
       ord-refl a = λ t → reflexive X (a t)
@@ -245,16 +268,18 @@ module _ (k : Clock) where
   ▸' : ▹ Poset ℓ ℓ' → Poset ℓ ℓ'
   ▸' X = (▸ (λ t → ⟨ X t ⟩)) ,
          posetstr ord
-                  (isposet isset-later {!!} ord-refl ord-trans ord-antisym)
+                  (isposet isset-later propValued ord-refl ord-trans ord-antisym)
      where
 
        ord : ▸ (λ t → ⟨ X t ⟩) → ▸ (λ t → ⟨ X t ⟩) → Type _
-       -- ord x1~ x2~ =  ▸ (λ t → (str (X t) PosetStr.≤ (x1~ t)) (x2~ t))
        ord x1~ x2~ =  ▸ (λ t → (PosetStr._≤_ (str (X t)) (x1~ t)) (x2~ t))
 
        isset-later : isSet (▸ (λ t → ⟨ X t ⟩))
        isset-later = λ x y p1 p2 i j t →
          isSet-poset (X t) (x t) (y t) (λ i' → p1 i' t) (λ i' → p2 i' t) i j
+
+       propValued : isPropValued ord
+       propValued = λ a b p q → isProp▸ (λ t -> isPropValued-poset (X t) (a t) (b t)) p q
 
        ord-refl : (a : ▸ (λ t → ⟨ X t ⟩)) -> ord a a
        ord-refl a = λ t ->
@@ -290,3 +315,22 @@ Suc : MonFun (UnitP ×p ℕ) ℕ
 Suc = record {
   f = λ (_ , n) -> suc n ;
   isMon = λ { {_ , n} {_ , m} (_ , n≡m) → cong suc n≡m} }
+
+
+-- Isomorphisms
+Unit-×L : {X : Type ℓ} -> Unit × X ≃ X
+Unit-×L = isoToEquiv
+  (iso (λ {(_ , x) -> x}) (λ x -> (tt , x)) (λ x → refl) (λ p → refl))
+
+UnitP-×L-equiv : {X : Poset ℓ ℓ'} -> PosetEquiv (UnitP ×p X) X
+UnitP-×L-equiv .fst = Unit-×L
+UnitP-×L-equiv .snd = makeIsPosetEquiv Unit-×L is-mon is-mon-inv
+  where
+    is-mon : _
+    is-mon (_ , x) (_ , x') (_ , x≤x') = x≤x'
+
+    is-mon-inv : _
+    is-mon-inv x x' x≤x' = refl , x≤x'
+
+UnitP-×L : {X : Poset ℓ ℓ'} -> (UnitP ×p X) ≡ X
+UnitP-×L {X = X} = equivFun (PosetPath (UnitP ×p X) X) UnitP-×L-equiv
