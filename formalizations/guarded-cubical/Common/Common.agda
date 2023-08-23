@@ -15,10 +15,14 @@ open import Cubical.Data.Empty
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 
+open import Cubical.Algebra.Monoid.Base
+open import Cubical.Algebra.Monoid.FreeCommProduct
+open import Cubical.Algebra.CommMonoid.Base
+
 
 private
   variable
-    ℓ ℓ' : Level
+    ℓ ℓ' ℓ'' : Level
     ℓA ℓB ℓC ℓD : Level
     ℓR ℓS : Level
 
@@ -76,4 +80,18 @@ isPropTwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD} 
 isPropTwoCell isPropValuedS =
   isPropΠ3 (λ a b aRb -> isPropValuedS _ _)
 
+
+
+
+
+isSplitMono : {ℓA ℓB : Level} {A : Type ℓA} {B : Type ℓB} ->
+  (f : A -> B) -> Type (ℓ-max ℓA ℓB)
+isSplitMono {A = A} {B = B} f =
+ Σ[ g ∈ (B -> A) ] (∀ a -> g (f a) ≡ a)
+
+
+InjectiveMonoidHom : {ℓm ℓn : Level} ->
+  (M : Monoid ℓm) (N : Monoid ℓn) -> Type (ℓ-max ℓm ℓn)
+InjectiveMonoidHom M N =
+  Σ[ f ∈ MonoidHom M N ] isSplitMono (fst f)
 
