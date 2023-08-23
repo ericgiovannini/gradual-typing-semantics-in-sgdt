@@ -10,7 +10,7 @@ open import Common.Later
 module Semantics.MonotoneCombinators where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Nat renaming (ℕ to Nat)
+open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
 
 open import Cubical.Relation.Binary
 open import Cubical.Foundations.Structure
@@ -302,6 +302,33 @@ _~->_ : {A B C D : Poset ℓ ℓ'} ->
     ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
 pre ~-> post = Curry ((mCompU post App) ∘m (With2nd pre))
 
+
+{-
+
+_^m_ : ⟨ A ==> A ⟩ -> Nat -> ⟨ A ==> A ⟩
+g ^m zero = Id
+g ^m suc n = mCompU g (g ^m n)
+
+^m-underlying-fn : (g : ⟨ A ==> A ⟩) (n : Nat) ->
+  MonFun.f (g ^m n) ≡ (MonFun.f g) ^ n
+^m-underlying-fn g zero = refl
+^m-underlying-fn g (suc n) = funExt (λ x -> λ i -> MonFun.f g (^m-underlying-fn g n i x))
+
+-}
+
+
+-- This formulation has better definintional behavior, becasue
+-- the underlying function is *definitionally* equal to the
+-- normal iterated composition operator (_^_).
+_^m_ : ⟨ A ==> A ⟩ -> Nat -> ⟨ A ==> A ⟩
+g ^m n = record { f = fun n ; isMon = mon n }
+  where
+    fun : Nat -> _
+    fun m = (MonFun.f g) ^ m
+
+    mon : (m : Nat) -> monotone (fun m)
+    mon zero {x} {y} x≤y = x≤y
+    mon (suc m) {x} {y} x≤y = isMon g (mon m x≤y)
 
 
 
