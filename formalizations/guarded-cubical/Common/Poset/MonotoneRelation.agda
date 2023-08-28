@@ -22,6 +22,7 @@ open import Cubical.Foundations.Univalence
 
 open import Common.Common
 open import Common.Poset.Convenience
+open import Common.Poset.Constructions
 open import Common.Poset.Monotone hiding (monotone)
 
 open BinaryRelation
@@ -257,10 +258,35 @@ CompUnitRight : {X Y : Poset ℓ ℓ} -> (R : MonRel X Y ℓ) ->
   CompMonRel {!!} {!!} ≡ {!!}
 CompUnitRight = {!!}
 
+-- Composition of monotone relations is associative
 CompAssoc : {!!}
 CompAssoc = {!!}
 
 
+
+-- Product of monotone relations
+_×monrel_ : {X : Poset ℓX ℓ'X} {X' : Poset ℓX' ℓ'X'}
+            {Y : Poset ℓY ℓ'Y} {Y' : Poset ℓY' ℓ'Y'} ->
+  MonRel X X' ℓR ->
+  MonRel Y Y' ℓR' ->
+  MonRel (X ×p Y) (X' ×p Y') (ℓ-max ℓR ℓR')
+(R ×monrel S) .R (x , y) (x' , y') = R.R x x' × S.R y y'
+  where module R = MonRel R
+        module S = MonRel S
+(R ×monrel S) .is-prop-valued (x , y) (x' , y') =
+  isProp× (R.is-prop-valued x x') (S.is-prop-valued y y')
+  where module R = MonRel R
+        module S = MonRel S
+(R ×monrel S) .is-antitone {x' = x'1 , y'1} {x = x'2 , y'2} {y = x , y}
+  (x'1≤x'2 , y'1≤y'2) (x'2Rx , y'2Sy) =
+  (R.is-antitone x'1≤x'2 x'2Rx) , (S.is-antitone y'1≤y'2 y'2Sy)
+  where module R = MonRel R
+        module S = MonRel S
+(R ×monrel S) .is-monotone {x = x , y} {y = x'1 , y'1} {y' = x'2 , y'2}
+  (xRx'1 , ySy'1) (x'1≤x'2 , y'1≤y'2) =
+  (R.is-monotone xRx'1 x'1≤x'2) , S.is-monotone ySy'1 y'1≤y'2
+  where module R = MonRel R
+        module S = MonRel S
 
 
 --
