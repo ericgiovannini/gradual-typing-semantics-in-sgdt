@@ -39,6 +39,7 @@ open import Semantics.PredomainInternalHom
 private
   variable
     ℓ ℓ' ℓ'' : Level
+    ℓA ℓ'A ℓB ℓ'B ℓC ℓ'C : Level
     A B : Set ℓ
 private
   ▹_ : Type ℓ → Type ℓ
@@ -48,7 +49,7 @@ private
 -- Lifting a heterogeneous relation between A and B to a relation
 -- between L A and L B.
 module LiftRelation
-  (A B : Type ℓ)
+  (A : Type ℓA) (B : Type ℓB)
   (R : A -> B -> Type ℓ')
   where
 
@@ -98,8 +99,15 @@ module LiftRelation
         Inductive._≾'_ (next _≾_) (δ la) (δ lb)
       ord-δ-monotone' {la} {lb} la≤lb = λ t → la≤lb
 
+     ord-δ^n-monotone : {la : L℧ A} {lb : L℧ B} (n : Nat) ->
+        la ≾ lb -> ((δ ^ n) la) ≾ ((δ ^ n) lb)
+     ord-δ^n-monotone zero la≤lb = la≤lb
+     ord-δ^n-monotone (suc n) la≤lb = ord-δ-monotone (ord-δ^n-monotone n la≤lb)
+
 module LiftComp
-  (A B C : Type ℓ)
+  (A : Type ℓA)
+  (B : Type ℓB)
+  (C : Type ℓC)
   (R : A -> B -> Type ℓ')
   (S : B -> C -> Type ℓ') where
 
@@ -143,7 +151,7 @@ module LiftComp
 --   (2) The transitivity of the relation obtained by lifting a homogeneous
 --   relation on A to a relation on Lift A
 module LiftRelTransHet
-  (A B C : Poset ℓ ℓ')
+  (A : Poset ℓA ℓ'A) (B : Poset ℓB ℓ'B) (C : Poset ℓC ℓ'C)
   -- {ℓ'' : Level}
   (R : MonRel A B ℓ'')
   (S : MonRel B C ℓ'') where
@@ -209,8 +217,12 @@ module LiftPoset (A : Poset ℓ ℓ') where
   ord-prop' IH (η a) (η b) p q = IsPoset.is-prop-valued X.isPoset a b p q
   ord-prop' IH ℧ lb (lift tt) (lift tt) = refl
   ord-prop' IH (θ la~) (θ lb~) p q =
-    lem-p p q (λ i t -> IH t (la~ t) (lb~ t) (≾->≾' (p t)) (≾->≾' (q t)) i)
+    λ i t → prop-≾'→prop-≾ (IH t) (la~ t) (lb~ t) (p t) (q t) i
+    -- lem-p p q (λ i t -> IH t (la~ t) (lb~ t) (≾->≾' (p t)) (≾->≾' (q t)) i)
     where
+      prop-≾'→prop-≾ : BinaryRelation.isPropValued _≾'_ -> BinaryRelation.isPropValued _≾_
+      prop-≾'→prop-≾ = transport (λ i -> BinaryRelation.isPropValued (sym unfold-≾ i))
+
       unfold : (r : ▸ λ t -> la~ t ≾ lb~ t) -> (▸ λ t -> la~ t ≾' lb~ t)
       unfold r t = transport (λ i → unfold-≾ i (la~ t) (lb~ t)) (r t) -- or:  ≾->≾' (r t)
       -- or: unfold r = transport (λ i → ▸ λ t -> unfold-≾ i (la~ t) (lb~ t)) r
@@ -268,8 +280,6 @@ module LiftPoset (A : Poset ℓ ℓ') where
   ord-antisym = {!!}
 
 
- 
-
   𝕃 : Poset ℓ ℓ'
   𝕃 =
     (L℧ ⟨ A ⟩) ,
@@ -312,7 +322,7 @@ module LiftPoset (A : Poset ℓ ℓ') where
 -}
 
 
-module LiftMonRel (A B : Poset ℓ ℓ') (R : MonRel A B ℓ'') where
+module LiftMonRel (A : Poset ℓA ℓ'A) (B : Poset ℓB ℓ'B) (R : MonRel A B ℓ'') where
   module LR = LiftRelation ⟨ A ⟩ ⟨ B ⟩ (MonRel.R R)
   open LiftPoset
   open MonRel

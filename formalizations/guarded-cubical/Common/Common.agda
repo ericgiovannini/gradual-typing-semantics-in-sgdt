@@ -23,6 +23,7 @@ open import Cubical.Algebra.CommMonoid.Base
 private
   variable
     ℓ ℓ' ℓ'' : Level
+    ℓX ℓY ℓZ : Level
     ℓA ℓB ℓC ℓD : Level
     ℓR ℓS : Level
 
@@ -49,11 +50,12 @@ inl≠inr {_} {_} {A} {B} a b eq = transport (cong (diagonal ⊤ ⊥) eq) tt
 
 -- Definitions about relations and two-cells
 
-compRel : {ℓ ℓ' : Level} -> {X Y Z : Type ℓ} ->
+compRel : {ℓ' : Level} ->
+  {X : Type ℓX} {Y : Type ℓY} {Z : Type ℓZ}
   (R1 : X -> Y -> Type ℓ') ->
   (R2 : Y -> Z -> Type ℓ') ->
-  (X -> Z -> Type (ℓ-max ℓ ℓ'))
-compRel {ℓ} {ℓ'} {X} {Y} {Z} R1 R2 x z = Σ[ y ∈ Y ] R1 x y × R2 y z
+  (X -> Z -> Type (ℓ-max ℓY ℓ'))
+compRel {ℓ' = ℓ'} {X = X} {Y = Y} {Z = Z} R1 R2 x z = Σ[ y ∈ Y ] R1 x y × R2 y z
 
 isPropValuedRel : {A : Type ℓA} {B : Type ℓB} ->
   (R : A -> B -> Type ℓR) -> Type (ℓ-max (ℓ-max ℓA ℓB) ℓR)

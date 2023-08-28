@@ -149,7 +149,8 @@ _!_<*>_ :
 Γ ! f <*> g = S Γ f g
 
 
-K : (Γ : Poset ℓ ℓ') -> {A : Poset ℓ ℓ'} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
+-- K : (Γ : Poset ℓ ℓ') -> {A : Poset ℓ ℓ'} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
+K : (Γ : Poset ℓΓ ℓ'Γ) -> {A : Poset ℓA ℓ'A} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
 K _ {A} = λ a → record {
     f = λ γ → a ;
     isMon = λ {a1} {a2} a1≤a2 → reflexive A a }

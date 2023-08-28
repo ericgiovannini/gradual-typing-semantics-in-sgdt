@@ -1,4 +1,7 @@
- -- to allow opening this module in other files while there are still holes
+{-# OPTIONS --guarded --rewriting #-}
+
+
+-- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
 module Common.Poset.MonotoneRelation where
@@ -26,8 +29,13 @@ open BinaryRelation
 
 private
   variable
-    ℓ ℓ' ℓR : Level
+    ℓX ℓ'X ℓY ℓ'Y ℓZ ℓ'Z : Level
+    ℓX' ℓ'X' ℓY' ℓ'Y' ℓZ' ℓ'Z' : Level
+    ℓ ℓ' ℓR ℓR' : Level
     ℓo : Level
+
+    X : Poset ℓX ℓ'X
+    Y : Poset ℓY ℓ'Y
 
 
 {-
@@ -51,8 +59,12 @@ unquoteDecl IsMonRel'IsoΣ = declareRecordIsoΣ IsMonRel'IsoΣ (quote (IsMonRel'
 
 -- Monotone relations between posets X and Y
 -- (antitone in X, monotone in Y).
-record MonRel (X Y : Poset ℓ ℓ') (ℓR : Level) :
-  Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-suc ℓR)) where
+--
+-- TODO allow X and Y to have different levels
+-- record MonRel (X Y : Poset ℓ ℓ') (ℓR : Level) :
+--   Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-suc ℓR)) where
+record MonRel (X : Poset ℓX ℓ'X) (Y : Poset ℓY ℓ'Y) (ℓR : Level) :
+  Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) (ℓ-max ℓY ℓ'Y)) (ℓ-suc ℓR)) where
   module X = PosetStr (X .snd)
   module Y = PosetStr (Y .snd)
   _≤X_ = X._≤_
@@ -63,9 +75,10 @@ record MonRel (X Y : Poset ℓ ℓ') (ℓR : Level) :
     is-antitone : ∀ {x' x y} -> x' ≤X x -> R x y -> R x' y
     is-monotone : ∀ {x y y'} -> R x y -> y ≤Y y' -> R x y'
 
+open MonRel hiding (module X ; module Y ; _≤X_ ; _≤Y_)
 
-record MonRel' (X Y : Poset ℓ ℓ') (ℓR : Level) :
-  Type (ℓ-max (ℓ-max ℓ ℓ') (ℓ-suc ℓR)) where
+record MonRel' (X : Poset ℓX ℓ'X) (Y : Poset ℓY ℓ'Y) (ℓR : Level) :
+  Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) (ℓ-max ℓY ℓ'Y)) (ℓ-suc ℓR)) where
   module X = PosetStr (X .snd)
   module Y = PosetStr (Y .snd)
   _≤X_ = X._≤_
@@ -76,7 +89,7 @@ record MonRel' (X Y : Poset ℓ ℓ') (ℓR : Level) :
     is-monotone : ∀ x y y' -> ⟨ R x y ⟩ -> y ≤Y y' -> ⟨ R x y' ⟩
 
 -- Iso between MonRel and MonRel'
-MonRel≅MonRel' : ∀ {ℓ ℓ' ℓR : Level} {X Y : Poset ℓ ℓ'} ->
+MonRel≅MonRel' : ∀ {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} ->
   Iso (MonRel X Y ℓR) (MonRel' X Y ℓR)
 MonRel≅MonRel' = iso
   (λ S -> record {
@@ -102,7 +115,7 @@ unquoteDecl MonRel'IsoΣ = declareRecordIsoΣ MonRel'IsoΣ (quote (MonRel'))
 
 
 -- MonRel' is a Set
-isSetMonRel' : {X Y : Poset ℓ ℓ'} -> isSet (MonRel' X Y ℓR)
+isSetMonRel' : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> isSet (MonRel' X Y ℓR)
 isSetMonRel' = isSetRetract
   (Iso.fun MonRel'IsoΣ) (Iso.inv MonRel'IsoΣ)
   (Iso.leftInv MonRel'IsoΣ)
@@ -113,17 +126,17 @@ isSetMonRel' = isSetRetract
 
 
 -- MonRel is a Set
-isSetMonRel : {X Y : Poset ℓ ℓ'} -> isSet (MonRel X Y ℓR)
+isSetMonRel : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> isSet (MonRel X Y ℓR)
 isSetMonRel = {!!}
 
 -- Equality of monotone relations follows from equality
 -- of their underlying relation
-eqMonRel : {X Y : Poset ℓ ℓ'} -> (R S : MonRel X Y ℓR) ->
+eqMonRel : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> (R S : MonRel X Y ℓR) ->
   MonRel.R R ≡ MonRel.R S -> R ≡ S
 eqMonRel = {!!}
 
 
-module MonReasoning {ℓR : Level} {X Y : Poset ℓ ℓ'} where
+module MonReasoning {ℓR : Level} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} where
   module X = PosetStr (X .snd)
   module Y = PosetStr (Y .snd)
   _≤X_ = X._≤_
@@ -157,7 +170,7 @@ poset-monrel {ℓ' = ℓ'} {ℓo = ℓo} X = record {
 
 
 -- Composing with functions on either side
-functionalRel : {X' X Y Y' : Poset ℓ ℓ'} ->
+functionalRel : {X' : Poset ℓX' ℓ'X'} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} {Y' : Poset ℓY' ℓ'Y'} ->
   (f : MonFun X' X) ->
   (g : MonFun Y' Y) ->
   (R : MonRel X Y ℓR) ->
@@ -174,10 +187,10 @@ functionalRel f g R = record {
 -- the universe level of the resulting relation involves an
 -- ℓ-max with ℓ (i.e. the level of the elements in Y)
 CompMonRel : -- {ℓX ℓ'X ℓY ℓ'Y ℓZ ℓ'Z : Level} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} {Z : Poset ℓZ ℓ'Z} ->
-  {X Y Z : Poset ℓ ℓ'} ->
+  {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} {Z : Poset ℓZ ℓ'Z} ->
   MonRel X Y ℓR ->
   MonRel Y Z ℓR ->
-  MonRel X Z (ℓ-max ℓ ℓR)
+  MonRel X Z (ℓ-max ℓY ℓR)
 CompMonRel {ℓ''} {X = X} {Y = Y} {Z = Z} R1 R2 = record {
   R = λ x z -> ∥ compRel (MonRel.R R1) (MonRel.R R2) x z ∥₁ ;
   is-prop-valued = λ x z -> isPropPropTrunc ;
@@ -198,7 +211,7 @@ CompMonRel {ℓ''} {X = X} {Y = Y} {Z = Z} R1 R2 = record {
 
 
 -- Lifting a monotone relation to a higher universe level
-LiftR : {ℓR' : Level} {X Y : Poset ℓ ℓ'} (R : MonRel X Y ℓR) ->
+LiftR : {ℓR' : Level} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} (R : MonRel X Y ℓR) ->
   MonRel X Y (ℓ-max ℓR ℓR')
 LiftR {ℓR' = ℓR'} R = record {
   R = λ x y -> Lift {j = ℓR'} (R .MonRel.R x y) ;
@@ -210,9 +223,9 @@ LiftR {ℓR' = ℓR'} R = record {
 
 -- Composing a monotone relation R with the underlying relation of
 -- a poset yields R.
-CompUnitLeft-Lift : {X Y : Poset ℓ ℓ'} -> (R : MonRel X Y ℓR) ->
-  CompMonRel (poset-monrel {ℓo = ℓR} X) (LiftR {ℓR' = ℓ'} R) ≡
-  LiftR {ℓR' = ℓ-max ℓ ℓ'} R
+CompUnitLeft-Lift : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> (R : MonRel X Y ℓR) ->
+  CompMonRel (poset-monrel {ℓo = ℓR} X) (LiftR {ℓR' = ℓ'X} R) ≡
+  LiftR {ℓR' = ℓ-max ℓX ℓ'X} R
 CompUnitLeft-Lift {X = X} R = eqMonRel _ _
   (funExt (λ x ->
     funExt (λ y ->
