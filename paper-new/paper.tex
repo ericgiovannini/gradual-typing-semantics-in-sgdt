@@ -32,42 +32,83 @@
 
 \begin{document}
 
-\title{Denotational Semantics for Gradual Typing in Synthetic Guarded Domain Theory}
+\title{Mechanized Denotational Semantics of Gradual Typing using Synthetic Guarded Domain Theory}
 \author{Eric Giovannini}
 \author{Max S. New}
 
-
 \begin{abstract}
-    We develop a denotational semantics for a simple gradually typed language
-    that is adequate and proves the graduality theorem.
-    %
-    The denotational semantics is constructed using \emph{synthetic
-    guarded domain theory} working in a type theory with a later
-    modality and clock quantification.
-    %
-    This provides a remarkably simple presentation of the semantics,
-    where gradual types are interpreted as ordinary types in our ambient
-    type theory equipped with an ordinary preorder structure to model
-    the error ordering.
-    %
-    This avoids the complexities of classical domain-theoretic models
-    (New and Licata) or logical relations models using explicit
-    step-indexing (New and Ahmed).
-    %
-    In particular, we avoid a major technical complexity of New and
-    Ahmed that requires two logical relations to prove the graduality
-    theorem.
+  Gradually typed programming languages, which allow for soundly
+  mixing static and dynamically typed programming styles, present a
+  strong challenge for metatheorists. Even the simplest sound
+  gradually typed languages feature at least recursion and errors,
+  with realistic languages featuring furthermore runtime allocation of
+  memory locations and dynamic type tags. Further, the desired
+  metatheoretic properties of gradually typed languages have become
+  increasingly sophisticated: validity of typed based equational
+  reasoning as well as the relational property known as the gradual
+  guarantee or graduality. Many recent works have tackled verifying
+  these properties, but the resulting mathematical developments are
+  highly repetitive and tedious, with few reusable theorems persisting
+  across different developments.
+
+  In this work, we present a new denotational account of gradual
+  typing semantics developed using guarded domain theory. Guarded
+  domain theory combines the expressive power of step-indexed logical
+  relations for modeling recursive features with the modularity and
+  reusability of denotational semantics. Further, recent extensions to
+  cubical Agda mean that synthetic guarded domain theory is readily
+  mechanized in a proof assistant. We demonstrate the feasibility of
+  this approach with a model of gradually typed lambda calculus and
+  prove the validity of beta-eta equality and the graduality theorem
+  for the denotational model. This model should provide the basis for
+  a reusable mathematical theory of gradually typed program semantics.
+%%     We develop a denotational semantics for a simple gradually typed language
+%%     that is adequate and proves the graduality theorem.
+%%     %
+%%     The denotational semantics is constructed using \emph{synthetic
+%%     guarded domain theory} working in a type theory with a later
+%%     modality and clock quantification.
+%%     %
+%%     This provides a remarkably simple presentation of the semantics,
+%%     where gradual types are interpreted as ordinary types in our ambient
+%%     type theory equipped with an ordinary preorder structure to model
+%%     the error ordering.
+%%     %
+%%     This avoids the complexities of classical domain-theoretic models
+%%     (New and Licata) or logical relations models using explicit
+%%     step-indexing (New and Ahmed).
+%%     %
+%%     In particular, we avoid a major technical complexity of New and
+%%     Ahmed that requires two logical relations to prove the graduality
+%%     theorem.
   
-    By working synthetically we can treat the domains in which gradual
-    types are interpreted as if they were ordinary sets. This allows us
-    to give a ``na\"ive'' presentation of gradual typing where each
-    gradual type is modeled as a well-behaved subset of the universal
-    domain used to model the dynamic type, and type precision is modeled
-    as simply a subset relation.
-    %
+%%     By working synthetically we can treat the domains in which gradual
+%%     types are interpreted as if they were ordinary sets. This allows us
+%%     to give a ``na\"ive'' presentation of gradual typing where each
+%%     gradual type is modeled as a well-behaved subset of the universal
+%%     domain used to model the dynamic type, and type precision is modeled
+%%     as simply a subset relation.
+%%     %
   \end{abstract}
 
-  \maketitle
+\maketitle
+
+% Outline
+
+% 1. Intro: What do we want out of gradually typed languages and why
+%    is it hard to prove? Explanation: Gradual Typing inherently
+%    involves recursive types, multiple effects, relational properties.
+%    We argue that the increasing complexity of the metatheory of
+%    gradual typing makes it a good candidate for 
+
+% 2. Extensional Dream Semantics: double categorical
+
+% 3. The Problem with Step-indexing
+
+% 4. A Compromise
+
+% 5. Formalization in Guarded Cubical Agda
+
 
 \input{intro}
 
