@@ -158,9 +158,10 @@ module _ where
   -- Ordering on DP morphisms
   module _ {X : DoublePoset ℓX ℓ'X ℓ''X} {Y : DoublePoset ℓY ℓ'Y ℓ''Y} where
 
-    module X = DblPosetStr (X .snd)
-    module Y = DblPosetStr (Y .snd)
-    module YPoset = PosetStr (DoublePoset→Poset Y .snd)
+    private
+      module X = DblPosetStr (X .snd)
+      module Y = DblPosetStr (Y .snd)
+      module YPoset = PosetStr (DoublePoset→Poset Y .snd)
 
     _≤mon_ :
       DPMor X Y → DPMor X Y → Type (ℓ-max ℓX ℓ'Y)
