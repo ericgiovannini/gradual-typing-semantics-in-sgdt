@@ -35,7 +35,7 @@ open import Common.Poset.Constructions
 private
   variable
     ℓ ℓ' : Level
-    ℓR1 ℓR2 : Level
+    ℓR ℓR1 ℓR2 : Level
     ℓA ℓ'A ℓA' ℓ'A' ℓB ℓ'B ℓB' ℓ'B' : Level
     A :  Poset ℓA ℓ'A
     A' : Poset ℓA' ℓ'A'
@@ -104,6 +104,92 @@ module ClockedProofs (k : Clock) where
   ret-monotone-het {A = A} {A' = A'} rAA' = λ a a' a≤a' →
     LiftRelation.Properties.ord-η-monotone ⟨ A ⟩ ⟨ A' ⟩ rAA' a≤a'
 
+  ret-monotone : {A : Poset ℓA ℓ'A} ->
+    (a a' : ⟨ A ⟩) ->
+    (rAA : ⟨ A ⟩ -> ⟨ A ⟩ -> Type ℓR) ->
+    rel (𝕃 A) (ret a) (ret a')
+  ret-monotone = {!!}
+
+  _×rel_ : {A : Type ℓA} {A' : Type ℓA'} {B : Type ℓB} {B' : Type ℓB'} ->
+    (R : A -> A' -> Type ℓR1) -> (S : B -> B' -> Type ℓR2) ->
+    (p : A × B) -> (p' : A' × B') -> Type (ℓ-max ℓR1 ℓR2)
+  (R ×rel S) (a , b) (a' , b') = R a a' × S b b' --R a a' , S b b' won't work
+
+  lift×-monotone-het : {A : Poset ℓA ℓ'A} {A' : Poset ℓA' ℓ'A'}
+    {B : Poset ℓB ℓ'B} {B' : Poset ℓB' ℓ'B'} ->
+    (R : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
+    (S : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type ℓR2) ->
+    (lab : ⟨ 𝕃 (A ×p B) ⟩) -> (la'b' : ⟨ 𝕃 (A' ×p B') ⟩) ->
+    (_ LiftRelation.≾ _) (R ×rel S) lab la'b' ->
+    ((_ LiftRelation.≾ _) R ×rel (_ LiftRelation.≾ _) S) (lift× lab) (lift× la'b')
+  lift×-monotone-het {A = A} {A' = A'} {B = B} {B' = B'} R S lab la'b' lab≤la'b' =
+    let fixed = fix monotone-lift×' in
+    transport {!!} {!!}
+    where
+      _≾'LA_  = LiftPoset._≾'_ A
+      _≾'LA'_ = LiftPoset._≾'_ A'
+      _≾'LB_  = LiftPoset._≾'_ B
+      _≾'LB'_ = LiftPoset._≾'_ B'
+
+      module LiftP' = LiftRelation (⟨ A ⟩ × ⟨ B ⟩) (⟨ A' ⟩ × ⟨ B' ⟩) (R ×rel S)
+      module LiftP1' = LiftRelation ⟨ A ⟩ ⟨ A' ⟩ R
+      module LiftP2' = LiftRelation ⟨ B ⟩ ⟨ B' ⟩ S
+
+      _≾'P'_ = LiftP'.Inductive._≾'_ (next LiftP'._≾_)
+      _≾'P1'_ = LiftP1'.Inductive._≾'_ (next LiftP1'._≾_)
+      _≾'P2'_ = LiftP2'.Inductive._≾'_ (next LiftP2'._≾_)
+
+      monotone-lift×' :
+        ▹ ((lab : ⟨ 𝕃 (A ×p B) ⟩) -> (la'b' : ⟨ 𝕃 (A' ×p B') ⟩) ->
+          lab ≾'P' la'b' ->
+          (lift×' (next lift×) lab .fst ≾'P1' {!!}) × ({!!} ≾'P2' {!!})) ->
+          -- {!? ≾'P1' ?!} × {! ? ≾'P2' ?!}) ->
+        (lab : ⟨ 𝕃 (A ×p B) ⟩) -> (la'b' : ⟨ 𝕃 (A' ×p B') ⟩) ->
+          lab ≾'P' la'b' ->
+          {!!}
+      monotone-lift×' = {!!}
+
+--todo: follow ext-monotone-het
+  lift×-inv-monotone-het : {A : Poset ℓA ℓ'A} {A' : Poset ℓA' ℓ'A'}
+    {B : Poset ℓB ℓ'B} {B' : Poset ℓB' ℓ'B'} ->
+    (R : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
+    (S : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type ℓR2) ->
+    (lalb : ⟨ 𝕃 A ×p 𝕃 B ⟩) -> (la'lb' : ⟨ 𝕃 A' ×p 𝕃 B' ⟩) ->
+    ((_ LiftRelation.≾ _) R ×rel (_ LiftRelation.≾ _) S) lalb la'lb' ->
+    (_ LiftRelation.≾ _) (R ×rel S) (lift×-inv lalb) (lift×-inv la'lb')
+  lift×-inv-monotone-het {A = A} {A' = A'} {B = B} {B' = B'} R S p p' (la≤la' , lb≤lb') =
+    let fixed = fix monotone-lift×-inv' in
+    transport
+      (sym (λ i -> LiftP'.unfold-≾ i (unfold-lift×-inv i p) (unfold-lift×-inv i p')))
+      (fixed p p' ((transport (λ i → LiftP1'.unfold-≾ i (p .fst) (p' .fst)) la≤la')
+                  , transport (λ i → LiftP2'.unfold-≾ i (p .snd) (p' .snd)) lb≤lb'))
+    where
+      _≾'LA_  = LiftPoset._≾'_ A
+      _≾'LA'_ = LiftPoset._≾'_ A'
+      _≾'LB_  = LiftPoset._≾'_ B
+      _≾'LB'_ = LiftPoset._≾'_ B'
+
+      module LiftP' = LiftRelation (⟨ A ⟩ × ⟨ B ⟩) (⟨ A' ⟩ × ⟨ B' ⟩) (R ×rel S)
+      module LiftP1' = LiftRelation ⟨ A ⟩ ⟨ A' ⟩ R
+      module LiftP2' = LiftRelation ⟨ B ⟩ ⟨ B' ⟩ S
+
+      _≾'P'_ = LiftP'.Inductive._≾'_ (next LiftP'._≾_)
+      _≾'P1'_ = LiftP1'.Inductive._≾'_ (next LiftP1'._≾_)
+      _≾'P2'_ = LiftP2'.Inductive._≾'_ (next LiftP2'._≾_)
+      monotone-lift×-inv' :
+        ▹ ((p : ⟨ 𝕃 A ×p 𝕃 B ⟩) -> (p' : ⟨ 𝕃 A' ×p 𝕃 B' ⟩) ->
+          ((p .fst ≾'P1' p' .fst) × (p .snd ≾'P2' p' .snd)) ->
+          lift×-inv' (next lift×-inv) p ≾'P' lift×-inv' (next lift×-inv) p') ->
+        (p : ⟨ 𝕃 A ×p 𝕃 B ⟩) -> (p' : ⟨ 𝕃 A' ×p 𝕃 B' ⟩) ->
+          ((p .fst ≾'P1' p' .fst) × (p .snd ≾'P2' p' .snd)) ->
+          lift×-inv' (next lift×-inv) p ≾'P' lift×-inv' (next lift×-inv) p'
+      monotone-lift×-inv' IH (η a , η b) (η a' , η b') (la≤la' , lb≤lb') = transport (λ i → LiftP'.unfold-≾ i {!lift×-inv (η a , η b )!} {!!}) {!!}
+      monotone-lift×-inv' IH ((η a) , (θ lb~)) ((η a') , (θ lb'~)) (la≤la' , lb≤lb') = {!!}
+      monotone-lift×-inv' IH (℧ , _) (℧ , _) (la≤la' , lb≤lb') = {!!}
+      monotone-lift×-inv' IH (_ , ℧) (_ , ℧) (la≤la' , lb≤lb') = {!!}
+      monotone-lift×-inv' IH ((θ la~) , lb) (la' , lb') (la≤la' , lb≤lb') = {!!}
+      monotone-lift×-inv' IH p p' p≤p' = {!!}
+ 
   -- ext respects monotonicity, in a general, heterogeneous sense
   ext-monotone-het : {A A' : Poset ℓA ℓ'A} {B B' : Poset ℓB ℓ'B}
     (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
@@ -148,11 +234,11 @@ module ClockedProofs (k : Clock) where
           (la ≾'LALA' la') ->
           (ext' f  (next (ext f))  la) ≾'LBLB'
           (ext' f' (next (ext f')) la')
-      monotone-ext' IH (η x) (η y) x≤y =
-        transport
+      monotone-ext' IH (η x) (η y) x≤y = transport (λ i → LiftBB'.unfold-≾ i (f x) (f' y)) (f≤f' x y x≤y)
+        {-transport
         (λ i → LiftBB'.unfold-≾ i (f x) (f' y))
-        (f≤f' x y x≤y)
-      monotone-ext' IH ℧ la' la≤la' = tt*
+        (f≤f' x y x≤y)-}
+      monotone-ext' IH ℧ la' la≤la' = {!!} --tt*
       monotone-ext' IH (θ lx~) (θ ly~) la≤la' = λ t ->
         transport
           (λ i → (sym (LiftBB'.unfold-≾)) i
@@ -173,7 +259,18 @@ module ClockedProofs (k : Clock) where
     rel (𝕃 B) (ext f la) (ext f' la')
   ext-monotone {A} {B} f f' f≤f' la la' la≤la' = {!!}
 
+  lift×-monotone : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} ->
+    (l l' : ⟨ 𝕃 (A ×p B) ⟩) ->
+    rel (𝕃 (A ×p B)) l l' ->
+    rel (𝕃 A ×p 𝕃 B) (lift× l) (lift× l')
+  lift×-monotone = {!!}
 
+  lift×-inv-monotone : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} ->
+    (l l' : ⟨ 𝕃 A ×p 𝕃 B ⟩) ->
+    rel (𝕃 A ×p 𝕃 B) l l' ->
+    rel (𝕃 (A ×p B)) (lift×-inv l) (lift×-inv l')
+  lift×-inv-monotone = {!!} 
+  
   bind-monotone :
     {la la' : ⟨ 𝕃 A ⟩} ->
     (f f' : ⟨ A ⟩ -> ⟨ (𝕃 B) ⟩) ->

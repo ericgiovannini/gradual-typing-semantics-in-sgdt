@@ -11,6 +11,8 @@ module Semantics.Concrete.RepresentableRelation (k : Clock) where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
+open import Cubical.Data.Sigma
+open import Cubical.Data.Sum hiding (elim)
 
 open import Cubical.HITs.PropositionalTruncation
 
@@ -32,7 +34,7 @@ open import Semantics.LockStepErrorOrdering k
 open import Semantics.Concrete.DynNew k
 
 
-open LiftPoset
+open LiftPoset using (𝕃)
 open ClockedCombinators k
 open ClockedProofs k
 
@@ -42,6 +44,10 @@ private
     ℓX ℓ'X ℓY ℓ'Y : Level
     ℓX' ℓ'X' ℓY' ℓ'Y' : Level
     ℓR ℓR' : Level
+
+private
+  ▹_ : Type ℓ → Type ℓ
+  ▹_ A = ▹_,_ k A
 
 ----------------------------------
 -- Left pseudo-representation
@@ -127,8 +133,9 @@ IdRepRel X .rightRep = record {
   p = MonId ;
   δX = MonId ;
   δY = MonId ;
-  dnR = λ lx ly lx≤ly → {!!} ;
-  dnL = λ lx ly lx≤ly → {!!} }
+  dnR = λ lx lx' lx≤lx' → {!!};
+  dnL = λ lx lx' lx≤lx' → {!MonRel.R !} }
+  -- How to construct a relation?
 
 
 -- "Product" of pseudo-representable relations
@@ -138,19 +145,40 @@ RepRel× : {X : Poset ℓX ℓ'X} {X' : Poset ℓX' ℓ'X'}
   RepresentableRel Y Y' ℓR' ->
   RepresentableRel (X ×p Y) (X' ×p Y') (ℓ-max ℓR ℓR')
 RepRel× c d .R = c .R ×monrel d .R
-RepRel× c d .leftRep = record {
-  e = {!!} ;
-  δX = {!!} ;
-  δY = {!!} ;
-  UpL = {!!} ;
-  UpR = {!!} }
-RepRel× c d .rightRep = record {
-  p = {!!} ;
-  δX = {!!} ;
-  δY = {!!} ;
-  dnR = {!!} ;
-  dnL = {!!} }
+RepRel× {X = X} {X' = X'} {Y = Y} {Y' = Y'} c d .leftRep = record {
+  e = PairFun (With1st (c .leftRep .e)) (With2nd (d .leftRep .e)) ;
+  δX = PairFun (With1st (c .leftRep .δX)) (With2nd (d .leftRep .δX)) ;
+  δY = PairFun (With1st (c .leftRep .δY)) (With2nd (d .leftRep .δY)) ;
+  UpL = λ (x , y) (x' , y') (p1 , p2) → c .leftRep .UpL x x' p1 , d .leftRep .UpL y y' p2 ;
+  UpR = λ (x , y) (x' , y') (p1 , p2) → c .leftRep .UpR x x' p1 , d .leftRep .UpR y y' p2 }
+{- (X' .snd PosetStr.≤
+       MonFun.f (With1st (c .leftRep .e)) .patternInTele0) x'-}
+RepRel× {X = X} {X' = X'} {Y = Y} {Y' = Y'} c d .rightRep = record {
+  p = mCompU (mCompU (mLift×p' X Y)
+             (PairFun (With1st (c .rightRep .p)) (With2nd (d .rightRep .p))))
+             (mLift×p X' Y') ;
+  δX = mCompU (mCompU (mLift×p' X Y)
+              (PairFun (With1st (c .rightRep .δX)) (With2nd (d .rightRep .δX))))
+              (mLift×p X Y) ;
+  δY = mCompU (mCompU (mLift×p' X' Y')
+              (PairFun (With1st (c .rightRep .δY)) (With2nd (d .rightRep .δY))))
+              (mLift×p X' Y') ;
+  dnR = λ l l' l≤l' → lift×-inv-monotone _ _
+    ((c .rightRep .dnR _ _
+      (lift×-monotone-het _ _ l l'
+      l≤l' .fst))
+    , (d .rightRep .dnR _ _
+        (lift×-monotone-het _ _ l l'
+        l≤l' .snd))) ;
+  dnL = λ l l' l≤l' → lift×-inv-monotone-het _ _ _ _ 
+    (c .rightRep .dnL _ _
+      (lift×-monotone l l' l≤l' .fst)
+    , d .rightRep .dnL _ _
+      (lift×-monotone l l' l≤l' .snd)) }
 
+{-
+(LX' × LY' → LX)  ->  (LX' × LY' → LY) -> 
+-}
 
 --
 -- Lifting pseudo-representable relations to a pseudo-representable relation
@@ -186,8 +214,7 @@ RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .leftRep =
     With2nd (mCompU (ci .rightRep .δY) mRet) ∘m
     π2) ;
   
-  UpL = λ f g f≤g bi ->
-    mapL-monotone-het _ _
+  UpL = λ f g f≤g bi -> mapL-monotone-het _ _
     (MonFun.f (co .leftRep .e))
     (MonFun.f (co .leftRep .δY))
     (co .leftRep .UpL) _ _
@@ -203,12 +230,22 @@ RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .leftRep =
       _ _ (bind-monotone (MonFun.f f) (MonFun.f g)
         (ci .rightRep .dnR _ _ (ret-monotone-het _ ai bi ai≤bi)) (≤mon→≤mon-het f g f≤g)) }
 
-RepFun ci co .rightRep = record {
-  p = U mMap {!!} ;
-  δX = {!!} ;
-  δY = {!!} ;
-  dnR = {!!} ;
-  dnL = {!!} }
+RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .rightRep = record {
+  p = U mMap (Curry (With2nd (co .rightRep .p) ∘m App ∘m With2nd (ci .leftRep .e))) ;
+  δX = U mMap (Curry (With2nd (co .rightRep .δX) ∘m App ∘m With2nd (ci .leftRep .δX))) ;
+  δY = U mMap (Curry (With2nd (co .rightRep .δY) ∘m App ∘m With2nd (ci .leftRep .δY))) ;
+  dnR = λ lf lg lf≤lg → mapL-monotone-het _ _
+    (MonFun.f (Curry (With2nd (co .rightRep .δX) ∘m App ∘m With2nd (ci .leftRep .δX))))
+    (MonFun.f (Curry (With2nd (co .rightRep .p) ∘m App ∘m With2nd (ci .leftRep .e))))
+    (λ f g f≤g ai → co .rightRep .dnR _ _ {!!}) lf lg lf≤lg ; --todo ℓ' != ℓR of type Level
+  dnL = λ lg lg' lg≤lg' → mapL-monotone-het _ _
+    (MonFun.f (Curry (With2nd (co .rightRep .p) ∘m App ∘m With2nd (ci .leftRep .e))))
+    (MonFun.f (Curry (With2nd (co .rightRep .δY) ∘m App ∘m With2nd (ci .leftRep .δY))))
+    (λ g g' g≤g' ai bi ai≤bi → co .rightRep .dnL _ _
+      (≤mon→≤mon-het g g' g≤g' {!!} {!!} {!!}) --(≤mon→≤mon-het g g' g≤g' _ _ (ci .leftRep .UpL ai bi ai≤bi))
+      )
+    lg lg' lg≤lg' }
+
 
 --
 -- Pseudo-representable relations involving Dyn
@@ -232,13 +269,24 @@ injℕ .rightRep = record {
   δX = U mExt mRet ; -- ext ret (which equals id)
   δY = U mExt mRet ;
   dnR = λ ln ld ln≤ld →
-    ext-monotone-het {!!} (rel ℕ) ret (MonFun.f ProjNat)
-    (λ n d n≤d → {!!}) ln ld ln≤ld ;
-  dnL = {!!} }
+    ext-monotone-het (R (injℕ .R)) (rel ℕ) ret (MonFun.f ProjNat)
+    (λ n d n≤d → {!R!}) ln ld ln≤ld ;
+  dnL = λ ld ld' ld≤ld' →
+    ext-monotone-het (rel DynP) (R (injℕ .R)) (MonFun.f ProjNat) ret
+    (λ d d' d≤d' → {!!}) ld ld' ld≤ld' }
 
+
+Rel : ∀ ℓ -> _
+Rel ℓ = functionalRel InjArr Id (poset-monrel {ℓo = ℓ} DynP)
+
+Rel-lem : ∀ f d ℓ -> R (Rel ℓ) f d ->
+  Σ[ g~ ∈ ⟨ ▹' k ((DynP ==> 𝕃 DynP)) ⟩ ]
+    (transport  ⟨DynP⟩-Sum d ≡ inr g~) × (▸ (λ t -> f ≤mon g~ t))
+Rel-lem f d ℓ injA = (transport {!!} {!!}) , ({!!} , {!!})
+--  (λ t → f) , (λ i → {!!}) , (λ t x → reflexive _ d)o
 
 injArr : RepresentableRel (DynP ==> 𝕃 DynP) DynP ℓR
-injArr .R = functionalRel InjArr Id (poset-monrel DynP)
+injArr {ℓR = ℓR} .R = Rel ℓR
 injArr .leftRep = record {
   e = InjArr ;
   δX = Id ;
@@ -246,9 +294,31 @@ injArr .leftRep = record {
   UpL = λ f d f≤d → lower f≤d ;
   UpR = λ f g f≤g → lift (MonFun.isMon InjArr f≤g) }
   
-injArr .rightRep = record { p = ? ; δX = ? ; δY = ? ; dnR = ? ; dnL = ? }
+injArr {ℓR = ℓR} .rightRep = record {
+  p = mExtU ProjArr ;
+  δX = mExtU (mCompU Δ mRet) ; --@not sure
+  δY = mExtU (mCompU Δ mRet) ;
+  dnR = λ lf ld lf≤ld → ext-monotone-het _ _
+    (MonFun.f (mCompU Δ mRet))
+    (MonFun.f ProjArr)
+    (λ f d f≤d -> aux f d f≤d (Rel-lem f d ℓR f≤d)) lf ld lf≤ld ;
+  dnL = λ ld ld' ld≤ld' → ext-monotone-het _ _
+    (MonFun.f ProjArr)
+    (MonFun.f (mCompU Δ mRet))
+    (λ d d' d≤d' → {!!})
+    ld ld' ld≤ld' }
 
-
+    where
+      open LiftRelation.Properties
+      aux : ∀ f d f≤d sigma -> 
+       LiftRelation._≾_ ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP))
+        (δ (ret f)) (MonFun.f ProjArr d)
+      aux f d f≤d (g~ , eq-inr , f≤g~) = let eq = ProjArr-fun d g~ eq-inr in
+        transport ((λ i -> LiftRelation._≾_ _ _ (rel (DynP ==> 𝕃 DynP)) (δ (ret f)) (sym eq i)))
+             (ord-θ-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP))
+                λ t -> ord-η-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP)) (f≤g~ t))
+     
+-- (λ i -> LiftRelation._≾_ _ _ _ (δ (ret f)) (eq i))
 --
 -- Composing pseudo-representable relations
 -- Note: It is not in general possible to compose arbitrary pseudo-rep
@@ -267,16 +337,16 @@ composeRep : {A B C : Poset ℓ ℓ'} ->
 composeRep c d c-filler-l d-filler-r .R = CompMonRel (c .R) (d .R)
 composeRep {C = C} c d c-filler-l d-filler-r .leftRep = record {
   e = mCompU (d .leftRep .e) (c .leftRep .e) ;
-  δX = {!!} ;
-  δY = {!!} ;
+  δX = c .leftRep .δX;
+  δY = d .leftRep .δY ;
   UpL =  λ x z x≤z -> elim
     (λ _ -> isPropValued-poset C _ _)
     (λ { (y , x≤y , y≤z) -> d .leftRep .UpL _ _
-      (is-antitone (d .R) (c .leftRep .UpL x y x≤y) {!!}) })
-    x≤z  ;
-  UpR = {!!} }
+      (is-antitone (d .R) (c .leftRep .UpL x y x≤y) {!d-filler-r!}) })
+    x≤z ;
+  UpR = λ a a' a≤a' → elim (λ _ -> isPropValued-poset {!!} _ _) {!!} {!!} }
 composeRep c d c-filler-l d-filler-r .rightRep = record {
-  p = {!!} ;
+  p = mCompU (c .rightRep .p) (d .rightRep .p) ;
   δX = {!!} ;
   δY = {!!} ;
   dnR = {!!} ;

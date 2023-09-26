@@ -35,6 +35,7 @@ open import Cubical.Relation.Binary.Poset
 open import Common.Poset.Convenience
 open import Common.Poset.Constructions
 open import Common.Poset.Monotone
+open import Common.Poset.MonotoneRelation
 open import Semantics.MonotoneCombinators
 
 open import Semantics.LockStepErrorOrdering k
@@ -45,10 +46,13 @@ open ClockedCombinators k
 
 private
   variable
-    ℓ ℓ' : Level
+    ℓ ℓ' ℓX ℓX' : Level
 
   ▹_ : Type ℓ → Type ℓ
   ▹_ A = ▹_,_ k A
+
+
+
 
 
 -- Can have type Poset ℓ ℓ
@@ -67,7 +71,8 @@ unfold-⟨DynP⟩ = λ i → ⟨ unfold-DynP i ⟩
 DynP-Sum : DynP ≡ ℕ ⊎p ((▸'' k) (DynP ==> 𝕃 DynP))
 DynP-Sum = unfold-DynP
 
-
+⟨DynP⟩-Sum : ⟨ DynP ⟩ ≡ Nat ⊎ (▹ (⟨ DynP ==> 𝕃 DynP ⟩)) -- MonFun DynP (𝕃 DynP)
+⟨DynP⟩-Sum i = ⟨ DynP-Sum i ⟩
 
 InjNat : ⟨ ℕ ==> DynP ⟩
 InjNat = mCompU (mTransport (sym DynP-Sum)) σ1
@@ -78,14 +83,35 @@ InjArr = mCompU (mTransport (sym DynP-Sum)) (mCompU σ2 Next)
 ProjNat : ⟨ DynP ==> 𝕃 ℕ ⟩
 ProjNat = mCompU (Case' mRet (K _ ℧)) (mTransport DynP-Sum)
 
+
+▹g→g : MonFun ((▸'' k) (DynP ==> 𝕃 DynP)) (𝕃 (DynP ==> 𝕃 DynP))
+▹g→g = record {
+   f = λ f~ -> θ (λ t -> η (f~ t)) ;
+   isMon = λ {f~} {g~} f~≤g~ → ord-θ-monotone _ (λ t -> ord-η-monotone _ (f~≤g~ t))
+        -- ord-θ-monotone _ (λ t -> ord-η-monotone _ (f~≤g~ t))
+   }
+
 ProjArr : ⟨ DynP ==> 𝕃 (DynP ==> 𝕃 DynP) ⟩
-ProjArr = {!!}
+ProjArr = mCompU (Case' (K _ ℧) ▹g→g) (mTransport DynP-Sum)
+ 
+    
 
+ProjArr-fun : ∀ d g~ ->
+  transport ⟨DynP⟩-Sum d ≡ inr g~ ->
+  MonFun.f ProjArr d ≡ θ (λ t -> η (g~ t))
+ProjArr-fun d g~ eq = {!!} ∙
+  -- (λ i -> MonFun.f (mCompU (Case' (K _ ℧) aux) (mTransport DynP-Sum)) d) ∙
+  (congS ((λ { (inl a) → MonFun.f (K ℕ ℧) a
+             ; (inr b) → MonFun.f ▹g→g b
+         })) eq) ∙
+  {!!}
+-- MonFun.f ProjArr d ≡ θ (λ t → η (g~ t))
 
-
-
+-- (transp (λ i → ⟨ DynP-Sum i ⟩) i0 d)
+-- transport ⟨DynP⟩-Sum d ≡ inr g~
 {-
 
+-- MonFun.f ( mCompU (Case' (K _ ℧) _) (mTransport DynP-Sum)) ?) ∙ ?
 
 data Dyn' (D : ▹ Poset ℓ ℓ') : Type (ℓ-max ℓ ℓ') where
   nat : Nat -> Dyn' D

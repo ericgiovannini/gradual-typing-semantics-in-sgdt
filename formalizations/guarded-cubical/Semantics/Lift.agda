@@ -18,6 +18,7 @@ open import Cubical.Data.Sum
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Transport
 open import Cubical.Data.Nat hiding (_^_)
+open import Cubical.Data.Sigma
 
 open import Common.Common
 open import Common.LaterProperties
@@ -217,9 +218,6 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
 
-
-
-
 -- Monadic structure
 
 ret : {X : Type ℓ} -> X -> L℧ X
@@ -234,6 +232,28 @@ ext' f rec (θ l-la) = θ (rec ⊛ l-la)
 ext : (A -> L℧ B) -> L℧ A -> L℧ B
 ext f = fix (ext' f)
 
+lift×' : (▹ (L℧ (A × B) -> L℧ A × L℧ B)) -> L℧ (A × B) -> L℧ A × L℧ B
+lift×' rec (η (a , b)) = η a , η b
+lift×' rec ℧ = ℧ , ℧
+lift×' rec (θ l~) = (θ (λ t → rec t (l~ t) .fst)) , θ (λ t -> rec t (l~ t) .snd)
+
+lift× : {A : Type ℓ} {B : Type ℓ'} -> L℧ (A × B) -> L℧ A × L℧ B
+lift× {A = A} {B = B} = fix lift×'
+
+lift×-inv' : ▹ (L℧ A × L℧ B -> L℧ (A × B)) -> L℧ A × L℧ B -> L℧ (A × B)
+lift×-inv' rec (η a , η b) = η (a , b)
+lift×-inv' rec (η a , θ l'~) = θ (λ t -> (rec t (η a , l'~ t)))
+lift×-inv' rec (℧ , _) = ℧
+lift×-inv' rec (_ , ℧) = ℧ -- not sure whether it's gray
+lift×-inv' rec (θ l~ , η b) = θ (λ t -> rec t (l~ t , η b))
+lift×-inv' rec (θ l~ , θ l'~) = θ (λ t -> rec t (l~ t , l'~ t))
+
+lift×-inv : {A : Type ℓ} {B : Type ℓ'} -> L℧ A × L℧ B -> L℧ (A × B)
+lift×-inv {A = A} {B = B} = fix lift×-inv'
+
+unfold-lift×-inv : {A : Type ℓ} {B : Type ℓ'} ->
+  lift×-inv {A = A} {B = B} ≡ lift×-inv' (next lift×-inv)
+unfold-lift×-inv = fix-eq lift×-inv'
 
 bind : L℧ A -> (A -> L℧ B) -> L℧ B
 bind {A} {B} la f = ext f la
