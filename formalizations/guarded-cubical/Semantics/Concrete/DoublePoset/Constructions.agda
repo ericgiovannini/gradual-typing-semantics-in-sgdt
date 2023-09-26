@@ -312,8 +312,8 @@ module ClockedConstructions (k : Clock) where
     ▹ A = ▹_,_ k A
 
     -- Theta for double posets
-    DP▸ : ▹ DoublePoset ℓ ℓ' ℓ'' → DoublePoset ℓ ℓ' ℓ''
-    DP▸ X = (▸ (λ t → ⟨ X t ⟩)) ,
+  DP▸ : ▹ DoublePoset ℓ ℓ' ℓ'' → DoublePoset ℓ ℓ' ℓ''
+  DP▸ X = (▸ (λ t → ⟨ X t ⟩)) ,
             (dblposetstr
               is-set-later ord
               (isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym)
@@ -356,11 +356,11 @@ module ClockedConstructions (k : Clock) where
           bisim-prop-valued = λ a b pf1 pf2 →
             isProp▸ (λ t → prop-valued-≈ (X t) (a t) (b t)) pf1 pf2
 
-    DP▹ : DoublePoset ℓ ℓ' ℓ'' → DoublePoset ℓ ℓ' ℓ''
-    DP▹ X = DP▸ (next X) 
+  DP▸'_ : DoublePoset ℓ ℓ' ℓ'' → DoublePoset ℓ ℓ' ℓ''
+  DP▸' X = DP▸ (next X) 
 
-   {-  DP▸-next : (X : DoublePoset ℓ ℓ' ℓ'') -> DP▸ (next X) ≡ DP▹ X
-    DP▸-next = {!refl!} -}
+  -- DP▸-next : (X : DoublePoset ℓ ℓ' ℓ'') -> DP▸ (next X) ≡ DP▹ X
+  -- DP▸-next = {!refl!}
 
 Zero : DPMor UnitDP ℕ
 Zero = record {
