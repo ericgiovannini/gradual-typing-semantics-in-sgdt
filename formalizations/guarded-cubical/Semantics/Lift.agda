@@ -32,7 +32,7 @@ private
   ▹_ A = ▹_,_ k A
 
 
--- Lift + Error monad
+-- Lift + Error monad explicitly
 data L℧ (X : Type ℓ) : Type ℓ where
   η : X → L℧ X
   ℧ : L℧ X
@@ -43,9 +43,23 @@ data L (X : Type ℓ) : Type ℓ where
   η : X -> L X
   θ : ▹ (L X) -> L X
 
--- Delay function
+-- Error monad
+data Error (X : Type ℓ) : Type ℓ where
+  ok : X -> Error X
+  error : Error X
+
+-- Lift + Error as a combination of L and Error
+L℧' : (X : Type ℓ) -> Type ℓ
+L℧' X = L (Error X)
+
+
+-- Delay function for lift with error
 δ : {X : Type ℓ} -> L℧ X -> L℧ X
 δ = L℧.θ ∘ (next {k = k})
+
+-- Delay for lift without error
+δL : {X : Type ℓ} -> L X -> L X
+δL = L.θ ∘ next
 
 
 L℧→sum : {X : Type ℓ} -> L℧ X → (X ⊎ ⊤) ⊎ (▹ L℧ X)
@@ -104,6 +118,14 @@ Iso-L {X = X} = iso to inv sec retr
 L-unfold : {X : Type ℓ} -> L X ≡ X ⊎ (▹ (L X))
 L-unfold = isoToPath Iso-L
 
+L-unfold-η : {X : Type ℓ} (x : X) ->
+  transport L-unfold (η x) ≡ inl x
+L-unfold-η x = cong inl (transportRefl x)
+
+L-unfold-θ : {X : Type ℓ} (l~ : ▹ (L X)) ->
+  transport L-unfold (θ l~) ≡ inr l~
+L-unfold-θ l~ = cong inr (transportRefl l~)
+
 
 -- Defining L using a guarded fixpoint
 L-fix : Type ℓ -> Type ℓ
@@ -114,11 +136,14 @@ L-fix-unfold : {X : Type ℓ} -> L-fix X ≡ (X ⊎ (▹ (L-fix X)))
 L-fix-unfold = fix-eq _
 
 
+{-
 L-fix-eq' : {X : Type ℓ} -> ▸ (λ t -> (L-fix X ≡ L X)) -> L-fix X ≡ L X
-L-fix-eq' {X = X} IH = L-fix X ≡⟨ L-fix-unfold ⟩
-  ((X ⊎ (▹ (L-fix X)))) ≡⟨ (λ i -> X ⊎ (▸ λ t -> IH t i)) ⟩
-  ((X ⊎ (▹ (L X)))) ≡⟨ sym L-unfold ⟩
+L-fix-eq' {X = X} IH = L-fix X     ≡⟨ L-fix-unfold ⟩
+  ((X ⊎ (▹ (L-fix X))))            ≡⟨ (λ i -> X ⊎ (▸ λ t -> IH t i)) ⟩
+  ((X ⊎ (▹ (L X))))                ≡⟨ sym L-unfold ⟩
   L X ∎
+-}
+
 
 -- Note: ▸ (λ t -> L-fix X ≡ L X) is equivalent to ▸ (next (L-fix X ≡ L X))
 -- which is equivalent to ▹ (L-fix X ≡ L X)
@@ -128,17 +153,68 @@ L-fix-eq' {X = X} IH = L-fix X ≡⟨ L-fix-unfold ⟩
 -- (X ⊎ (▸ λ t -> L-fix X)) ≡ (X ⊎ (▸ λ t -> L X)) i.e.
 -- (X ⊎ (▹ L-fix X)) ≡ (X ⊎ (▹ L X))
 
+-- Same proof as above, but has better definitional behavior
+L-fix-eq' : {X : Type ℓ} ->  ▸ (λ t -> (L-fix X ≡ L X)) -> L-fix X ≡ L X
+L-fix-eq' {X = X} IH =
+  L-fix-unfold ∙
+  (λ i -> X ⊎ (▸ λ t → IH t i)) ∙
+  sym L-unfold
+  
+
 L-fix-eq : {X : Type ℓ} -> L-fix X ≡ L X
 L-fix-eq = fix L-fix-eq'
 
 L-fix-iso : {X : Type ℓ} -> Iso (L-fix X) (L X)
 L-fix-iso = pathToIso L-fix-eq
 
-
-
+-- Action of the above isomorphism
+L-fix-iso-η : {X : Type ℓ} (x : X) ->
+  transport L-fix-unfold (transport⁻ L-fix-eq (η x)) ≡ inl x
+L-fix-iso-η {X = X} x =
+  let eq = (λ i -> X ⊎ (▸_ {k = k} λ t → L-fix-eq {X = X} i)) in 
+  transport L-fix-unfold (transport⁻ L-fix-eq (η x))
+  
+    ≡⟨ (λ i -> transport L-fix-unfold (transport⁻ (fix-eq L-fix-eq' i) (η x))) ⟩
+    
+  transport L-fix-unfold (transport⁻ (L-fix-eq' (next L-fix-eq)) (η x))
+  
+    ≡⟨ refl ⟩
+    
+  transport L-fix-unfold
+    (transport⁻ (L-fix-unfold ∙ eq ∙ sym L-unfold) (η x))
+    
+    ≡⟨ ((λ i -> transport L-fix-unfold {!!})) ⟩
+    
+  transport L-fix-unfold
+    ((transport⁻ L-fix-unfold ∘
+      transport⁻ eq ∘
+      transport⁻ (sym L-unfold)) (η x))
+      
+    ≡⟨ transportTransport⁻ L-fix-unfold _ ⟩
+    
+  (transport⁻ eq ∘ transport⁻ (sym L-unfold)) (η x)
+  
+    ≡⟨ sym (transportComposite L-unfold (sym eq) (η x)) ⟩
+    
+  (transport⁻ (eq ∙ (sym L-unfold))) (η x)
+  
+    ≡⟨ refl ⟩
+    
+  (transport (L-unfold ∙ sym eq)) (η x)
+  
+    ≡⟨ transportComposite L-unfold (sym eq) (η x) ⟩
+    
+  ((transport (sym eq)) ∘ (transport L-unfold)) (η x)
+  
+    ≡⟨ {!!} ⟩
+    
+  (transport (sym (λ i -> X ⊎ (▸_ {k = k} λ t → L-fix-eq {X = X} i)))) (inl x)
+  
+    ≡⟨ {!!} ⟩
+    
+  inl x ∎
 
     
-
 {-
 Iso-L-fix : {X : Type ℓ} -> Iso (L-fix X) (L X)
 Iso-L-fix {X = X} = iso to inv sec {!!}
@@ -170,8 +246,6 @@ Iso-L-fix {X = X} = iso to inv sec {!!}
 
 
 
-
-
 -- Similar to caseNat,
 -- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
 caseL℧ : {X : Type ℓ} -> {A : Type ℓ'} -> (aη a℧ aθ : A) → L℧ X → A
@@ -196,6 +270,22 @@ caseL℧ a0 a℧ aθ (θ lx~) = aθ
 
 
 
+-- Similar to caseNat,
+-- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
+caseL : {X : Type ℓ} -> {A : Type ℓ'} -> (aη aθ : A) → L X → A
+caseL aη aθ (η x) = aη
+caseL a0 aθ (θ lx~) = aθ
+
+-- Similar to znots and snotz, defined at
+-- https://agda.github.io/cubical/Cubical.Data.Nat.Properties.html
+Lη≠Lθ : {X : Type ℓ} -> {x : X} -> {lx~ : ▹ (L X)} -> ¬ (L.η x ≡ θ lx~)
+Lη≠Lθ {X = X} {x = x} {lx~ = lx~} eq =
+  rec* (subst (caseL X ⊥*) eq x) -- subst (caseL℧ X ⊥ ⊥) eq x
+
+
+
+
+-- Injectivity results for lift with error
 
 -- TODO: Does this make sense?
 pred : {X : Type ℓ} -> (lx : L℧ X) -> ▹ (L℧ X)
@@ -218,11 +308,36 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
 
--- Monadic structure
+-- Injectivity results for Lift
+η-inv : {X : Type ℓ} -> L X -> X -> X
+η-inv (η x) y = x
+η-inv (θ lx~) y = y
+
+inj-η : {X : Type ℓ} (x y : X) ->
+  L.η x ≡ L.η y ->
+  x ≡ y
+inj-η x y H = λ i -> η-inv (H i) x -- also works:  η-inv (H i) y
+
+
+
+-----------------------
+-- Monadic structure --
+-----------------------
+
+retL : {X : Type ℓ} -> X -> L℧ X
+retL = η
+
+extL' : (A -> L B) -> ▹ (L A -> L B) -> L A -> L B
+extL' f rec (η a) = f a
+extL' f rec (θ la~) = θ (rec ⊛ la~)
+
+extL : (A -> L B) -> L A -> L B
+extL f = fix (extL' f)
+
+
 
 ret : {X : Type ℓ} -> X -> L℧ X
 ret = η
-
 
 ext' : (A -> L℧ B) -> ▹ (L℧ A -> L℧ B) -> L℧ A -> L℧ B
 ext' f rec (η x) = f x
@@ -312,7 +427,7 @@ monad-assoc : {A B C : Type} -> (f : A -> L℧ B) (g : B -> L℧ C) (la : L℧ A
 monad-assoc = {!!}
 
 
-
+{-
 ext-comp-ret : (f : L℧ A -> L℧ B) (a : A) (n : ℕ) ->
      ext (f ∘ ret) ((δ ^ n) (η a)) ≡ (δ ^ n) (f (η a))
 ext-comp-ret f a zero = ext-eta a (f ∘ ret)
@@ -326,6 +441,24 @@ ext-comp-ret f a (suc n) =
   δ (ext (f ∘ ret) ((δ ^ n) (η a)))
     ≡⟨ cong δ (ext-comp-ret f a n) ⟩
   δ ((δ ^ n) (f (η a))) ∎
+-}
+
+ext-comp-ret : (f : L℧ A -> L℧ B) (a : A) (n : ℕ) ->
+     ext (f ∘ ret) ((δ ^ n) (η a)) ≡ f ((δ ^ n) (η a))
+ext-comp-ret f a zero = ext-eta a (f ∘ ret)
+ext-comp-ret f a (suc n) =
+  ext (f ∘ ret) (δ ((δ ^ n) (η a)))
+    ≡⟨ ext-theta (f ∘ ret) _ ⟩
+  θ (ext (f ∘ ret) <$> (next ((δ ^ n) (η a))))
+    ≡⟨ refl ⟩
+  θ (λ t -> ext (f ∘ ret) (next ((δ ^ n) (η a)) t))
+    ≡⟨ refl ⟩
+  δ (ext (f ∘ ret) ((δ ^ n) (η a)))
+    ≡⟨ cong δ (ext-comp-ret f a n) ⟩
+  δ (f ((δ ^ n) (η a)))
+    ≡⟨ {!!} ⟩
+  f (δ ((δ ^ n) (η a))) ∎
+
 
 
 -- Need f to preserve ℧ and preserve θ...
@@ -521,3 +654,28 @@ theta-delta-n-comm lx~ (suc n) =
     ≡⟨ cong δ (theta-delta-n-comm lx~ n) ⟩
   δ ((δ ^ n) (θ lx~)) ∎
 
+
+
+L▹X→▹LX' : {X : Type ℓ} ->
+  ▹ (L℧ (▹ X) -> ▹ (L℧ X)) ->
+    (L℧ (▹ X) -> ▹ (L℧ X))
+L▹X→▹LX' _ (η x~) t = η (x~ t)
+L▹X→▹LX' _ ℧ t = ℧
+L▹X→▹LX' rec (θ lx~) t = θ (rec t (lx~ t))
+
+L▹X→▹LX : {X : Type ℓ} ->
+  L℧ (▹ X) -> ▹ (L℧ X)
+L▹X→▹LX = fix L▹X→▹LX'
+
+-- Doesn't seem that we can write the above function
+-- using mapL:
+-- The following vars are not allowed in a later value applied to t : [x~]
+-- when checking that the expression x~ t has type X
+{-
+test' : {X : Type ℓ} ->
+  (L℧ (▹ X) -> ▹ (L℧ X))
+test' l t = mapL f l
+  where
+    f : ▹ _ → _
+    f x~ = {!x~ t!}
+-}
