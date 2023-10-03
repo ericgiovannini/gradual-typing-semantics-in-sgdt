@@ -42,6 +42,9 @@ trans-⊑ (c ⇀ c') (d ⇀ d') = trans-⊑ c d ⇀ trans-⊑ c' d'
 trans-⊑ nat inj-nat = inj-nat
 trans-⊑ (c ⇀ c') (inj-arr d) = inj-arr (trans-⊑ (c ⇀ c') d)
 
+_∘⊑_ : S ⊑ T → T ⊑ U → S ⊑ U
+_∘⊑_ = trans-⊑
+
 isPropTy⊑ : isProp (S ⊑ T)
 isPropTy⊑ nat nat = refl
 isPropTy⊑ dyn dyn = refl
