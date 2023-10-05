@@ -34,12 +34,21 @@ data CompNF (Γ : Ctx) : (R : Ty) → Type (ℓ-suc ℓ-zero) where
   tickNF : CompNF Γ R → CompNF Γ R
   neuNF : Comp Γ R → CompNF Γ R
 
-bindNF' : CompNF Γ R → CompNF (R ∷ Γ) S → CompNF Γ S
-bindNF' errNF K = errNF
-bindNF' (retNF x) K = {!K [ ids ,s x ]cnf!}
-bindNF' (bindNF x Mnf) K = {!!}
-bindNF' (tickNF Mnf) K = tickNF (bindNF' Mnf K)
-bindNF' (neuNF x) K = neuNF {!!}
+  -- neuNF is a congruence with respect to equality of Comp
+  neuNF-cong : M ≡ N → neuNF M ≡ neuNF N
+
+  -- strictness :
+
+
+_[_]cnf : CompNF Γ R → Subst Δ Γ → CompNF Δ R
+errNF [ γ ]cnf = errNF
+retNF V [ γ ]cnf = retNF (V [ γ ]v)
+bindNF M Nnf [ γ ]cnf = bindNF (M [ γ ]c) (Nnf [ γ ∘s wk ,s var ]cnf)
+tickNF M [ γ ]cnf = tickNF (M [ γ ]cnf)
+neuNF M [ γ ]cnf = neuNF (M [ γ ]c)
+
+
+
 
 _[_]sem : ctx-sem Γ Δ → Subst Θ Δ → ctx-sem Γ Θ
 _[_]sem {Γ = []} tt* δ = tt*
@@ -67,6 +76,52 @@ reflect<-reify≡id : (γ~ : ctx-sem Γ Δ) → reflect (reify γ~) ≡ γ~
 reflect<-reify≡id {Γ = []} γ~ = refl
 reflect<-reify≡id {Γ = x ∷ Γ} γ~ = ΣPathP (cong reflect wkβ ∙ reflect<-reify≡id (γ~ .fst) , varβ)
 
+
+reifyC : CompNF Γ R -> Comp Γ R
+reifyC errNF = err'
+reifyC (retNF V) = ret' V
+reifyC (bindNF M Nnf) = bind (reifyC Nnf) [ M ]∙
+reifyC (tickNF M) = tick (reifyC M)
+reifyC (neuNF M) = M
+
+{-
+reflectC : Comp Γ R -> CompNF Γ R
+reflectC (E [ M ]∙) = bindNF M {!!}
+reflectC (plugId i) = {!!}
+reflectC (plugAssoc i) = {!!}
+reflectC (M [ γ ]c) = neuNF (M [ γ ]c)
+reflectC (substId i) = {!!}
+reflectC (substAssoc i) = {!!}
+reflectC (substPlugDist i) = {!!}
+reflectC err = errNF
+reflectC (strictness i) = {!!}
+reflectC ret = retNF var
+reflectC (ret-β i) = {!!}
+reflectC app = neuNF app
+reflectC (fun-β i) = {!!}
+reflectC (matchNat M N) = neuNF (matchNat {!!} {!!})
+reflectC (matchNatβz M N i) = {!!}
+reflectC (matchNatβs M N V i) = {!!}
+reflectC (matchNatη i) = {!!}
+reflectC (matchDyn M M₁) = {!!}
+reflectC (matchDynβn M N V i) = {!!}
+reflectC (matchDynβf M N V i) = {!!}
+reflectC (tick M) = tickNF (reflectC M)
+reflectC (tick-strictness i) = {!!}
+reflectC (isSetComp M N p q i j) = {!!}
+-}
+
+-- bindNF : Comp Γ R → CompNF (R ∷ Γ) S → CompNF Γ S
+
+bindNF' : CompNF Γ R → CompNF (R ∷ Γ) S → CompNF Γ S
+bindNF' errNF K = errNF
+bindNF' (retNF x) K = K [ ids ,s x ]cnf
+bindNF' (bindNF {R = R'} M Nnf) K = bindNF M (bindNF' Nnf (K [ wk ∘s wk ,s var ]cnf))
+-- Also works: bindNF M (bindNF (reifyC Nnf) (K [ wk ∘s wk ,s var ]cnf)) 
+bindNF' (tickNF Mnf) K = tickNF (bindNF' Mnf K)
+bindNF' (neuNF M) K = neuNF ((bind (reifyC K)) [ M ]∙) -- correct?
+
+
 -- Part 3: give a semantics of terms as "polymorphic transformations"
 -- These will all end up being natural but fortunately we don't need that.
 
@@ -74,42 +129,53 @@ ev-sem' : EvCtx Γ R S → ∀ {Θ} → ctx-sem Γ Θ → CompNF Θ R → CompNF
 comp-sem' : Comp Γ R → ∀ {Θ} → ctx-sem Γ Θ → CompNF Θ R
 
 ev-sem' ∙E x M~ = M~
-ev-sem' (E ∘E E₁) x M~ = {!!}
-ev-sem' (∘IdL i) x M~ = {!!}
-ev-sem' (∘IdR i) x M~ = {!!}
-ev-sem' (∘Assoc i) x M~ = {!!}
-ev-sem' (E [ x₁ ]e) x M~ = {!!}
-ev-sem' (substId i) x M~ = {!!}
-ev-sem' (substAssoc i) x M~ = {!!}
-ev-sem' (∙substDist i) x M~ = {!!}
-ev-sem' (∘substDist i) x M~ = {!!}
-ev-sem' (bind N[x]) x M~ = {!!}
+ev-sem' (E ∘E F) x M~ = ev-sem' E x (ev-sem' F x M~)
+ev-sem' (∘IdL {E = E} i) x M~ = ev-sem' E x M~
+ev-sem' (∘IdR {E = E} i) x M~ = ev-sem' E x M~
+ev-sem' (∘Assoc {E = E} {F = F} {F' = F'} i) x M~ = ev-sem' E x (ev-sem' F x (ev-sem' F' x M~))
+ev-sem' (E [ γ ]e) x M~ = ev-sem' E (reflect (γ ∘s reify x)) M~ -- could define differently?
+ev-sem' (substId {E = E} i) x M~ = ev-sem' E (pf i) M~
+  where pf : reflect (ids ∘s reify x) ≡ x
+        pf = (cong reflect ∘IdL) ∙ (reflect<-reify≡id x)
+ev-sem' (substAssoc {E = E} {γ = γ} {δ = δ} i) x M~ = ev-sem' E (reflect (pf i)) M~
+  where
+    pf : ((γ ∘s δ) ∘s reify x) ≡ (γ ∘s reify (reflect (δ ∘s reify x)))
+    pf = sym ∘Assoc ∙ cong₂ _∘s_ refl (sym (reify<-reflect≡id _))
+-- pf : ((γ ∘s δ) ∘s reify x) ≡
+--      (γ ∘ (δ ∘s reify x)) ≡
+--      (γ ∘s reify (reflect (δ ∘s reify x)))
+ev-sem' (∙substDist i) x M~ = M~
+ev-sem' (∘substDist {E = E} {F = F} {γ = γ} i) x M~ =
+  ev-sem' E (reflect (γ ∘s reify x)) (ev-sem' F (reflect (γ ∘s reify x)) M~)
+ev-sem' (bind N[x]) x M~ = bindNF (reifyC M~) (comp-sem' N[x] (wk-ctx-sem x , var)) -- ???
 ev-sem' (ret-η i) x M~ = {!!}
-ev-sem' (isSetEvCtx E E₁ x₁ y i i₁) x M~ = {!!}
+ev-sem' (isSetEvCtx E F p q i j) x M~ = {!!}
 
-comp-sem' (E [ M ]∙) x = {!!}
-comp-sem' (plugId i) x = {!!}
-comp-sem' (plugAssoc i) x = {!!}
-comp-sem' (M [ x₁ ]c) x = {!!}
-comp-sem' (substId i) x = {!!}
-comp-sem' (substAssoc i) x = {!!}
-comp-sem' (substPlugDist i) x = {!!}
-comp-sem' err x = {!!}
+
+comp-sem' (E [ M ]∙) x = ev-sem' E x (comp-sem' M x)
+comp-sem' (plugId {M = M} i) x = comp-sem' M x
+comp-sem' (plugAssoc {F = F} {E = E} {M = M} i) x = ev-sem' F x (ev-sem' E x (comp-sem' M x))
+comp-sem' (M [ γ ]c) x = comp-sem' M (reflect (γ ∘s reify x)) -- could define differently?
+comp-sem' (substId {M = M} i) x = {!!}
+comp-sem' (substAssoc {δ = δ} {γ = γ} i) x = {!!}
+comp-sem' (substPlugDist {E = E} {M = M} {γ = γ} i) x =
+  ev-sem' E (reflect (γ ∘s reify x)) (comp-sem' M (reflect (γ ∘s reify x)))
+comp-sem' err x = errNF
 comp-sem' (strictness i) x = {!!}
-comp-sem' ret x = {!!}
+comp-sem' ret (_ , V) = retNF V
 comp-sem' (ret-β i) x = {!!}
-comp-sem' app x = {!!}
+comp-sem' app ((_ , Vf) , Vx) = neuNF (app [ !s ,s Vf ,s Vx ]c)
 comp-sem' (fun-β i) x = {!!}
-comp-sem' (matchNat M M₁) x = {!!}
-comp-sem' (matchNatβz M M₁ i) x = {!!}
-comp-sem' (matchNatβs M M₁ V i) x = {!!}
+comp-sem' (matchNat Kz Ks) (x , Vn) = neuNF (matchNat Kz Ks [ reify x ,s Vn ]c)
+comp-sem' (matchNatβz M N i) x = {!!}
+comp-sem' (matchNatβs M N V i) x = {!!}
 comp-sem' (matchNatη i) x = {!!}
-comp-sem' (matchDyn M M₁) x = {!!}
-comp-sem' (matchDynβn M M₁ V i) x = {!!}
-comp-sem' (matchDynβf M M₁ V i) x = {!!}
-comp-sem' (tick M) x = {!!}
+comp-sem' (matchDyn M N) x = {!!}
+comp-sem' (matchDynβn M N V i) x = {!!}
+comp-sem' (matchDynβf M N V i) x = {!!}
+comp-sem' (tick M) x = tickNF (comp-sem' M x)
 comp-sem' (tick-strictness i) x = {!!}
-comp-sem' (isSetComp M M₁ x₁ y i i₁) x = {!!}
+comp-sem' (isSetComp M N p q i j) x = {!!}
 
 
 subst-sem : Subst Δ Γ → ∀ {Θ} → ctx-sem Δ Θ → ctx-sem Γ Θ
@@ -126,11 +192,11 @@ subst-sem wk = fst
 -- these equations should essentially hold by refl
 subst-sem ([]η i) = λ _ → tt*
 subst-sem (∘IdL {γ = γ} i) = subst-sem γ
-subst-sem (∘IdR i) = {!!}
-subst-sem (∘Assoc i) = {!!}
-subst-sem (wkβ i) = {!!}
-subst-sem (,sη i) = {!!}
-subst-sem (isSetSubst γ γ₁ x y i i₁) = {!!}
+subst-sem (∘IdR {γ = γ} i) = subst-sem γ
+subst-sem (∘Assoc {γ = γ} {δ = δ} {θ = θ} i) x = subst-sem γ (subst-sem δ (subst-sem θ x))
+subst-sem (wkβ {δ = δ} {V = V} i) x = subst-sem δ x
+subst-sem (,sη {δ = δ} i) x = subst-sem δ x
+subst-sem (isSetSubst γ γ' p q i j) = {!!}
 
 val-sem (V [ γ ]v) x = val-sem V (subst-sem γ x)
 val-sem var x = x .snd
@@ -138,9 +204,9 @@ val-sem zro x = zro [ !s ]v
 val-sem suc (_ , n) = suc [ !s ,s n ]v
 val-sem (lda M[x]) x = lda (comp-sem M[x] ((x [ wk ]sem) , var))
 
-val-sem injectN x = {!!}
+val-sem injectN (_ , V) = injectN [ !s ,s V ]v
 val-sem (injectArr V) x = {!!}
-val-sem (mapDyn V V₁) x = {!!}
+val-sem (mapDyn Vn Vf) x = {!!}
 
 -- don't bother proving these until you have to
 val-sem (varβ i) x = {!!}
@@ -164,38 +230,38 @@ comp-sem (matchDyn Mn Md) (x , d) =
            [ ids ,s d ]c
 comp-sem (tick M) x =
   tick (comp-sem M x)
-comp-sem (plugId i) x = {!!}
-comp-sem (plugAssoc i) x = {!!}
-comp-sem (substId i) x = {!!}
-comp-sem (substAssoc i) x = {!!}
-comp-sem (substPlugDist i) x = {!!}
-comp-sem (strictness i) x = {!!}
+comp-sem (plugId {M = M} i) x = comp-sem M x
+comp-sem (plugAssoc {F = F} {E = E} {M = M} i) x = ev-sem F x (ev-sem E x (comp-sem M x))
+comp-sem (substId {M = M} i) x = comp-sem M x
+comp-sem (substAssoc {M = M} {δ = δ} {γ = γ} i) x = comp-sem M (subst-sem δ (subst-sem γ x))
+comp-sem (substPlugDist {E = E} {M = M} {γ = γ} i) x = ev-sem E (subst-sem γ x) (comp-sem M (subst-sem γ x))
+comp-sem (strictness {E = E} i) x = {!!}
 
 comp-sem (ret-β i) x = {!!}
-comp-sem (fun-β i) x = {!!}
-comp-sem (matchNatβz M M₁ i) x = {!!}
-comp-sem (matchNatβs M M₁ V i) x = {!!}
+comp-sem (fun-β i) x = {!fun-β!}
+comp-sem (matchNatβz M N i) x = {!!}
+comp-sem (matchNatβs M N V i) x = {!!}
 comp-sem (matchNatη i) x = {!!}
-comp-sem (matchDynβn M M₁ V i) x = {!!}
-comp-sem (matchDynβf M M₁ V i) x = {!!}
+comp-sem (matchDynβn M N V i) x = {!!}
+comp-sem (matchDynβf M N V i) x = {!!}
 comp-sem (tick-strictness i) x = {!!}
-comp-sem (isSetComp M M₁ x₁ y i i₁) x = {!!}
+comp-sem (isSetComp M N p q i j) x = {!!}
 
 ev-sem ∙E x M = M
 ev-sem (E ∘E E₁) x M = ev-sem E x (ev-sem E₁ x M)
 ev-sem (E [ γ ]e) x M = ev-sem E (subst-sem γ x) M
 ev-sem (bind K) x M = bind (comp-sem K ((x [ wk ]sem) , var)) [ M ]∙
 
-ev-sem (∘IdL i) x M = {!!}
-ev-sem (∘IdR i) x M = {!!}
-ev-sem (∘Assoc i) x M = {!!}
-ev-sem (substId i) x M = {!!}
-ev-sem (substAssoc i) x M = {!!}
+ev-sem (∘IdL {E = E} i) x M = ev-sem E x M
+ev-sem (∘IdR {E = E} i) x M = ev-sem E x M
+ev-sem (∘Assoc {E = E} {F = F} {F' = F'} i) x M = ev-sem E x (ev-sem F x (ev-sem F' x M))
+ev-sem (substId {E = E} i) x M = ev-sem E x M
+ev-sem (substAssoc {E = E} {γ = γ} {δ = δ} i) x M = ev-sem E (subst-sem γ (subst-sem δ x)) M
 ev-sem (∙substDist i) x M = M
-ev-sem (∘substDist i) x M = {!!}
+ev-sem (∘substDist {E = E} {F = F} {γ = γ} i) x M = ev-sem E (subst-sem γ x) (ev-sem F (subst-sem γ x) M)
 
 ev-sem (ret-η i) x M = {!!}
-ev-sem (isSetEvCtx E E₁ x₁ y i i₁) x M = {!!}
+ev-sem (isSetEvCtx E F p q i j) x M = {!!}
 
 -- Part 4: Show the semantics of terms is equivalent to the yoneda
 -- embedding of terms UP TO the equivalence between ctx-sem and Subst.
@@ -214,7 +280,7 @@ subst-correct !s δ~ = []η
 subst-correct (γ ,s v) δ~ = {!!}
 subst-correct wk δ~ = wkβ
 -- This all should follow by isSet stuff
-subst-correct (∘IdL i) δ~ = {!!}
+subst-correct (∘IdL {γ = γ'} i) δ~ = {!!}
 subst-correct (∘IdR i) δ~ = {!!}
 subst-correct (∘Assoc i) δ~ = {!!}
 subst-correct (isSetSubst γ γ₁ x y i i₁) δ~ = {!!}
