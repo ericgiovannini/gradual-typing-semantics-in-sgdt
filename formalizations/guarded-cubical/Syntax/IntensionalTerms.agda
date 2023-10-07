@@ -114,7 +114,7 @@ data Val where
 
   -- Do these make sense?
   injectN   : Val [ nat ] dyn
-  injectArr : Val [ S ] (dyn ⇀ dyn) -> Val [ S ] dyn
+  injectArr : Val [ dyn ⇀ dyn ] dyn
   mapDyn : Val [ nat ] nat → Val [ dyn ⇀ dyn ] (dyn ⇀ dyn) → Val [ dyn ] dyn
   --mapDynβn : ?
   --mapDynβf : ?
@@ -134,7 +134,8 @@ data Val where
 _[_]vP = _[_]v
 varP = var
 
-
+↑subst : Subst Δ Γ → Subst (R ∷ Δ) (R ∷ Γ)
+↑subst γ = γ ∘s wk ,s var
 
 data EvCtx where
   ∙E : EvCtx Γ S S
@@ -195,9 +196,9 @@ data Comp where
   -- match 0 Kz (x . Ks) ≡ Kz
   matchNatβz : (Kz : Comp Γ S)(Ks : Comp (nat ∷ Γ) S)
              → matchNat Kz Ks [ ids ,s (zro [ !s ]v) ]c ≡ Kz
-  -- match (S V) Kz (x . Ks) ≡ Ks [ V / x ]
-  matchNatβs : (Kz : Comp Γ S)(Ks : Comp (nat ∷ Γ) S) (V : Val Γ nat)
-             → matchNat Kz Ks [ ids ,s (suc [ !s ,s V ]v) ]c ≡ (Ks [ ids ,s V ]c)
+  -- match (S y) Kz (x . Ks) ≡ Ks [ y / x ]
+  matchNatβs : (Kz : Comp Γ S) (Ks : Comp (nat ∷ Γ) S)
+             → matchNat Kz Ks [ wk ,s (suc [ !s ,s var ]v) ]c ≡ Ks
   -- M[x] ≡ match x (M[0/x]) (x. M[S x/x])
   matchNatη : M ≡ matchNat
        (M [ ids ,s (zro [ !s ]v) ]c)
@@ -213,9 +214,11 @@ data Comp where
     
   matchDynβf : (Kn : Comp (nat ∷ Γ) S) (Kf : Comp ((dyn ⇀ dyn) ∷ Γ) S)
                (V : Val Γ (dyn ⇀ dyn)) ->
-    matchDyn Kn Kf [ ids ,s ((injectArr var) [ !s ,s V ]v) ]c ≡
+    matchDyn Kn Kf [ ids ,s (injectArr [ !s ,s V ]v) ]c ≡
     Kf [ ids ,s V ]c
 
+  matchDynSubst : ∀ (M : Comp (nat ∷ Γ) R) (N : Comp ((dyn ⇀ dyn) ∷ Γ) R) (γ : Subst Δ Γ)
+    → matchDyn M N [ ↑subst γ ]c ≡ matchDyn (M [ ↑subst γ ]c) (N [ ↑subst γ ]c)
 {-
   matchDynβf' : (Kn : Comp (nat ∷ Γ) S) (Kf : Comp ((dyn ⇀ dyn) ∷ Γ) S)
                 (V : Val Γ T) (V-up : Val [ T ] (dyn ⇀ dyn)) ->
@@ -227,6 +230,8 @@ data Comp where
   
   -- tick commutes with ev ctxs
   tick-strictness : ∀ {M} -> E [ tick M ]∙ ≡ tick (E [ M ]∙)
+  -- tick subs
+  tickSubst : (tick M) [ γ ]c ≡ tick (M [ γ ]c)
 
   isSetComp : isSet (Comp Γ S)
   -- isPosetComp : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) M M'
@@ -339,6 +344,9 @@ subst-naturality {S} {Γ} {Δ} {γ} {γ'} {V} {V'} =
 !s-ext : {γ : Subst Γ []} → γ ≡ δ
 !s-ext = []η ∙ sym []η
 
+ids-sole : ∀ {R} → ids {Γ = R ∷ []} ≡ (!s ,s var)
+ids-sole = ,sη ∙ cong₂ _,s_ []η substId
+
 ,s-nat : (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
 ,s-nat =
   ,sη ∙ cong₂ _,s_ (∘Assoc ∙ cong₂ (_∘s_) wkβ refl)
@@ -381,6 +389,54 @@ fun-β' M V =
 fun-η' : V ≡ lda (appVal (V [ wk ]v) var)
 fun-η' = fun-η
 
+matchNatβz' : matchNat M N [ γ ,s (zro [ !s ]v) ]c ≡ M [ γ ]c
+matchNatβz' {M = M}{N = N}{γ = γ} =
+  cong (matchNat M N [_]c)
+    (sym (,s-nat ∙ cong₂ _,s_ ∘IdL (sym substAssoc ∙ cong (zro [_]v) []η)))
+  ∙ substAssoc ∙ cong (_[ γ ]c) (matchNatβz _ N)
+
+matchNatβs' : (matchNat M N [ γ ,s (suc [ !s ,s V ]v) ]c) ≡ (N [ γ ,s V ]c)
+matchNatβs' {M = M}{N = N}{γ = γ}{V = V} =
+  cong (matchNat M N [_]c)
+    (sym (,s-nat ∙ cong₂ _,s_ wkβ (sym substAssoc ∙ cong (suc [_]v) (,s-nat ∙ cong₂ _,s_ []η varβ))))
+  ∙ substAssoc ∙ cong (_[ γ ,s V ]c) (matchNatβs M N )
+
+matchNat-nat :
+  matchNat M N [ ↑subst γ ]c
+  ≡ matchNat (M [ γ ]c)
+             (N [ ↑subst γ ]c)
+matchNat-nat {M = M}{N = N}{γ = γ} = matchNatη
+  ∙ cong₂ matchNat
+    (sym substAssoc
+    ∙ cong (matchNat M N [_]c)
+           (,s-nat ∙ cong₂ _,s_ (sym ∘Assoc ∙ cong (γ ∘s_) wkβ ∙ ∘IdR) varβ)
+    ∙ matchNatβz')
+    (sym substAssoc
+    ∙ cong (matchNat M N [_]c)
+      (,s-nat ∙ cong₂ _,s_ (sym ∘Assoc ∙ cong (γ ∘s_) wkβ) varβ)
+    ∙ matchNatβs')
+-- (γ , V) ≡ (γ o π1 , π2) ∘ (ids , V)
+
+,s-separate : (γ ,s V) ≡ (↑subst γ) ∘s (ids ,s V)
+,s-separate {γ = γ} =
+  sym (,s-nat ∙ cong₂ _,s_ (sym ∘Assoc ∙ cong (γ ∘s_) wkβ ∙ ∘IdR) varβ)
+
+matchNat-nat' :
+  matchNat M N [ γ ,s V ]c
+  ≡ matchNat (M [ γ ]c)
+             (N [ ↑subst γ ]c) [ ids ,s V ]c
+matchNat-nat' {M = M}{N = N}{γ = γ}{V = V} =
+  cong (matchNat M N [_]c) ,s-separate
+  ∙ substAssoc ∙ cong (_[ ids ,s V ]c) matchNat-nat
+
+matchDyn-nat' :
+  matchDyn M N [ γ ,s V ]c
+  ≡ matchDyn (M [ ↑subst γ ]c)
+             (N [ ↑subst γ ]c)
+             [ ids ,s V ]c
+matchDyn-nat' {M = M}{N = N}{γ = γ}{V = V} =
+  cong (matchDyn M N [_]c) ,s-separate
+  ∙ substAssoc ∙ cong (_[ ids ,s V ]c) (matchDynSubst _ _ _)
 
 bind-nat : (bind M) [ γ ]e ≡ bind (M [ γ ∘s wk ,s var ]c)
 bind-nat {M = M} {γ = γ} = ret-η ∙ cong bind (cong (_[ ret [ !s ,s var ]c ]∙) (sym substAssoc)
@@ -441,7 +497,7 @@ Pertᴾ→EC (δi ⇀ δo) = bind (ret' (lda (
        ((Pertᴾ→EC δo [ !s ]e) [ ret' var ]∙)))))
 Pertᴾ→EC (PertD δn δf) = bind (matchDyn
   (((Pertᴾ→EC δn [ !s ]e) [ ret' var ]∙) >> ret' (injectN [ wk ]v))
-  (((Pertᴾ→EC δf [ !s ]e) [ ret' var ]∙) >> ret' (injectArr var [ wk ]v)))
+  (((Pertᴾ→EC δf [ !s ]e) [ ret' var ]∙) >> ret' (injectArr [ wk ]v)))
 
 
 -- The four cast rule delay terms are admissible in the syntax
@@ -483,7 +539,7 @@ emb (ci ⇀ co) =
   ((app [ drop2nd ]c) >>
   ((vToE (emb co) [ !s ]e) [ ret' var ]∙)))
 emb inj-nat = injectN
-emb (inj-arr c) = injectArr (emb c)
+emb (inj-arr c) = injectArr [ !s ,s (emb c) ]v
 
 
 -- We can show that emb (c ∘ d) ≡ emb d ∘ emb c
