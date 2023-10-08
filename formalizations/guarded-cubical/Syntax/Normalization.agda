@@ -7,9 +7,10 @@ open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
-open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.PropositionalTruncation as Trunc
 
 open import Syntax.IntensionalTerms
+import Syntax.Nbe as Nbe
 open import Syntax.IntensionalTerms.Induction
 open import Syntax.Types
 
@@ -97,6 +98,7 @@ unVar : Var Γ R → Val Γ R
 unVar Zero = var
 unVar (Succ x) = unVar x [ wk ]v
 
+-- Need to show all of these preserve substitution
 unVNfm : VNfm Γ R → Val Γ R
 unCNfm : CNfm Γ R → Comp Γ R
 unCNeu : CNeu Γ R → Comp Γ R
@@ -131,6 +133,7 @@ _[_]rneu : CNeu Δ R → Ren Θ Δ → CNeu Θ R
 _[_]rs {Γ = []} γ ρ = tt*
 _[_]rs {Γ = x ∷ Γ} γ ρ = (γ .fst [ ρ ]rs) , (γ .snd [ ρ ]rv)
 
+var x [ ρ ]rv = var (lookup ρ x)
 lda M [ ρ ]rv = lda (M [ ↑ren ρ ]rc)
 zro [ ρ ]rv = zro
 suc V [ ρ ]rv = suc (V [ ρ ]rv)
@@ -165,6 +168,7 @@ wkS = wkSubst idsnf
 _[_]snf : SNfm Δ Γ → SNfm Θ Δ → SNfm Θ Γ
 _[_]vnf : VNfm Γ R → SNfm Δ Γ → VNfm Δ R
 _[_]cnf : CNfm Γ R → SNfm Δ Γ → CNfm Δ R
+_[_]cneu : CNeu Γ R → SNfm Δ Γ → CNeu Δ R
 
 _[_]snf {Γ = []} γ δ = tt*
 _[_]snf {Γ = R ∷ Γ} γ δ = (γ .fst [ δ ]snf ) , (γ .snd [ δ ]vnf)
@@ -177,13 +181,67 @@ injArr V [ γ ]vnf = injArr (V [ γ ]vnf)
 mapDyn V V₁ V₂ [ γ ]vnf = mapDyn (V [ γ ]vnf) V₁ V₂
 lda M [ γ ]vnf = lda (M [ ↑snf γ ]cnf)
 
-M [ γ ]cnf = {!!}
+ret V [ γ ]cnf = ret (V [ γ ]vnf)
+err [ γ ]cnf = err
+tick M [ γ ]cnf = tick (M [ γ ]cnf)
+bnd (bind Mneu Nnfm) [ γ ]cnf = bnd (bind (Mneu [ γ ]cneu) (Nnfm [ ↑snf γ ]cnf))
+
+app V V' [ γ ]cneu = app (V [ γ ]vnf) (V' [ γ ]vnf)
+matchNat V M N[x] [ γ ]cneu = matchNat (V [ γ ]vnf) (M [ γ ]cnf) (N[x] [ ↑snf γ ]cnf)
+matchDyn V M[x] N[x] [ γ ]cneu = matchDyn (V [ γ ]vnf) (M[x] [ ↑snf γ ]cnf) (N[x] [ ↑snf γ ]cnf)
 
 bindNF : CNfm Γ S → CNfm (S ∷ Γ) R → CNfm Γ R
 bindNF (ret x) N[x] = N[x] [ idsnf , x ]cnf
 bindNF err N[x] = err
 bindNF (tick M) N[x] = tick (bindNF M N[x])
 bindNF (bnd (bind M P[y])) N[x] = bnd (bind M (bindNF P[y] (N[x] [ (wkS [ wkS ]snf) , (var Zero) ]cnf)))
+
+unSNfm-wk : ∀ (γ : SNfm Δ Γ)
+  → unSNfm (wkSubst {R = R} γ) ≡ unSNfm γ ∘s wk
+unSNfm-wk = {!!}
+
+unSNfm-↑ : ∀ (γ : SNfm Δ Γ)
+  → unSNfm (↑snf {S = S} γ) ≡ ↑subst (unSNfm γ)
+unSNfm-↑ {Γ = Γ} γ = {!!}
+
+unVNfm-lookup : ∀ (x : Var Γ R) (γ : SNfm Δ Γ) → unVNfm (lookup γ x) ≡ unVar x [ unSNfm γ ]v
+unVNfm-lookup Zero γ = Nbe.by-vsimpl refl
+unVNfm-lookup (Succ x) γ = unVNfm-lookup x (γ .fst)
+  ∙ Nbe.by-vsimpl refl
+
+-- | Correctness of all of the above operations with respect to the "semantics"
+unVNfm-subst : ∀ (V : VNfm Γ R) (γ : SNfm Δ Γ) → unVNfm (V [ γ ]vnf) ≡ (unVNfm V) [ unSNfm γ ]v
+unCNfm-subst : ∀ (M : CNfm Γ R) (γ : SNfm Δ Γ) → unCNfm (M [ γ ]cnf) ≡ (unCNfm M) [ unSNfm γ ]c
+
+unVNfm-subst (var x) γ = unVNfm-lookup x γ
+unVNfm-subst {Γ = Γ} (lda {S = S}{R = R} M) γ =
+  cong Syntax.IntensionalTerms.lda ((unCNfm-subst M (↑snf γ)) ∙ cong (unCNfm M [_]c) (cong (_,s var) (unSNfm-wk γ)))
+  -- Unfortunately the solver can't prove this as written because it wants to pattern match on M
+  -- We would need to add some support for uninterpreted function symbols in the solver to get this.
+  ∙ {!!}
+unVNfm-subst zro γ = Nbe.by-vsimpl refl
+unVNfm-subst (suc V) γ = cong (suc [_]v) (cong (!s ,s_) (unVNfm-subst V γ))
+  ∙ Nbe.by-vsimpl refl
+unVNfm-subst (injN V) γ =
+  cong (injectN [_]v) (cong (!s ,s_) (unVNfm-subst V γ))
+  ∙ Nbe.by-vsimpl refl
+unVNfm-subst (injArr V) γ = cong (injectArr [_]v) (cong (!s ,s_) (unVNfm-subst V γ))
+  ∙ Nbe.by-vsimpl refl
+unVNfm-subst (mapDyn V V₁ V₂) γ = cong (mapDyn (unVNfm V₁) (unVNfm V₂) [_]v) (cong (!s ,s_) (unVNfm-subst V γ))
+  ∙ Nbe.by-vsimpl refl
+
+unCNfm-subst (ret V) γ =
+  cong (ret [_]c) (cong (!s ,s_) (unVNfm-subst V γ))
+  ∙ Nbe.by-csimpl refl
+unCNfm-subst err γ = Nbe.by-csimpl refl
+unCNfm-subst (tick M) γ =
+  cong tick (unCNfm-subst M γ)
+  ∙ Nbe.by-csimpl refl
+unCNfm-subst (bnd x) γ = {!!}
+
+-- unCNfm-subst : CNfm Γ R → Comp Γ R
+-- unCNeu-subst : CNeu Γ R → Comp Γ R
+
 
 bindNF-correct : (M : CNfm Γ S) → (N[x] : CNfm (S ∷ Γ) R)
   → unCNfm (bindNF M N[x]) ≡ (bind (unCNfm N[x]) [ unCNfm M ]∙)
@@ -240,9 +298,15 @@ cases .indbind {M = M} = rec (isPropΠ λ _ → squash₁) λ ihN[x] ihM →
 readOut : ∥ fiber unCNfm M ∥₁ → singl M
 readOut = rec isPropSingl (λ x → (unCNfm (x .fst)) , (sym (x .snd)))
 
+cnf : Comp Γ R → ∥ CNfm Γ R ∥₁
+cnf M = Trunc.map fst (Sem.indPc cases M)
+
 csimpl : Comp Γ R → Comp Γ R
 csimpl M = fst (readOut (Sem.indPc cases M))
 
 csimpl-eq : (M : Comp Γ R) → M ≡ csimpl M
 csimpl-eq M = snd (readOut (Sem.indPc cases M))
 
+proof-by-normalization : {M N : Comp Γ R} →
+  csimpl M ≡ csimpl N → M ≡ N
+proof-by-normalization p = csimpl-eq _ ∙ p ∙ sym (csimpl-eq _)

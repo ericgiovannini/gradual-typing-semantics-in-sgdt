@@ -279,6 +279,9 @@ vsimpl-eq V =
   ∙ cong (V [_]v) (sym (reify<-reflect≡id _))
   ∙ Sem.indPv sem-cases V univ-sem-subst .snd
 
+by-vsimpl : {V V' : Val Γ R} → vsimpl V ≡ vsimpl V' → V ≡ V'
+by-vsimpl p = vsimpl-eq _ ∙ p ∙ sym (vsimpl-eq _)
+
 csimpl : Comp Γ R → Comp Γ R
 csimpl M = Sem.indPc sem-cases M univ-sem-subst .fst
 
@@ -287,3 +290,7 @@ csimpl-eq M =
   sym substId
   ∙ cong (M [_]c) (sym (reify<-reflect≡id _))
   ∙ Sem.indPc sem-cases M univ-sem-subst .snd
+
+by-csimpl : {M N : Comp Γ R} → csimpl M ≡ csimpl N → M ≡ N
+by-csimpl p = csimpl-eq _ ∙ p ∙ sym (csimpl-eq _)
+
