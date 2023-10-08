@@ -239,3 +239,10 @@ cases .indbind {M = M} = rec (isPropΠ λ _ → squash₁) λ ihN[x] ihM →
 
 readOut : ∥ fiber unCNfm M ∥₁ → singl M
 readOut = rec isPropSingl (λ x → (unCNfm (x .fst)) , (sym (x .snd)))
+
+csimpl : Comp Γ R → Comp Γ R
+csimpl M = fst (readOut (Sem.indPc cases M))
+
+csimpl-eq : (M : Comp Γ R) → M ≡ csimpl M
+csimpl-eq M = snd (readOut (Sem.indPc cases M))
+
