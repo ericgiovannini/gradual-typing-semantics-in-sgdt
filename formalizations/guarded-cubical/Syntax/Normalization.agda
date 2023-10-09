@@ -218,7 +218,7 @@ unVNfm-subst {Γ = Γ} (lda {S = S}{R = R} M) γ =
   cong Syntax.IntensionalTerms.lda ((unCNfm-subst M (↑snf γ)) ∙ cong (unCNfm M [_]c) (cong (_,s var) (unSNfm-wk γ)))
   -- Unfortunately the solver can't prove this as written because it wants to pattern match on M
   -- We would need to add some support for uninterpreted function symbols in the solver to get this.
-  ∙ {!!}
+  ∙ sym (lda-nat _ _)
 unVNfm-subst zro γ = Nbe.by-vsimpl refl
 unVNfm-subst (suc V) γ = cong (suc [_]v) (cong (!s ,s_) (unVNfm-subst V γ))
   ∙ Nbe.by-vsimpl refl
