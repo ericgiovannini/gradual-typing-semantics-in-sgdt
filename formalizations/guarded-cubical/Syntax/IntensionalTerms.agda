@@ -116,8 +116,7 @@ data Val where
   injectN   : Val [ nat ] dyn
   injectArr : Val [ dyn ⇀ dyn ] dyn
   mapDyn : Val [ nat ] nat → Val [ dyn ⇀ dyn ] (dyn ⇀ dyn) → Val [ dyn ] dyn
-  --mapDynβn : ?
-  --mapDynβf : ?
+ 
 
   -- These are now admissible
   {-
@@ -244,6 +243,11 @@ _[_]cP = _[_]c
 _[_]∙P = _[_]∙
 
 
+
+
+
+
+------------------------------------------------
 -- Convenience definitions
 
 _∘V_ : Val (S ∷ Γ) T -> Val Γ S -> Val Γ T
@@ -346,6 +350,10 @@ subst-naturality {S} {Γ} {Δ} {γ} {γ'} {V} {V'} =
 
 ids-sole : ∀ {R} → ids {Γ = R ∷ []} ≡ (!s ,s var)
 ids-sole = ,sη ∙ cong₂ _,s_ []η substId
+
+ids-wk : ∀ {R} → (wk ,s var) ≡ ids {Γ = R ∷ Γ}
+ids-wk = sym (,sη ∙ cong₂ _,s_ ∘IdR substId)
+
 
 ,s-nat : (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
 ,s-nat =
@@ -462,6 +470,32 @@ ret'-nat : (ret' V) [ γ ]c ≡ ret' (V [ γ ]v)
 ret'-nat = (sym substAssoc) ∙
            (cong₂ _[_]c refl (,s-nat ∙ cong₂ _,s_ []η refl))
 
+
+ids1-expand : Path (Subst (S ∷ []) (S ∷ [])) ids (!s ,s var)
+ids1-expand = ,sη ∙ cong₂ _,s_ []η substId
+
+var0 : Val (S ∷ Γ) S
+var0 = var
+
+var1 : Val (S ∷ T ∷ Γ) T
+var1 = var [ wk ]v
+
+var2 : Val (S ∷ T ∷ U ∷ Γ) U
+var2 = var1 [ wk ]v
+
+wk-expand : Path (Subst (S ∷ T ∷ []) (T ∷ [])) wk (!s ,s var1)
+wk-expand = ,s-ext !s-ext (sym varβ)
+
+big-η-expand-fun : ∀ (V : Val [ U ] (S ⇀ T)) →
+  V ≡ lda (bind' (ret' var)
+          (bind' (appVal (V [ !s ,s var2 ]v) var)
+          (ret' var)))
+big-η-expand-fun V =
+  fun-η ∙ cong lda ((ret-η'
+  ∙ cong₂ bind'
+    (cong (app [_]c) (cong₂ _,s_ (cong₂ _,s_ !s-ext (cong (V [_]v) (wk-expand ∙ ,s-ext !s-ext (varβ ∙ (((sym substId ∙ cong₂ _[_]v refl (sym wkβ)) ∙ substAssoc) ∙ cong₂ _[_]v (sym varβ) refl) ∙ sym substAssoc)) ∙ substAssoc) ∙ sym ,s-nat) (sym varβ) ∙ sym ,s-nat) ∙ substAssoc)
+    (cong (ret [_]c) (,s-ext !s-ext (((varβ ∙ sym varβ) ∙ cong₂ _[_]v (sym varβ) refl) ∙ sym substAssoc)) ∙ substAssoc) ∙ sym bind'-nat) ∙ sym ret-β')
+
 {-
 ∘V-lda : ∀ {M : Comp (S ∷ []) T} {N : Comp (T ∷ S ∷ []) U} ->
   lda (M >> N) ≡ ((lda (app >> (N [ !s ,s (var [ wk ]v) ,s var ]c)) [ !s ,s var ]v) ∘V lda M)
@@ -474,6 +508,12 @@ ret'-nat = (sym substAssoc) ∙
 -}
 
 
+--  (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
+,s-id : ∀ {γ : Subst Δ Γ} {V : Val Γ S} -> (ids ,s V) ∘s γ ≡ (γ ,s (V [ γ ]v))
+,s-id = ,s-nat ∙ cong₂ _,s_ ∘IdL refl
+
+var-subst-lem : var [ (ids ,s V) ∘s γ ]v ≡ (V [ γ ]v)
+var-subst-lem = (cong₂ _[_]v refl ,s-id) ∙ varβ
 
 
 -- "Compiling" a perturbation to a term
@@ -631,110 +671,6 @@ emb (inj-arr c) = injectArr [ !s ,s (emb c) ]v
 -- ,s-nat : (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
 -- substPlugDist : (E [ M ]∙) [ γ ]c ≡ (E [ γ ]e) [ M [ γ ]c ]∙
 
-up-comp : (c : R ⊑ S) (d : S ⊑ T) ->
-  emb (c ∘⊑ d) ≡ ((emb d [ !s ,s var ]v) ∘V emb c)
-dn-comp : (c : R ⊑ S) (d : S ⊑ T) ->
-  proj (c ∘⊑ d) ≡ (proj c ∘E proj d)
-
-up-comp nat nat =
-  var
-    ≡⟨ sym varβ ⟩
-  (var [ ids ,s var ]v)
-    ≡⟨ (λ i -> (varβ {δ = !s} {V = var}) (~ i) [ ids ,s var ]v) ⟩
-  (var [ !s ,s var ]v [ ids ,s var ]v) ∎
-up-comp nat inj-nat = {!!}
-  where
-    lem : injectN ≡ ((injectN [ {!!} ]v) ∘V var)
-    lem = {!!}
-up-comp dyn dyn = {!!}
-up-comp (ci ⇀ co) (ei ⇀ eo) =
-  lda (((proj (trans-⊑ ci ei) [ !s ]e) [ ret' var ]∙) >>
-      ((app [ drop2nd ]c) >>
-      ((vToE (emb (trans-⊑ co eo)) [ !s ]e) [ ret' var ]∙)))
-      
-  ≡⟨ (λ i -> lda (((dn-comp ci ei i [ !s ]e) [ ret' var ]∙) >>
-      ((app [ drop2nd ]c) >>
-      ((vToE (up-comp co eo i) [ !s ]e) [ ret' var ]∙)))) ⟩
-  
-  lda ((((proj ci ∘E proj ei) [ !s ]e) [ ret' var ]∙) >>
-      ((app [ drop2nd ]c) >>
-      ((vToE ((emb eo [ !s ,s var ]v) ∘V emb co ) [ !s ]e) [ ret' var ]∙)))
-
-  ≡⟨ {!!} ⟩
-  
-  lda (((((proj ci [ !s ]e) ∘E (proj ei [ !s ]e))) [ ret' var ]∙) >>
-      ((app [ drop2nd ]c) >>
-      ((vToE ((emb eo [ !s ,s var ]v) ∘V emb co ) [ !s ]e) [ ret' var ]∙)))
-
-  ≡⟨ cong lda {!!} ⟩
-
-{-
-  lda (((((proj ei [ !s ]e))) [ ret' var ]∙) >>
-      (((proj ci [ !s ]e) [ ret' var ]∙) >> 
-      ((app [ {!!} ]c) >>
-      (((vToE (emb co ) [ !s ]e) [ ret' var ]∙) >>
-      ((vToE (emb eo) [ !s ]e) [ ret' var ]∙)))))
-
-  ≡⟨ cong lda {!!} ⟩
--}
-
-  lda (M1 [ (!s ∘s wk ,s (lda M2 [ wk ]v)) ,s var ]c)
-      
-  ≡⟨ cong lda (cong₂ _[_]c refl (cong₂ _,s_ (sym ,s-nat) refl)) ⟩
-  
-  lda (M1 [ ((!s ,s lda M2) ∘s wk) ,s var ]c)
-      
-  ≡⟨ sym (lda-nat _ _) ⟩
-  
-  ((lda M1) [ !s ,s lda M2 ]v)
-          
-  ≡⟨ cong₂ _[_]v refl (sym lem) ⟩
-  
-  ((lda M1) [ (!s ,s var) ∘s (ids ,s lda M2) ]v)
-          
-  ≡⟨ substAssoc ⟩
-  
-  ((lda M1) [ !s ,s var ]v) ∘V lda M2 ∎
-  where
-   -- bind-nat : (bind M) [ γ ]e ≡ bind (M [ γ ∘s wk ,s var ]c)
-
-    M1 = ((proj ei [ !s ]e) [ ret' var ]∙) >>
-           ((app [ drop2nd ]c) >> ((vToE (emb eo) [ !s ]e) [ ret' var ]∙))
-    M2 = ((proj ci [ !s ]e) [ ret' var ]∙) >>
-           ((app [ drop2nd ]c) >> ((vToE (emb co) [ !s ]e) [ ret' var ]∙))
-           
-    P = lda (M1 [ (!s ∘s wk ,s (lda M2 [ wk ]v)) ,s var ]c)
-
-    eq : P ≡ lda (((proj ei [ !s ]e) [ ret' var ]∙) >>
-                 (((app [ drop2nd ]c) >> ((vToE (emb eo) [ !s ]e) [ ret' var ]∙))
-                 [ (!s ∘s wk ,s (lda M2 [ wk ]v) ,s var) ∘s wk ,s var ]c))
-    eq = cong lda
-      (substPlugDist
-       ∙ (cong₂ _[_]∙ bind-nat (substPlugDist
-                                  ∙ cong₂ _[_]∙
-                                        (sym substAssoc ∙ cong₂ _[_]e refl []η)
-                                        (ret'-nat ∙ cong ret' varβ))))
-
-
-    lem : ∀ {V : Val Γ S} -> (!s ,s var) ∘s (ids ,s V) ≡ (!s ,s V)
-    lem = ,s-nat ∙ (cong₂ _,s_ []η varβ)
-    -- ,s-nat : (γ ,s V) ∘s δ ≡ ((γ ∘s δ) ,s (V [ δ ]v))
-    -- varβ : var [ δ ,s V ]v ≡ V
-
-
-up-comp (ci ⇀ co) (inj-arr (ei ⇀ eo)) = {!!}
-up-comp inj-nat dyn = {!!}
-up-comp (inj-arr c) dyn = {!!}
-
-
-
-dn-comp nat nat = sym ∘IdL
-dn-comp nat inj-nat = sym ∘IdL
-dn-comp dyn dyn = sym ∘IdL
-dn-comp (ci ⇀ co) (ei ⇀ eo) = {!!}
-dn-comp (ci ⇀ co) (inj-arr (ei ⇀ eo)) = {!!}
-dn-comp inj-nat dyn = sym ∘IdR
-dn-comp (inj-arr c) dyn = sym ∘IdR
 
 
 

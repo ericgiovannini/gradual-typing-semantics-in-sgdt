@@ -94,6 +94,9 @@ data CNeu Γ R where
     → CNeu Γ R
   matchDyn : VNfm Γ dyn → CNfm (nat ∷ Γ) R → CNfm (dyn ⇀ dyn ∷ Γ) R → CNeu Γ R
 
+data ENfm Γ R S where
+  
+
 unVar : Var Γ R → Val Γ R
 unVar Zero = var
 unVar (Succ x) = unVar x [ wk ]v
@@ -196,13 +199,39 @@ bindNF err N[x] = err
 bindNF (tick M) N[x] = tick (bindNF M N[x])
 bindNF (bnd (bind M P[y])) N[x] = bnd (bind M (bindNF P[y] (N[x] [ (wkS [ wkS ]snf) , (var Zero) ]cnf)))
 
+
+
 unSNfm-wk : ∀ (γ : SNfm Δ Γ)
   → unSNfm (wkSubst {R = R} γ) ≡ unSNfm γ ∘s wk
-unSNfm-wk = {!!}
+unSNfm-wk {Γ = []} γ = Nbe.by-ssimpl refl
+unSNfm-wk {Γ = x ∷ Γ} γ = cong₂ _,s_ (unSNfm-wk (γ .fst)) (lem2 γ) ∙ Nbe.by-ssimpl refl
+  where
+    lem : ∀ {S} (V : VNfm Δ R) -> unVNfm (V [ wkRen {R = S} idRen ]rv) ≡ unVNfm V [ wk ]v
+    lem (var Zero) = refl
+    lem (var (Succ x)) = {!!}
+    lem zro = Nbe.by-vsimpl refl
+    lem (suc V) = {!!}
+    lem (lda x) = {!!}
+    lem (injN V) = {!!}
+    lem (injArr V) = {!!}
+    lem (mapDyn V V₁ V₂) = {!!}
+
+    lem2 : ∀ {S} (γ : SNfm Δ (R ∷ Γ)) ->
+      unVNfm (wkSubst {R = S} γ .snd) ≡ (unVNfm (γ .snd) [ wk ]v)
+    lem2 γ = lem (γ .snd)
+
 
 unSNfm-↑ : ∀ (γ : SNfm Δ Γ)
   → unSNfm (↑snf {S = S} γ) ≡ ↑subst (unSNfm γ)
-unSNfm-↑ {Γ = Γ} γ = {!!}
+unSNfm-↑ {Γ = []} γ = Nbe.by-ssimpl refl
+unSNfm-↑ {Γ = x ∷ Γ} γ = cong₂ _,s_ (cong₂ _,s_ (unSNfm-wk (γ .fst)) {!!} ∙ Nbe.by-ssimpl refl) refl
+
+unSNfm-idsnf : ∀ {Γ} -> unSNfm {Γ = Γ} idsnf ≡ ids
+unSNfm-idsnf {Γ = []} = !s-ext
+unSNfm-idsnf {Γ = x ∷ Γ} =
+  (cong₂ _,s_ (unSNfm-wk idsnf ∙ (cong₂ _∘s_ unSNfm-idsnf refl) ∙ ∘IdL) refl)
+  ∙ ids-wk
+
 
 unVNfm-lookup : ∀ (x : Var Γ R) (γ : SNfm Δ Γ) → unVNfm (lookup γ x) ≡ unVar x [ unSNfm γ ]v
 unVNfm-lookup Zero γ = Nbe.by-vsimpl refl
@@ -260,16 +289,16 @@ module Sem = SynInd
 
 open SynInd.indCases
 cases : Sem.indCases
-cases .indIds = {!!}
+cases .indIds = ∣ idsnf , unSNfm-idsnf ∣₁
 cases .ind∘s = {!!}
-cases .ind!s = {!!}
+cases .ind!s = ∣ tt* , refl ∣₁
 cases .ind,s = {!!}
-cases .indwk = {!!}
+cases .indwk = ∣ wkS , {!!} ∣₁
 cases .ind[]v = {!!}
 
-cases .indVar = {!!}
-cases .indZero = {!!}
-cases .indSuc = {!!}
+cases .indVar = ∣ (var Zero) , refl ∣₁
+cases .indZero = ∣ zro , (Nbe.by-vsimpl refl) ∣₁
+cases .indSuc = ∣ (suc {!!}) , {!!} ∣₁
 cases .indLda = {!!}
 cases .indInjN = {!!}
 cases .indInjArr = {!!}
@@ -279,10 +308,10 @@ cases .ind[]∙ {E = E}{M = M} ihE = rec squash₁ λ ihM →
   rec squash₁ (λ ihE[M] → ∣ ihE[M] .fst , ihE[M] .snd ∙ cong (E [_]∙) (ihM .snd) ∣₁)
     (ihE (ihM .fst))
 cases .ind[]c = {!!}
-cases .indErr = ∣ err , {!!} ∣₁
+cases .indErr = ∣ err , Nbe.by-csimpl refl ∣₁
 cases .indTick = rec squash₁ λ ihM →
   ∣ (tick (ihM .fst)) , (cong tick (ihM .snd)) ∣₁
-cases .indRet = ∣ ret (var Zero) , {!!} ∣₁
+cases .indRet = ∣ ret (var Zero) , Nbe.by-csimpl refl ∣₁
 cases .indApp = {!!}
 cases .indMatchNat = {!!}
 cases .indMatchDyn = {!!}

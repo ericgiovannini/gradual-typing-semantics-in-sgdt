@@ -270,6 +270,20 @@ sem-cases .indbind {M = M} ih-M[x] γ~ N .snd =
 --   ∙ reflect<-reify≡id _
 
 -- | The actual "tactics"
+ssimpl : Subst Δ Γ → Subst Δ Γ
+ssimpl γ = reify (Sem.indPs sem-cases γ univ-sem-subst .fst)
+
+ssimpl-eq : (γ : Subst Δ Γ) → γ ≡ ssimpl γ
+ssimpl-eq γ =
+  sym (reify<-reflect≡id _)
+  ∙ cong reify
+      (cong reflect (sym ∘IdR ∙ cong₂ _∘s_ refl (sym (reify<-reflect≡id ids)))
+      ∙ (Sem.indPs sem-cases γ univ-sem-subst .snd))
+
+by-ssimpl : {γ γ' : Subst Δ Γ} → ssimpl γ ≡ ssimpl γ' → γ ≡ γ'
+by-ssimpl p = ssimpl-eq _ ∙ p ∙ sym (ssimpl-eq _)
+
+
 vsimpl : Val Γ R → Val Γ R
 vsimpl V = Sem.indPv sem-cases V univ-sem-subst .fst
 
