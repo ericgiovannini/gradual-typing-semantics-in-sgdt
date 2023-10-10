@@ -11,8 +11,10 @@ module Semantics.Concrete.RepresentableRelation (k : Clock) where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Transport
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum hiding (elim)
+open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (elim)
 
 open import Cubical.HITs.PropositionalTruncation
 
@@ -121,8 +123,8 @@ open RepresentableRel
 -- Pseudo-representation of the identity relation on a poset X
 --
 IdRepRel : {ℓo : Level} -> (X : Poset ℓ ℓ') ->
-  RepresentableRel X X (ℓ-max ℓo ℓ')
-IdRepRel {ℓo = ℓo} X .R = poset-monrel {ℓo = ℓo} X
+  RepresentableRel X X ℓ'
+IdRepRel {ℓ' = ℓ'} {ℓo = ℓo} X .R = poset-monrel {ℓo = ℓ'} X
 IdRepRel X .leftRep = record {
   e = MonId ;
   δX = MonId ;
@@ -132,10 +134,9 @@ IdRepRel X .leftRep = record {
 IdRepRel X .rightRep = record {
   p = MonId ;
   δX = MonId ;
-  δY = MonId ;
-  dnR = λ lx lx' lx≤lx' → {!!};
-  dnL = λ lx lx' lx≤lx' → {!MonRel.R !} }
-  -- How to construct a relation?
+  δY = MonId ; -- X ≡ UniverseLiftPoset X
+  dnR = λ lx lx' lx≤lx' → transport (λ i → sym {!!} i) lx≤lx' ;
+  dnL = λ lx lx' lx≤lx' → transport (λ i → {!!}) lx≤lx' }
 
 
 -- "Product" of pseudo-representable relations
@@ -218,7 +219,7 @@ RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .leftRep =
     (MonFun.f (co .leftRep .e))
     (MonFun.f (co .leftRep .δY))
     (co .leftRep .UpL) _ _
-    (ext-monotone-het _ _ (MonFun.f f) (MonFun.f g) f≤g _ _ (ci .rightRep .dnL _ _ {!!})) ;
+    (ext-monotone-het _ _ (MonFun.f f) (MonFun.f g) f≤g _ _ (ci .rightRep. dnL _ _ (ret-monotone bi bi (reflexive Bi bi)))) ;
   
   UpR = λ f g f≤g ai bi ai≤bi ->
     mapL-monotone-het
@@ -237,13 +238,12 @@ RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .rightRep = record {
   dnR = λ lf lg lf≤lg → mapL-monotone-het _ _
     (MonFun.f (Curry (With2nd (co .rightRep .δX) ∘m App ∘m With2nd (ci .leftRep .δX))))
     (MonFun.f (Curry (With2nd (co .rightRep .p) ∘m App ∘m With2nd (ci .leftRep .e))))
-    (λ f g f≤g ai → co .rightRep .dnR _ _ {!!}) lf lg lf≤lg ; --todo ℓ' != ℓR of type Level
+    (λ f g f≤g ai → co .rightRep .dnR _ _ (f≤g _ _ (ci .leftRep .UpR ai ai (reflexive Ai ai)))) lf lg lf≤lg ; 
   dnL = λ lg lg' lg≤lg' → mapL-monotone-het _ _
     (MonFun.f (Curry (With2nd (co .rightRep .p) ∘m App ∘m With2nd (ci .leftRep .e))))
     (MonFun.f (Curry (With2nd (co .rightRep .δY) ∘m App ∘m With2nd (ci .leftRep .δY))))
     (λ g g' g≤g' ai bi ai≤bi → co .rightRep .dnL _ _
-      (≤mon→≤mon-het g g' g≤g' {!!} {!!} {!!}) --(≤mon→≤mon-het g g' g≤g' _ _ (ci .leftRep .UpL ai bi ai≤bi))
-      )
+      (≤mon→≤mon-het g g' g≤g' _ _ (ci .leftRep .UpL ai bi ai≤bi)))
     lg lg' lg≤lg' }
 
 
@@ -251,9 +251,33 @@ RepFun {Ai = Ai} {Ao = Ao} {Bi = Bi} {Bo = Bo} ci co .rightRep = record {
 -- Pseudo-representable relations involving Dyn
 --
 
+Rel-ℕ : ∀ ℓ → _
+Rel-ℕ ℓ = functionalRel InjNat Id (poset-monrel {ℓo = ℓ} DynP)
+
+Rel-ℕ-lem : ∀ n d' ℓ -> R (Rel-ℕ ℓ) n d' ->
+  Σ[ n' ∈ ⟨ ℕ ⟩ ] (transport ⟨DynP⟩-Sum d' ≡ inl n') × (n ≡ n')
+Rel-ℕ-lem n d' ℓ injN = ⊎p-rel-lem-l n (transport ⟨DynP⟩-Sum d')
+  let aux = (rel-transport DynP-Sum (lower injN)) in
+  transport (λ i →
+    rel (ℕ ⊎p (▸'' k) (DynP ==> 𝕃 DynP))
+        (transportTransport⁻ ⟨DynP⟩-Sum (inl n) i)
+        (transport ⟨DynP⟩-Sum d'))
+  (aux)
+
+
+Rel-ℕ-lem' : ∀ n d' ℓR n' ->
+  (transport ⟨DynP⟩-Sum d' ≡ inl n') × (n ≡ n') ->
+  R (Rel-ℕ ℓR) n d'
+Rel-ℕ-lem' n d' ℓR n' (eq , n≡n') =
+  let aux = rel-transport (sym DynP-Sum) {a1 = inl n} {a2 = inl n'} (lift n≡n') in
+  let eq2 = cong₂ transport refl (sym eq) ∙ transport⁻Transport ⟨DynP⟩-Sum d' in
+  lift (transport (λ i -> rel DynP (MonFun.f InjNat n ) (eq2 i)) aux) 
+
+
+
 
 injℕ : RepresentableRel ℕ DynP ℓR
-injℕ .R = functionalRel InjNat Id (poset-monrel DynP)
+injℕ {ℓR = ℓR} .R = Rel-ℕ ℓR
 injℕ .leftRep = record {
   e = InjNat ;
   δX = Id ;
@@ -264,29 +288,65 @@ injℕ .leftRep = record {
   -- NTS:  InjNat n is related to InjNat m
   UpR = λ n m n≡m → lift (MonFun.isMon InjNat n≡m) }
   
-injℕ .rightRep = record {
+injℕ {ℓR = ℓR} .rightRep = record {
   p = U mExt ProjNat ;
   δX = U mExt mRet ; -- ext ret (which equals id)
   δY = U mExt mRet ;
   dnR = λ ln ld ln≤ld →
     ext-monotone-het (R (injℕ .R)) (rel ℕ) ret (MonFun.f ProjNat)
-    (λ n d n≤d → {!R!}) ln ld ln≤ld ;
-  dnL = λ ld ld' ld≤ld' →
+    (λ n d n≤d → aux n d n≤d (Rel-ℕ-lem n d ℓR n≤d)) ln ld ln≤ld ;
+  dnL = λ ld ld' ld≤ld' → 
     ext-monotone-het (rel DynP) (R (injℕ .R)) (MonFun.f ProjNat) ret
-    (λ d d' d≤d' → {!!}) ld ld' ld≤ld' }
+    (λ d d' d≤d' → aux' d d' d≤d' (Rel-DynP-lem d d' d≤d')) ld ld' ld≤ld'
+    }
+
+    where
+      open LiftRelation.Properties
+      aux : ∀ n d n≤d sigma ->
+        LiftRelation._≾_ ⟨ ℕ ⟩ ⟨ ℕ ⟩ (rel ℕ) (ret n) (MonFun.f ProjNat d)
+      aux n d n≤d (n' , eq-inl , n≡n') =
+        let eq = ProjNat-nat d n' eq-inl in
+        transport (λ i → (_ LiftRelation.≾ _) (rel ℕ) (ret n) (sym eq i))
+          (ord-η-monotone ⟨ ℕ ⟩ ⟨ ℕ ⟩ (rel ℕ) n≡n')
+
+      aux' : ∀ d d' d≤d' sigma ->
+        (⟨ ℕ ⟩ LiftRelation.≾ ⟨ DynP ⟩) (R (Rel-ℕ ℓR)) (MonFun.f ProjNat d) (ret d')
+      aux' d d' d≤d' (inr (g~ , g~' , eq-inr , eq-inr' , g~≤g~')) =
+        let eq = ProjNat-fun d g~ eq-inr in
+        transport
+          (λ i → (⟨ ℕ ⟩ LiftRelation.≾ ⟨ DynP ⟩) (R (Rel-ℕ ℓR)) (sym eq i) (ret d'))
+          (ord-bot _ _ (R (Rel-ℕ ℓR)) (ret d'))
+      aux' d d' d≤d' (inl (n , n' , eq-inl , eq-inl' , n≡n')) =
+        let eq = ProjNat-nat d n eq-inl in
+        transport (λ i -> LiftRelation._≾_ _ _ (R (Rel-ℕ ℓR)) (sym eq i) (ret d'))
+        (ord-η-monotone ⟨ ℕ ⟩ ⟨ DynP ⟩ (R (Rel-ℕ ℓR))
+          (Rel-ℕ-lem' n d' ℓR n' (eq-inl' , n≡n')))
 
 
-Rel : ∀ ℓ -> _
-Rel ℓ = functionalRel InjArr Id (poset-monrel {ℓo = ℓ} DynP)
+Rel-Arr : ∀ ℓ -> _
+Rel-Arr ℓ = functionalRel InjArr Id (poset-monrel {ℓo = ℓ} DynP)
 
-Rel-lem : ∀ f d ℓ -> R (Rel ℓ) f d ->
+Rel-Arr-lem : ∀ f d' ℓ -> R (Rel-Arr ℓ) f d' ->
   Σ[ g~ ∈ ⟨ ▹' k ((DynP ==> 𝕃 DynP)) ⟩ ]
-    (transport  ⟨DynP⟩-Sum d ≡ inr g~) × (▸ (λ t -> f ≤mon g~ t))
-Rel-lem f d ℓ injA = (transport {!!} {!!}) , ({!!} , {!!})
---  (λ t → f) , (λ i → {!!}) , (λ t x → reflexive _ d)o
+    (transport ⟨DynP⟩-Sum d' ≡ inr g~) × (▸ (λ t -> f ≤mon g~ t))
+Rel-Arr-lem f d' ℓ injA = ⊎p-rel-lem-r (next f) (transport ⟨DynP⟩-Sum d')
+  (let aux = rel-transport DynP-Sum (lower injA) in
+  transport (λ i ->
+    rel (ℕ ⊎p ((▸'' k) (DynP ==> 𝕃 DynP)))
+        (transportTransport⁻ ⟨DynP⟩-Sum (inr (next f)) i)
+        (transport ⟨DynP⟩-Sum d'))
+  aux)
+
+Rel-Arr-lem' : ∀ f d' ℓR g~ ->
+  (transport ⟨DynP⟩-Sum d' ≡ inr g~) × (▸ (λ t -> f ≤mon g~ t)) ->
+  R (Rel-Arr ℓR) f d'
+Rel-Arr-lem' f d' ℓR g~ (eq , f≤g~) =
+  let aux = rel-transport (sym DynP-Sum) {a1 = inr (next f)} {a2 = inr g~} (lift f≤g~) in
+  let eq2 = cong₂ transport refl (sym eq) ∙ transport⁻Transport ⟨DynP⟩-Sum d'  in
+  lift (transport (λ i -> rel DynP (MonFun.f InjArr f) (eq2 i)) aux)
 
 injArr : RepresentableRel (DynP ==> 𝕃 DynP) DynP ℓR
-injArr {ℓR = ℓR} .R = Rel ℓR
+injArr {ℓR = ℓR} .R = Rel-Arr ℓR
 injArr .leftRep = record {
   e = InjArr ;
   δX = Id ;
@@ -296,28 +356,41 @@ injArr .leftRep = record {
   
 injArr {ℓR = ℓR} .rightRep = record {
   p = mExtU ProjArr ;
-  δX = mExtU (mCompU Δ mRet) ; --@not sure
+  δX = mExtU (mCompU Δ mRet) ;
   δY = mExtU (mCompU Δ mRet) ;
   dnR = λ lf ld lf≤ld → ext-monotone-het _ _
     (MonFun.f (mCompU Δ mRet))
     (MonFun.f ProjArr)
-    (λ f d f≤d -> aux f d f≤d (Rel-lem f d ℓR f≤d)) lf ld lf≤ld ;
+    (λ f d f≤d -> aux f d f≤d (Rel-Arr-lem f d ℓR f≤d)) lf ld lf≤ld ;
   dnL = λ ld ld' ld≤ld' → ext-monotone-het _ _
     (MonFun.f ProjArr)
     (MonFun.f (mCompU Δ mRet))
-    (λ d d' d≤d' → {!!})
+    (λ d d' d≤d' → aux' d d' ℓR d≤d' (Rel-DynP-lem d d' d≤d')) 
     ld ld' ld≤ld' }
-
     where
       open LiftRelation.Properties
+      
       aux : ∀ f d f≤d sigma -> 
        LiftRelation._≾_ ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP))
         (δ (ret f)) (MonFun.f ProjArr d)
       aux f d f≤d (g~ , eq-inr , f≤g~) = let eq = ProjArr-fun d g~ eq-inr in
-        transport ((λ i -> LiftRelation._≾_ _ _ (rel (DynP ==> 𝕃 DynP)) (δ (ret f)) (sym eq i)))
+        transport (λ i -> LiftRelation._≾_ _ _
+          (rel (DynP ==> 𝕃 DynP)) (δ (ret f)) (sym eq i))
              (ord-θ-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP))
                 λ t -> ord-η-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ==> 𝕃 DynP ⟩ (rel (DynP ==> 𝕃 DynP)) (f≤g~ t))
-     
+
+      aux' : ∀ d d' ℓR d≤d' sigma ->
+        LiftRelation._≾_ ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ⟩ (R (Rel-Arr ℓR)) (MonFun.f ProjArr d) (δ (ret d'))
+      aux' d d' ℓR d≤d' (inr (g~ , g~' , eq-inr , eq-inr' , g~≤g~')) = -- transport DynP-Sum -> rel sum
+        let eq = ProjArr-fun d g~ eq-inr in
+        transport (λ i -> LiftRelation._≾_ _ _ (R (Rel-Arr ℓR)) (sym eq i) (δ (ret d')))
+          (ord-θ-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ⟩ (R (Rel-Arr ℓR))
+            (λ t → ord-η-monotone ⟨ DynP ==> 𝕃 DynP ⟩ ⟨ DynP ⟩ (R (Rel-Arr ℓR))
+              (Rel-Arr-lem' (g~ t) d' ℓR g~' (eq-inr' , (λ t1 → let tr = tick-irrelevance g~ t1 t in transport (λ i → (tr i) ≤mon g~' t1) (g~≤g~' t1)))))) -- g~ t ≤mon g~' t1
+      aux' d d' ℓR d≤d' (inl (n , n' , eq-inl , eq-inr , n≡n')) = let eq = ProjArr-nat d n eq-inl in
+        transport (λ i → (_ LiftRelation.≾ ⟨ DynP ⟩) (R (Rel-Arr ℓR)) (sym eq i) (δ (ret d'))) (ord-bot _ ⟨ DynP ⟩ (R (Rel-Arr ℓR)) (δ (ret d')))
+
+
 -- (λ i -> LiftRelation._≾_ _ _ _ (δ (ret f)) (eq i))
 --
 -- Composing pseudo-representable relations
@@ -335,20 +408,30 @@ composeRep : {A B C : Poset ℓ ℓ'} ->
     TwoCell (d .R .R) (d .R .R) (MonFun.f (c .leftRep .δY)) (MonFun.f f)) ->
   RepresentableRel A C (ℓ-max ℓ ℓR)
 composeRep c d c-filler-l d-filler-r .R = CompMonRel (c .R) (d .R)
-composeRep {C = C} c d c-filler-l d-filler-r .leftRep = record {
+composeRep {A = A} {B = B} {C = C} c d c-filler-l d-filler-r .leftRep = record {
   e = mCompU (d .leftRep .e) (c .leftRep .e) ;
   δX = c .leftRep .δX;
   δY = d .leftRep .δY ;
   UpL =  λ x z x≤z -> elim
     (λ _ -> isPropValued-poset C _ _)
     (λ { (y , x≤y , y≤z) -> d .leftRep .UpL _ _
-      (is-antitone (d .R) (c .leftRep .UpL x y x≤y) {!d-filler-r!}) })
+      (is-antitone (d .R) (c .leftRep .UpL x y x≤y) (aux y z y≤z d-filler-r)) })
     x≤z ;
-  UpR = λ a a' a≤a' → elim (λ _ -> isPropValued-poset {!!} _ _) {!!} {!!} }
+  UpR = λ x x' x≤x' → {!!} }
+  where
+    aux : ∀ y z y≤z sigma -> R (d .R) (MonFun.f (δY (c .leftRep)) y) z
+    aux y z y≤z (f , r) = {!!}
+      -- transport (λ i → R (d .R) (MonFun.f (δY (c .leftRep)) y) ( ? ≡⟨ {!!} ⟩ {!!} i)) (r y z y≤z)
+    {-
+      MonFun.f f ≡ id
+      MonFun.f f z ≡ z
+ d .R .R (MonFun.f (c .leftRep .δY) y) (MonFun.f f z) ≡
+      R (d .R) (MonFun.f (δY (c .leftRep)) y) z
+    -}
 composeRep c d c-filler-l d-filler-r .rightRep = record {
   p = mCompU (c .rightRep .p) (d .rightRep .p) ;
-  δX = {!!} ;
-  δY = {!!} ;
+  δX = c .rightRep .δX ;
+  δY = d .rightRep .δY ;
   dnR = {!!} ;
   dnL = {!!} }
 
