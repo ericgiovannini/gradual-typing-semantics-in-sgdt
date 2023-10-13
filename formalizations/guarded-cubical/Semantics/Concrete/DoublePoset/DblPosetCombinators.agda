@@ -2,6 +2,8 @@
 
 {-# OPTIONS --lossy-unification #-}
 
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Common.Later
 
 module Semantics.Concrete.DoublePoset.DblPosetCombinators where
@@ -15,6 +17,7 @@ open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.Convenience
 open import Semantics.Concrete.DoublePoset.Constructions
+
 
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
 open import Cubical.Data.Unit
@@ -39,13 +42,20 @@ private
     C' : DoublePoset ℓC' ℓ'C' ℓ''C'
     
 open DPMor
+open import Semantics.Concrete.DoublePoset.DPMorProofs
 
 
 mTransport : {A B : DoublePoset ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
 mTransport {A} {B} eq = record {
   f = λ b → transport (λ i -> ⟨ eq i ⟩) b ;
-  isMon = λ {b1} {b2} b1≤b2 → {!!} ;
-  pres≈ = λ {b1} {b2} b1≈b2 → {!!} }
+  isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ eq b1≤b2 ;
+  pres≈ = λ {b1} {b2} b1≈b2 → rel-transport-≈ eq b1≈b2 }
+
+mTransportSym : {A B : DoublePoset ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
+mTransportSym {A} {B} eq = record {
+  f = λ b → transport (λ i -> ⟨ sym eq i ⟩) b ;
+  isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ (sym eq) b1≤b2 ;
+  pres≈ = λ {b1} {b2} b1≤b2 → rel-transport-≈ (sym eq) b1≤b2 }
 
 mTransportDomain : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
@@ -53,8 +63,8 @@ mTransportDomain : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
   DPMor B C
 mTransportDomain {A} {B} {C} eq f = record {
   f = g eq f ;
-  isMon = {!!} ;
-  pres≈ = {!!}  }
+  isMon = mon-transport-domain-≤ eq f ;
+  pres≈ = mon-transport-domain-≈ eq f  }
   where
     g : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
       (eq : A ≡ B) ->
@@ -62,24 +72,25 @@ mTransportDomain {A} {B} {C} eq f = record {
       ⟨ B ⟩ -> ⟨ C ⟩
     g eq f b = DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
 
-
+        
 mCompU : DPMor B C -> DPMor A B -> DPMor A C
 mCompU f1 f2 = record {
   f = λ a -> f1 .f (f2 .f a) ;
   isMon = λ x≤y -> f1 .isMon (f2 .isMon x≤y) ;
   pres≈ = λ x≈y → f1 .pres≈ (f2 .pres≈ x≈y) }
 
-{-
+
 mComp :
     ⟨ (B ==> C) ==> (A ==> B) ==> (A ==> C) ⟩
 mComp = record {
   f = λ fBC → record {
     f = λ fAB → mCompU fBC fAB ;
     isMon = λ {f1} {f2} f1≤f2 -> λ a → isMon fBC (f1≤f2 a) ;
-    pres≈ = λ {f1} {f2} f1≈f2 → λ a → pres≈ {!!} {!!} } ;
+    pres≈ = λ {f1} {f2} f1≈f2 → λ a1 a2 a1≈a2 → pres≈ fBC (f1≈f2 a1 a2 a1≈a2) } ;
   isMon = λ {f1} {f2} f1≤f2 → λ f' a → f1≤f2 (DPMor.f f' a) ;
-  pres≈ = λ {f1} {f2} f1≈f2 → λ f' a' → {!f1≈f2!} }
--}
+  pres≈ = λ {fBC} {fBC'} fBC≈fBC' fAB fAB' fAB≈fAB' a a' a≈a' →
+    fBC≈fBC' _ _ (fAB≈fAB' a a' a≈a') }
+
 
 Pair : ⟨ A ==> B ==> (A ×dp B) ⟩
 Pair {A = A} {B = B} = record {
@@ -188,12 +199,11 @@ Uncurry f = record {
         ≤mon→≤mon-het (DPMor.f f γ1) (DPMor.f f γ2) fγ1≤fγ2 a1 a2 a1≤a2 ;
   pres≈ = λ {(γ1 , a1)} {(γ2 , a2)} (γ1≈γ2 , a1≈a2) ->
       let fγ1≈fγ2 = pres≈ f γ1≈γ2 in
-        ≈mon→≈mon-het (DPMor.f f γ1) (DPMor.f f γ2) fγ1≈fγ2 a1 a2 a1≈a2 }
+        fγ1≈fγ2 a1 a2 a1≈a2 }
 
 App : ⟨ ((A ==> B) ×dp A) ==> B ⟩
 App = Uncurry Id
 
--- very slow
 {-
 Swap : (Γ : DoublePoset ℓ ℓ' ℓ'') -> {A B : DoublePoset ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
 Swap Γ {A = A} f = record {
@@ -315,30 +325,32 @@ module ClockedCombinators (k : Clock) where
     ▹_ A = ▹_,_ k A
 
   open import Semantics.Lift k
-  open ClockedConstructions k
+  -- open ClockedConstructions k
   -- open import Semantics.Concrete.MonotonicityProofs
   -- open import Semantics.LockStepErrorOrdering k
+  open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
+  open import Semantics.WeakBisimilarity k
 
 
-  -- open LiftPoset
-  -- open ClockedProofs k
+  open LiftDoublePoset
+  open ClockedProofs k
 
   Map▹ :
-    ⟨ A ==> B ⟩ -> ⟨ DP▸'_ A ==> DP▸'_ B ⟩
+    ⟨ A ==> B ⟩ -> ⟨ DP▸'_ k A ==> DP▸'_ k B ⟩
   Map▹ {A} {B} f = record {
     f = map▹ (DPMor.f f) ;
     isMon = λ {a1} {a2} a1≤a2 t → isMon f (a1≤a2 t) ;
     pres≈ = λ {a1} {a2} a1≈a2 t → pres≈ f (a1≈a2 t) }
 
   Ap▹ :
-    ⟨ (DP▸'_ (A ==> B)) ==> (DP▸'_ A ==> DP▸'_ B) ⟩
+    ⟨ (DP▸'_ k (A ==> B)) ==> (DP▸'_ k A ==> DP▸'_ k B) ⟩
   Ap▹ {A = A} {B = B} = record {
     f = UAp▹ ;
     isMon = UAp▹-mon ;
     pres≈ = UAp▹-pres≈}
     where
       UAp▹ :
-        ⟨ (DP▸'_ (A ==> B)) ⟩ -> ⟨ (DP▸'_ A ==> DP▸'_ B) ⟩
+        ⟨ (DP▸'_ k (A ==> B)) ⟩ -> ⟨ (DP▸'_ k A ==> DP▸'_ k B) ⟩
       UAp▹ f~ = record {
         f = _⊛_ (λ t → DPMor.f (f~ t)) ;
         isMon = λ {a1} {a2} a1≤a2 t → isMon (f~ t) (a1≤a2 t) ;
@@ -346,18 +358,98 @@ module ClockedCombinators (k : Clock) where
 
       UAp▹-mon : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≤ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≤ ((DP▸'_ A) ==> (DP▸'_ B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≤ ((DP▸'_ k A) ==> (DP▸'_ k B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-mon {f1~} {f2~} f1~≤f2~ a~ t = f1~≤f2~ t (a~ t)
 
       UAp▹-pres≈ : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≈ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≈ ((DP▸'_ A) ==> (DP▸'_ B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≈ ((DP▸'_ k A) ==> (DP▸'_ k B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-pres≈ {f1~} {f2~} f1~≈f2~ a1~ a2~ a1~≈a2~ t =
         f1~≈f2~ t (a1~ t) (a2~ t) (a1~≈a2~ t)
 
-  Next : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> DP▸'_ A ⟩
+  Next : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> DP▸'_ k A ⟩
   Next = record {
     f = next ;
     isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 ;
     pres≈ = λ {a1} {a2} a1≈a2 t → a1≈a2 }
+
+  mθ : {A : DoublePoset ℓ ℓ' ℓ''} ->
+    ⟨ DP▸'_ k (𝕃 A) ==> 𝕃 A ⟩
+  mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone A ; pres≈ = λ x → {!!} }
+
+  -- 𝕃's return as a monotone function
+  mRet : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
+  mRet {A = A} = record { f = ret ; isMon = ord-η-monotone A ; pres≈ = λ x → {!!} }
+    where
+      open Bisim ⟨ A ⊎p UnitDP ⟩ (rel-≈ (A ⊎p UnitDP))
+
+  Δ : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
+  Δ {A = A} = record {
+      f = δ ;
+      isMon = λ x≤y → ord-δ-monotone A x≤y ;
+      pres≈ = {!!} }
+
+  mExtU : DPMor A (𝕃 B) -> DPMor (𝕃 A) (𝕃 B)
+  mExtU f = record {
+      f = λ la -> bind la (DPMor.f f) ;
+      isMon = monotone-bind-mon-≤ f ;
+      pres≈ = monotone-bind-mon-≈ f }
+
+  mExt : ⟨ (A ==> 𝕃 B) ==> (𝕃 A ==> 𝕃 B) ⟩
+  mExt {A = A} = record {
+      f = mExtU ;
+      isMon = λ {f1} {f2} f1≤f2 la →
+        ext-monotone-≤ (DPMor.f f1) (DPMor.f f2)
+          (≤mon→≤mon-het f1 f2 f1≤f2) la la (reflexive-≤ (𝕃 A) la) ;
+      pres≈ = λ {f1} {f2} f1≈f2 la la' la≈la' →
+        ext-monotone-≈ (DPMor.f f1) (DPMor.f f2) f1≈f2 la la' la≈la' }
+
+  mExt' : (Γ : DoublePoset ℓ ℓ' ℓ'') ->
+      ⟨ (Γ ×dp A ==> 𝕃 B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
+  mExt' Γ f = TransformDomain f mExt
+
+  mRet' : (Γ : DoublePoset ℓ ℓ' ℓ'') -> { A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
+  mRet' Γ f = record {
+    f = λ γ -> ret (DPMor.f f γ) ;
+    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (DPMor.f f γ1) (DPMor.f f γ2) (isMon f γ1≤γ2);
+    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (DPMor.f f γ1) (DPMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
+
+  Bind : (Γ : DoublePoset ℓ ℓ' ℓ'') ->
+      ⟨ Γ ==> 𝕃 A ⟩ -> ⟨ Γ ×dp A ==> 𝕃 B ⟩ -> ⟨ Γ ==> 𝕃 B ⟩
+  Bind Γ la f = S Γ (mExt' Γ f) la
+
+  -- Mapping a monotone function
+  mMap : ⟨ (A ==> B) ==> (𝕃 A ==> 𝕃 B) ⟩
+  mMap {A = A} {B = B} = Curry (mExt' (A ==> B) ((With2nd mRet) ∘m App))
+
+  mMap' :
+      ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
+  mMap' f = record {
+    f = λ { (γ , la) -> mapL (λ a -> DPMor.f f (γ , a)) la} ;
+    isMon = λ { {γ , la} {γ' , la'} (γ≤γ' , la≤la') → {!!} } ;
+    pres≈ = {!!} }
+
+  Map :
+      ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ==> 𝕃 A) ⟩ -> ⟨ (Γ ==> 𝕃 B) ⟩
+  Map {Γ = Γ} f la = S Γ (mMap' f) la -- Γ ! mMap' f <*> la
+
+
+    -- Embedding of function spaces is monotone
+  mFunEmb : (A A' B B' : DoublePoset ℓ ℓ' ℓ'') ->
+      ⟨ A' ==> 𝕃 A ⟩ ->
+      ⟨ B ==> B' ⟩ ->
+      ⟨ (A ==> 𝕃 B) ==> (A' ==> 𝕃 B') ⟩
+  mFunEmb A A' B B' fA'LA fBB' =
+      Curry (Bind ((A ==> 𝕃 B) ×dp A')
+        (mCompU fA'LA π2)
+        (Map (mCompU fBB' π2) ({!!})))
+    --  _ $ (mExt' _ (_ $ (mMap' (K _ fBB')) ∘m Id)) ∘m (K _ fA'LA)
+    -- mComp' (mExt' (mComp' (mMap' (K fBB')) Id)) (K fA'LA)
+
+  mFunProj : (A A' B B' : DoublePoset ℓ ℓ' ℓ'') ->
+     ⟨ A ==> A' ⟩ ->
+     ⟨ B' ==> 𝕃 B ⟩ ->
+     ⟨ (A' ==> 𝕃 B') ==> 𝕃 (A ==> 𝕃 B) ⟩
+  mFunProj A A' B B' fAA' fB'LB = {!!}
+    -- mRet' (mExt' (K fB'LB) ∘m Id ∘m (K fAA'))
 
