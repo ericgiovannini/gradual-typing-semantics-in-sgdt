@@ -305,7 +305,7 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
 
     
 -- Contructions involving later
-module ClockedConstructions (k : Clock) where
+module _ (k : Clock) where
 
   private
     ▹_ : Type ℓ -> Type ℓ
@@ -379,6 +379,7 @@ Unit-×L = isoToEquiv
   (iso (λ {(_ , x) -> x}) (λ x -> (tt , x)) (λ x → refl) (λ p → refl))
 
 
+
 {-
 UnitP-×L-equiv : {X : Poset ℓ ℓ'} -> PosetEquiv (UnitP ×p X) X
 UnitP-×L-equiv .fst = Unit-×L
@@ -392,3 +393,5 @@ UnitP-×L-equiv .snd = makeIsPosetEquiv Unit-×L is-mon is-mon-inv
 
 UnitP-×L : {X : Poset ℓ ℓ'} -> (UnitP ×p X) ≡ X
 UnitP-×L {X = X} = equivFun (PosetPath (UnitP ×p X) X) UnitP-×L-equiv-}
+
+

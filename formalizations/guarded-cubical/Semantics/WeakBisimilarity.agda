@@ -95,6 +95,9 @@ module Bisim (X : Type ℓ) (R : X -> X -> Type ℓR) where
      prop-≈'→prop-≈ : BinaryRelation.isPropValued _≈'_ -> BinaryRelation.isPropValued _≈_
      prop-≈'→prop-≈ = transport (λ i -> BinaryRelation.isPropValued (sym unfold-≈ i))
 
+     prop-≈→prop-≈' : BinaryRelation.isPropValued _≈_ -> BinaryRelation.isPropValued _≈'_
+     prop-≈→prop-≈' = transport (λ i -> BinaryRelation.isPropValued (unfold-≈ i))
+
      prop' : ▹ (BinaryRelation.isPropValued _≈'_) -> BinaryRelation.isPropValued _≈'_
      prop' IH (η a) (η b) p q =
        let x = (isPropValuedR a b (lower p) (lower q)) in isoInvInjective LiftIso p q x
