@@ -106,14 +106,15 @@ module ClockedProofs (k : Clock) where
 
   ret-monotone : {A : Poset ℓA ℓ'A} ->
     (a a' : ⟨ A ⟩) ->
-    (rAA : ⟨ A ⟩ -> ⟨ A ⟩ -> Type ℓR) ->
+    rel A a a' ->
     rel (𝕃 A) (ret a) (ret a')
-  ret-monotone = {!!}
+  ret-monotone {A = A} = λ a a' a≤a' →
+    LiftRelation.Properties.ord-η-monotone ⟨ A ⟩ ⟨ A ⟩ _ a≤a'
 
   _×rel_ : {A : Type ℓA} {A' : Type ℓA'} {B : Type ℓB} {B' : Type ℓB'} ->
     (R : A -> A' -> Type ℓR1) -> (S : B -> B' -> Type ℓR2) ->
     (p : A × B) -> (p' : A' × B') -> Type (ℓ-max ℓR1 ℓR2)
-  (R ×rel S) (a , b) (a' , b') = R a a' × S b b' --R a a' , S b b' won't work
+  (R ×rel S) (a , b) (a' , b') = R a a' × S b b'
 
   lift×-monotone-het : {A : Poset ℓA ℓ'A} {A' : Poset ℓA' ℓ'A'}
     {B : Poset ℓB ℓ'B} {B' : Poset ℓB' ℓ'B'} ->
@@ -124,7 +125,17 @@ module ClockedProofs (k : Clock) where
     ((_ LiftRelation.≾ _) R ×rel (_ LiftRelation.≾ _) S) (lift× lab) (lift× la'b')
   lift×-monotone-het {A = A} {A' = A'} {B = B} {B' = B'} R S lab la'b' lab≤la'b' =
     let fixed = fix monotone-lift×' in
-    transport {!!} {!!}
+    -- transport⁻Transport
+    transport (sym (λ i → LiftP'.unfold-≾ {!i!} {!!} {!!}))
+      (fixed lab la'b' (transport (λ i → LiftP'.unfold-≾ i lab la'b') lab≤la'b'))
+--(sym λ i → LiftP'.unfold-≾ {!!} {!unfold-lift×-inv i!} {!!})
+{-
+(LiftP1'._≾_ ×rel LiftP2'._≾_) (lift× lab) (lift× la'b') ≡
+      Σ
+      (lift×' (next lift×) lab .fst ≾'P1' lift×' (next lift×) la'b' .fst)
+      (λ _ →
+         lift×' (next lift×) lab .snd ≾'P2' lift×' (next lift×) la'b' .snd)
+-}
     where
       _≾'LA_  = LiftPoset._≾'_ A
       _≾'LA'_ = LiftPoset._≾'_ A'
@@ -142,12 +153,29 @@ module ClockedProofs (k : Clock) where
       monotone-lift×' :
         ▹ ((lab : ⟨ 𝕃 (A ×p B) ⟩) -> (la'b' : ⟨ 𝕃 (A' ×p B') ⟩) ->
           lab ≾'P' la'b' ->
-          (lift×' (next lift×) lab .fst ≾'P1' {!!}) × ({!!} ≾'P2' {!!})) ->
-          -- {!? ≾'P1' ?!} × {! ? ≾'P2' ?!}) ->
+          (lift×' (next lift×) lab .fst ≾'P1' lift×' (next lift×) la'b' .fst)
+          × (lift×' (next lift×) lab .snd ≾'P2' lift×' (next lift×) la'b' .snd)) ->
         (lab : ⟨ 𝕃 (A ×p B) ⟩) -> (la'b' : ⟨ 𝕃 (A' ×p B') ⟩) ->
           lab ≾'P' la'b' ->
-          {!!}
-      monotone-lift×' = {!!}
+          (lift×' (next lift×) lab .fst ≾'P1' lift×' (next lift×) la'b' .fst)
+          × (lift×' (next lift×) lab .snd ≾'P2' lift×' (next lift×) la'b' .snd)
+      monotone-lift×' IH (η (a , b)) (η (a' , b')) (x , y) =
+       transport (λ i → LiftP1'.unfold-≾ i (η a) (η a')) (LiftP1'.Properties.ord-η-monotone x)
+        , transport (λ i → LiftP2'.unfold-≾ i (η b) (η b')) (LiftP2'.Properties.ord-η-monotone y)
+      monotone-lift×' IH ℧ l' l≤l' = tt* , tt*
+      monotone-lift×' IH (θ p) (θ p') l≤l' =
+        (λ t → transport
+          (λ i → (sym LiftP1'.unfold-≾) i
+            ((sym unfold-lift×) i (p t) .fst)
+            ((sym unfold-lift×) i (p' t) .fst))
+          (IH t (p t) (p' t)
+            (transport (λ i → LiftP'.unfold-≾ i (p t) (p' t)) (l≤l' t)) .fst))
+        , λ t → transport
+          (λ i → (sym LiftP2'.unfold-≾) i
+            ((sym unfold-lift×) i (p t) .snd)
+            ((sym unfold-lift×) i (p' t) .snd))
+          (IH t (p t) (p' t)
+            (transport (λ i → LiftP'.unfold-≾ i (p t) (p' t)) (l≤l' t)) .snd)
 
 --todo: follow ext-monotone-het
   lift×-inv-monotone-het : {A : Poset ℓA ℓ'A} {A' : Poset ℓA' ℓ'A'}
@@ -183,7 +211,14 @@ module ClockedProofs (k : Clock) where
         (p : ⟨ 𝕃 A ×p 𝕃 B ⟩) -> (p' : ⟨ 𝕃 A' ×p 𝕃 B' ⟩) ->
           ((p .fst ≾'P1' p' .fst) × (p .snd ≾'P2' p' .snd)) ->
           lift×-inv' (next lift×-inv) p ≾'P' lift×-inv' (next lift×-inv) p'
-      monotone-lift×-inv' IH (η a , η b) (η a' , η b') (la≤la' , lb≤lb') = transport (λ i → LiftP'.unfold-≾ i {!lift×-inv (η a , η b )!} {!!}) {!!}
+      monotone-lift×-inv' IH (η a1 , η b1) (η a2 , η b2) (a1≤a2 , b1≤b2) =
+        transport
+          (λ i → LiftP'.unfold-≾ {!i!} (lift×-inv (η a1 , η b1)) (lift×-inv (η a2 , η b2)))
+          {!!}
+        {-
+        lift×-inv' (next lift×-inv) (η a1 , η b1) ≾'P'
+        lift×-inv' (next lift×-inv) (η a2 , η b2)
+        -}
       monotone-lift×-inv' IH ((η a) , (θ lb~)) ((η a') , (θ lb'~)) (la≤la' , lb≤lb') = {!!}
       monotone-lift×-inv' IH (℧ , _) (℧ , _) (la≤la' , lb≤lb') = {!!}
       monotone-lift×-inv' IH (_ , ℧) (_ , ℧) (la≤la' , lb≤lb') = {!!}
@@ -225,8 +260,7 @@ module ClockedProofs (k : Clock) where
 
 
       monotone-ext' :
-        ▹ (
-            (la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩)  ->
+        ▹ ((la : ⟨ 𝕃 A ⟩) -> (la' : ⟨ 𝕃 A' ⟩)  ->
             (la ≾'LALA' la') ->
             (ext' f  (next (ext f))  la) ≾'LBLB'
             (ext' f' (next (ext f')) la')) ->
@@ -234,11 +268,11 @@ module ClockedProofs (k : Clock) where
           (la ≾'LALA' la') ->
           (ext' f  (next (ext f))  la) ≾'LBLB'
           (ext' f' (next (ext f')) la')
-      monotone-ext' IH (η x) (η y) x≤y = transport (λ i → LiftBB'.unfold-≾ i (f x) (f' y)) (f≤f' x y x≤y)
-        {-transport
+      monotone-ext' IH (η x) (η y) x≤y =
+        transport
         (λ i → LiftBB'.unfold-≾ i (f x) (f' y))
-        (f≤f' x y x≤y)-}
-      monotone-ext' IH ℧ la' la≤la' = {!!} --tt*
+        (f≤f' x y x≤y)
+      monotone-ext' IH ℧ la' la≤la' = tt*
       monotone-ext' IH (θ lx~) (θ ly~) la≤la' = λ t ->
         transport
           (λ i → (sym (LiftBB'.unfold-≾)) i
@@ -246,8 +280,6 @@ module ClockedProofs (k : Clock) where
             (sym (unfold-ext f') i (ly~ t)))
           (IH t (lx~ t) (ly~ t)
             (transport (λ i -> LiftAA'.unfold-≾ i (lx~ t) (ly~ t)) (la≤la' t)))
-
-
 
   -- ext respects monotonicity (in the usual homogeneous sense)
   -- This can be rewritten to reuse the above result!
@@ -257,7 +289,8 @@ module ClockedProofs (k : Clock) where
     (la la' : ⟨ 𝕃 A ⟩) ->
     rel (𝕃 A) la la' ->
     rel (𝕃 B) (ext f la) (ext f' la')
-  ext-monotone {A} {B} f f' f≤f' la la' la≤la' = {!!}
+  ext-monotone {A = A} {B = B} f f' f≤f' la la' la≤la' =
+    ext-monotone-het {A = A} {A' = A} {B = B} {B' = B} (rel A) (rel B) f f' f≤f' la la' la≤la'
 
   lift×-monotone : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} ->
     (l l' : ⟨ 𝕃 (A ×p B) ⟩) ->
@@ -269,7 +302,7 @@ module ClockedProofs (k : Clock) where
     (l l' : ⟨ 𝕃 A ×p 𝕃 B ⟩) ->
     rel (𝕃 A ×p 𝕃 B) l l' ->
     rel (𝕃 (A ×p B)) (lift×-inv l) (lift×-inv l')
-  lift×-inv-monotone = {!!} 
+  lift×-inv-monotone = {!!}
   
   bind-monotone :
     {la la' : ⟨ 𝕃 A ⟩} ->

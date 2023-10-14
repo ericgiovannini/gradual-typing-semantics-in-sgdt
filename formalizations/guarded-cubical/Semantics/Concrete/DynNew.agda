@@ -17,12 +17,14 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.Transport
 
 open import Cubical.Relation.Binary
 open import Cubical.Data.Nat renaming (ℕ to Nat)
 open import Cubical.Data.Sum
 open import Cubical.Data.Unit
 open import Cubical.Data.Empty
+open import Cubical.Data.Sigma
 
 open import Common.LaterProperties
 --open import Common.Preorder.Base
@@ -37,12 +39,14 @@ open import Common.Poset.Constructions
 open import Common.Poset.Monotone
 open import Common.Poset.MonotoneRelation
 open import Semantics.MonotoneCombinators
+open import Semantics.Concrete.MonotonicityProofs
 
 open import Semantics.LockStepErrorOrdering k
 
 open BinaryRelation
 open LiftPoset
 open ClockedCombinators k
+
 
 private
   variable
@@ -62,6 +66,8 @@ DynP' D = ℕ ⊎p (▸' k (λ t → D t ==> 𝕃 (D t)))
 DynP : Poset ℓ-zero ℓ-zero
 DynP = fix DynP'
 
+
+
 unfold-DynP : DynP ≡ DynP' (next DynP)
 unfold-DynP = fix-eq DynP'
 
@@ -74,6 +80,46 @@ DynP-Sum = unfold-DynP
 ⟨DynP⟩-Sum : ⟨ DynP ⟩ ≡ Nat ⊎ (▹ (⟨ DynP ==> 𝕃 DynP ⟩)) -- MonFun DynP (𝕃 DynP)
 ⟨DynP⟩-Sum i = ⟨ DynP-Sum i ⟩
 
+
+
+case : {ℓA ℓB ℓC : Level} -> {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} ->
+  (A -> C) -> (B -> C) -> ((A ⊎ B) -> C)
+case f g =  λ { (inl a) → f a ; (inr b) → g b }
+
+
+Rel-DynP-lem : ∀ d d' -> rel DynP d d' ->
+      (Σ[ n ∈ ⟨ ℕ ⟩ ]
+      (Σ[ n' ∈ ⟨ ℕ ⟩ ]
+      (transport ⟨DynP⟩-Sum d ≡ inl n)
+      × (transport ⟨DynP⟩-Sum d' ≡ inl n')
+      × (n ≡ n'))) ⊎
+      (Σ[ f~ ∈ ⟨ ▹' k ((DynP ==> 𝕃 DynP)) ⟩ ]
+      (Σ[ g~ ∈ ⟨ ▹' k ((DynP ==> 𝕃 DynP)) ⟩ ]
+      (transport ⟨DynP⟩-Sum d ≡ inr f~)
+      × (transport ⟨DynP⟩-Sum d' ≡ inr g~)
+      × (▸ (λ t → f~ t ≤mon g~ t))))
+Rel-DynP-lem d d' d≤d' =
+  let dSum = transport ⟨DynP⟩-Sum d in let d'Sum = transport ⟨DynP⟩-Sum d' in
+  let dSum≤d'Sum = rel-transport DynP-Sum d≤d' in (rel-sum dSum d'Sum dSum≤d'Sum)
+
+
+⊎p-rel-lem-l : {ℓA ℓ'A ℓB ℓ'B : Level} {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} ->
+  (a : ⟨ A ⟩) ->
+  (x : ⟨ A ⟩ ⊎ ⟨ B ⟩) ->
+  rel (A ⊎p B) (inl a) x ->
+  Σ[ a' ∈ ⟨ A ⟩ ] (x ≡ inl a') × rel A a a'
+⊎p-rel-lem-l a (inl a') H = a' , (refl , (lower H))
+
+⊎p-rel-lem-r : {ℓA ℓ'A ℓB ℓ'B : Level} {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} ->
+  (b : ⟨ B ⟩) ->
+  (x : ⟨ A ⟩ ⊎ ⟨ B ⟩) ->
+  rel (A ⊎p B) (inr b) x ->
+  Σ[ b' ∈ ⟨ B ⟩ ] (x ≡ inr b') × rel B b b'
+⊎p-rel-lem-r b (inr b') H = b' , (refl , (lower H))
+
+
+
+
 InjNat : ⟨ ℕ ==> DynP ⟩
 InjNat = mCompU (mTransport (sym DynP-Sum)) σ1
 
@@ -83,28 +129,60 @@ InjArr = mCompU (mTransport (sym DynP-Sum)) (mCompU σ2 Next)
 ProjNat : ⟨ DynP ==> 𝕃 ℕ ⟩
 ProjNat = mCompU (Case' mRet (K _ ℧)) (mTransport DynP-Sum)
 
-
 ▹g→g : MonFun ((▸'' k) (DynP ==> 𝕃 DynP)) (𝕃 (DynP ==> 𝕃 DynP))
 ▹g→g = record {
    f = λ f~ -> θ (λ t -> η (f~ t)) ;
-   isMon = λ {f~} {g~} f~≤g~ → ord-θ-monotone _ (λ t -> ord-η-monotone _ (f~≤g~ t))
-        -- ord-θ-monotone _ (λ t -> ord-η-monotone _ (f~≤g~ t))
-   }
+   isMon = λ {f~} {g~} f~≤g~ → ord-θ-monotone _ (λ t -> ord-η-monotone _ (f~≤g~ t)) }
+
+ProjNat-nat : ∀ d n ->
+  transport ⟨DynP⟩-Sum d ≡ inl n ->
+  MonFun.f ProjNat d ≡ η n
+ProjNat-nat d n eq =
+  cong₂ (MonFun.f {X = DynP} {Y = 𝕃 ℕ})
+        (refl {x = ProjNat})
+        ((sym (transport⁻Transport ⟨DynP⟩-Sum d)) ∙ λ i -> transport⁻ ⟨DynP⟩-Sum (eq i))
+  ∙ λ i → MonFun.f {!!} (transportTransport⁻ ⟨DynP⟩-Sum (inl n) i)
+
+ProjNat-fun : ∀ d g~ ->
+  transport ⟨DynP⟩-Sum d ≡ inr g~ ->
+  MonFun.f ProjNat d ≡ ℧
+ProjNat-fun d g~ eq =
+  cong₂ (MonFun.f {X = DynP} {Y = 𝕃 ℕ})
+        (refl {x = ProjNat})
+        ((sym (transport⁻Transport ⟨DynP⟩-Sum d)) ∙ λ i -> transport⁻ ⟨DynP⟩-Sum (eq i))
+  ∙ λ i → MonFun.f (Case' mRet (K {!𝕃 (DynP ==> 𝕃 DynP)!} ℧)) (transportTransport⁻ ⟨DynP⟩-Sum (inr g~) i)
 
 ProjArr : ⟨ DynP ==> 𝕃 (DynP ==> 𝕃 DynP) ⟩
 ProjArr = mCompU (Case' (K _ ℧) ▹g→g) (mTransport DynP-Sum)
- 
-    
+
+
+ProjArr-nat : ∀ d n ->
+  transport ⟨DynP⟩-Sum d ≡ inl n ->
+  MonFun.f ProjArr d ≡ ℧
+ProjArr-nat d n eq =
+  cong₂ (MonFun.f {X = DynP} {Y = 𝕃 (DynP ==> 𝕃 DynP)})
+        (refl {x = ProjArr})
+        ((sym (transport⁻Transport ⟨DynP⟩-Sum d)) ∙ λ i -> transport⁻ ⟨DynP⟩-Sum (eq i))
+  ∙ λ i → MonFun.f (Case' (K ℕ ℧) ▹g→g) (transportTransport⁻ ⟨DynP⟩-Sum (inl n) i)
+
 
 ProjArr-fun : ∀ d g~ ->
   transport ⟨DynP⟩-Sum d ≡ inr g~ ->
   MonFun.f ProjArr d ≡ θ (λ t -> η (g~ t))
-ProjArr-fun d g~ eq = {!!} ∙
+ProjArr-fun d g~ eq =
+  cong₂ (MonFun.f {X = DynP} {Y = 𝕃 (DynP ==> 𝕃 DynP)})
+        (refl {x = ProjArr})
+        ((sym (transport⁻Transport ⟨DynP⟩-Sum d)) ∙ λ i -> transport⁻ ⟨DynP⟩-Sum (eq i))
+  ∙ (λ i -> MonFun.f (Case' (K ℕ ℧) ▹g→g) (transportTransport⁻ ⟨DynP⟩-Sum (inr g~) i))
+
+--  MonFun.f ProjArr (transport⁻ ⟨DynP⟩-Sum (inr g~)) ≡ _y_510
+
+  {-{!!} ∙
   -- (λ i -> MonFun.f (mCompU (Case' (K _ ℧) aux) (mTransport DynP-Sum)) d) ∙
   (congS ((λ { (inl a) → MonFun.f (K ℕ ℧) a
              ; (inr b) → MonFun.f ▹g→g b
          })) eq) ∙
-  {!!}
+  refl -}
 -- MonFun.f ProjArr d ≡ θ (λ t → η (g~ t))
 
 -- (transp (λ i → ⟨ DynP-Sum i ⟩) i0 d)
