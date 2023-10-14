@@ -308,6 +308,15 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
 
+predL : {X : Type ℓ} -> (lx : L X) -> ▹ (L X)
+predL (η x) = next (η x)
+predL (θ lx~) = lx~
+
+inj-θL : {X : Type ℓ} -> (lx~ ly~ : ▹ (L X)) ->
+  θ lx~ ≡ θ ly~ ->
+  ▸ (λ t -> lx~ t ≡ ly~ t)
+inj-θL lx~ ly~ H = let lx~≡ly~ = cong predL H in λ t i → lx~≡ly~ i t
+
 -- Injectivity results for Lift
 η-inv : {X : Type ℓ} -> L X -> X -> X
 η-inv (η x) y = x
@@ -334,7 +343,41 @@ extL' f rec (θ la~) = θ (rec ⊛ la~)
 extL : (A -> L B) -> L A -> L B
 extL f = fix (extL' f)
 
+bindL : L A -> (A -> L B) -> L B
+bindL {A} {B} la f = extL f la
 
+unfold-extL : (f : A -> L B) -> extL f ≡ extL' f (next (extL f))
+unfold-extL f = fix-eq (extL' f)
+
+extL-eta : ∀ (a : A) (f : A -> L B) ->
+  extL f (η a) ≡ f a
+extL-eta a f =
+  fix (extL' f) (η a)            ≡⟨ (λ i → unfold-extL f i (η a)) ⟩
+  (extL' f) (next (extL f)) (η a) ≡⟨ refl ⟩
+  f a ∎
+
+
+extL-theta : (f : A -> L B)
+            (l : ▹ (L A)) ->
+            bindL (θ l) f ≡ θ (extL f <$> l)
+extL-theta f l = 
+  (fix (extL' f)) (θ l)            ≡⟨ (λ i → unfold-extL f i (θ l)) ⟩
+  (extL' f) (next (extL f)) (θ l)   ≡⟨ refl ⟩
+  θ (fix (extL' f) <$> l) ∎ 
+
+extL-delay : (f : A -> L B) (la : L A) (n : ℕ) ->
+  extL f ((δL ^ n) la) ≡ (δL ^ n) (extL f la)
+extL-delay f la zero = refl
+extL-delay f la (suc n) =
+  extL f (δL ((δL ^ n) la))
+    ≡⟨ refl ⟩
+  extL f (θ (next ((δL ^ n) la)))
+    ≡⟨ extL-theta f _ ⟩
+  θ (extL f <$> next ((δL ^ n) la))
+    ≡⟨ refl ⟩
+  θ (λ t -> extL f ((δL ^ n) la))
+    ≡⟨ ((λ i -> θ λ t -> extL-delay f la n i)) ⟩
+  δL ((δL ^ n) (extL f la)) ∎
 
 ret : {X : Type ℓ} -> X -> L℧ X
 ret = η
@@ -369,6 +412,10 @@ lift×-inv {A = A} {B = B} = fix lift×-inv'
 unfold-lift×-inv : {A : Type ℓ} {B : Type ℓ'} ->
   lift×-inv {A = A} {B = B} ≡ lift×-inv' (next lift×-inv)
 unfold-lift×-inv = fix-eq lift×-inv'
+
+unfold-lift× : {A : Type ℓ} {B : Type ℓ'} ->
+  lift× {A = A} {B = B} ≡ lift×' (next lift×)
+unfold-lift× = fix-eq lift×'
 
 bind : L℧ A -> (A -> L℧ B) -> L℧ B
 bind {A} {B} la f = ext f la
