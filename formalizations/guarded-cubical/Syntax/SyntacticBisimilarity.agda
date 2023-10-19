@@ -10,6 +10,7 @@ open import Cubical.Data.Empty renaming (rec to exFalso)
 
 open import Syntax.Types
 open import Syntax.IntensionalTerms
+open import Syntax.Perturbation
 
 open TyPrec
 open CtxPrec
@@ -55,8 +56,10 @@ data _≈e_ : EvCtx Γ S T -> EvCtx Γ S T -> Type
 data _≈c_ : Comp Γ S -> Comp Γ S -> Type
 
 
+
 data _≈s_  where
   ≈-refl : γ ≈s γ
+  ≈-sym : γ ≈s γ' -> γ' ≈s γ
   -- ≈-ids : (ids {Γ = Γ}) ≈s ids
   ≈-∘s : γ ≈s γ' -> δ ≈s δ' -> (γ ∘s δ) ≈s (γ' ∘s δ')
   -- ≈-!s : (!s {Γ = Γ}) ≈s !s
@@ -69,6 +72,7 @@ data _≈s_  where
 
 data _≈v_ where
   ≈-refl : V ≈v V
+  ≈-sym : V ≈v V' -> V' ≈v V
   ≈-substV : V ≈v V' ->
              γ ≈s γ' ->
              V [ γ ]v ≈v V' [ γ' ]v
@@ -77,6 +81,11 @@ data _≈v_ where
  -- ≈-suc : suc ≈v suc
   ≈-lda : M ≈c M' ->
           lda M ≈v lda M'
+  ≈-mapDyn : {Vn Vn' : Val [ nat ] nat}
+             {Vf Vf' : Val [ dyn ⇀ dyn ] (dyn ⇀ dyn)} ->
+             Vn ≈v Vn' ->
+             Vf ≈v Vf' ->
+             mapDyn Vn Vf ≈v mapDyn Vn' Vf'
  -- ≈-up : ∀ S⊑T -> up S⊑T ≈v up S⊑T -- follows from reflexivity?
 
   -- If δl and δr were made admissible, then these two rules wouldn't be needed
@@ -86,6 +95,7 @@ data _≈v_ where
 
 data _≈e_ where
   ≈-refl : E ≈e E
+  ≈-sym : E ≈e E' -> E' ≈e E
   ≈-∘E : E ≈e E' -> F ≈e F' -> E ∘E F ≈e E' ∘E F'
   ≈-substE : E ≈e E' -> γ ≈s γ' -> E [ γ ]e ≈e E' [ γ' ]e
   ≈-bind : M ≈c M' -> bind M ≈e bind M'
@@ -98,6 +108,7 @@ data _≈e_ where
 
 data _≈c_ where
   ≈-refl : M ≈c M
+  ≈-sym : M ≈c M' -> M' ≈c M
   ≈-tick : (M M' : Comp Γ S) -> M ≈c M' -> tick M ≈c M'
   ≈-plugE :
     E ≈e E' ->
@@ -110,10 +121,68 @@ data _≈c_ where
   ≈-matchNat : {Kz Kz' : Comp Γ S} {Ks Ks' : Comp (nat ∷ Γ) S} ->
     Kz ≈c Kz' ->
     Ks ≈c Ks' ->
-    (matchNat Kz Ks) ≈c matchNat Kz' Ks'
+    matchNat Kz Ks ≈c matchNat Kz' Ks'
+  ≈-matchDyn : {Kn Kn' : Comp (nat ∷ Γ) S}
+               {Kf Kf' : Comp (dyn ⇀ dyn ∷ Γ) S} ->
+    Kn ≈c Kn' ->
+    Kf ≈c Kf' ->
+    matchDyn Kn Kf ≈c matchDyn Kn' Kf'
+
+_≈->>_ : {M M' : Comp Γ S} -> {N N' : Comp (S ∷ Γ) T} ->
+  M ≈c M' -> N ≈c N' -> (M >> N) ≈c (M' >> N')
+_≈->>_ M≈M' N≈N' = ≈-plugE (≈-bind N≈N') M≈M'
+
+≈-vToE : {V V' : Val [ S ] T} -> V ≈v V' -> vToE V ≈e vToE V'
+≈-vToE V≈V' = ≈-bind (≈-substC ≈-refl (≈-,s ≈-refl V≈V'))
 
 
--- TODO: add symmetry
+-- Bisimilarity is prop-valued
+{-
+≈s-prop : isProp (γ ≈s γ')
+≈v-prop : isProp (V ≈v V')
+≈c-prop : isProp (M ≈c M')
+≈e-prop : isProp (E ≈e E')
+-}
+
+
+-- Admissible results:
+
+δl-e≈id : (c : S ⊑ T) -> δl-e c ≈v var
+δl-p≈id : (c : S ⊑ T) -> δl-p c ≈e ∙E
+
+δl-e≈id nat = ≈-refl
+δl-e≈id dyn = ≈-refl
+δl-e≈id (c ⇀ d) =
+  transport (cong₂ _≈v_ refl (congS lda ({!!} ∙ {!!}) ∙ sym fun-η)) lem -- transport (cong₂ _≈v_ refl (sym fun-η)) {!!}
+  where
+    LHS : _
+    LHS = lda
+        (((δl-p c [ !s ]e) [ ret' var ]∙) >>
+        ((app [ drop2nd ]c) >>
+        ((vToE (δl-e d) [ !s ]e) [ ret' var ]∙)))
+
+    LHS' : _
+    LHS' = lda
+        (((∙E [ !s ]e) [ ret' var ]∙) >>
+        ((app [ drop2nd ]c) >>
+        ((vToE var [ !s ]e) [ ret' var ]∙)))
+
+    lem : LHS ≈v LHS'
+    lem = ≈-lda ((≈-plugE (≈-substE (δl-p≈id c) ≈-refl) ≈-refl) ≈->>
+                 (≈-refl ≈->> ≈-plugE (≈-substE (≈-vToE (δl-e≈id d)) ≈-refl) ≈-refl))
+δl-e≈id inj-nat = ≈-refl
+δl-e≈id (inj-arr (c ⇀ d)) = {!!}
+
+
+δl-p≈id nat = ≈-refl
+δl-p≈id dyn = ≈-refl
+δl-p≈id (c ⇀ d) = {!!}
+δl-p≈id inj-nat = ≈-refl
+δl-p≈id (inj-arr (c ⇀ d)) = {!!}
+
+
+-- TODO same for right-side delays
+
 
 
 {-
