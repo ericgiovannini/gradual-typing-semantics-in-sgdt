@@ -1,5 +1,8 @@
 {-# OPTIONS --lossy-unification #-}
 
+{-# OPTIONS --allow-unsolved-metas #-}
+
+
 module Syntax.IntensionalOrder where
 
 open import Cubical.Foundations.Prelude renaming (comp to compose)
@@ -71,8 +74,8 @@ data Val⊑ where
 
   injNatUp : Val⊑ [] nat V V' ->
              Val⊑ [] inj-nat V (injectN [ !s ,s V' ]v)
-  {- injArrUp : Val⊑ [] c V V' ->
-             Val⊑ [] (inj-arr c) V {!!} -}
+  injArrUp : Val⊑ [] (dyn ⇀ dyn) V V' ->
+             Val⊑ [] (inj-arr (refl-⊑ _)) V (injectArr [ !s ,s V' ]v)
              -- ((injectArr {S = S} (V' [ wk ]v)) [ {!injectArr {S = S} (V' [ wk ]v)!} ]v) -- (injectArr (V' [ wk ]v) [ !s ,s V ]v)
 
   mapDyn-nat : ∀ {Vn Vn' Vf} →
@@ -87,16 +90,11 @@ data Val⊑ where
     Val⊑ (inj-arr c ∷ []) (inj-arr c) Vs (mapDyn Vn Vf)
 
 
-  -- if x <= y then e x <= δr y
-  up-L : ∀ S⊑T → Val⊑ ((ty-prec S⊑T) ∷ []) (refl-⊑ (ty-right S⊑T)) (up S⊑T) (δr S⊑T)
-  -- if x <= y then δl x <= e y
-  up-R : ∀ S⊑T → Val⊑ ((refl-⊑ (ty-left S⊑T)) ∷ []) (ty-prec S⊑T) (δl S⊑T) (up S⊑T)
-
   isProp⊑ : isProp (Val⊑ C c V V')
 
   -- We make this an arbitrary E and e rather than
   -- Val⊑ (trans-⊑ctx C D) (trans-⊑ c d) V V'
-  -- in order to avoid the "green slime" issue
+  -- in order to avoid the "green slime" issue when pattern matching
   hetTrans : ∀ {E e} -> Val⊑ C c V V' → Val⊑ D d V' V'' → Val⊑ E e V V''
 
 
@@ -108,17 +106,18 @@ data EvCtx⊑ where
   _[_]e : EvCtx⊑ C c d E E' → Subst⊑ B C γ γ' → EvCtx⊑  B c d (E [ γ ]e) (E' [ γ' ]e)
   bind : Comp⊑ (c ∷ C) d M M' → EvCtx⊑ C c d (bind M) (bind M')
 
-  dn-L : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (ty-prec S⊑T) (dn S⊑T) (δr S⊑T)
-  dn-R : ∀ S⊑T → EvCtx⊑ [] (ty-prec S⊑T) (refl-⊑ (ty-left S⊑T)) (δl S⊑T) (dn S⊑T)
+  
   -- retractionR : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (refl-⊑ (ty-right S⊑T))
   --   (vToE (δr S⊑T) ∘E δr S⊑T)
   --   (vToE (up S⊑T) ∘E dn S⊑T)
-  retraction : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-left S⊑T)) (refl-⊑ (ty-left S⊑T))
-    ((dn S⊑T) ∘E vToE (up S⊑T))
-    ((δl S⊑T) ∘E vToE (δl S⊑T))
+
+  -- retraction : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-left S⊑T)) (refl-⊑ (ty-left S⊑T))
+  --   ((dn S⊑T) ∘E vToE (up S⊑T))
+  --   ((δl S⊑T) ∘E vToE (δl S⊑T))
   -- Opposite order is admissible
 
-  hetTrans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' → EvCtx⊑ (trans-⊑ctx C C') (trans-⊑ b b') (trans-⊑ c c') E E''
+  hetTrans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' →
+    EvCtx⊑ (trans-⊑ctx C C') (trans-⊑ b b') (trans-⊑ c c') E E''
   isProp⊑ : isProp (EvCtx⊑ C c d E E')
 
 data Comp⊑ where
@@ -128,13 +127,39 @@ data Comp⊑ where
   err : Comp⊑ [] c err err
   ret : Comp⊑ (c ∷ []) c ret ret
   app : Comp⊑ (c ∷ c ⇀ d ∷ []) d app app
-  matchNat : ∀ {Kz Kz' Ks Ks'} → Comp⊑ C c Kz Kz' → Comp⊑ (nat ∷ C) c Ks Ks' → Comp⊑ (nat ∷ C) c (matchNat Kz Ks) (matchNat Kz' Ks')
+  matchNat : ∀ {Kz Kz' Ks Ks'} →
+    Comp⊑ C c Kz Kz' →
+    Comp⊑ (nat ∷ C) c Ks Ks' →
+    Comp⊑ (nat ∷ C) c (matchNat Kz Ks) (matchNat Kz' Ks')
 
   err⊥ : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) err' M
 
-  hetTrans : Comp⊑ C c M M' → Comp⊑ D d M' M'' → Comp⊑ (trans-⊑ctx C D) (trans-⊑ c d) M M''
+  hetTrans : Comp⊑ C c M M' → Comp⊑ D d M' M'' →
+    Comp⊑ (trans-⊑ctx C D) (trans-⊑ c d) M M''
   isProp⊑ : isProp (Comp⊑ C c M M')
 
+
+
+-- Cast rules are admissible
+
+-- if x <= y then e x <= δr y
+up-L : ∀ S⊑T → Val⊑ ((ty-prec S⊑T) ∷ []) (refl-⊑ (ty-right S⊑T)) (emb (ty-prec S⊑T)) (δr-e (ty-prec S⊑T))
+
+-- if x <= y then δl x <= e y
+up-R : ∀ S⊑T → Val⊑ ((refl-⊑ (ty-left S⊑T)) ∷ []) (ty-prec S⊑T) (δl-e (ty-prec S⊑T)) (emb (ty-prec S⊑T))
+
+
+dn-L : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (ty-prec S⊑T) (proj (ty-prec S⊑T)) (δr-p (ty-prec S⊑T))
+dn-R : ∀ S⊑T → EvCtx⊑ [] (ty-prec S⊑T) (refl-⊑ (ty-left S⊑T)) (δl-p (ty-prec S⊑T)) (proj (ty-prec S⊑T))
+
+
+up-L = {!!}
+
+up-R = {!!}
+
+dn-L = {!!}
+
+dn-R = {!!}
 
 
 -- Key lemmas about pushing and pulling perturbations across type precision.
@@ -144,8 +169,13 @@ data Comp⊑ where
 
 push-lemma-e : ∀ (c : S ⊑ T) δs ->
   Val⊑ (c ∷ []) c (Pertᴱ→Val δs) (Pertᴱ→Val (PushE c δs))
+push-lemma-p : ∀ (c : S ⊑ T) δs ->
+  EvCtx⊑ [] c c (Pertᴾ→EC δs) (Pertᴾ→EC (PushP c δs))
+
 pull-lemma-e : ∀ (c : S ⊑ T) δt ->
   Val⊑ (c ∷ []) c (Pertᴱ→Val (PullE c δt)) (Pertᴱ→Val δt)
+pull-lemma-p : ∀ (c : S ⊑ T) δt ->
+  EvCtx⊑ [] c c (Pertᴾ→EC (PullP c δt)) (Pertᴾ→EC δt)
 
 push-lemma-e nat id = var
 push-lemma-e dyn id = var
@@ -157,6 +187,8 @@ push-lemma-e inj-nat id = var
 push-lemma-e (inj-arr c) id = var
 push-lemma-e (inj-arr c) (δi ⇀ δo) = {!!}
 
+push-lemma-p = {!!}
+
 
 pull-lemma-e c id = var
 pull-lemma-e (ci ⇀ co) (δi ⇀ δo) = {!!}
@@ -164,9 +196,7 @@ pull-lemma-e dyn (PertD δn δf) = reflexive
 pull-lemma-e inj-nat (PertD δn δf) = mapDyn-nat reflexive
 pull-lemma-e (inj-arr c) (PertD δn δf) = mapDyn-arr (pull-lemma-e c δf)
 
-
-
-
+pull-lemma-p = {!!}
 
 
 
