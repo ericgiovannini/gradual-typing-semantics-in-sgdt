@@ -15,6 +15,7 @@ open import Cubical.Data.Sigma
 open import Syntax.Types
 open import Syntax.Surface
 open import Syntax.IntensionalTerms
+open import Syntax.IntensionalOrder
 open import Syntax.SyntacticBisimilarity
 
 open TyPrec
@@ -42,8 +43,8 @@ var-to-val (vs {T = T} x) = (var-to-val x) [ wk ]v
 ι (lda M) = ret' (lda (ι M))
 ι (app M N) = app'' (ι M) (ι N)
 ι err = err'
-ι (up S⊑T M) = (upE S⊑T [ !s ]e) [ ι M ]∙
-ι (dn S⊑T M) = (dn S⊑T [ !s ]e) [ ι M ]∙
+ι (up S⊑T M) = {!!} -- (upE S⊑T [ !s ]e) [ ι M ]∙
+ι (dn S⊑T M) = {!!} -- (dn S⊑T [ !s ]e) [ ι M ]∙
 ι zro = ret' zro'
 ι (suc M) = (ι M) >> (ret' (suc' var)) -- (bind (ret' (suc' var))) [ ι M ]∙
 ι (matchNat M Kz Ks) = {!!}
