@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 
 module Syntax.SyntacticBisimilarity where
 
@@ -217,4 +218,5 @@ _≈->>_ M≈M' N≈N' = ≈-plugE (≈-bind N≈N') M≈M'
 ≈v-refl (isSetVal V V₁ x y i i₁) = {!!}
 ≈v-refl (isPosetVal x x₁ i) = {!!}
   
+
 -}
