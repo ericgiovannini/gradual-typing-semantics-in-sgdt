@@ -12,15 +12,15 @@ the construction of the monad and the dynamic type.
 \section{Domain-Theoretic Constructions}\label{sec:domain-theory}
 
 In this section, we discuss the fundamental objects of the model into which we will embed
-the intensional lambda calculus and inequational theory. It is important to remember that
+the step-sensitive lambda calculus $\intlc$ and inequational theory. It is important to remember that
 the constructions in this section are entirely independent of the syntax described in the
 previous section; the notions defined here exist in their own right as purely mathematical
-constructs. In the next section, we will link the syntax and semantics via an interpretation
+constructs. In the next section, we will link the syntax and semantics via a semantic interpretation
 function.
 
 \subsection{The Lift Monad}
 
-When thinking about how to model intensional gradually-typed programs, we must consider
+When thinking about how to model intensional gradually-typed programs, we should consider
 their possible behaviors. On the one hand, we have \emph{failure}: a program may fail
 at run-time because of a type error. In addition to this, a program may ``think'',
 i.e., take a step of computation. If a program thinks forever, then it never returns a value,
@@ -42,7 +42,7 @@ the \emph{lift monad}, as the following datatype:
 \end{align*}
 
 Unless otherwise mentioned, all constructs involving $\later$ or $\fix$
-are understood to be with repsect to a fixed clock $k$. So for the above, we really have for each
+are understood to be with respect to a fixed clock $k$. So for the above, we really have for each
 clock $k$ a type $\li^k A$ with respect to that clock.
 
 Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
@@ -56,7 +56,7 @@ Notice there is a computation $\fix \theta$ of type $\li A$. This represents a c
 that thinks forever and never returns a value.
 
 Since we claimed that $\li A$ is a monad, we need to define the monadic operations
-and show that they repect the monadic laws. The return is just $\eta$, and extend
+and show that they respect the monadic laws. The return is just $\eta$, and extend
 is defined via by guarded recursion by cases on the input.
 % It is instructive to give at least one example of a use of guarded recursion, so
 % we show below how to define extend:
@@ -65,12 +65,17 @@ is defined via by guarded recursion by cases on the input.
 %
 Verifying that the monadic laws hold requires \lob-induction and is straightforward.
 
+\begin{comment}
+% Since this mentions the ordering on B, it should be introduced after introducing predomains.
 The lift monad has the following universal property. Let $f$ be a function from $A$ to $B$,
 where $B$ is a $\later$-algebra, i.e., there is $\theta_B \colon \later B \to B$.
-Further suppose that $B$ is also an ``error-algebra'', that is, an algebra of the
-constant functor $1 \colon \text{Type} \to \text{Type}$ mapping all types to Unit.
-This latter statement amounts to saying that there is a map $\text{Unit} \to B$, so $B$ has a
-distinguished ``error element" $\mho_B \colon B$.
+Further suppose that $B$ is also an ``error-algebra'', that is, there is an error element
+$\mho_B$ such that $\mho_B \le_B y$ for all $y \in B$.
+
+% Further suppose that $B$ is also an algebra of the
+% constant functor $1 \colon \text{Type} \to \text{Type}$ mapping all types to Unit.
+% This latter statement amounts to saying that there is a map $\text{Unit} \to B$, so $B$ has a
+% distinguished ``error element" $\mho_B \colon B$ such that $\mho_B \le_B y$ for all $y \in B$.
 
 Then there is a unique homomorphism of algebras $f' \colon \li A \to B$ such that
 $f' \circ \eta = f$. The function $f'(l)$ is defined via guarded fixpoint by cases on $l$. 
@@ -79,40 +84,42 @@ In the $\theta(\tilde{l})$ case, we will return
 
 \[\theta_B (\lambda t . (f'_t \, \tilde{l}_t)). \]
 
-Recalling that $f'$ is a guaded fixpoint, it is available ``later'' and by
+Recalling that $f'$ is a guarded fixpoint, it is available ``later'' and by
 applying the tick we get a function we can apply ``now''; for the argument,
 we apply the tick to $\tilde{l}$ to get a term of type $\li A$.
-
+\end{comment}
 
 %\subsubsection{Model-Theoretic Description}
 %We can describe the lift monad in the topos of trees model as follows.
 
 
-\subsection{Predomains}
+\subsection{Predomains}\label{sec:predomains}
 
 The next important construction is that of a \emph{predomain}. A predomain is intended to
 model the notion of error ordering that we want terms to have. Thus, we define a predomain $A$
 as a partially-ordered set, which consists of a type which we denote $\ty{A}$ and a reflexive,
 transitive, and antisymmetric relation $\le_P$ on $A$.
 
+We define monotone functions between predomain as expected. Given predomains
+$A$ and $B$, we write $f \colon A_i \monto A_o$ to indicate that $f$ is a monotone
+function from $A_i$ to $A_o$, i.e, for all $a_1 \le_{A_i} a_2$, we have $f(a_1) \le_{A_o} f(a_2)$.
+We also define an ordering on monotone functions as
+$f \le g$ if for all $a$ in $\ty{A_i}$, we have $f(a) \le_{A_o} g(a)$.
+
 For each type we want to represent, we define a predomain for the corresponding semantic
 type. For instance, we define a predomain for natural numbers, a predomain for the
 dynamic type, a predomain for functions, and a predomain for the lift monad. We
 describe each of these below.
 
-We define monotone functions between predomain as expected. Given predomains
-$A$ and $B$, we write $f \colon A \monto B$ to indicate that $f$ is a monotone
-function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(a_2)$.
-
 \begin{itemize}
-  \item There is a predomain Nat for natural numbers, where the ordering is equality.
+  \item There is a predomain $\Nat$ for natural numbers, where the ordering is equality.
   
-  \item There is a predomain Dyn to represent the dynamic type. The underlying type
+  \item There is a predomain $\Dyn$ to represent the dynamic type. The underlying type
   for this predomain is defined by guarded fixpoint to be such that
-  $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \ty{\Dyn})$.
+  $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \li \ty{\Dyn})$.
   This definition is valid because the occurrences of Dyn are guarded by the $\later$.
   The ordering is defined via guarded recursion by cases on the argument, using the
-  ordering on $\mathbb{N}$ and the ordering on monotone functions described below.
+  ordering on $\mathbb{N}$ and the ordering on monotone functions described above.
 
   \item For a predomain $A$, there is a predomain $\li A$ for the ``lift'' of $A$
   using the lift monad. We use the same notation for $\li A$ when $A$ is a type
@@ -124,8 +131,10 @@ function from $A$ to $B$, i.e, for all $a_1 \le_A a_2$, we have $f(a_1) \le_B f(
 
   \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
   from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
-  The ordering is such that $f$ is below $g$ if for all $a$ in $\ty{A_i}$, we have
-  $f(a)$ is below $g(a)$ in the ordering for $A_o$. 
+
+  \item Given a preomain $A$, we can form the predomain $\later A$ whose underlying
+  type is $\later \ty{A}$. We define $\tilde{x} \le_{\later A} \tilde{y}$ to be
+  $\later_t (\tilde{x}_t \le_A \tilde{y}_t)$.
 \end{itemize}
 
 
@@ -148,14 +157,15 @@ Formally, we define this ordering as follows:
 We also define a heterogeneous version of this ordering between the lifts of two
 different predomains $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
 
-\subsection{Step-Insensitive Relation}
+\subsection{Step-Insensitive Bisimilarity Relation}
 
-We define another ordering on $\li A$, called the ``step-insensitive ordering'' or
-``weak bisimilarity'', written $l \bisim l'$.
+We define another ordering on $\li A$, called ``step-insensitive bisimilarity"
+or ``weak bisimilarity" written $l \bisim l'$.
 Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delays''.
 We introduce the notation $x \sim_A y$ to mean $x \le_A y$ and $y \le_A x$.
-
-The weak bisimilarity relation is defined by guarded fixpoint as follows:
+% TODO if A is a poset, then we can just say that x = y
+%
+The step-insensitive bisimilarity relation is defined by guarded fixpoint as follows:
 
 \begin{align*}
   &\mho \bisim \mho \\
@@ -181,13 +191,37 @@ The weak bisimilarity relation is defined by guarded fixpoint as follows:
   \text { for some $n$ and $y : \ty{A}$ such that $x \sim_A y$ }
 \end{align*}
 
+When both sides are $\eta$, then we ensure that the underlying values are related.
+When one side is a $\theta$ and the other is $\eta x$ (i.e., one side steps),
+we stipulate that the $\theta$-term runs to $\eta y$ where $x$ is related to $y$.
+Similarly when one side is $\theta$ and the other $\mho$.
+If both sides step, then we allow one time step to pass and compare the resulting terms.
+In this way, the definition captures the intuition of terms being equivalent up to
+delays.
+
+It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
+However, it can also be shown that this relation is \emph{not} transitive:
+One can prove within Clocked Cubical Type Theory
+that if this relation were transitive, then in fact it would be trivial in that
+$l \bisim l'$ for all $l, l'$.
+This issue will be resolved when we consider the relation's \emph{globalization}.
+
+
+
 \subsection{Error Domains}
 
+While value types will be interpreted as predomains, we also need a semantics
+for computation types. This will be in the form of \emph{error domains}, of which the
+Lift monad is a prototypical example. For a fixed clock $k$, an error domain $A$
+consists of a predomain (which we also denote by $A$ when there is no risk of confusion),
+along with a bottom element $\mho_A$ and a $\later$-algebra $\theta_A \colon \later^k A \monto A$.
 
-\subsection{Globalization}
+% TODO function space as error domain?
+
+\subsection{Globalization}\label{sec:globalization}
 
 Recall that in the above definitions, any occurrences of $\later$ were with
-repsect to a fixed clock $k$. Intuitively, this corresponds to a step-indexed set.
+respect to a fixed clock $k$. Intuitively, this corresponds to a step-indexed set.
 It will be necessary to consider the ``globalization'' of these definitions,
 i.e., the ``global'' behavior of the type over all potential time steps.
 This is accomplished in the type theory by \emph{clock quantification} \cite{atkey-mcbride2013},
@@ -198,10 +232,124 @@ the usual semantics in the category of sets.
 
 \section{Semantics}\label{sec:semantics}
 
+\subsection{Step-indexed Semantics}
 
-\subsection{Relational Semantics}
+We give a semantics to the step-sensitive lambda calculus $\intlc$ we defined
+in Section \ref{sec:step-sensitive-lc}.
+%
+Much of the semantics is similar to a normal call-by-value denotational semantics;
+we highlight the differences.
+Recall that we will interpret value types as predomains, and computation types
+as error domains. Value type contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$
+will be interpreted as the product $\sem{A_1} \times \cdots \times \sem{A_n}$, and
+computation type contexts $\Delta = \Delta_\Sigma , \Delta|_V$ will be interpreted as a pair
+$(\delta_\Sigma, \delta_V)$ where $\delta_\Sigma$ is either empty or $\sem{B}$.
 
-\subsubsection{Term Precision via the Step-Sensitive Error Ordering}
+
+The semantics of the dynamic type $\dyn$ is the predomain $\Dyn$ introduced in Section
+\ref{sec:predomains}.
+%
+The interpretation of a value $\hasty {\Gamma} V A$ will be a monotone function from
+$\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\hasty {\Delta} M {\Ret{A}}$ will be interpreted
+as a monotone function from $\sem{\Delta}$ to $\sem{\Ret{A}} = \li \sem{A}$.
+
+Recall that $\Dyn$ is isomorphic to $\Nat\, + \later (\Dyn \monto \li \Dyn)$.
+Thus, the semantics of $\injnat{\cdot}$ and $\injarr{\cdot}$ are simply the
+injections $\inl$ and $\inr$.
+
+The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule for
+lambda that $\hasty {\cdot, \Gamma, x : A_i} M {\Ret {A_o}}$, so the interpretation of $M$
+has type $\{*\} \times (\sem{\Gamma} \times \sem{A_i})$ to $\sem{A_o}$.
+The interpretation of lambda is thus a function (in the ambient type theory) that takes
+a value $a$ representing the argument and applies it (along with $\gamma$) as argument to
+the interpretation of $M$.
+%
+The interpretation of bind and of application both make use the monadic extend function on $\li A$.
+%
+The interpretation of case-nat and case-arrow is simply a case inspection on the
+interpretation of the scrutinee, which has type $\Dyn$.
+
+
+\vspace{2ex}
+
+
+\noindent Types:
+\begin{align*}
+  \sem{\nat} &= \Nat \\
+  \sem{\dyn} &= \Dyn \\
+  \sem{A \ra A'} &= \sem{A} \To \sem{A'} \\
+  \sem{\later A} &=\, \later \sem{A} \\
+  \sem{\Ret A} &= \li \sem{A}
+\end{align*}
+
+% Contexts:
+
+% TODO check these, especially the semantics of bind, case-nat, and case-arr
+% with respect to their context argument
+\noindent Values and terms:
+\begin{align*}
+  \sem{\zro}         &= \lambda \gamma . 0 \\
+  \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
+  \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
+  \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
+  \sem{\injnat{V_n}} &= \lambda \gamma . \inl\, (\sem{V_n}\, \gamma) \\
+  \sem{\injarr{V_f}} &= \lambda \gamma . \inr\, (\sem{V_f}\, \gamma) \\[2ex]
+  \sem{\nxt\, V}     &= \lambda \gamma . \nxt (\sem{V}\, \gamma) \\
+  \sem{\theta}       &= \lambda \gamma . \theta \\
+%
+  \sem{\err_B}         &= \lambda \delta . \mho \\
+  \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
+  \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
+  \sem{V_f\, V_x}      &= \lambda \gamma . \ext {(\lambda f . (\ext {f} {\sem{V_x}\, \gamma}))} {(\sem{V_f}\, \gamma)} \\
+  \sem{\casenat{V}{M_{no}}{n}{M_{yes}}}         &= 
+    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{yes}}(n) \\
+    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{no}} \\
+  \sem{\casearr{V}{M_{no}}{\tilde{f}}{M_{yes}}} &= 
+    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{no}} \\
+    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{yes}}(\tilde{f})
+\end{align*}
+
+% TODO
+% \noindent Relations:
+% \begin{align*}
+% %
+% \end{align*}
+
+
+\begin{comment}
+\subsection{Global Semantics}
+
+Having defined the above step-indexed semantics, we now pass to a ``global''
+semantics that does not involve any step-indexing. The resulting semantics is still
+intensional in that terms that produce the same value in a different number of steps
+will be distinct.
+We define 
+
+\[ \semgl{\cdot} = \forall (\kpa \colon \Clock) .\, \sem{\cdot}[\kpa]. \]
+
+Note that for a term $M$ of type $\Ret{A}$, the semantics has type
+$\sem{M} \colon \sem{\Delta} \monto \sem{\Ret{A}} = \sem{\Delta} \monto \li \sem{A}$.
+In the case where $\Delta$ is the empty context, i.e., when $M$ is a closed term,
+then this is equivalent to $\li \sem{A}$.
+Then the global semantics in this case is $\forall \kappa . \liclk {\kappa} \sem{A}$.
+We can show in Clocked Cubical Type Theory this type satisfies a coinductive unfolding property
+
+\[ \forall \kappa . \li \sem{A} \cong \sem{A} + 1\, + (\forall \kappa.\li \sem{A}). \]
+\end{comment}
+
+
+% Machines
+
+% We then define a relation $\Dwn^n$ between terms of type $T$ and $\Machine {\sem{T}}$ by
+
+% \subsection{Extensional Collapse}
+
+
+% \subsection{Relational Semantics}
+
+% \subsubsection{Term Precision via the Step-Sensitive Error Ordering}
 % Homogeneous vs heterogeneous term precision
 
 % \subsection{Logical Relations Semantics}
