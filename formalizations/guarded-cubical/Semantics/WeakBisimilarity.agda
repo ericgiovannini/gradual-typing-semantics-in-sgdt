@@ -17,7 +17,7 @@ open import Cubical.Data.Sum
 open import Cubical.Data.Empty as ⊥
 
 open import Cubical.Relation.Binary
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 
 open import Cubical.HITs.PropositionalTruncation renaming (elim to PTelim)
 

@@ -6,7 +6,7 @@
 
 module Semantics.Monotone.Base where
 
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Structure
 

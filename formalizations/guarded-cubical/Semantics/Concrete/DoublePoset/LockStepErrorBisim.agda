@@ -27,7 +27,7 @@ open import Cubical.Foundations.Equiv
 
 open import Cubical.Relation.Nullary
 open import Cubical.Relation.Binary.Base
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 
 open import Cubical.Data.Unit.Properties
 
