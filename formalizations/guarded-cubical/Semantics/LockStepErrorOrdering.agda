@@ -8,7 +8,7 @@ open import Common.Later
 module Semantics.LockStepErrorOrdering (k : Clock) where
 
 open import Cubical.Relation.Binary
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
