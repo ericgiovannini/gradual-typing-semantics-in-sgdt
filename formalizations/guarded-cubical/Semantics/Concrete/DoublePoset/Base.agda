@@ -3,7 +3,7 @@ module Semantics.Concrete.DoublePoset.Base where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
 
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset.Base
 open import Cubical.Relation.Binary.Base
 
 open import Common.Common

@@ -3,7 +3,7 @@
 module Common.Poset.Convenience where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Relation.Binary.Base

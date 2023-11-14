@@ -19,7 +19,7 @@ open import Cubical.Data.Sigma
 
 open import Common.Common
 -- open import Common.Preorder.Base
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 open import Common.Poset.Convenience
 
 open import Semantics.Concrete.DoublePoset.Base

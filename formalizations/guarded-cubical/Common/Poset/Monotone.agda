@@ -18,7 +18,7 @@ open import Cubical.Reflection.RecordEquiv
 open import Cubical.Data.Sigma
 
 -- open import Common.Preorder.Base
-open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Order.Poset
 open import Common.Poset.Convenience
 
 
