@@ -99,7 +99,7 @@ postulate
 -- There is likely a better way to do this, see
 -- https://arxiv.org/pdf/2102.01969.pdf (in particular Section 3.2).
 postulate
-  tick-irrelevance : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) (t t' : Tick k) ->
+  tick-irrelevance : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) -> ∀ (@tick t t' : Tick k) ->
     M t ≡ M t'
 
   tr' : {A : Type} -> (M : ▹ k , A) ->
@@ -108,6 +108,9 @@ postulate
 {-
 tr→tr' : {M : ▹ k , A} -> tick-irrelevance M -> tr' M
 -}
+
+{-
+-- This doesn't work in Agda 2.6.4
 
 -- The tick constant.
 postulate
@@ -120,7 +123,7 @@ postulate
   tick-irrelevance-◇-refl : {A : Type} -> (M : ▹ k , A) ->
     (tick-irrelevance M (◇) (◇)) ≡ Cubical.Foundations.Everything.refl
       -- Should this use _≣_.refl instead?
-
+-}
 
 -- This relies on tick irrelevance.
 next-Mt≡M : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) ->
@@ -128,12 +131,13 @@ next-Mt≡M : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) ->
 next-Mt≡M M t = later-ext (λ t' → tick-irrelevance M t t')
 
 
-next-Mt≡M' : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) -> (t : Tick k) ->
+next-Mt≡M' : {ℓ : Level} -> {A : Type ℓ} -> (M : ▹ k , A) -> (@tick t : Tick k) ->
   next (M t) ≡ M
 next-Mt≡M' M t = next-Mt≡M M t
 
 -- Property of next
-next-injective-later : {k : Clock} -> {A : Type} -> (x y : A) ->
+next-injective-later : {k : Clock} -> {ℓ : Level} -> {A : Type ℓ} ->
+  (x y : A) ->
   next {k = k} x ≡ next y -> ▸_ {k} λ t -> (x ≡ y)
 next-injective-later x y eq = λ t i → eq i t
 
@@ -167,14 +171,15 @@ postulate
   --  (k : Clock) -> next (force' f k) ≡ f k
 
 
-force-iso : {A : Clock -> Type} -> Iso (∀ k -> (▹ k , A k)) (∀ k -> A k)
+force-iso : {ℓ : Level} -> {A : Clock -> Type ℓ} ->
+  Iso (∀ k -> (▹ k , A k)) (∀ k -> A k)
 force-iso = iso force' (λ f k → next (f k))
   force'-beta
   next-force'
   -- (λ f → clock-ext (λ k → next-force' f k))
 
 -- Using force, we can show that next is injective "globally".
-next-∀k-inj : {A : Type} -> (x y : A) ->
+next-∀k-inj : {ℓ : Level} -> {A : Type ℓ} -> (x y : A) ->
  ((k : Clock) -> next {k = k} x ≡ next y) ->
  (∀ (k : Clock) -> (x ≡ y))
 next-∀k-inj x y H = force' (λ k' -> next-injective-later x y (H k'))
@@ -193,6 +198,7 @@ clock-irrel A =
   (M : ∀ (k : Clock) -> A) ->
   (k k' : Clock) ->
   M k ≡ M k'
+  
 
 
 ∀kA->A : {ℓ : Level} -> (A : Type ℓ) ->
@@ -208,8 +214,12 @@ Iso-∀kA-A {A = A} H-irrel-A = iso
   (λ a → refl)
   (λ f → clock-ext (λ k → H-irrel-A f k0 k))
 
-∀kA≡A : {A : Type} -> clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
+∀kA≡A : {ℓ : Level} {A : Type ℓ} -> clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
 ∀kA≡A H = isoToPath (Iso-∀kA-A H)
+
+
+
+
 
 {-
 postulate clk-irrel-beta : {ℓ : Level} -> {A : Type ℓ} -> (H : clock-irrel A) (k k' : Clock) (a : A) -> (λ k -> a) ≣ a
@@ -220,8 +230,14 @@ postulate
   nat-clock-irrel : clock-irrel ℕ
   bool-clock-irrel : clock-irrel Bool
 
+  -- Clock irrelevance over a constant family Clock -> A is equivalent to reflexivity in A
+  -- TODO: Is this sound?
+  clock-irrel-beta-const : {ℓ : Level} {A : Type ℓ} -> (H : clock-irrel A) ->
+    (a : A) (k1 k2 : Clock) -> H (λ k -> a) k1 k2 ≣ refl
 
-  -- type-clock-irrel : clock-irrel Type
+  -- Clock irrelevance where we provide the same clock k0 is equivalent to reflexivity in M k0
+  clock-irrel-beta-k0 : {ℓ : Level} {A : Type ℓ} -> (H : clock-irrel A) ->
+    (M : Clock -> A) -> H M k0 k0 ≣ refl
 
 
 
