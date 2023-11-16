@@ -1,18 +1,49 @@
-\section{Unary Canonicity}
-Before discussing graduality, we seek to prove its ``unary'' analogue.
-Namely, instead of considering inequality between terms, we start by considering equality.
-
-
 \section{Graduality}\label{sec:graduality}
+Now we move to the proof of graduality.
 The main theorem we would like to prove is the following:
 
+% TODO use the etmprec notation
 \begin{theorem}[Graduality]
   If $\cdot \vdash M \ltdyn N : \nat$, then
   \begin{enumerate}
-    \item If $N = \mho$, then $M = \mho$
-    \item If $N = `n$, then $M = \mho$ or $M = `n$
-    \item If $M = V$, then $N = V$
+    \item $M \Downarrow$ iff $N \Downarrow$
+    \item If $M \Downarrow v_?$ and $N \Downarrow v'_?$ then either $v_? = \mho$, or $v_? = v'_?$.
   \end{enumerate}
 \end{theorem}
 
+\subsection{Proof Overview}
 
+We split the proof into three main steps. The first concerns the translation
+of the surface syntax $\extlc$ to the intensional syntax $\intlc$.
+
+\begin{lemma}[]
+  If $\etmprec{\gamlt}{M}{N}{c}$, then there exist $M'$ and $N'$ such that
+
+  \[ i(M) \synbisim M' \ltdyn_i N' \synbisim i(N). \]
+\end{lemma}
+
+Next we show that the notions of intensional syntactic term precision and
+syntactic bisimilarity imply their corresponding semantic counterparts:
+
+\begin{lemma}[]
+  If $\itmprec{\gamlt}{M}{N}{c}$, then $\sem{M} \semlt {\sem{N}}$
+\end{lemma}
+
+\begin{lemma}
+  If $M \synbisim N$, then $\sem{M} \bisim \sem{N}$.
+\end{lemma}
+
+Finally, we need an adequacy result stating that the semantic notions of error
+ordering and bisimilarity for natural numbers imply that the values of the
+lift monad that they relate have the expected behavior.
+
+\begin{lemma}
+  Let $l, l' : \li \Nat$.
+  If $l \semlt l'$, then either (1) $l = \delta^n(\mho)$ for some $n$, or (2) 
+  $l = l' = \delta^n(\eta m)$ for some $n$ and $m$, or (3) $l$ and $l'$ fail to terminate.
+\end{lemma}
+
+\begin{lemma}
+  If $l \bisim l'$, then either (1) $l = \delta^n(\mho)$ and $l' = \delta^{n'}(\mho)$ for some $n$ and $n'$,
+  (2) $l = \delta^n(\eta m)$ and $l' = \delta^{n'}(\eta m)$, or $l$ and $l'$ fail to terminate.
+\end{lemma}

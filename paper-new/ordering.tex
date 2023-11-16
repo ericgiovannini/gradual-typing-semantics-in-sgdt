@@ -1,0 +1,443 @@
+\section{Extending the Semantics to Precision}\label{sec:gtlc-precision}
+
+In this section, we extend the set-theoretic semantics for terms given in
+the previous section to a semantics for the type and term precision relations
+of the gradually-typed lambda calculus. We first introduce the type and term precision
+relations, then show how to give them a semantics using SGDT.
+
+% TODO mention intensional syntax
+
+
+\subsection{Term Precision for GTLC}
+
+% ---------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------
+
+%\subsubsection{Term Precision}\label{sec:term-precision}
+
+We allow for a \emph{heterogeneous} term precision judgment on values $V$ of type
+$A$ and $V'$ of type $A'$ provided that $A \ltdyn A'$ holds. Likewise, for producers,
+if $M$ has type $A$ and $M'$ has type $A'$, we can form the judgment that $M \ltdyn M'$.
+We use the same notation for the precision relation on both values and producers.
+
+% Type precision contexts
+In order to deal with open terms, we will need the notion of a type precision \emph{context}, which we denote
+$\gamlt$. This is similar to a normal context but instead of mapping variables to types,
+it maps variables $x$ to related types $A \ltdyn A'$, where $x$ has type $A$ in the left-hand term
+and $A'$ in the right-hand term. We may also write $x : d$ where $d : A \ltdyn A'$ to indicate this.
+
+% An equivalent way of thinking of type precision contexts is as a pair of ``normal" typing
+% contexts $\Gamma, \Gamma'$ with the same domain such that $\Gamma(x) \ltdyn \Gamma'(x)$ for
+% each $x$ in the domain.
+% We will write $\gamlt : \Gamma \ltdyn \Gamma'$ when we want to emphasize the pair of contexts.
+% Conversely, if we are given $\gamlt$, we write $\gamlt_l$ and $\gamlt_r$ for the normal typing contexts on each side.
+
+An equivalent way of thinking of a type precision context $\gamlt$ is as a
+pair of ``normal" typing contexts, $\gamlt_l$ and $\gamlt_r$, with the same
+domain and such that $\gamlt_l(x) \ltdyn \gamlt_r(x)$ for each $x$ in the domain.
+We will write $\gamlt : \gamlt_l \ltdyn \gamlt_r$ when we want to emphasize the pair of contexts.
+
+As with type precision derivations, we write $\Gamma$ to mean the ``reflexivity" type precision context
+$\Gamma : \Gamma \ltdyn \Gamma$.
+Concretely, this consists of reflexivity type precision derivations $\Gamma(x) \ltdyn \Gamma(x)$ for
+each $x$ in the domain of $\Gamma$.
+
+Furthermore, we write $\gamlt_1 \relcomp \gamlt_2$ to denote the ``composition'' of $\gamlt_1$ and $\gamlt_2$
+--- that is, the precision context whose value at $x$ is the type precision derivation
+$\gamlt_1(x) \relcomp \gamlt_2(x)$. This of course assumes that each of the type precision
+derivations is composable, i.e., that the RHS of $\gamlt_1(x)$ is the same as the left-hand side of $\gamlt_2(x)$.
+
+% We define the same for computation type precision contexts $\deltalt_1$ and $\deltalt_2$,
+% provided that both the computation type precision contexts have the same ``shape'', which is defined as
+% (1) either the stoup is empty in both, or the stoup has a hole in both, say $\hole{d}$ and $\hole{d'}$
+% where $d$ and $d'$ are composable, and (2) their value type precision contexts are composable as described above.
+
+The rules for term precision come in two forms. We first have the \emph{congruence} rules,
+one for each term constructor. These assert that the term constructors respect term precision.
+The congruence rules are as follows:
+
+\begin{mathpar}
+
+  \inferrule*[right = Var]
+    { c : A \ltdyn B \and \gamlt(x) = (A, B) } 
+    { \etmprec {\gamlt} x x c }
+
+  \inferrule*[right = Zro]
+    { } {\etmprec \gamlt \zro \zro \nat }
+
+  \inferrule*[right = Suc]
+    { \etmprec \gamlt V {V'} \nat } {\etmprec \gamlt {\suc\, V} {\suc\, V'} \nat}
+
+  \inferrule*[right = MatchNat]
+  {\etmprec \gamlt V {V'} \nat \and 
+    \etmprec \deltalt M {M'} d \and \etmprec {\deltalt, n : \nat} {N} {N'} d}
+  {\etmprec \deltalt {\matchnat {V} {M} {n} {N}} {\matchnat {V'} {M'} {n} {N'}} d}
+
+  \inferrule*[right = Lambda]
+    { c_i : A_i \ltdyn A'_i \and 
+      c_o : A_o \ltdyn A'_o \and 
+      \etmprec {\gamlt, x : c_i} {M} {M'} {c_o} } 
+    { \etmprec \gamlt {\lda x M} {\lda x {M'}} {(c_i \ra c_o)} }
+
+  \inferrule*[right = App]
+    { c_i : A_i \ltdyn A'_i \and
+      c_o : A_o \ltdyn A'_o \\\\
+      \etmprec \gamlt {V_f} {V_f'} {(c_i \ra c_o)} \and
+      \etmprec \gamlt {V_x} {V_x'} {c_i}
+    } 
+    { \etmprec {\gamlt} {V_f\, V_x} {V_f'\, V_x'} {{c_o}}}
+
+  \inferrule*[right = Ret]
+    {\etmprec {\gamlt} V {V'} c}
+    {\etmprec {\gamlt} {\ret\, V} {\ret\, V'} {c}}
+
+  \inferrule*[right = Bind]
+    {\etmprec {\gamlt} {M} {M'} {c} \and 
+     \etmprec {\gamlt, x : c} {N} {N'} {d} }
+    {\etmprec {\gamlt} {\bind {x} {M} {N}} {\bind {x} {M'} {N'}} {d}}
+\end{mathpar}
+
+We then have additional equational axioms, including $\beta$ and $\eta$ laws, and
+rules characterizing upcasts as least upper bounds, and downcasts as greatest lower bounds.
+For the sake of familiarity, we formulate the cast rules using arbitrary casts; later we
+will state the analogous versions for the version of the calculus without arbitrary casts.
+
+We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
+
+\begin{mathpar}
+  \inferrule*[right = $\err$]
+    {\phasty {\Gamma} M B }
+    {\etmprec {\Gamma} {\err_B} M B}
+
+  \inferrule*[right = $\beta$-fun]
+    { \phasty {\Gamma, x : A_i} M {A_o} \and
+      \vhasty {\Gamma} V {A_i} } 
+    { \etmequidyn {\Gamma} {(\lda x M)\, V} {M[V/x]} {A_o} }
+
+  \inferrule*[right = $\eta$-fun]
+    { \vhasty {\Gamma} {V} {A_i \ra A_o} } 
+    { \etmequidyn \Gamma {\lda x (V\, x)} V {A_i \ra A_o} }
+
+  \inferrule*[right = UpR]
+    { c : A \ltdyn B \and d : B \ltdyn C \and 
+      \etmprec {\gamlt} {M} {N} {c} } 
+    { \etmprec {\gamlt} {M} {\up {B} {C} N} {c \circ d}  }
+
+  \inferrule*[right = UpL]
+    { c : A \ltdyn B \and d : B \ltdyn C \and
+      \etmprec {\gamlt} {M} {N} {c \circ d} } 
+    { \etmprec {\gamlt} {\up {A} {B} M} {N} {d} }
+
+  \inferrule*[right = DnL]
+    { c : A \ltdyn B \and d : B \ltdyn C \and
+      \etmprec {\gamlt} {M} {N} {d} } 
+    { \etmprec {\gamlt} {\dn {A} {B} M} {N} {c \circ d} }
+
+  \inferrule*[right = DnR]
+    { c : A \ltdyn B \and d : B \ltdyn C \and
+      \etmprec {\gamlt} {M} {N} {c \circ d} } 
+    { \etmprec {\gamlt} {M} {\dn {B} {C} N} {c} }
+\end{mathpar}
+
+% TODO explain the least upper bound/greatest lower bound rules
+The rules UpR, UpL, DnL, and DnR were introduced in \cite{new-licata18} as a means
+of cleanly axiomatizing the intended behavior of casts in a way that
+doesn't depend on the specific constructs of the language.
+Intuitively, rule UpR says that the upcast of $M$ is an upper bound for $M$
+in that $M$ may error more, and UpL says that the upcast is the \emph{least}
+such upper bound, in that it errors more than any other upper bound for $M$.
+Conversely, DnL says that the downcast of $M$ is a lower bound, and DnR says
+that it is the \emph{greatest} lower bound.
+% These rules provide a clean axiomatization of the behavior of casts that doesn't
+% depend on the specific constructs of the language.
+
+
+
+\subsection{Semantics for Precision}
+
+As a first attempt at giving a semantics to the ordering, we could try to model types as
+sets equipped with an ordering that models term precision. Since term precision is reflexive
+and transitive, and since we identify terms that are equi-precise, we choose to model types
+as partially-ordered sets. We model the term precision ordering $M \ltdyn N : A \ltdyn B$ as an
+ordering relation between the posets denoted by $A$ and $B$.
+
+However, it turns out that modeling term precision by a relation defined by guarded fixpoint
+is not as straightforward as one might hope.
+A first attempt might be to define an ordering $\semltbad$ between $\li X$ and $\li Y$
+that allows for computations that may take different numbers of steps to be related.
+The relation is parameterized by a relation $\le$ between $X$ and $Y$, and is defined
+by guarded fixpoint as follows:
+% simultaneously captures the notions of error approximation and equivalence up to stepping behavior:
+
+\begin{align*}
+  &\eta\, x \semltbad \eta\, y \text{ if } 
+    x \semlt y \\
+%		
+  &\mho \semltbad l \\
+%
+  &\theta\, \tilde{l} \semltbad \theta\, \tilde{l'} \text{ if } 
+    \later_t (\tilde{l}_t \semltbad \tilde{l'}_t) \\
+%	
+  &\theta\, \tilde{l} \semltbad \mho \text{ if } 
+    \theta\, \tilde{l} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\theta\, \tilde{l} \semltbad \eta\, y \text{ if }
+    (\theta\, \tilde{l} = \delta^n(\eta\, x))
+  \text { for some $n$ and $x : \ty{X}$ such that $x \le y$ } \\
+%
+  &\mho \semltbad \theta\, \tilde{l'} \text { if } 
+    \theta\, \tilde{l'} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\eta\, x \semltbad \theta\, \tilde{l'} \text { if }
+    (\theta\, \tilde{l'} = \delta^n (\eta\, y))
+  \text { for some $n$ and $y : \ty{Y}$ such that $x \le y$ }
+\end{align*}
+
+Two computations that immediately return $(\eta)$ are related if the underlying
+values are related in the underlying ordering. 
+%
+The computation that errors $(\mho)$ is below everything else.
+%
+If both sides step (i.e., both sides are $\theta$),
+then we allow one time step to pass and compare the resulting terms.
+(This is where use the relation defined ``later''.)
+%
+Lastly, if one side steps and the other returns a value, the side that steps should
+terminate with a value in some finite number of steps $n$, and that value should
+be related to the value returned by the other side.
+Likewise, if one side steps and the other errors, then the side that steps
+should terminate with error.
+
+The problem with this definition is that the resulting relation is \emph{provably} not
+transitive: it can be shown (in Clocked Cubical Type Theory) that if $R$ is a
+relation on $\li X$ satisfying three specific properties, one of which is
+transitivity, then that relation is trivial.
+(The other two properties are that the relation is a congruence with respect to $\theta$,
+and that the relation is closed under delays $\delta = \theta \circ \nxt$ on either side.)
+Since the above relation \emph{does} satisfy the other two properties, we conclude
+that it must not be transitive.
+
+%But having a non-transitive relation to model term precision presents a problem
+%for...
+
+We are therefore led to wonder whether we can formulate a version of the relation
+that \emph{is} transitive.
+It turns out that we can, by sacrificing another of the three properties from
+the above lemma. Namely, we give up on closure under delays. Doing so, we end up
+with a \emph{lock-step} error ordering, where, roughly speaking, in order for
+computations to be related, they must have the same stepping behavior.
+%
+We then formulate a separate relation, \emph{weak bisimilarity}, that relates computations
+that are extensionally equal and may only differ in their stepping behavior.
+
+% As a result, we instead separate the semantics of term precision into two relations:
+% an intensional, step-sensitive \emph{error ordering} and a \emph{bisimilarity relation}.
+
+
+\subsubsection{Double Posets}\label{sec:predomains}
+
+As discussed above, there are two relations that we would like to define
+in the semantics: a step-sensitive error ordering, and weak bisimilarity of computations.
+%
+The semantic objects that interpret our types should therefore be equipped with
+two relations. We call these objects ``double posets''.
+A double poset $A$ is a set with two relations: an partial order $\semlt_A$ on $A$, and
+a reflexive, symmetric relation $\bisim_A$ on $A$.
+We write the underling set of $A$ as $\ty{A}$.
+
+We define morphisms of double posets as functions that preserve both
+the ordering and the bisimilarity relation. Given double posets
+$A$ and $B$, we write $f \colon A \monto B$ to indicate that $f$ is a morphism
+from $A$ to $B$, i.e, the following hold:
+(1) for all $a_1 \semlt_A a_2$, we have $f(a_1) \semlt_{B} f(a_2)$, and
+(2) for all $a_1 \bisim_A a_2$, we have $f(a_1) \bisim_{B} f(a_2)$.
+
+
+%%%%% RESUME HERE
+
+We define an ordering on morphisms of double posets as
+$f \le g$ if for all $a$ in $\ty{A_i}$, we have $f(a) \le_{A_o} g(a)$,
+and similarly bisimilarity extends to morphisms via
+$f \bisim g$ if for all $a$ in $\ty{A_i}$, we have $f(a) \bisim_{A_o} g(a)$.
+
+For each type we want to represent, we define a double poset for the corresponding semantic
+type. For instance, we define a double poset for natural numbers, for the
+dynamic type, for functions, and for the lift monad. We
+describe each of these below.
+
+\begin{itemize}
+  \item There is a double poset $\Nat$ for natural numbers, where the ordering and the
+  bisimilarity relations are both equality.
+  
+  % TODO explain that there is a theta operator for posets?
+  \item There is a double poset $\Dyn$ to represent the dynamic type. The underlying type
+  for this double poset is defined by guarded fixpoint to be such that
+  $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \li \ty{\Dyn})$.
+  This definition is valid because the occurrences of Dyn are guarded by the $\later$.
+  The ordering is defined via guarded recursion by cases on the argument, using the
+  ordering on $\mathbb{N}$ and the ordering on monotone functions described above.
+
+  \item For a double poset $A$, there is a double poset $\li A$ for the ``lift'' of $A$
+  using the lift monad. We use the same notation for $\li A$ when $A$ is a type
+  and $A$ is a double poset, since the context should make clear which one we are referring to.
+  The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
+  type of $A$.
+  The ordering on $\li A$ is the ``lock-step error-ordering'' which we describe in
+  \ref{subsec:lock-step}. The bismilarity relation is the ``weak bisimilarity''
+  described in Section \ref{}
+
+  \item For double posets $A_i$ and $A_o$, we form the double poset of monotone functions
+  from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
+
+  \item Given a double poset $A$, we can form the double poset $\later A$ whose underlying
+  type is $\later \ty{A}$. We define $\tilde{x} \le_{\later A} \tilde{y}$ to be
+  $\later_t (\tilde{x}_t \le_A \tilde{y}_t)$.
+\end{itemize}
+
+\subsubsection{Step-Sensitive Error Ordering}\label{subsec:lock-step}
+
+As mentioned, the ordering on the lift of a double poset $A$ is called the
+\emph{step-sensitive error-ordering} (also called ``lock-step error ordering''),
+the idea being that two computations $l$ and $l'$ are related if they are in
+lock-step with regard to their intensional behavior, up to $l$ erroring.
+Formally, we define this ordering as follows:
+
+\begin{itemize}
+  \item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
+  \item 	$\mho \ltls l$ for all $l$ 
+  \item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
+          $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+\end{itemize}
+
+We also define a heterogeneous version of this ordering between the lifts of two
+different double posets $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
+
+\subsubsection{Weak Bisimilarity Relation}
+
+For a double poset $A$, we define a relation on $\li A$, called ``weak bisimilarity",
+written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent
+``up to delays''.
+% We introduce the notation $x \sim_A y$ to mean $x \le_A y$ and $y \le_A x$.
+% TODO if A is a poset, then we can just say that x = y
+%
+The weak bisimilarity relation is defined by guarded fixpoint as follows:
+
+\begin{align*}
+  &\mho \bisim \mho \\
+%
+  &\eta\, x \bisim \eta\, y \text{ if } 
+    x \bisim_A y \\
+%		
+  &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+    \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+%	
+  &\theta\, \tilde{x} \bisim \mho \text{ if } 
+    \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+    (\theta\, \tilde{x} = \delta^n(\eta\, x))
+  \text { for some $n$ and $x : \ty{A}$ such that $x \sim_A y$ } \\
+%
+  &\mho \bisim \theta\, \tilde{y} \text { if } 
+    \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\eta\, x \bisim \theta\, \tilde{y} \text { if }
+    (\theta\, \tilde{y} = \delta^n (\eta\, y))
+  \text { for some $n$ and $y : \ty{A}$ such that $x \sim_A y$ }
+\end{align*}
+
+When both sides are $\eta$, then we ensure that the underlying values are bisimilar
+in the underlying bisimilarity relation on $A$.
+When one side is a $\theta$ and the other is $\eta x$ (i.e., one side steps),
+we stipulate that the $\theta$-term runs to $\eta y$ where $x$ is related to $y$.
+Similarly when one side is $\theta$ and the other $\mho$.
+If both sides step, then we allow one time step to pass and compare the resulting terms.
+In this way, the definition captures the intuition of terms being equivalent up to
+delays.
+
+It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
+However, it can also be shown that this relation is \emph{not} transitive:
+The argument is the same as that used to show that the step-insensitive error
+ordering $\semltbad$ described above is not transitive. Namely, we show that
+if it were transitive, then it would have to be trivial in that $l \bisim l'$ for all $l, l'$.
+that if this relation were transitive, then in fact it would be trivial in that
+%This issue will be resolved when we consider the relation's \emph{globalization}.
+
+\subsection{The Cast Rules}
+
+Unfortunately, the four cast rules defined above do not hold in
+the intensional setting where we are tracking the steps taken by terms.
+The source of the problem is that the downcast from the dynamic type to
+a function involves a delay, i.e., a $\theta$.
+So in order to keep the other term in lock-step, we need to insert a ``delay"
+that is extensionally equivalent to the identity function.
+More concretely, consider a simplified version of the DnL rule shown below:
+
+\begin{mathpar}
+  \inferrule*{M \ltdyn_i N : B}
+             {\dn c M \ltdyn_i N : c}
+\end{mathpar}
+
+If $c$ is inj-arr, then when we downcast $M$ from $dyn$ to $\dyn \ra \dyn$,
+semantically this will involve a $\theta$ because the value of type $dyn$
+in the semantics will contain a \emph{later} function $\tilde{f}$.
+Thus, in order for the right-hand side to be related to the downcast,
+we need to insert a delay on the right.
+%
+The need for delays affects the cast rules involving upcasts as well, because
+the upcast for functions involves a downcast on the domain:
+
+\[ \up{c_i \ra c_o}{M} \equiv \lambda (x : B_i). \up{c_o}(M\, (\dn {c_i} x)). \]
+
+Thus, the correct versions of the cast rules involve delays on the side that was not casted.
+
+
+% Delays for function types and for inj-arr(c)
+
+
+\subsubsection{Perturbations}
+
+We can describe precisely how the delays are inserted for any type precision
+derivation $c$.
+
+To do so, we first define simultaneously an inductive type of \emph{perturbations}
+for embeddings $\perte$ and for projections $\pertp$ by the following rules:
+
+\begin{mathpar}
+
+\inferrule{}{\id : \perte A}
+
+\inferrule{}{\id : \pertp A}
+
+\inferrule
+  {\delta_c : \pertp A \and \delta_d : \perte B}
+  {\delta_c \ra \delta_d : \perte (A \ra B)}
+
+\inferrule
+  {\delta_c : \perte A \and \delta_d : \pertp B}
+  {\delta_c \ra \delta_d : \pertp (A \ra B)}
+
+\inferrule
+  {\delta_\nat : \perte \nat \and \delta_f : \perte (\dyn \ra \dyn)}
+  {\pertdyn{\delta_\nat}{\delta_f} : \perte \dyn}
+
+\inferrule
+  {\delta_\nat : \pertp \nat \and \delta_f : \pertp (\dyn \ra \dyn)}
+  {\pertdyn{\delta_\nat}{\delta_f} : \pertp \dyn}
+
+\end{mathpar}
+
+The structure of embedding perturbations is designed to follow the structure
+of the corresponding embeddings, and likewise for the projection perturbations.
+Thus, in the function case, an embedding perturbation consists of a \emph{projection}
+perturbation for the domain and an \emph{embedding} perturbation for the codomain.
+The opposite holds for the projection perturbation for functions.
+
+Another way in which the two kinds of perturbations differ is that there is an additional
+projection perturbation for delaying $\delaypert{\delta}$.
+This corresponds to the actual delay term $\delta = \theta \circ \nxt$ in the semantics,
+and it is the generator/source of all non-trivial perturbations.
+
+Given a perturbation $\delta$, we can turn it into a term, which we also write as
+$\delta$ unless there is opportunity for confusion.
+

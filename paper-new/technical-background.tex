@@ -33,7 +33,7 @@ behave the same except that $M$ may error more.
 
 \subsection{Classical Domain Models}
 
-New and Licata \cite{newlicata} developed an axiomatic account of the
+New and Licata \cite{new-licata18} developed an axiomatic account of the
 graduality relation on cast calculus terms and gave a denotational
 model of this calculus using classical domain theory based on
 $\omega$-CPOs. This semantics has scaled up to an analysis of a
@@ -48,12 +48,12 @@ Racket. Thus if we want a reusable mathematical theory of gradual
 typing that can scale to realistic programming languages, we need to
 look elsewhere to so-called ``step-indexed'' techniques.
 
-A series of works \cite{newahmed,newlicataahmed,newjamnerahmed}
+A series of works \cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
 developed step-indexed logical relations models of gradually typed
 languages based on operational semantics. Unlike, classical domain
 theory, such step-indexed techniques are capable of modeling
 higher-order store and runtime-extensible dynamic types
-\cite{amalsthesis,nonpmetricparamorsomething,newjamnerahmed}. However
+\cite{amalsthesis,nonpmetricparamorsomething,new-jamner-ahmed19}. However
 their proof developments are highly repetitive and technical, with
 each development formulating a logical relation from first-principles
 and proving many of the same tedious lemmas without reusable
@@ -72,6 +72,8 @@ make formalization of realistic gradual languages tractible.
   Because the dynamic type is modeled as a non-well-founded
   recursive type, their logical relation needs to be paramterized by natural numbers
   to restore well-foundedness. This technique is known as a \emph{step-indexed logical relation}.
+  Intuitively, step-indexing makes the steps taken by terms observable.
+  %
   Reasoning about step-indexed logical relations
   can be tedious and error-prone, and there are some very subtle aspects that must
   be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
@@ -82,20 +84,56 @@ make formalization of realistic gradual languages tractible.
   and another in which the steps of the right-hand term are counted.
   Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
   related in both of the one-sided logical relations. Having two separate logical relations
-  complicates the statement of the lemmas used to prove graduality, becasue any statement that
+  complicates the statement of the lemmas used to prove graduality, because any statement that
   involves a term stepping needs to take into account whether we are counting steps on the left
   or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
-  as fundamental and seemingly straightforward as transitivty.
+  as fundamental and seemingly straightforward as transitivity.
 
   Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
   index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
-  But this does not actually hold: we requrie that one of the two pairs of terms
+  But this does not actually hold: we require that one of the two pairs of terms
   be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
   Which pair is required to satisfy this depends on which logical relation we are considering,
   (i.e., is it counting steps on the left or on the right),
   and so any argument that uses transitivity needs to consider two cases, one
   where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
   be related for all $i$. % This may not even be possible to show in some scenarios!
+
+  \begin{comment}
+  As another example, the axioms that specify the behavior of casts do not hold in the
+  step-indexed setting. Consider, for example, the ``lower bound'' rule for downcasting:
+
+  \begin{mathpar}
+    \inferrule*
+    {\gamlt \vdash M \ltdyn N : dyn}
+    {\gamlt \vdash \dn{\dyn \ra \dyn}{\dyn} M \ltdyn N}
+  \end{mathpar}
+
+  In the language of the step-indexed logical relation used in prior work, this would
+  take the form
+  
+  \begin{mathpar}
+    \inferrule*
+    {(M, N) \in \mathcal{E}^{\sim}_{i}\sem{\dyn}}
+    {(\dn{\dyn \ra \dyn}{\dyn} M, N) \in \mathcal{E}^{\sim}_{i}\sem{\injarr{}}}
+  \end{mathpar}
+
+  where $\sim$ stands for $\mathrel{\preceq}$ or $\mathrel{\succeq}$, i.e.,
+  counting steps on the left or right respectively.
+  %
+  To show this, we would use the fact that the left-hand side steps and
+  apply an anti-reduction lemma, showing that the term to which the LHS steps
+  is related to the RHS where our fuel is now
+  
+  The left-hand side steps to a case inspection on $M$,
+  where we unfold the recursive $\dyn$ type into a sum type and see whether the result
+  is a function type.
+
+  One way around these difficulties is to demand that the rules only hold
+  ``extensionally'', i.e., we quantify universally over the step-index and
+  reason about the ``global'' behavior of terms for all possible step indices.
+  This is the approach taken in prior work.
+\end{comment}
 
   % These complications introduced by step-indexing lead one to wonder whether there is a
   % way of proving graduality without relying on tedious arguments involving natural numbers.
@@ -150,9 +188,10 @@ recursion, an idea first introduced by Atkey and McBride \cite{atkey-mcbride2013
 \subsubsection{Ticked Cubical Type Theory}
 % TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions?
 
-In Ticked Cubical Type Theory \cite{TODO}, there is an additional sort
-called \emph{ticks}. Given a clock $k$, a tick $t : \tick k$ serves
-as evidence that one unit of time has passed according to the clock $k$.
+Ticked Cubical Type Theory \cite{mogelberg-veltri2019} is an extension of Cubical
+Type Theory \cite{CohenCoquandHuberMortberg2017}
+in which there is an additional sort called \emph{ticks}. Given a clock $k$,
+a tick $t : \tick\, k$ serves as evidence that one unit of time has passed according to the clock $k$.
 The type $\later A$ is represented as a function from ticks of a clock $k$ to $A$.
 The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
 to emphasize the dependence.
@@ -162,13 +201,13 @@ to emphasize the dependence.
 The rules for tick abstraction and application are similar to those of dependent
 $\Pi$ types. 
 In particular, if we have a term $M$ of type $\later^k A$, and we
-have available in the context a tick $t' : \tick k$, then we can apply the tick to $M$ to get
+have available in the context a tick $t' : \tick\, k$, then we can apply the tick to $M$ to get
 a term $M[t'] : A[t'/t]$. We will also write tick application as $M_t$.
-Conversely, if in a context $\Gamma, t : \tick k$ we have that $M$ has type $A$,
+Conversely, if in a context $\Gamma, t : \tick\, k$ we have that $M$ has type $A$,
 then in context $\Gamma$ we have $\lambda t.M$ has type $\later A$. % TODO dependent version?
 
 The statements in this paper have been formalized in a variant of Agda called
-Guarded Cubical Agda \cite{TODO}, an implementation of Clocked Cubical Type Theory.
+Guarded Cubical Agda \cite{veltri-vezzosi2020}, an implementation of Clocked Cubical Type Theory.
 
 
 % TODO axioms (clock irrelevance, tick irrelevance)?

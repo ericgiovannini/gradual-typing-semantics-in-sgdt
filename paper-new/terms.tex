@@ -1,0 +1,473 @@
+\section{A Simple Denotational Semantics for the Terms of GTLC}\label{sec:gtlc-terms}
+
+In this section, we introduce the term syntax for the gradually-typed
+lambda calculus (GTLC) and give a set-theoretic denotational semantics
+using tools from SGDT.
+
+In the following section, we will extend the denotational semantics to accommodate
+the type and term precision orderings.
+
+
+\subsection{Syntax}\label{sec:term-syntax}
+
+Our syntax is based on fine-grained call by value, and as such it has
+separate value and producer terms and typing judgments for each.
+
+% Given a term $M$ of type $A$, the term $\bind{x}{M}{N}$ should be thought of as
+% running $M$ to a value $V$ and then continuing as $N$, with $V$ in place of $x$.
+
+
+\begin{align*}
+  &\text{Types } A := \nat \alt \,\dyn \alt (A \ra A') \\
+  &\text{Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
+  &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \up{A}{B} V \\ 
+  &\text{Producers } M, N := \err_B \alt \matchnat {V} {M} {n} {M'} \\ 
+  &\quad\quad \alt \ret {V} \alt \bind{x}{M}{N} \alt V_f\, V_x \alt \dn{A}{B} M 
+\end{align*}
+
+
+The value typing judgment is written $\vhasty{\Gamma}{V}{A}$ and 
+the producer typing judgment is written $\phasty{\Gamma}{M}{A}$.
+
+The typing rules are as expected, with a cast between $A$ to $B$ allowed only when $A \ltdyn B$.
+The precise rules for $A \ltdyn B$ will be given below.
+Notice that the upcast of a value is a value, since it always succeeds, while the downcast
+of a value is a producer, since it may fail.
+
+\begin{mathpar}
+    % Var
+    \inferrule*{ }{\vhasty {\cdot, \Gamma, x : A, \Gamma'} x A}
+
+    % Err
+    \inferrule*{ }{\phasty {\cdot, \Gamma} {\err_A} A} 
+  
+    % Zero and suc
+    \inferrule*{ }{\vhasty \Gamma \zro \nat}
+  
+    \inferrule*{\vhasty \Gamma V \nat} {\vhasty \Gamma {\suc\, V} \nat}
+
+    % Match-nat
+    \inferrule*
+    {\vhasty \Gamma V \nat \and 
+     \phasty \Delta M A \and \phasty {\Gamma, n : \nat} {M'} A}
+    {\phasty \Gamma {\matchnat {V} {M} {n} {M'}} A}
+  
+    % Lambda
+    \inferrule* 
+    {\phasty {\Gamma, x : A} M {A'}} 
+    {\vhasty \Gamma {\lda x M} {A \ra A'}}
+  
+    % App
+    \inferrule*
+    {\vhasty \Gamma {V_f} {A \ra A'} \and \vhasty \Gamma {V_x} A}
+    {\phasty {\Gamma} {V_f \, V_x} {A'}}
+
+    % Ret
+    \inferrule*
+    {\vhasty \Gamma V A}
+    {\phasty {\Gamma} {\ret\, V} {A}}
+
+    % Bind
+    \inferrule*
+    {\phasty \Gamma M {A} \and \phasty{\Gamma, x : A}{N}{B} } % Need x : A in context
+    {\phasty {\Gamma} {\bind{x}{M}{N}} {B}}
+
+    % Upcast
+    \inferrule*
+    {A \ltdyn A' \and \vhasty \Gamma V A}
+    {\vhasty \Gamma {\up A {A'} V} {A'} }
+
+    \inferrule* % TODO is this correct?
+    {A \ltdyn A' \and \phasty {\Gamma} {M} {A'}}
+    {\phasty {\Gamma} {\dn A {A'} M} {A}}
+
+\end{mathpar}
+
+
+In the equational theory, we have $\beta$ and $\eta$ laws for function type,
+as well a $\beta$ and $\eta$ law for bind.
+
+\begin{mathpar}
+  % Function Beta and Eta
+  \inferrule*
+  {\phasty {\Gamma, x : A} M {B} \and \vhasty \Gamma V A}
+  {(\lda x M)\, V = M[V/x]}
+
+  \inferrule*
+  {\vhasty \Gamma V {A \ra A}}
+  {\Gamma \vdash V = \lda x {V\, x}}
+
+  % Ret Beta and Eta
+  \inferrule*
+  {}
+  {(\bind{x}{\ret\, V}{N}) = N[V/x]}
+
+  \inferrule*
+  {\phasty {\Gamma} {M} {B}}
+  {\bind{x}{M}{\ret x} = M}
+
+  % Match-nat Beta
+  \inferrule*
+  {\phasty \Delta M A \and \phasty {\Gamma, n : \nat} {M'} A}
+  {\matchnat{\zro}{M}{n}{M'} = M}
+
+  \inferrule*
+  {\vhasty \Gamma V \nat \and 
+   \phasty \Gamma M B \and \phasty {\Gamma, n : \nat} {M'} B}
+  {\matchnat{\suc\, V}{M}{n}{M'} = M'}
+
+  % Match-nat Eta
+  % This doesn't build in substitution
+  \inferrule*
+  {\hasty {\Gamma , x : \nat} M A}
+  {M = \matchnat{x} {M[\zro / x]} {n} {M[(\suc\, n) / x]}}
+
+\end{mathpar}
+
+\subsubsection{Type Precision}\label{sec:type-precision}
+
+The type precision rules specify what it means for a type $A$ to be more precise than $A'$.
+We have reflexivity rules for $\dyn$ and $\nat$, as well as rules that $\nat$ is more precise than $\dyn$
+and $\dyn \ra \dyn$ is more precise than $\dyn$.
+We also have a congruence rule for function types stating that given $A_i \ltdyn A'_i$ and $A_o \ltdyn A'_o$, we can prove
+$A_i \ra A_o \ltdyn A'_i \ra A'_o$. Note that precision is covariant in both the domain and codomain.
+Finally, we can lift a relation on value types $A \ltdyn A'$ to a relation $\Ret A \ltdyn \Ret A'$ on
+computation types.
+
+\begin{mathpar}
+  \inferrule*[right = \dyn]
+    { }{\dyn \ltdyn\, \dyn}
+
+  \inferrule*[right = \nat]
+    { }{\nat \ltdyn \nat}
+
+  \inferrule*[right = $\ra$]
+    {A_i \ltdyn A'_i \and A_o \ltdyn A'_o }
+    {(A_i \ra A_o) \ltdyn (A'_i \ra A'_o)}
+
+  \inferrule*[right = $\textsf{Inj}_\nat$]
+    { }{\nat \ltdyn\, \dyn}
+
+  \inferrule*[right = $\textsf{Inj}_{\ra}$]
+    { }
+    {(\dyn \ra \dyn) \ltdyn\, \dyn}
+
+  \inferrule*[right = $\injarr{}$]
+    {(R \ra S) \ltdyn\, (\dyn \ra \dyn)}
+    {(R \ra S) \ltdyn\, \dyn}
+
+  
+\end{mathpar}
+
+We can prove that transitivity of type precision is admissible, i.e.,
+if $A \ltdyn B$ and $B \ltdyn C$, then $A \ltdyn C$.
+
+% Type precision derivations
+Note that as a consequence of this presentation of the type precision rules, we
+have that if $A \ltdyn A'$, there is a unique precision derivation that witnesses this.
+As in previous work, we go a step farther and make these derivations first-class objects,
+known as \emph{type precision derivations}.
+Specifically, for every $A \ltdyn A'$, we have a derivation $c : A \ltdyn A'$ that is constructed
+using the rules above. For instance, there is a derivation $\dyn : \dyn \ltdyn \dyn$, and a derivation
+$\nat : \nat \ltdyn \nat$, and if $c_i : A_i \ltdyn A_i$ and $c_o : A_o \ltdyn A'_o$, then
+there is a derivation $c_i \ra c_o : (A_i \ra A_o) \ltdyn (A'_i \ra A'_o)$. Likewise for
+the remaining rules. The benefit to making these derivations explicit in the syntax is that we
+can perform induction over them.
+Note also that for any type $A$, we use $A$ to denote the reflexivity derivation that $A \ltdyn A$,
+i.e., $A : A \ltdyn A$.
+Finally, observe that for type precision derivations $c : A \ltdyn A'$ and $c' : A' \ltdyn A''$, we
+can define their composition $c \relcomp c' : A \ltdyn A''$.
+This notion will be used below in the statement of transitivity of the term precision relation.
+
+\subsection{Removing Casts as Primitives}
+
+% We now observe that all casts, except those between $\nat$ and $\dyn$
+% and between $\dyn \ra \dyn$ and $\dyn$, are admissible, in the sense that
+% we can start from $\extlcm$, remove casts except the aforementioned ones,
+% and in the resulting language we will be able to derive the other casts.
+
+We now observe that all casts, except those between $\nat$ and $\dyn$
+and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
+That is, consider a new language ($\extlcprime$) in which
+instead of having arbitrary casts, we have injections from $\nat$ and
+$\dyn \ra \dyn$ into $\dyn$, and a case inspection on $\dyn$.
+We claim that in $\extlcprime$, all of the casts present in $\extlc$ are derivable.
+It will suffice to verify that casts for function type are derivable.
+This holds because function casts are constructed inductively from the casts
+of their domain and codomain. The base case is one of the casts involving $\nat$
+or $\dyn \ra \dyn$ which are present in $\extlcprime$ as injections and case inspections.
+
+
+The resulting calculus $\extlcprime$ now lacks arbitrary casts as a primitive notion:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO update
+
+\begin{align*}
+  &\text{Types } A := \nat \alt \dyn \alt (A \ra A') \\
+  &\text{Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
+  &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \injnat V \alt \injarr V \\ 
+  &\text{Producers } M, N := \err_B \alt \ret {V} \alt \bind{x}{M}{N}
+    \alt V_f\, V_x \alt
+    \\ & \quad\quad \casenat{V}{M_{no}}{n}{M_{yes}} 
+    \alt \casearr{V}{M_{no}}{f}{M_{yes}}
+\end{align*}
+
+
+% New rules
+Figure \ref{fig:extlc-minus-minus-typing} shows the new typing rules,
+and Figure \ref{fig:extlc-minus-minus-eqns} shows the equational rules
+for case-nat (the rules for case-arrow are analogous).
+
+\begin{figure}
+  \begin{mathpar}
+      % inj-nat
+      \inferrule*
+      {\hasty \Gamma M \nat}
+      {\hasty \Gamma {\injnat M} \dyn}
+
+      % inj-arr 
+      \inferrule*
+      {\hasty \Gamma M (\dyn \ra \dyn)}
+      {\hasty \Gamma {\injarr M} \dyn}
+
+      % Case nat
+      \inferrule*
+      {\hasty{\Delta|_V}{V}{\dyn} \and 
+        \hasty{\Delta , x : \nat }{M_{yes}}{B} \and 
+        \hasty{\Delta}{M_{no}}{B}}
+      {\hasty {\Delta} {\casenat{V}{M_{no}}{n}{M_{yes}}} {B}}
+    
+      % Case arr
+      \inferrule*
+      {\hasty{\Delta|_V}{V}{\dyn} \and 
+        \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{yes}}{B} \and 
+        \hasty{\Delta}{M_{no}}{B}}
+      {\hasty {\Delta} {\casearr{V}{M_{no}}{f}{M_{yes}}} {B}}
+  \end{mathpar}
+  \caption{New typing rules for $\extlcmm$.}
+  \label{fig:extlc-minus-minus-typing}
+\end{figure}
+
+
+\begin{figure}
+  \begin{mathpar}
+     % Case-nat Beta
+     \inferrule*
+     {\hasty \Gamma V \nat}
+     {\casenat {\injnat {V}} {M_{no}} {n} {M_{yes}} = M_{yes}[V/n]}
+
+     \inferrule*
+     {\hasty \Gamma V {\dyn \ra \dyn} }
+     {\casenat {\injarr {V}} {M_{no}} {n} {M_{yes}} = M_{no}}
+
+     % Case-nat Eta
+     \inferrule*
+     {}
+     {\Gamma , x :\, \dyn \vdash M = \casenat{x}{M}{n}{M[(\injnat{n}) / x]} }
+
+
+     % Case-arr Beta
+
+
+     % Case-arr Eta
+
+
+  \end{mathpar}
+  \caption{New equational rules for $\extlcprime$ (rules for case-arrow are analogous
+           and hence are omitted).}
+  \label{fig:extlc-minus-minus-eqns}
+\end{figure}
+
+
+
+
+\section{Term Semantics}\label{sec:term-semantics}
+
+\subsection{Domain-Theoretic Constructions}\label{sec:domain-theory}
+
+In this section, we discuss the fundamental objects of the model into which we will embed
+the gradual lambda calculus.
+It is important to remember that the constructions in this section are entirely
+independent of the syntax described in the previous section; the notions defined 
+here exist in their own right as purely mathematical constructs.
+In Section \ref{sec:term-interpretation}, we will link the syntax and semantics
+via a semantic interpretation function.
+
+
+\subsection{Modeling the Dynamic Type}
+
+When modeling the dynamic type $\dyn$, we need a semantic object $D$ that satisfies the
+isomorphism
+
+\[ D \cong \Nat + (D \to (D + 1)). \]
+
+where the $D + 1$ represents the fact that in the function case, the function may return an error.
+Unfortunately, this equation does not have inductive or coinductive solutions. The usual way of
+dealing with such equations is via domain theory, by which we can obtain an exact solution.
+However, the heavy machinery of domain theory can be difficult for language designers to learn
+and apply in the mechanized setting.
+Instead, we will leverage the tools of guarded type theory, considering instead the following
+similar-looking equation:
+
+\[ D \cong \Nat + \later (D \to (D + 1)). \]
+
+Since the negative occurrence of $D$ is guarded under a later, this equation has a (guarded) solution.
+Specifically, we consider the following function $f$ of type
+$\later \type \to \type$:
+
+\[ \lambda (D' : \later \type) . \Nat + \later_t (D'_t \to (D'_t + 1)). \]
+
+(Recall that the tick $t : \tick$ is evidence that time has passed, and since
+$D'$ has type $\later \type$, i.e. $\tick \to \type$, then $D'_t$ has type $\type$.)
+
+Then we define 
+
+\[ D = \fix f. \]
+
+% TODO explain better
+As it turns out, this definition is not quite correct; let us try to understand why.
+The price we pay for such a simple solution to the above equation is that we have
+introduced a notion of ``time'', i.e., we must now consider the stepping behavior of terms.
+% Therefore, the semantics of terms will need to allow for terms that potentially
+% do not terminate. This is accomplished using an extension of the guarded lift monad,
+% which we describe in the next section.
+Thus, in the equation for the semantics of $\dyn$, the result of the function should be
+a computation that may return a value, error, \emph{or} take an observable step.
+We model such computations using an extension of the so-called guarded lift monad
+\cite{mogelberg-paviotti2016} which we describe in the next section.
+We will then discuss the correct definition of the semantics of the dynamic type.
+
+\subsubsection{The Lift + Error Monad}
+
+% TODO ensure the previous section flows into this one
+When thinking about how to model gradually-typed programs where we track the steps they take,
+we should consider their possible behaviors. On the one hand, we have \emph{failure}: a program may fail
+at run-time because of a type error. In addition to this, a program may ``think'',
+i.e., take a step of computation. If a program thinks forever, then it never returns a value,
+so we can think of the idea of thinking as a way of intensionally modelling \emph{partiality}.
+
+With this in mind, we can describe a semantic object that models these behaviors: a monad
+for embedding computations that has cases for failure and ``thinking''.
+Previous work has studied such a construct in the setting of the latter, called the lift
+monad \cite{mogelberg-paviotti2016}; here, we augment it with the additional effect of failure.
+
+For a type $A$, we define the \emph{lift monad with failure} $\li A$, which we will just call
+the \emph{lift monad}, as the following datatype:
+
+\begin{align*}
+  \li A &:= \\
+  &\eta \colon A \to \li A \\
+  &\mho \colon \li A \\
+  &\theta \colon \later (\li A) \to \li A
+\end{align*}
+
+Unless otherwise mentioned, all constructs involving $\later$ or $\fix$
+are understood to be with respect to a fixed clock $k$. So for the above, we really have for each
+clock $k$ a type $\li^k A$ with respect to that clock.
+
+Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
+
+\[ \li A \cong A + 1 + \later \li A. \]
+
+An element of $\li A$ should be viewed as a computation that can either (1) return a value (via $\eta$),
+(2) raise an error and stop (via $\mho$), or (3) think for a step (via $\theta$).
+%
+Notice there is a computation $\fix \theta$ of type $\li A$. This represents a computation
+that runs forever and never returns a value.
+
+Since we claimed that $\li A$ is a monad, we need to define the monadic operations
+and show that they respect the monadic laws. The return is just $\eta$, and extend
+is defined via guarded recursion by cases on the input.
+% It is instructive to give at least one example of a use of guarded recursion, so
+% we show below how to define extend:
+% TODO
+%
+%
+Verifying that the monadic laws hold uses \lob-induction and is straightforward.
+
+%\subsubsection{Model-Theoretic Description}
+%We can describe the lift monad in the topos of trees model as follows.
+
+\subsubsection{Revisiting the Dynamic Type}
+Now we can state the correct definition of the semantics for the dynamic type.
+The set $D$ is defined to be the solution to the guarded equation
+
+\[ D \cong \Nat + \later (D \to \textcolor{red}{\li} D). \]
+
+
+\subsection{Interpretation}\label{sec:term-interpretation}
+
+We can now give a semantics to the gradual lambda calculus we defined
+in Section \ref{sec:step-sensitive-lc}.
+%
+Much of the semantics is similar to a normal call-by-value denotational semantics;
+we highlight the differences.
+We will interpret types as sets, and terms as functions.
+Contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$
+will be interpreted as the product $\sem{A_1} \times \cdots \times \sem{A_n}$.
+
+
+The semantics of the dynamic type $\dyn$ is the set $\Dyn$ introduced in Section
+\ref{sec:predomains}.
+%
+The interpretation of a value $\vhasty {\Gamma} V A$ will be a monotone function from
+$\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\phasty {\Gamma} M {{A}}$ will be interpreted
+as a monotone function from $\sem{\Gamma}$ to $\li \sem{A}$.
+
+Recall that $\Dyn$ is isomorphic to $\Nat\, + \later (\Dyn \to \li \Dyn)$.
+Thus, the semantics of $\injnat{\cdot}$ is simply $\inl$ and the semantics
+of $\injarr{\cdot}$ is simply $\inr \circ \next$.
+The semantics of case inspection on dyn performs a case analysis on the sum.
+
+The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule for
+lambda that $\phasty {\Gamma, x : A_i} M {{A_o}}$, so the interpretation of $M$
+has type $(\sem{\Gamma} \times \sem{A_i})$ to $\li \sem{A_o}$.
+The interpretation of lambda is thus a function (in the ambient type theory) that takes
+a value $a$ representing the argument and applies it (along with $\gamma$) as argument to
+the interpretation of $M$.
+%
+The interpretation of bind and of application both make use the monadic extend function on $\li A$.
+%
+The interpretation of case-nat and case-arrow is simply a case inspection on the
+interpretation of the scrutinee, which has type $\Dyn$.
+
+
+\vspace{2ex}
+
+
+\noindent Types:
+\begin{align*}
+  \sem{\nat} &= \Nat \\
+  \sem{\dyn} &= \Dyn \\
+  \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
+\end{align*}
+
+% Contexts:
+
+% TODO check these, especially the semantics of bind, case-nat, and case-arr
+% with respect to their context argument
+\noindent Values and terms:
+\begin{align*}
+  \sem{\zro}         &= \lambda \gamma . 0 \\
+  \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
+  \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
+  \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
+  \sem{\injnat{V_n}} &= \lambda \gamma . \inl\, (\sem{V_n}\, \gamma) \\
+  \sem{\injarr{V_f}} &= \lambda \gamma . \inr\, (\sem{V_f}\, \gamma) \\[2ex]
+  \sem{\nxt\, V}     &= \lambda \gamma . \nxt (\sem{V}\, \gamma) \\
+  \sem{\theta}       &= \lambda \gamma . \theta \\
+%
+  \sem{\err_B}         &= \lambda \delta . \mho \\
+  \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
+  \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
+  \sem{V_f\, V_x}      &= \lambda \gamma . \ext {(\lambda f . (\ext {f} {\sem{V_x}\, \gamma}))} {(\sem{V_f}\, \gamma)} \\
+  \sem{\casenat{V}{M_{no}}{n}{M_{yes}}}         &= 
+    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{yes}}(n) \\
+    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{no}} \\
+  \sem{\casearr{V}{M_{no}}{\tilde{f}}{M_{yes}}} &= 
+    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{no}} \\
+    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{yes}}(\tilde{f})
+\end{align*}
