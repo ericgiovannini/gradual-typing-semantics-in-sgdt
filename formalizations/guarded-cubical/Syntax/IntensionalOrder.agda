@@ -51,19 +51,19 @@ data Comp⊑ : (C : Γ ⊑ctx Γ') (c : S ⊑ S') (M : Comp Γ S) (M' : Comp Γ'
 
 
 data Subst⊑ where
-  reflexive : Subst⊑ (refl-⊑ctx Δ) (refl-⊑ctx Γ) γ γ
+  reflexive-subst : Subst⊑ (refl-⊑ctx Δ) (refl-⊑ctx Γ) γ γ
   !s : Subst⊑ C [] !s !s
   _,s_ : Subst⊑ C D γ γ' → Val⊑ C c V V' → Subst⊑ C (c ∷ D) (γ ,s V) (γ' ,s V')
   _∘s_ : Subst⊑ C D γ γ' → Subst⊑ B C δ δ' → Subst⊑ B D (γ ∘s δ) (γ' ∘s δ')
   _ids_ : Subst⊑ C C ids ids
   wk : Subst⊑ (c ∷ C) C wk wk
   -- in principle we could add βη equations instead but truncating is simpler
-  isProp⊑ : isProp (Subst⊑ C D γ γ')
-  hetTrans : Subst⊑ C D γ γ' → Subst⊑ C' D' γ' γ'' → Subst⊑ (trans-⊑ctx C C') (trans-⊑ctx D D') γ γ''
+  -- isProp⊑ : isProp (Subst⊑ C D γ γ')
+  -- hetTrans : ∀ {B B'} -> Subst⊑ C D γ γ' → Subst⊑ C' D' γ' γ'' → Subst⊑ B B' γ γ''
 
 
 data Val⊑ where
-  reflexive : Val⊑ (refl-⊑ctx Γ) (refl-⊑ S) V V
+  reflexive-val : Val⊑ (refl-⊑ctx Γ) (refl-⊑ S) V V
   -- reflexive : {C : Γ ⊑ctx Γ} {c : S ⊑ S} -> Val⊑ C c V V
   _[_]v : Val⊑ C c V V' → Subst⊑ B C γ γ' → Val⊑ B c (V [ γ ]v) (V' [ γ' ]v)
   var : Val⊑ (c ∷ C) c var var
@@ -72,10 +72,23 @@ data Val⊑ where
 
   lda : ∀ {M M'} -> Comp⊑ (c ∷ C) d M M' → Val⊑ C (c ⇀ d) (lda M) (lda M') -- needed?
 
-  injNatUp : Val⊑ [] nat V V' ->
-             Val⊑ [] inj-nat V (injectN [ !s ,s V' ]v)
-  injArrUp : Val⊑ [] (dyn ⇀ dyn) V V' ->
-             Val⊑ [] (inj-arr (refl-⊑ _)) V (injectArr [ !s ,s V' ]v)
+  injNatUpL :  Val⊑ [] inj-nat V V' →
+               Val⊑ [] dyn (injectN [ !s ,s V ]v) V'
+  injNatUpL' : Val⊑ (inj-nat ∷ []) dyn injectN var
+
+  injNatUpR : Val⊑ [] nat V V' ->
+              Val⊑ [] inj-nat V (injectN [ !s ,s V' ]v)
+
+  injNatUpR' : Val⊑ (nat ∷ []) inj-nat var injectN
+
+  injArrUpL : Val⊑ [] (inj-arr c ) V V' ->
+              Val⊑ [] dyn (injectArr ∘V' (emb c ∘V V)) V'
+  injArrUpL' : Val⊑ ((inj-arr c) ∷ []) dyn (injectArr ∘V' emb c) var
+  -- TODO injArrUpL
+  
+  injArrUpR : Val⊑ [] (dyn ⇀ dyn) V V' ->
+              Val⊑ [] (inj-arr (refl-⊑ _)) V (injectArr [ !s ,s V' ]v)
+  injArrUpR' : Val⊑ ((dyn ⇀ dyn) ∷ []) (inj-arr (refl-⊑ _)) var injectArr
              -- ((injectArr {S = S} (V' [ wk ]v)) [ {!injectArr {S = S} (V' [ wk ]v)!} ]v) -- (injectArr (V' [ wk ]v) [ !s ,s V ]v)
 
   mapDyn-nat : ∀ {Vn Vn' Vf} →
@@ -90,17 +103,16 @@ data Val⊑ where
     Val⊑ (inj-arr c ∷ []) (inj-arr c) Vs (mapDyn Vn Vf)
 
 
-  isProp⊑ : isProp (Val⊑ C c V V')
+  -- isProp⊑ : isProp (Val⊑ C c V V')
 
   -- We make this an arbitrary E and e rather than
   -- Val⊑ (trans-⊑ctx C D) (trans-⊑ c d) V V'
   -- in order to avoid the "green slime" issue when pattern matching
-  hetTrans : ∀ {E e} -> Val⊑ C c V V' → Val⊑ D d V' V'' → Val⊑ E e V V''
-
+  -- hetTrans : ∀ {E e} -> Val⊑ C c V V' → Val⊑ D d V' V'' → Val⊑ E e V V''
 
 
 data EvCtx⊑ where
-  reflexive : EvCtx⊑ (refl-⊑ctx Γ) (refl-⊑ S) (refl-⊑ S) E E
+  reflexive-eval : EvCtx⊑ (refl-⊑ctx Γ) (refl-⊑ S) (refl-⊑ S) E E
   ∙E : EvCtx⊑ C c c ∙E ∙E
   _∘E_ : EvCtx⊑ C c d E E' → EvCtx⊑ C b c F F' → EvCtx⊑ C b d (E ∘E F) (E' ∘E F')
   _[_]e : EvCtx⊑ C c d E E' → Subst⊑ B C γ γ' → EvCtx⊑  B c d (E [ γ ]e) (E' [ γ' ]e)
@@ -116,12 +128,12 @@ data EvCtx⊑ where
   --   ((δl S⊑T) ∘E vToE (δl S⊑T))
   -- Opposite order is admissible
 
-  hetTrans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' →
+  {- hetTrans : EvCtx⊑ C b c E E' → EvCtx⊑ C' b' c' E' E'' →
     EvCtx⊑ (trans-⊑ctx C C') (trans-⊑ b b') (trans-⊑ c c') E E''
-  isProp⊑ : isProp (EvCtx⊑ C c d E E')
+  isProp⊑ : isProp (EvCtx⊑ C c d E E') -}
 
 data Comp⊑ where
-  reflexive : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) M M
+  reflexive-comp : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) M M
   _[_]∙ : EvCtx⊑ C c d E E' → Comp⊑ C c M M' → Comp⊑ C d (E [ M ]∙) (E' [ M' ]∙)
   _[_]c : Comp⊑ C c M M' → Subst⊑ D C γ γ' → Comp⊑ D c (M [ γ ]c) (M' [ γ' ]c)
   err : Comp⊑ [] c err err
@@ -134,32 +146,61 @@ data Comp⊑ where
 
   err⊥ : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) err' M
 
-  hetTrans : Comp⊑ C c M M' → Comp⊑ D d M' M'' →
+{-   hetTrans : Comp⊑ C c M M' → Comp⊑ D d M' M'' →
     Comp⊑ (trans-⊑ctx C D) (trans-⊑ c d) M M''
-  isProp⊑ : isProp (Comp⊑ C c M M')
+  isProp⊑ : isProp (Comp⊑ C c M M') -}
 
+vToE⊑ : Val⊑ (c ∷ []) d V V' → EvCtx⊑ [] c d (vToE V) (vToE V')
+vToE⊑ V⊑V' = bind (ret [ !s ,s V⊑V' ]c)
 
+lemma : ∀ (c : R ⊑ R') → (ret [ !s ,s emb c ]c) [ !s ,s var ]c ≡ (bind (ret [ !s ,s emb c ]c) [ !s ]e) [ ret [ !s ,s var ]c ]∙
+lemma nat = {!!}
+lemma dyn = {!!}
+lemma (c ⇀ c₁) = {!!}
+lemma inj-nat = {!!}
+lemma (inj-arr c) = {!!}
 
 -- Cast rules are admissible
 
 -- if x <= y then e x <= δr y
-up-L : ∀ S⊑T → Val⊑ ((ty-prec S⊑T) ∷ []) (refl-⊑ (ty-right S⊑T)) (emb (ty-prec S⊑T)) (δr-e (ty-prec S⊑T))
+up-L : ∀ R R' (c : R ⊑ R') → Val⊑ (c ∷ []) (refl-⊑ R') (emb c) (δr-e c)
 
 -- if x <= y then δl x <= e y
-up-R : ∀ S⊑T → Val⊑ ((refl-⊑ (ty-left S⊑T)) ∷ []) (ty-prec S⊑T) (δl-e (ty-prec S⊑T)) (emb (ty-prec S⊑T))
+up-R : ∀ R R' (c : R ⊑ R') → Val⊑ ((refl-⊑ R) ∷ []) c (δl-e c) (emb c)
+
+dn-L : ∀ R R' (c : R ⊑ R') → EvCtx⊑ [] (refl-⊑ R') c (proj c) (δr-p c)
+dn-R : ∀ R R' (c : R ⊑ R') → EvCtx⊑ [] c (refl-⊑ R) (δl-p c) (proj c)
 
 
-dn-L : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (ty-prec S⊑T) (proj (ty-prec S⊑T)) (δr-p (ty-prec S⊑T))
-dn-R : ∀ S⊑T → EvCtx⊑ [] (ty-prec S⊑T) (refl-⊑ (ty-left S⊑T)) (δl-p (ty-prec S⊑T)) (proj (ty-prec S⊑T))
+up-L .nat .nat nat = var
+up-L .dyn .dyn dyn = var
+up-L .(_ ⇀ _) .(_ ⇀ _) (c ⇀ d) = lda (bind (bind ((bind (ret [ !s ,s up-L _ _ d ]c) [ !s ]e) [ ret [ !s ,s var ]c ]∙) [ (app [ wk ∘s wk ∘s wk ,s (var [ wk ∘s wk ]v) ,s var ]c) ]∙) [ (dn-L _ _ c [ !s ]e) [ ret [ !s ,s var ]c ]∙ ]∙)
+up-L .nat .dyn inj-nat = injNatUpL'
+up-L R .dyn (inj-arr c) = {!!}
 
+up-R .nat .nat nat = var
+up-R .dyn .dyn dyn = var
+up-R .(_ ⇀ _) .(_ ⇀ _) (c ⇀ d) = lda (bind (bind ((bind (ret [ !s ,s up-R _ _ d ]c) [ !s ]e) [ ret [ !s ,s var ]c ]∙) [ app [ wk ∘s wk ∘s wk ,s (var [ wk ∘s wk ]v) ,s var ]c ]∙) [ (dn-R _ _ c [ !s ]e) [ ret [ !s ,s var ]c ]∙ ]∙)
+up-R .nat .dyn inj-nat = injNatUpR'
+up-R R .dyn (inj-arr c) = {!!}
 
-up-L = {!!}
+dn-L .nat .nat nat = ∙E
+dn-L .dyn .dyn dyn = ∙E
+dn-L .(_ ⇀ _) .(_ ⇀ _) (c ⇀ d) =
+  bind (ret [ !s ,s lda (bind (bind ((dn-L _ _ d [ !s ]e) [ ret [ !s ,s var ]c ]∙) [ app [ wk ∘s wk ∘s wk ,s (var [ wk ∘s wk ]v) ,s var ]c ]∙) [
+    transport (λ i → Comp⊑ (c ∷ ((refl-⊑ _ ⇀ refl-⊑ _) ∷ [])) (refl-⊑ _) (lemma c i) ((vToE (Pertᴱ→Val (δr-e-pert c)) [ !s ]e) [ ret' var ]∙))
+      ((bind (ret [ !s ,s up-L {!!} {!!} c ]c) [ !s ]e) [ ret [ !s ,s var ]c  ]∙) ]∙) ]c) 
+dn-L .nat .dyn inj-nat = {!!}
+-- Goal: EvCtx⊑ [] dyn inj-nat (bind (matchDyn (ret' var) (err [ wk ]c))) (δr-p inj-nat)
+-- Have: Val⊑ (nat ∷ []) nat Vn Vn' → Val⊑ (inj-nat ∷ []) inj-nat Vn (mapDyn Vn' Vf)
+dn-L R .dyn (inj-arr c) = {!!}
 
-up-R = {!!}
+dn-R .nat .nat nat = ∙E
+dn-R .dyn .dyn dyn = ∙E
+dn-R .(_ ⇀ _) .(_ ⇀ _) (c ⇀ d) = bind (ret [ !s ,s (lda (bind {!bind ? [ ? ]!} [ {!!} ]∙)) ]c)
+dn-R .nat .dyn inj-nat = {!!}
+dn-R R .dyn (inj-arr c) = {!!}
 
-dn-L = {!!}
-
-dn-R = {!!}
 
 
 -- Key lemmas about pushing and pulling perturbations across type precision.
@@ -179,7 +220,7 @@ pull-lemma-p : ∀ (c : S ⊑ T) δt ->
 
 push-lemma-e nat id = var
 push-lemma-e dyn id = var
-push-lemma-e dyn (PertD δn δf) = reflexive
+push-lemma-e dyn (PertD δn δf) = reflexive-val
 push-lemma-e (ci ⇀ co) id = var
 push-lemma-e (ci ⇀ co) (δi ⇀ δo) =
   lda (bind (bind ((bind (ret [ !s ,s push-lemma-e co δo ]c) [ !s ]e) [ ret [ !s ,s var ]c ]∙) [ {!!} ]∙) [ ({!!} [ !s ]e) [ ret [ !s ,s var ]c ]∙ ]∙)
@@ -192,8 +233,8 @@ push-lemma-p = {!!}
 
 pull-lemma-e c id = var
 pull-lemma-e (ci ⇀ co) (δi ⇀ δo) = {!!}
-pull-lemma-e dyn (PertD δn δf) = reflexive
-pull-lemma-e inj-nat (PertD δn δf) = mapDyn-nat reflexive
+pull-lemma-e dyn (PertD δn δf) = reflexive-val
+pull-lemma-e inj-nat (PertD δn δf) = mapDyn-nat reflexive-val
 pull-lemma-e (inj-arr c) (PertD δn δf) = mapDyn-arr (pull-lemma-e c δf)
 
 pull-lemma-p = {!!}
