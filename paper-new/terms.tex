@@ -231,19 +231,13 @@ for case-nat (the rules for case-arrow are analogous).
       {\hasty \Gamma M (\dyn \ra \dyn)}
       {\hasty \Gamma {\injarr M} \dyn}
 
-      % Case nat
+      % Case dyn
       \inferrule*
-      {\hasty{\Delta|_V}{V}{\dyn} \and 
-        \hasty{\Delta , x : \nat }{M_{yes}}{B} \and 
-        \hasty{\Delta}{M_{no}}{B}}
-      {\hasty {\Delta} {\casenat{V}{M_{no}}{n}{M_{yes}}} {B}}
-    
-      % Case arr
-      \inferrule*
-      {\hasty{\Delta|_V}{V}{\dyn} \and 
-        \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{yes}}{B} \and 
-        \hasty{\Delta}{M_{no}}{B}}
-      {\hasty {\Delta} {\casearr{V}{M_{no}}{f}{M_{yes}}} {B}}
+      {\hasty{\Delta|_V}{V}{\dyn} \and
+        \hasty{\Delta , x : \nat }{M_{nat}}{B} \and 
+        \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{fun}}{B}
+      }
+      {\hasty {\Delta} {\casedyn{V}{n}{M_{nat}}{f}{M_{fun}}} {B}}
   \end{mathpar}
   \caption{New typing rules for $\extlcmm$.}
   \label{fig:extlc-minus-minus-typing}
@@ -252,25 +246,19 @@ for case-nat (the rules for case-arrow are analogous).
 
 \begin{figure}
   \begin{mathpar}
-     % Case-nat Beta
+     % Case-dyn Beta
      \inferrule*
      {\hasty \Gamma V \nat}
-     {\casenat {\injnat {V}} {M_{no}} {n} {M_{yes}} = M_{yes}[V/n]}
+     {\casedyn {\injnat {V}} {n} {M_{nat}} {f} {M_{fun}} = M_{nat}[V/n]}
 
      \inferrule*
      {\hasty \Gamma V {\dyn \ra \dyn} }
-     {\casenat {\injarr {V}} {M_{no}} {n} {M_{yes}} = M_{no}}
+     {\casedyn {\injarr {V}} {n} {M_{nat}} {f} {M_{fun}} = M_{fun}[V/f]}
 
-     % Case-nat Eta
+     % Case-dyn Eta
      \inferrule*
      {}
-     {\Gamma , x :\, \dyn \vdash M = \casenat{x}{M}{n}{M[(\injnat{n}) / x]} }
-
-
-     % Case-arr Beta
-
-
-     % Case-arr Eta
+     {\Gamma , x :\, \dyn \vdash M = \casedyn{x}{n}{M[(\injnat{n}) / x]}{f}{M[(\injarr{f}) / x]} }
 
 
   \end{mathpar}
@@ -461,13 +449,9 @@ interpretation of the scrutinee, which has type $\Dyn$.
   \sem{\err_B}         &= \lambda \delta . \mho \\
   \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
   \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
-  \sem{V_f\, V_x}      &= \lambda \gamma . \ext {(\lambda f . (\ext {f} {\sem{V_x}\, \gamma}))} {(\sem{V_f}\, \gamma)} \\
-  \sem{\casenat{V}{M_{no}}{n}{M_{yes}}}         &= 
+  \sem{V_f\, V_x}      &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
+  \sem{\casedyn{V}{n}{M_{nat}}{\tilde{f}}{M_{fun}}} &=
     \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
-    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{yes}}(n) \\
-    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{no}} \\
-  \sem{\casearr{V}{M_{no}}{\tilde{f}}{M_{yes}}} &= 
-    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
-    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{no}} \\
-    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{yes}}(\tilde{f})
+    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{nat}}(n) \\
+    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{fun}}(\tilde{f})
 \end{align*}
