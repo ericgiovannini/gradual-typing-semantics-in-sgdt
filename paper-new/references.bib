@@ -37,7 +37,7 @@ series = {LICS '16}
 
 @inproceedings{veltri-vezzosi2020,
 author = {Veltri, Niccol\`{o} and Vezzosi, Andrea},
-title = {Formalizing 𝜋-Calculus in Guarded Cubical Agda},
+title = {Formalizing $\pi$-Calculus in Guarded Cubical Agda},
 year = {2020},
 isbn = {9781450370974},
 publisher = {Association for Computing Machinery},
@@ -359,3 +359,57 @@ department = "Department of Computer Science",
 address = "London, UK",
 month = mar,
 year = "2001"}
+
+
+@article{Capretta2005GeneralRV,
+  title={General recursion via coinductive types},
+  author={Venanzio Capretta},
+  journal={Log. Methods Comput. Sci.},
+  year={2005},
+  volume={1}
+}
+
+@article{CohenCoquandHuberMortberg2017,
+  title={Cubical type theory: A constructive interpretation of the univalence axiom},
+  author={Cyril Cohen and Thierry Coquand and Simon Huber and Anders M\"{o}rtberg},
+  journal={IFCoLog J. Log. Appl.},
+  year={2017}
+}
+
+@article{VezzosiMortbergAbel2019,
+author = {Vezzosi, Andrea and M\"{o}rtberg, Anders and Abel, Andreas},
+title = {Cubical Agda: A Dependently Typed Programming Language with Univalence and Higher Inductive Types},
+year = {2019},
+issue_date = {August 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {ICFP},
+url = {https://doi.org/10.1145/3341691},
+doi = {10.1145/3341691},
+abstract = {Proof assistants based on dependent type theory provide expressive languages for both programming and proving within the same system. However, all of the major implementations lack powerful extensionality principles for reasoning about equality, such as function and propositional extensionality. These principles are typically added axiomatically which disrupts the constructive properties of these systems. Cubical type theory provides a solution by giving computational meaning to Homotopy Type Theory and Univalent Foundations, in particular to the univalence axiom and higher inductive types. This paper describes an extension of the dependently typed functional programming language Agda with cubical primitives, making it into a full-blown proof assistant with native support for univalence and a general schema of higher inductive types. These new primitives make function and propositional extensionality as well as quotient types directly definable with computational content. Additionally, thanks also to copatterns, bisimilarity is equivalent to equality for coinductive types. This extends Agda with support for a wide range of extensionality principles, without sacrificing type checking and constructivity.},
+journal = {Proc. ACM Program. Lang.},
+month = {jul},
+articleno = {87},
+numpages = {29},
+keywords = {Univalence, Cubical Type Theory, Higher Inductive Types, Dependent Pattern Matching}
+}
+
+@article{new-jamner-ahmed19,
+author = {New, Max S. and Jamner, Dustin and Ahmed, Amal},
+title = {Graduality and Parametricity: Together Again for the First Time},
+year = {2019},
+issue_date = {January 2020},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {4},
+number = {POPL},
+url = {https://doi.org/10.1145/3371114},
+doi = {10.1145/3371114},
+abstract = {Parametric polymorphism and gradual typing have proven to be a difficult combination, with no language yet produced that satisfies the fundamental theorems of each: parametricity and graduality. Notably, Toro, Labrada, and Tanter (POPL 2019) conjecture that for any gradual extension of System F that uses dynamic type generation, graduality and parametricity are ``simply incompatible''. However, we argue that it is not graduality and parametricity that are incompatible per se, but instead that combining the syntax of System F with dynamic type generation as in previous work necessitates type-directed computation, which we show has been a common source of graduality and parametricity violations in previous work. We then show that by modifying the syntax of universal and existential types to make the type name generation explicit, we remove the need for type-directed computation, and get a language that satisfies both graduality and parametricity theorems. The language has a simple runtime semantics, which can be explained by translation to a statically typed language where the dynamic type is interpreted as a dynamically extensible sum type. Far from being in conflict, we show that the parametricity theorem follows as a direct corollary of a relational interpretation of the graduality property.},
+journal = {Proc. ACM Program. Lang.},
+month = {dec},
+articleno = {46},
+numpages = {32},
+keywords = {graduality, gradual typing, polymorphism, parametricity, logical relation}
+}
