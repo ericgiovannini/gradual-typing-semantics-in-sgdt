@@ -1,0 +1,292 @@
+\section{A Denotational Model for Intensional Gradual Typing}
+
+In this section we model intensional gradual typing in a suitable double category.
+
+We construct a (thin) double category $\mathsf{IGTT}$ as follows.
+
+% First, we fix a set $D$ with a partial order $\le_D$ and bisimilarity relation $\bisim_D$.
+% This is intended to model the dynamic type. Now we define the double category:
+
+\begin{itemize}
+  \item \textbf{Objects}: An object consists of the following data:
+    \begin{itemize}
+        \item A double poset $X$, i.e., a set $X$ equipped with a partial order $\le_X$
+        and a reflexive, symmetric ``bisimilarity'' relation $\bisim_X$.
+        \item Two commutative monoids of perturbations $P_V$ and $P_C$ with homomorphisms
+        \begin{align*}
+        \ptb_V &: P_V \to \{ f : X \to_m X \mid f \bisim \id \} \\
+        \ptb_C &: P_C \to \{ f : X \to_m \li X \mid f \bisim \eta \}
+        \end{align*}
+        (where composition in the latter monoid of functions is given by Kleisli composition).
+
+    \end{itemize}
+
+  \item \textbf{Vertical arrows}: An vertical arrow from $(X, P_V^X, P_C^X)$ to $(Y, P_V^Y, P_C^Y)$ is
+  a function $f : X \to Y$ that is \emph{monotone} (preserves ordering) and preserves the bisimilarity relation.
+  % that preserves ordering and bisimilarity.
+  
+  \item \textbf{Horizontal arrows}: A horizontal arrow from $(X, P_V^X, P_C^X)$ to $(Y, P_V^Y, P_C^Y)$
+  consists of:
+  \begin{itemize}
+    \item A relation $R : X \nrightarrow Y$ that is antitone with respect to $\le_X$ and
+    monotone with respect to $\le_Y$.
+    \item An embedding $e_{XY} : X \to_m Y$ preserving ordering and bisimilarity.
+    \item A projection $p_{XY} : Y \to_m \li X$ preserving ordering and bisimilarity.
+  \end{itemize}
+  
+  such that (1) $R$ is \emph{quasi-representable} by $e_{XY}$ and $p_{XY}$, and 
+  (2) $R$ satisfies the \emph{push-pull} property.
+  
+  \vspace{3ex}
+  The former means that there are distinguished elements $\delta^{l,e} \in P_V^X$, $\delta^{r,e} \in P_V^Y$, 
+  $\delta^{l,p} \in P_C^X$ and $\delta^{r,p} \in P_C^Y$ such that the following squares commute:
+
+  \begin{center}
+    \begin{tabular}{ c | c } 
+        \hline
+        \hspace{3em} 
+        % UpL
+        % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWSJdLFsxLDAsIlkiXSxbMSwxLCJZIl0sWzAsMiwiUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMywiXFxsZV9ZIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJlX3tYWX0iLDJdLFsyLDMsIlxccHRiX1ZeWShcXGRlbHRhXntyLGV9KSJdLFs2LDcsIlxcbHRkeW4iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+        \begin{tikzcd}[ampersand replacement=\&]
+            X \& Y \\
+            Y \& Y
+            \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+            \arrow["{\le_Y}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+            \arrow[""{name=0, anchor=center, inner sep=0}, "{e_{XY}}"', from=1-1, to=2-1]
+            \arrow[""{name=1, anchor=center, inner sep=0}, "{\ptb_V^Y(\delta^{r,e})}", from=1-2, to=2-2]
+            \arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+        \end{tikzcd} & 
+        % UpR
+        % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWCJdLFsxLDAsIlgiXSxbMSwxLCJZIl0sWzAsMSwiXFxwdGJfVl5YKFxcZGVsdGFee2wsZX0pIiwyXSxbMiwzLCJlX3tYWX0iXSxbMSwzLCJSIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCJcXGxlX1giLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsIlxcbHRkeW4iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+        \begin{tikzcd}[ampersand replacement=\&]
+            X \& X \\
+            X \& Y
+            \arrow[""{name=0, anchor=center, inner sep=0}, "{\ptb_V^X(\delta^{l,e})}"', from=1-1, to=2-1]
+            \arrow[""{name=1, anchor=center, inner sep=0}, "{e_{XY}}", from=1-2, to=2-2]
+            \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+            \arrow["{\le_X}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+            \arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+        \end{tikzcd} \\
+        \hline
+        % DnR
+        % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzEsMCwiWSJdLFswLDEsIkxYIl0sWzEsMSwiTFgiXSxbMCwyLCJcXHB0Yl9DXlgoXFxkZWx0YV57bCxwfSkiLDJdLFsxLDMsInBfe1hZfSJdLFswLDEsIlIiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsIlxcbGVfe0xYfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiXFxsdGR5biIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+        \begin{tikzcd}[ampersand replacement=\&]
+            X \& Y \\
+            LX \& LX
+            \arrow[""{name=0, anchor=center, inner sep=0}, "{\ptb_C^X(\delta^{l,p})}"', from=1-1, to=2-1]
+            \arrow[""{name=1, anchor=center, inner sep=0}, "{p_{XY}}", from=1-2, to=2-2]
+            \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+            \arrow["{\le_{LX}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+            \arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+        \end{tikzcd} & 
+            \hspace{3em} 
+            % DnL
+            % https://q.uiver.app/#q=WzAsNCxbMCwwLCJZIl0sWzEsMCwiWSJdLFswLDEsIkxYIl0sWzEsMSwiTFkiXSxbMCwxLCJcXGxlX1kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsInBfe1hZfSIsMl0sWzEsMywiXFxwdGJfQ15ZKFxcZGVsdGFee3IscH0pIl0sWzIsMywiTFIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs1LDYsIlxcbHRkeW4iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+            \begin{tikzcd}[ampersand replacement=\&]
+                Y \& Y \\
+                LX \& LY
+                \arrow["{\le_Y}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+                \arrow[""{name=0, anchor=center, inner sep=0}, "{p_{XY}}"', from=1-1, to=2-1]
+                \arrow[""{name=1, anchor=center, inner sep=0}, "{\ptb_C^Y(\delta^{r,p})}", from=1-2, to=2-2]
+                \arrow["LR"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+                \arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+            \end{tikzcd} \\ 
+        \hline
+    \end{tabular}
+    \end{center}
+    (Here, $LR$ is the lock step lifting of the relation $R$.)
+
+    \vspace{3ex}
+
+    The push-pull property is defined as follows:
+    \begin{itemize}
+        \item Given any perturbation $\delta_X \in P_V^X$, we can \emph{push} it forward along $R$ to a
+        perturbation $\push(\delta_X) \in P_V^Y$, such that $\ptb_V^X(\delta_X) \le \ptb_V^Y(\push(\delta_X))$.
+
+        \item Conversely, given any perturbation $\delta_Y \in P_V^Y$, we can \emph{pull} it back along $R$
+        to a perturbation $\pull(\delta_Y) \in P_V^X$, such that $\ptb_V^X(\pull(\delta_Y)) \le \ptb_V^Y(\delta_Y)$.
+
+        \item Likewise, we can push any perturbation $\delta_X \in P_C^X$ along $LR$
+        to get a perturbation $\push(\delta_X) \in P_C^Y$ such that
+        $\ptb_C^X(\delta_X) \le \ptb_C^Y(\push(\delta_X))$.
+
+        \item And similarly, we can pull a perturbation in $P_C^Y$ along $LR$ to a perturbation in $P_C^X$
+        satisfying the analogous property.
+    \end{itemize}
+
+    \textbf{TODO: push and pull might need to be monoid homomorphisms}
+
+  \item \textbf{Two-cells}: Let $f : W \to X$ and $g : Y \to Z$ and let $R : W \nrightarrow Y$ and 
+  $S : X \nrightarrow Z$. We define $f \le g$ to mean for all $(w, y) \in R$, we have
+  $(f(w), g(y)) \in S$. This is depicted in the square below:
+
+  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJXIl0sWzAsMSwiWCJdLFsxLDAsIlkiXSxbMSwxLCJaIl0sWzAsMiwiUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMywiUyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMSwiZiIsMl0sWzIsMywiZyJdLFs0LDUsIlxcc3FzdWJzZXRlcSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	W \& Y \\
+	X \& Z
+	\arrow[""{name=0, anchor=center, inner sep=0}, "R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "S"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["f"', from=1-1, to=2-1]
+	\arrow["g", from=1-2, to=2-2]
+	\arrow["\sqsubseteq"{description}, draw=none, from=0, to=1]
+\end{tikzcd}\]
+  
+\end{itemize}
+
+The category satisfies the following additional properties:
+\begin{itemize}
+    \item \emph{Existence of Dyn}: There is an object $D$ with the property that for any
+    object $X$, there is a horizontal arrow $X \nrightarrow D$.
+    The underlying double poset is defined by guarded recursion as the solution to
+    \[ D \cong \mathbb{N}\, + \later \hspace{-0.5ex} (D \to_m \li D). \]
+
+    \textbf{TODO: define the perturbations for Dyn and show there is a horizontal arrow $X \nrightarrow D$ for all $X$.}
+    
+    \item \emph{Thinness}: There is at most one two-cell for any given square.
+
+    % \item \emph{Push-Pull}: Let $X$ and $Y$ be objects, and let $R : X \nrightarrow Y$.
+    % \begin{itemize}
+    %     \item Given any perturbation $\delta_X \in P_V^X$, we can \emph{push} it forward along $R$ to a
+    %     perturbation $\push(\delta_X) \in P_V^Y$, such that $\ptb_V^X(\delta_X) \le \ptb_V^Y(\push(\delta_X))$.
+
+    %     \item Conversely, given any perturbation $\delta_Y \in P_V^Y$, we can \emph{pull} it back along $R$
+    %     to a perturbation $\pull(\delta_Y) \in P_V^X$, such that $\ptb_V^X(\pull(\delta_Y)) \le \ptb_V^Y(\delta_Y)$.
+
+    %     \item Likewise, we can push any perturbation $\delta_X \in P_C^X$ along $L\, R$
+    %     (the lock-step lifting of the relation $R$) to get a perturbation $\push(\delta_X) \in P_C^Y$ such that
+    %     $\ptb_C^X(\delta_X) \le \ptb_C^Y(\push(\delta_X))$.
+
+    %     \item And similarly we can pull a perturbation in $P_C^Y$ to a perturbation in $P_C^X$
+    %     satisfying the analogous property.
+    % \end{itemize}
+\end{itemize}
+
+% Composability of embedding and projections
+
+We need to verify that this forms a thin double category. 
+\begin{itemize}
+    \item \emph{Horizontal identity morphism}: 
+    Let $X$ be an object. We take $R$ to be $\le_X$ (the ordering relation on $X$),
+    which is trivially antitone and monotone with respect to itself.
+    We let $e_{XX} = \id$ and $p_{XX} = \eta$. These clearly preserve the
+    ordering and bisimilarity.
+
+    \vspace{3ex}
+    
+    We first need to show that $R$ is quasi-representable.
+    We prove the UpR rule; the others are similar.
+    We need to specify a distinguished element $\delta^{l,e} \in P_V^X$ such that
+    the following square commutes:
+    
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWCJdLFsxLDAsIlgiXSxbMSwxLCJYIl0sWzAsMSwiXFxwdGJfVl5YKFxcZGVsdGFee2wsZX0pIiwyXSxbMiwzLCJlX3tYWH0gPSBcXGlkIl0sWzAsMiwiXFxsZV9YIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGxlX1giLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    \[\begin{tikzcd}[ampersand replacement=\&]
+        X \& X \\
+        X \& X
+        \arrow["{\ptb_V^X(\delta^{l,e})}"', from=1-1, to=2-1]
+        \arrow["{e_{XX} = \id}", from=1-2, to=2-2]
+        \arrow["{\le_X}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["{\le_X}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \end{tikzcd}\]
+
+    Taking $\delta^{l,e} = \id$ (the identity of the monoid), we observe that since
+    $\ptb_V^X$ is a homomorphism of monoids, we have $\ptb_V^X(\id) = \id$.
+    Now it is clear that the above square commutes.
+
+    \vspace{3ex}
+
+    We also need to show that $R$ satisfies the four push-pull properties.
+    We show one; the others are similar. Let $\delta_X \in P_V^X$.
+    We need to define $\push(\delta_X) \in P_V^X$ such that the following square commutes:
+
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWCJdLFsxLDAsIlgiXSxbMSwxLCJYIl0sWzAsMiwiXFxsZV9YIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGxlX1giLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxccHRiX1ZeWChcXGRlbHRhX1gpIiwyXSxbMiwzLCJcXHB0Yl9WXlgoXFxwdXNoKFxcZGVsdGFfWCkpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV1d
+    \[\begin{tikzcd}[ampersand replacement=\&]
+	X \& X \\
+	X \& X
+	\arrow["{\le_X}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\le_X}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{\ptb_V^X(\delta_X)}"', from=1-1, to=2-1]
+	\arrow["{\ptb_V^X(\push(\delta_X))}", dashed, from=1-2, to=2-2]
+    \end{tikzcd}\]
+
+    Let $\push(\delta_X) = \delta_X$. We need to show that for $x \le_X x'$,
+    we have $\ptb_V^X(\delta_X)(x) \le \ptb_V^X(\delta_X)(x')$, which holds because
+    $\ptb_V^X(\delta_X)$ is monotone with respect to $\le_X$.
+
+
+    \item \emph{Horizontal composition}:
+    
+    Let $R : X \nrightarrow Y$ and $S : Y \nrightarrow Z$.
+    We define
+    $e_{XZ} = e_{YZ} \circ e_{XY}$ and $p_{XZ} = \ext{p_{XY}}{} \circ p_{YZ}$.
+    We define the distinguished perturbations in the representability rules as follows:
+
+    \begin{align*}
+        \delta_{R\circ S}^{l,e} &= \pull_R(\delta_S^{l,e}) \cdot \delta_R^{l,e} \\
+        \delta_{R\circ S}^{r,e} &= \delta_S^{r,e} \cdot \push_S(\delta_R^{r,e}) \\
+        \delta_{R\circ S}^{l,p} &= \delta_R^{l,p} \cdot \pull_{LR}(\delta_S^{l,p}) \\
+        \delta_{R\circ S}^{r,p} &= \push_{LS}(\delta_R^{r,p}) \cdot \delta_S^{r,p}
+    \end{align*}
+    where $\cdot$ denotes composition in the appropriate monoid of perturbations.
+
+    We can then show that the four quasi-representability rules are valid with these definitions.
+    \textbf{TODO show one or two of the cases}
+
+    \vspace{3ex}
+
+    We also need to show that the push-pull rules hold of the composition $R \circ S$.
+    This follows from the fact that they hold for both $R$ and $S$.
+    Specifically, we define
+
+    \begin{align*}
+        \push_{R \circ S}(\delta^X) &= \push_S(\push_R(\delta^X)) \\
+        \pull_{R \circ S}(\delta^Z) &= \pull_R(\pull_S(\delta^Z)) \\
+        \push_{L(R \circ S)}(\delta^X) &= \push_{LS}(\push_{LR}(\delta^X)) \\
+        \pull_{L(R \circ S)}(\delta^Z) &= \pull_{LR}(\pull_{LS}(\delta^Z))
+    \end{align*}
+
+    Then we can verify that the relevant push-pull inequalities hold using the above definitions.
+    \textbf{TODO maybe show one of the cases}
+
+    \item \emph{Identity two-cells}:
+    The horizontal identity two-cells have the form
+
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWSJdLFsxLDAsIlgiXSxbMSwxLCJZIl0sWzAsMSwiZiIsMl0sWzIsMywiZiJdLFswLDIsIlxcbGVfWCJdLFsxLDMsIlxcbGVfWSIsMl0sWzQsNSwiXFxsdGR5biIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    \[\begin{tikzcd}[ampersand replacement=\&]
+        X \& X \\
+        Y \& Y
+        \arrow[""{name=0, anchor=center, inner sep=0}, "f"', from=1-1, to=2-1]
+        \arrow[""{name=1, anchor=center, inner sep=0}, "f", from=1-2, to=2-2]
+        \arrow["{\le_X}", from=1-1, to=1-2]
+        \arrow["{\le_Y}"', from=2-1, to=2-2]
+        \arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+    \end{tikzcd}\]
+
+    This square commutes because $f$ is monotone with respect to the ordering relation.
+
+    The vertical two-cells have the form
+
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYIl0sWzAsMSwiWCJdLFsxLDAsIlkiXSxbMSwxLCJZIl0sWzAsMiwiUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMywiUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMSwiXFxpZF9YIiwyXSxbMiwzLCJcXGlkX1kiXSxbNiw3LCJcXGx0ZHluIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+    \[\begin{tikzcd}[ampersand replacement=\&]
+        X \& Y \\
+        X \& Y
+        \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["R", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+        \arrow[""{name=0, anchor=center, inner sep=0}, "{\id_X}"', from=1-1, to=2-1]
+        \arrow[""{name=1, anchor=center, inner sep=0}, "{\id_Y}", from=1-2, to=2-2]
+        \arrow["\ltdyn"{description}, draw=none, from=0, to=1],
+    \end{tikzcd}\]
+
+    which commutes trivially.
+
+    \item \emph{Composition of two-cells}:
+    Two-cells compose vertically and horizontally, which follows from the definition
+    definition of a two-cell in this category.
+
+    \textbf{TODO: elaborate}
+\end{itemize}
+
+\vspace{3ex}
+
+\textbf{Kleisli internal hom: TODO}
+
+% The arrow => takes a value type and an algebra and constructs an algebra
