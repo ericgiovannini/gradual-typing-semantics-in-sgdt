@@ -1,65 +1,9 @@
 \section{Technical Background}\label{sec:technical-background}
 
-\subsection{Gradual Typing}
-
-% Cast calculi
-In a gradually-typed language, the mixing of static and dynamic code is seamless, in that
-the dynamically typed parts are checked at runtime. This type checking occurs at the elimination
-forms of the language (e.g., pattern matching, field reference, etc.).
-Gradual languages are generally elaborated to a \emph{cast calculus}, in which the dynamic
-type checking is made explicit through the insertion of \emph{type casts}.
-
-% Up and down casts
-In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
-$A$ is a \emph{more precise} type than $B$.
-There a dynamic type $\dyn$ with the property that $A \ltdyn\, \dyn$ for all $A$.
-%
-If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
-and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
-Upcasts always succeed, while downcasts may fail at runtime.
-%
-% Syntactic term precision
-We also have a notion of \emph{syntactic term precision}.
-If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
-$M \ltdyn N : A \ltdyn B$ to mean that $M$ is more precise than $N$, i.e., $M$ and $N$
-behave the same except that $M$ may error more.
-
 % Modeling the dynamic type as a recursive sum type?
 % Observational equivalence and approximation?
 
 % synthetic guarded domain theory, denotational semantics therein
-
-\subsection{Operational Reduction Proofs}
-
-\subsection{Classical Domain Models}
-
-New and Licata \cite{new-licata18} developed an axiomatic account of the
-graduality relation on cast calculus terms and gave a denotational
-model of this calculus using classical domain theory based on
-$\omega$-CPOs. This semantics has scaled up to an analysis of a
-dependently typed gradual calculus in \cite{asdf}. This meets our
-criterion of being a reusable mathematical theory, as general semantic
-theorems about gradual domains can be developed independent of any
-particular syntax and then reused in many different denotational
-models. However, it is widely believed that such classical domain
-theoretic techniques cannot be extended to model higher-order store, a
-standard feature of realistic gradually typed languages such as Typed
-Racket. Thus if we want a reusable mathematical theory of gradual
-typing that can scale to realistic programming languages, we need to
-look elsewhere to so-called ``step-indexed'' techniques.
-
-A series of works \cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
-developed step-indexed logical relations models of gradually typed
-languages based on operational semantics. Unlike, classical domain
-theory, such step-indexed techniques are capable of modeling
-higher-order store and runtime-extensible dynamic types
-\cite{amalsthesis,nonpmetricparamorsomething,new-jamner-ahmed19}. However
-their proof developments are highly repetitive and technical, with
-each development formulating a logical relation from first-principles
-and proving many of the same tedious lemmas without reusable
-mathematical abstractions. Our goal in the current work is to extract
-these reusable mathematical principles from these tedious models to
-make formalization of realistic gradual languages tractible.
 
 \subsection{Difficulties in Prior Semantics}
   % Difficulties in prior semantics
@@ -76,9 +20,8 @@ make formalization of realistic gradual languages tractible.
   %
   Reasoning about step-indexed logical relations
   can be tedious and error-prone, and there are some very subtle aspects that must
-  be taken into account in the proofs. Figure \ref{TODO} shows an example of a step-indexed logical
-  relation for the gradually-typed lambda calculus.
-
+  be taken into account in the proofs.
+  %
   In particular, the prior approach of New and Ahmed requires two separate logical
   relations for terms, one in which the steps of the left-hand term are counted,
   and another in which the steps of the right-hand term are counted.

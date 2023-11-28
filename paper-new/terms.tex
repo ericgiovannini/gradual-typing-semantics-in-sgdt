@@ -128,7 +128,7 @@ as well a $\beta$ and $\eta$ law for bind.
 
 The type precision rules specify what it means for a type $A$ to be more precise than $A'$.
 We have reflexivity rules for $\dyn$ and $\nat$, as well as rules that $\nat$ is more precise than $\dyn$
-and $\dyn \ra \dyn$ is more precise than $\dyn$.
+and $\dyntodyn$ is more precise than $\dyn$.
 We also have a congruence rule for function types stating that given $A_i \ltdyn A'_i$ and $A_o \ltdyn A'_o$, we can prove
 $A_i \ra A_o \ltdyn A'_i \ra A'_o$. Note that precision is covariant in both the domain and codomain.
 Finally, we can lift a relation on value types $A \ltdyn A'$ to a relation $\Ret A \ltdyn \Ret A'$ on
@@ -150,10 +150,10 @@ computation types.
 
   \inferrule*[right = $\textsf{Inj}_{\ra}$]
     { }
-    {(\dyn \ra \dyn) \ltdyn\, \dyn}
+    {(\dyntodyn) \ltdyn\, \dyn}
 
   \inferrule*[right = $\injarr{}$]
-    {(R \ra S) \ltdyn\, (\dyn \ra \dyn)}
+    {(R \ra S) \ltdyn\, (\dyntodyn)}
     {(R \ra S) \ltdyn\, \dyn}
 
   
@@ -182,20 +182,20 @@ This notion will be used below in the statement of transitivity of the term prec
 \subsection{Removing Casts as Primitives}
 
 % We now observe that all casts, except those between $\nat$ and $\dyn$
-% and between $\dyn \ra \dyn$ and $\dyn$, are admissible, in the sense that
+% and between $\dyntodyn$ and $\dyn$, are admissible, in the sense that
 % we can start from $\extlcm$, remove casts except the aforementioned ones,
 % and in the resulting language we will be able to derive the other casts.
 
 We now observe that all casts, except those between $\nat$ and $\dyn$
-and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
+and between $\dyntodyn$ and $\dyn$, are admissible.
 That is, consider a new language ($\extlcprime$) in which
 instead of having arbitrary casts, we have injections from $\nat$ and
-$\dyn \ra \dyn$ into $\dyn$, and a case inspection on $\dyn$.
+$\dyntodyn$ into $\dyn$, and a case inspection on $\dyn$.
 We claim that in $\extlcprime$, all of the casts present in $\extlc$ are derivable.
 It will suffice to verify that casts for function type are derivable.
 This holds because function casts are constructed inductively from the casts
 of their domain and codomain. The base case is one of the casts involving $\nat$
-or $\dyn \ra \dyn$ which are present in $\extlcprime$ as injections and case inspections.
+or $\dyntodyn$ which are present in $\extlcprime$ as injections and case inspections.
 
 
 The resulting calculus $\extlcprime$ now lacks arbitrary casts as a primitive notion:
@@ -228,14 +228,14 @@ for case-nat (the rules for case-arrow are analogous).
 
       % inj-arr 
       \inferrule*
-      {\hasty \Gamma M (\dyn \ra \dyn)}
+      {\hasty \Gamma M (\dyntodyn)}
       {\hasty \Gamma {\injarr M} \dyn}
 
       % Case dyn
       \inferrule*
       {\hasty{\Delta|_V}{V}{\dyn} \and
         \hasty{\Delta , x : \nat }{M_{nat}}{B} \and 
-        \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{fun}}{B}
+        \hasty{\Delta , x : (\dyntodyn) }{M_{fun}}{B}
       }
       {\hasty {\Delta} {\casedyn{V}{n}{M_{nat}}{f}{M_{fun}}} {B}}
   \end{mathpar}
@@ -252,7 +252,7 @@ for case-nat (the rules for case-arrow are analogous).
      {\casedyn {\injnat {V}} {n} {M_{nat}} {f} {M_{fun}} = M_{nat}[V/n]}
 
      \inferrule*
-     {\hasty \Gamma V {\dyn \ra \dyn} }
+     {\hasty \Gamma V {\dyntodyn} }
      {\casedyn {\injarr {V}} {n} {M_{nat}} {f} {M_{fun}} = M_{fun}[V/f]}
 
      % Case-dyn Eta
@@ -405,7 +405,7 @@ as a monotone function from $\sem{\Gamma}$ to $\li \sem{A}$.
 
 Recall that $\Dyn$ is isomorphic to $\Nat\, + \later (\Dyn \to \li \Dyn)$.
 Thus, the semantics of $\injnat{\cdot}$ is simply $\inl$ and the semantics
-of $\injarr{\cdot}$ is simply $\inr \circ \next$.
+of $\injarr{\cdot}$ is simply $\inr \circ \nxt$.
 The semantics of case inspection on dyn performs a case analysis on the sum.
 
 The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule for

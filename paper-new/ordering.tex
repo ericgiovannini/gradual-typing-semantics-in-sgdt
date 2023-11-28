@@ -8,7 +8,7 @@ relations, then show how to give them a semantics using SGDT.
 % TODO mention intensional syntax
 
 
-\subsection{Term Precision for GTLC}
+\subsection{Term Precision for GTLC}\label{sec:gtlc-term-precision-axioms}
 
 % ---------------------------------------------------------------------------------------
 % ---------------------------------------------------------------------------------------
@@ -375,10 +375,10 @@ More concretely, consider a simplified version of the DnL rule shown below:
 
 \begin{mathpar}
   \inferrule*{M \ltdyn_i N : B}
-             {\dn c M \ltdyn_i N : c}
+             {\dnc{c}{M} \ltdyn_i N : c}
 \end{mathpar}
 
-If $c$ is inj-arr, then when we downcast $M$ from $dyn$ to $\dyn \ra \dyn$,
+If $c$ is inj-arr, then when we downcast $M$ from $dyn$ to $\dyntodyn$,
 semantically this will involve a $\theta$ because the value of type $dyn$
 in the semantics will contain a \emph{later} function $\tilde{f}$.
 Thus, in order for the right-hand side to be related to the downcast,
@@ -387,7 +387,7 @@ we need to insert a delay on the right.
 The need for delays affects the cast rules involving upcasts as well, because
 the upcast for functions involves a downcast on the domain:
 
-\[ \up{c_i \ra c_o}{M} \equiv \lambda (x : B_i). \up{c_o}(M\, (\dn {c_i} x)). \]
+\[ \up{A_i \ra A_o}{B_i \ra B_o}{M} \equiv \lambda (x : B_i). \up{A_o}{B_o}(M\, (\dn {A_i}{B_i} x)). \]
 
 Thus, the correct versions of the cast rules involve delays on the side that was not casted.
 
@@ -418,11 +418,11 @@ for embeddings $\perte$ and for projections $\pertp$ by the following rules:
   {\delta_c \ra \delta_d : \pertp (A \ra B)}
 
 \inferrule
-  {\delta_\nat : \perte \nat \and \delta_f : \perte (\dyn \ra \dyn)}
+  {\delta_\nat : \perte \nat \and \delta_f : \perte (\dyntodyn)}
   {\pertdyn{\delta_\nat}{\delta_f} : \perte \dyn}
 
 \inferrule
-  {\delta_\nat : \pertp \nat \and \delta_f : \pertp (\dyn \ra \dyn)}
+  {\delta_\nat : \pertp \nat \and \delta_f : \pertp (\dyntodyn)}
   {\pertdyn{\delta_\nat}{\delta_f} : \pertp \dyn}
 
 \end{mathpar}

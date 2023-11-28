@@ -2,18 +2,24 @@
   
 % gradual typing, graduality
 \subsection{Gradual Typing and Graduality}
-One of the principal ways of categorizing type systems of programming languages is
-whether they are \emph{static} or \emph{dynamic}.
-In static typing, the code is type-checked at compile time, while in dynamic typing,
-the type checking is deferred to run-time. Both approaches have benefits: with static typing,
-the programmer is assured that if the program passes the type-checker, their program
-is free of type errors, and moreover, the equational theory implies that program optimizations are valid.
+In modern programming language design, there is a tension between \emph{static} typing
+and \emph{dynamic} typing disciplines.
+With static typing, the code is type-checked at compile time, while in dynamic typing,
+the type checking is deferred to run-time. Both approaches have benefits: with static 
+typing, the programmer is assured that if the program passes the type-checker, their
+program is free of type errors, and moreover, soundness of the equational theory implies
+that program optimizations are valid.
 Meanwhile, dynamic typing allows the programmer to rapidly prototype
-their application code without needing to commit to fixed type signatures for their functions.
+their application code without needing to commit to fixed type signatures for their
+functions. Unfortunately, most languages choose between static or dynamic typing.
+As a result, programmers that initially write their code in a dynamically typed language
+in order to benefit from faster prototyping and development time will need to rewrite the
+entire codebase in a static language if they would like to receive the benefits of static
+typing once their codebase has matured.
 
-\emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} allow
-for both static and dynamic typing disciplines to be used in the same codebase,
-and support smooth interoperability between statically-typed and dynamically-typed code.
+\emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to resolve this tension
+by allowing for both static and dynamic typing disciplines to be used in the same codebase,
+and by supporting smooth interoperability between statically-typed and dynamically-typed code.
 This flexibility allows programmers to begin their projects in a dynamic style and
 enjoy the benefits of dynamic typing related to rapid prototyping and easy modification
 while the codebase ``solidifies''. Over time, as parts of the code become more mature
@@ -22,34 +28,49 @@ and the programmer is more certain of what the types should be, the code can be
 rewrite the project in a completely different language.
 
 %Gradually-typed languages should satisfy two intuitive properties.
-The following two properties have been identified as useful for gradually typed languages.
-First, the interaction between the static and dynamic components of the codebase
+% The following two properties have been identified as useful for gradually typed languages.
+
+In order for this to work as expected, gradually-typed languages should allow for
+different parts of the codebase to be in different places along the spectrum from
+dynamic to static, and allow for those different parts to interact with one another.
+Moreover, gradually-typed languages should support the smooth migration from
+dynamic typing to static typing, in that the programmer can initially leave off the
+typing annotations and provide them later without altering the meaning of the program.
+
+% Sound gradual typing
+Furthermore, the parts of the program that are written in a dynamic style should soundly
+interoperate with the parts that are written in a static style.
+That is, the interaction between the static and dynamic components of the codebase
 should preserve the guarantees made by the static types.
 In particular, while statically-typed code can error at runtime in a gradually-typed language,
 such an error can always be traced back to a dynamically-typed term that
 violated the typing contract imposed by statically typed code.
-% In other words, in the statically-typed portions of the codebase, type soundness must be preserved.
-Second, gradually-typed languages should support the smooth migration from dynamic typing
-to static typing, in that the programmer can initially leave off the
-typing annotations and provide them later without altering the meaning of the
-program.
+
+% Moreover, gradually-typed languages should allow for
+% different parts of the codebase to be in different places along the spectrum from
+% dynamic to static, and allow for those different parts to interact with one another.
+% In a \emph{sound} gradually-typed language,
+% this interaction should respect the guarantees made by the static types.
 
 % Graduality property
 Formally speaking, gradually typed languages should satisfy the 
 \emph{dynamic gradual guarantee}, originally defined by Siek, Vitousek, Cimini,
 and Boyland \cite{siek_et_al:LIPIcs:2015:5031}.
-This property is also referred to as \emph{graduality} \cite{new-ahmed2018}, by analogy with parametricity.
+This property is also referred to as \emph{graduality} \cite{new-ahmed2018},
+by analogy with parametricity.
 Intuitively, graduality says that going from a dynamic to static style should not
 introduce changes in the meaning of the program.
 More specifically, making the types more precise by adding typing annotations
-% (replacing $\dyn$ with a more specific type
-%such as integers)
 will either result in the same behavior as the original, less precise program,
 or will result in a type error.
 
 
 \subsection{Current Approaches to Proving Graduality}
-Current approaches to proving graduality include the methods of Abstracting Gradual Typing
+
+\subsubsection{From Static to Gradual}
+
+Current approaches to constructing languages that satisfy the graduality property
+include the methods of Abstracting Gradual Typing
 \cite{garcia-clark-tanter2016} and the formal tools of the Gradualizer \cite{cimini-siek2016}.
 These allow the language developer to start with a statically typed language and derive a
 gradually typed language that satisfies the gradual guarantee. The main downside to
@@ -58,13 +79,15 @@ the language designer must adhere to the predefined framework.
 Many gradually typed languages do not fit into either framework, e.g., Typed Racket
 \cite{tobin-hochstadt06, tobin-hochstadt08}.
 %
-Furthermore, while these frameworks do prove
-graduality of the resulting languages, they do not show the correctness of the equational theory,
-which is equally important to sound gradual typing. For example, programmers often refactor their
-code, and in so doing they rely implicitly on the validity of the laws in the equational theory.
-Similarly, correctness of compiler optimizations rests on the validity of the corresponding equations
-from the equational theory. It is therefore important that the languages that claim to be gradually typed
-have provably correct equational theories.
+Furthermore, while these frameworks do prove graduality of the resulting languages,
+they do not show the correctness of the equational theory, which is equally important
+to sound gradual typing.
+For example, programmers often refactor their code, and in so doing they rely
+implicitly on the validity of the laws in the equational theory.
+Similarly, correctness of compiler optimizations rests on the validity of the
+corresponding equations from the equational theory. It is therefore important
+that the languages that claim to be gradually typed have provably correct
+equational theories.
 
 % The approaches are too inflexible... the fact that the resulting semantics are too lazy
 % is a consequence of that inflexibility.
@@ -76,34 +99,81 @@ have provably correct equational theories.
 %in which the semantics determines the type checking. Without a clear semantic interpretation of type
 %dynamism, it becomes difficult to extend these techniques to new language features such as polymorphism.
 
-% Proving graduality via LR
-New and Ahmed \cite{new-ahmed2018}
-have developed a semantic approach to specifying type dynamism in terms of
-\emph{embedding-projection pairs}, which allows for a particularly elegant formulation of the
-gradual guarantee.
-Moreover, their axiomatic account of program equivalence allows for type-based reasoning
-about program equivalences.
-%
-In this approach, a logical relation is constructed and used to show that the equational theory
-is sound with respect to the operational semantics.
-%and shown to be sound with respect to
-%the notion of observational approximation that specifies when one program is more precise than another.
+
+% [Eric] I moved the next two paragraphs from the technical background section
+% to here in the intro.
+\subsubsection{Classical Domain Models}
+
+New and Licata \cite{new-licata18} developed an axiomatic account of the
+graduality relation on cast calculus terms and gave a denotational
+model of this calculus using classical domain theory based on
+$\omega$-CPOs. This semantics has scaled up to an analysis of a
+dependently typed gradual calculus in \cite{asdf}. This meets our
+criterion of being a reusable mathematical theory, as general semantic
+theorems about gradual domains can be developed independent of any
+particular syntax and then reused in many different denotational
+models. However, it is widely believed that such classical domain
+theoretic techniques cannot be extended to model higher-order store, a
+standard feature of realistic gradually typed languages such as Typed
+Racket. Thus if we want a reusable mathematical theory of gradual
+typing that can scale to realistic programming languages, we need to
+look elsewhere to so-called ``step-indexed'' techniques.
+
+\subsubsection{Operational Reduction Proofs}
+
+A series of works \cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
+developed step-indexed logical relations models of gradually typed
+languages based on operational semantics. Unlike classical domain
+theory, such step-indexed techniques are capable of modeling
+higher-order store and runtime-extensible dynamic types
+\cite{amalsthesis,nonpmetricparamorsomething,new-jamner-ahmed19}. However,
+their proof developments are highly repetitive and technical, with
+each development formulating a logical relation from first-principles
+and proving many of the same tedious lemmas without reusable
+mathematical abstractions. Our goal in the current work is to extract
+these reusable mathematical principles from these tedious models to
+make formalization of realistic gradual languages tractible.
+
+
+% Alternative phrasing:
+\begin{comment}
+\subsubsection{Embedding-Projection Pairs}
+
+The series of works by New, Licata, and Ahmed \cite{new-licata18,new-ahmed2018,new-licata-ahmed2019}
+develop an axiomatic account of gradual typing involving \emph{embedding-projection pairs}.
+This allows for a particularly elegant formulation of the gradual guarantee.
+Moreover, their axiomatic account of program equivalence allows for type-based reasoning about program equivalences.
+
+In \cite{new-licata18}, New and Licata construct a denotational model of the axioms of
+gradual typing using tools from classical domain theory. The benefit to this approach is that it is a reusable mathematical theory:
+general semantic theorems about gradual domains can be developed independent of any particular syntax and then reused in many different denotational models.
+Unfortunately, however, it is unclear how to extend these domain-theoretic techniques to incorporate more advanced language features such as higher-order store, a standard feature of realistic gradually typed languages such as Typed
+Racket.
+Thus, if we want a reusable mathematical theory of gradual typing that can scale to realistic programming languages, we need to look to different techniques.
+
+In \cite{new-ahmed2018,new-licata-ahmed2019}, a more traditional operational semantics for gradual typing is derived from the axioms.
+% The axioms are then proven to be sound with respect to this operational semantics by constructing a logical relation.
+A logical relations model is constructed and used to prove that the axioms are sound with respect to the operational semantics.
 The downside of this approach is that each new language requires a different logical relation
-to prove graduality. Furthermore, the logical relations tend to be quite complicated due
-to a technical requirement known as \emph{step-indexing}, where the stepping behavior of terms
-must be accounted for in the logical relation.
+to prove graduality, even though the logical relations for different languages end up sharing many commonalities.
+Furthermore, the logical relations tend to be quite complicated due to a technical requirement known as \emph{step-indexing},
+where the stepping behavior of terms must be accounted for in the logical relation.
 As a result, developments using this approach tend to require vast effort, with the
 corresponding technical reports having 50+ pages of proofs.
-%
-Additionally, while the axioms of gradual type theory are compositional at a ``global'' level,
-they do not compose in the step-indexed setting. One of the main goals of the present work
-is to formulate a composable theory of gradual typing in a setting where the stepping behavior
-is tracked.
+
+% In this approach, a logical relation is constructed and used to show that the equational theory
+% is sound with respect to the operational semantics.
+
+% Additionally, while the axioms of gradual type theory are compositional at a ``global'' level,
+% they do not compose in the step-indexed setting. One of the main goals of the present work
+% is to formulate a composable theory of gradual typing in a setting where the stepping behavior
+% is tracked.
+\end{comment}
 
 An alternative approach, which we investigate in this paper, is provided by
 \emph{synthetic guarded domain theory}.
 The techniques of synthetic guarded domain theory allow us to internalize the
-step-index reasoning normally required in logical relations proofs of graduality,
+step-indexed reasoning normally required in logical relations proofs of graduality,
 ultimately allowing us to specify the logical relation in a manner that looks nearly
 identical to a typical, non-step-indexed logical relation.
 
@@ -112,12 +182,11 @@ and soundness of the equational theory of cast calculi using the techniques of S
 We take a step toward mechanization in the Agda proof assistant by describing a compositional
 denotational semantics for gradual typing in a setting where the steps taken by terms are tracked.
 
-Our longer-term goal is to mechanize these proofs in a reusable way,
-thereby providing a framework to use to more easily and
-conveniently prove that existing languages satisfy graduality and have
-sound equational theories. Moreover, the aim is for designers of new languages
-to utilize the framework to facilitate the design of new provably-correct
-gradually-typed languages with more complex features.
+Our longer-term goal is to mechanize these proofs in a reusable way, thereby providing a framework
+to use to more easily and conveniently prove that existing languages satisfy graduality and have
+sound equational theories. Moreover, the aim is for designers of new languages to utilize the
+framework to facilitate the design of new provably-correct gradually-typed languages with more
+complex features.
 
 
 \subsection{Contributions}
@@ -131,17 +200,16 @@ to prove graduality for the simply-typed gradual lambda calculus.
 % independent interest.
 
 
-\subsection{Overview of Remainder of Paper}
+\subsection{Outline of Remainder of Paper}
 
-In Section \ref{sec:overview}, we give an overview of the gradually-typed lambda
-calculus and the graduality theorem.
+% In Section \ref{sec:overview}, we give an overview of the gradually-typed lambda
+% calculus and the graduality theorem.
 %
-In Section \ref{sec:technical-background}, we provide technical background on gradually typed languages and
-on synthetic guarded domain theory.
+In Section \ref{sec:technical-background}, we provide technical background on synthetic guarded domain theory.
 % 
-In Section \ref{sec:gtlc-terms}, we introduce the gradually-typed cast calculus
-for which we will prove graduality. We give a semantics to the terms
-using the tools of guarded type theory.
+In Section \ref{sec:gtlc-terms}, we formally introduce the gradually-typed cast calculus
+for which we will prove graduality. We give a semantics to the terms using
+synthetic guarded domain theory.
 % Important here are the notions of syntactic
 % type precision and term precision. For reasons we describe below, we
 % introduce two related calculi, one in which the stepping behavior of terms is
@@ -149,8 +217,9 @@ using the tools of guarded type theory.
 % is made explicit (an \emph{intensional} calculus, $\intlc$).
 %
 
-In Section \ref{sec:gtlc-precision}, we define the term precision ordering
-and describe our approach to assigning a denotational semantics to this ordering.
+In Section \ref{sec:gtlc-precision}, we define the term precision ordering for
+the gradually-typed lambda calculus and describe our approach to assigning a
+denotational semantics to this ordering.
 This approach builds on the semantics constructed in the previous section,
 but extending it to the term ordering presents new challenges.
 
@@ -165,15 +234,12 @@ but extending it to the term ordering presents new challenges.
 % constructions defined in the previous section.
 %
 In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
-extensional gradual lambda calculus.
+gradual lambda calculus.
 %
 In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
 to the traditional step-indexing approach, as well as possibilities for future work.
 
-
-
-
-\section{Overview}\label{sec:overview}
+\subsection{Overview of Results}\label{sec:overview}
 
 % This section used to be part of the intro.
 % \subsection{Proving Graduality in SGDT}
@@ -183,12 +249,47 @@ to the traditional step-indexing approach, as well as possibilities for future w
 
 In this paper, we will utilize SGDT techniques to prove graduality for a particularly
 simple gradually-typed cast calculus, the gradually-typed lambda calculus.
-This is the usual simply-typed lambda calculus with a dynamic type $\dyn$ such that
-$A \ltdyn\, \dyn$ for all types $A$, as well as upcasts and downcasts between any types
-$A$ and $B$ such that $A \ltdyn B$. The complete definition will be provided in
-Section \ref{sec:GTLC}.
-The graduality theorem is shown below.
+Before stating the graduality theorem, we introduce some definitions related to gradual typing.
 
+% Cast calculi
+% TODO move this to earlier?
+Gradually typed languages are generally elaborated to a \emph{cast calculus}, in which run-time type checking
+that is made explicit. Elaboration inserts \emph{type casts} at the boundaries between static and dynamic code.
+In particular, cast insertion happens at the elimination forms of the language (e.g., pattern matching, field reference, etc.).
+The original gradually typed language that is elaborated to a cast calculus is called the \emph{surface language}.
+
+% Up and down casts
+In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
+$A$ is a \emph{more precise} type than $B$.
+There a distinguished type $\dyn$, the \emph{dynamic type}, with the property that $A \ltdyn\, \dyn$ for all $A$.
+The parts of the code that are dynamically typed will be given type $\dyn$ in the cast calculus.
+%
+If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
+and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
+Upcasts always succeed, while downcasts may fail at runtime, resulting in a type error.
+Cast calculi have a term $\mho$ representing a run-time type error for any type $A$.
+
+% Syntactic term precision
+We also have a notion of \emph{syntactic term precision}.
+If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
+$M \ltdyn N : A \ltdyn B$ to mean that
+$M$ is ``syntactically more precise'' than $N$, or equivalently, $N$ is 
+``more dynamic'' than $M$. Intuitively, this models the situation where $M$ and $N$
+behave the same except that $M$ may error more.
+Term precision is defined by a set of axioms that capture this intuitive notion.
+The specific rules for term precision depend on the specifics of the language, but
+many of the rules can be derived from the typing rules in a straightforward way.
+% Cast calculi also have a term $\mho$ representing a run-time type error for any type $A$,
+% and since
+Since $\mho$ always errors, there is a term precision rule stating that $\mho \ltdyn M$ for all $M$.
+
+% GTLC
+The gradually-typed lambda calculus is the usual simply-typed lambda calculus with a dynamic
+type $\dyn$ such that $A \ltdyn\, \dyn$ for all types $A$, as well as upcasts and downcasts
+between any types $A$ and $B$ such that $A \ltdyn B$. The complete definition will be provided in
+Section \ref{sec:gtlc-precision}.
+
+With these definitions, we can state the graduality theorem for the gradually-typed lambda calculus.
 
 % \begin{theorem}[Graduality]
 %   If $M \ltdyn N : \nat$, then either:
@@ -200,34 +301,16 @@ The graduality theorem is shown below.
 %   \end{enumerate}
 % \end{theorem}
 
-
 \begin{theorem}[Graduality]
-  If $\cdot \vdash M \ltdyn N : \nat$, then
-  \begin{enumerate}
-    \item $M \Downarrow$ iff $N \Downarrow$.
-    \item If $M \Downarrow v_?$ and $N \Downarrow v'_?$ then either $v_? = \mho$, or $v_? = v'_?$.
-  \end{enumerate}
+  Let $\cdot \vdash M \ltdyn N : \nat$. 
+  If $M \Downarrow v_?$ and $N \Downarrow v'_?$, then either $v_? = \mho$, or $v_? = v'_?$.
 \end{theorem}
 
-Details can be found in later sections, but we provide a brief explanation of the terminology and notation:
-
+Note:
 \begin{itemize}
-  \item $M \ltdyn N : \nat$ means $M$ and $N$ are terms of type $\nat$ such that
-  $M$ is ``syntactically more precise'' than $N$, or equivalently, $N$ is 
-  ``more dynamic'' than $M$. Intuitively this means that $M$ and $N$ are the
-  same except that in some places where $M$ has explicit typing annotations,
-  $N$ has $\dyn$ instead. The relation $\ltdyn$ on terms is called ``term precision''.
-  Term precision is intended to model the situation where a term $M$ behaves the
-  same as another term $N$ except that $M$ may error more than $N$.
-  Term precision is defined by a set of axioms that capture this intuitive notion.
-  This will be described in more detail in Section \ref{sec:GTLC}.
 
-  \item $\cdot \Downarrow$ is a relation on terms that is defined such that $M \Downarrow$ means
+  \item $\cdot \Downarrow$ is a relation between terms that is defined such that $M \Downarrow$ means
   that $M$ terminates, either with a run-time error or a value $n$ of type $\nat$.
-
-  \item $\mho$ is a syntactic representation of a run-time type error, which
-  happens, for example, when a programmer tries to call a function with a value whose type
-  is found to be incompatible with the argument type of the function.
 
   \item $v_?$ is shorthand for the syntactic representation of a term that is either equal to
   $\mho$, or equal to the syntactic representation of a value $n$ of type $\nat$.
