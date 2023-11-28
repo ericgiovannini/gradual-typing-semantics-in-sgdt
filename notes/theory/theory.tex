@@ -1,0 +1,184 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[margin=1.0in]{geometry}
+
+\definecolor{myorange}{RGB}{242, 114, 0}
+\definecolor{myblue}{RGB}{0,162,255}
+
+
+\input{../../paper-new/defs}
+
+\begin{document}
+
+\title{Cast Axioms}
+\author{Eric Giovannini}
+
+%\maketitle
+
+\section{{\color{myorange}{Extensional}} Cast Axioms}
+%
+\textbf{Universal properties of casts:}
+\begin{center}
+    \begin{tabular}{ m{4em} m{7em} m{6em} } 
+        \textsc{(UpL)} $\downarrow$ &
+        \begin{mathpar}
+            \mprset{fraction={===}}
+
+            % UpL-iso
+            \inferrule
+            {M \ltdyn N : c \circ d}
+            {\upc{c}{M} \ltdyn N : d}
+            
+        \end{mathpar} & 
+        $\uparrow$ \textsc{(UpL-Inv)} \\
+        \textsc{(DnR)} $\downarrow$ &
+        \begin{mathpar}
+            \mprset{fraction={===}}
+
+            % DnR-iso
+            \inferrule
+            {M \ltdyn N : c \circ d}
+            {M \ltdyn \dnc{d}{N} : c}
+        \end{mathpar} &
+        $\uparrow$ \textsc{(DnR-Inv)} \\
+    \end{tabular}
+\end{center}
+
+\textbf{Functoriality of casts:}
+\begin{mathpar}
+    \inferrule
+    { }
+    {\upc {(A \ltdyn A)}{M} = M}
+
+    \inferrule
+    { }
+    {\dnc {(B \ltdyn B)}{N} = N}
+\end{mathpar}
+\begin{mathpar}
+    \inferrule
+    { }
+    {\upc {(c \circ d)}{M} = \upc d {(\upc c M)}}
+
+    \inferrule
+    { }
+    {\dnc {(c \circ d)}{N} = \dnc c {(\dnc d N)}}
+\end{mathpar}
+
+
+\section{{\color{myblue}{Intensional}} Theory}
+%
+\subsection{Perturbations}
+In the below, $\alpha \in \{ V, C \}$.
+
+\textbf{Perturbations form a monoid:}
+\begin{mathpar}
+    \inferrule
+    { }
+    {\id_A \in P_\alpha^A}
+
+    \inferrule
+    {\delta \in P_\alpha^A \and \delta' \in P_\alpha^A}
+    {\delta \circ \delta' \in P_\alpha^A }
+
+    \inferrule
+    {\delta \in P_\alpha^A}
+    {\delta \circ \id_A = \delta = \id_A \circ \delta}
+
+    \inferrule
+    {\delta, \delta', \delta'' \in P_\alpha^A}
+    {\delta \circ (\delta' \circ \delta'') = (\delta \circ \delta') \circ \delta''}
+\end{mathpar}
+
+In the below, we write $\delta$ to mean either a perturbation or a
+perturbation viewed as a term constructor; context will make the distinction clear.
+
+
+% TODO can view perturbations as terms (value perturbations as values, and computation perturbations as computations)
+\textbf{Perturbations as Terms}
+\begin{mathpar}
+    \inferrule
+    {\delta \in P_V^A}
+    {\vhasty{\Gamma}{\delta}{A}}
+
+    \inferrule
+    {\delta \in P_C^A}
+    {\phasty{\Gamma}{\delta}{A}}
+\end{mathpar}
+
+\textbf{Perturbations are Extensionally the Identity:}
+\begin{mathpar}
+    \inferrule
+    {\delta \in P_\alpha^A}
+    {\delta \bisim \lambda x . x }
+\end{mathpar}
+
+\textbf{Push-pull property:}
+Let $c : A \ltdyn B$ and $\alpha \in \{ V, C \}$.
+\begin{mathpar}
+    \inferrule
+    {\delta \in P_\alpha^A}
+    {\push_c(\delta) \in P_\alpha^B}
+
+    \inferrule
+    {\delta \in P_\alpha^B}
+    {\pull_c(\delta) \in P_\alpha^A}
+
+    \inferrule
+    {M \ltdyn N : c \and \delta \in P_\alpha^A}
+    {\delta(M) \ltdyn \push_c(\delta)(N) : c}
+
+    \inferrule
+    {M \ltdyn N : c \and \delta \in P_\alpha^B}
+    {\pull_c(\delta)(M) \ltdyn \delta(N) : c}
+\end{mathpar}
+%
+\subsection{Intensional Cast Rules}
+\textbf{Intensional least upper bound/greatest lower bound properties:}
+%
+\begin{center}
+    \begin{tabular}{ c  c } 
+        %\hline
+        %\hspace{3em}
+        % UpL
+        %\begin{mathpar}
+            \inferrule
+            {M \ltdyn N : c}
+            {\upc{c}{M} \ltdyn \delta^{r,e}(N) : B}
+        %\end{mathpar}
+        &
+        % UpR
+        %\begin{mathpar}
+            \inferrule
+            {M \ltdyn M' : A}
+            {\delta^{l,e}(M) \ltdyn \upc{c}{M'} : c}
+        %\end{mathpar} 
+        \\[4ex]
+        %\hline
+        % DnR
+        %\begin{mathpar}
+            \inferrule
+            {M \ltdyn N : c}
+            {\delta^{l,p}(M) \ltdyn \dnc{c}{N} : A}
+        %\end{mathpar}
+         & 
+        %\hspace{3em} 
+        % DnL
+        %\begin{mathpar}
+            \inferrule
+            {N \ltdyn N' : B}
+            {\dnc{c}{N} \ltdyn \delta^{r,p}(N') : c}
+        %\end{mathpar} 
+        \\ 
+        %\hline
+    \end{tabular}
+\end{center}
+
+\end{document}
