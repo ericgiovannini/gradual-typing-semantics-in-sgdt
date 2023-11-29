@@ -1,0 +1,79 @@
+\section{Abstract Categorical Models of Graduality}
+
+First, what is a categorical model of call-by-push-value? We will use
+the following notion as our basic structure\footnote{There are models
+that are closer to syntax e.g., which distinguish between value types
+and contexts but this suffices for all of the models we consider}:
+\begin{enumerate}
+\item A cartesian category $\mathcal V$
+\item A category $\mathcal E$
+\item An action of $\mathcal V^{op}$ (with the $\mathcal V$ cartesian
+  product as monoidal structure) on $\mathcal E$. We write this as
+  exponentiation $B^A$.
+
+  This means we have 
+  \[ \alpha : B^{A_1 \times A_2} \cong (B^{A_1})^{A^2} \]
+  and
+  \[ i : B^1 \cong B \]
+  satisfying coherence isomorphisms
+\item A functor $U : \mathcal E \to \mathcal V$ that ``preserves
+  powering'' in that every $U(B^A)$ is an exponential of $UB$ by $A$
+  and that $U\alpha$ and $Ui$ are mapped to the canonical isomorphisms
+  for exponentials.
+\item A left adjoint $F \dashv U$
+\item Distributive finite coproducts in $\mathcal V$
+\end{enumerate}
+
+\begin{example}
+  Given a strong monad $T$ on a bicartesian closed category $\mathcal
+  V$, we can extend this to a CBPV model by defining $\mathcal E$ to
+  be the category $\mathcal V^T$ of algebras
+\end{example}
+
+The above definition can interpreted in any compact closed equipment
+(if someone were to figure out a definition for a compact closed
+equipment, that is,\ldots). Then we can get a model of a form of GTT
+by taking a CBPV object in the equipment of \emph{reflexive graph
+categories}. Since reflexive graphs form a topos we can get at this by
+interpreting the above definition \emph{internally} to the topos of
+reflexive graphs. Essentially what this means is that everything above
+has a ``vertex'' component and an ``edge'' component, so we get a
+cartesian category $\mathcal V_v$ which we think of as the value types
+and pure functions but we also get a cartesian category $\mathcal V_e$
+which we think of as the ``value edges'' and ``squares''.
+
+We will work in ``locally thin'' models where there is at most one
+square with a given boundary.
+
+In addition to the ordinary universal properties above, when working
+with reflexive graph models we also have access to new notions of
+universal property that relate the ``function'' morphisms to the
+``edges''.
+
+Let $f : \mathcal V_v(A_i, A_o)$ and $R : \mathcal V_e(A_o,A')$ then a
+\emph{left restriction} of $R$ along $f$ consists of
+\begin{enumerate}
+\item $R' : \mathcal V_e(A_i,A')$
+\item $S \Rightarrow_{g,h} R'$ naturally isomorphic to $S \Rightarrow_{fg,h}R$
+\end{enumerate}
+In relational semantics, $R(a_o,a')$ is a relation and the left
+restriction along $f$ is the relation $R(f(a_i), a')$.
+
+Then we can formulate our value edges as follows:
+\begin{enumerate}
+\item We have a thin subcategory $\mathcal V_u$ of $\mathcal V_v$, of ``upcasts''
+\item $\mathcal V$ has all left restrictions of edges along upcasts
+\end{enumerate}
+
+And our computation edges as follows:
+\begin{enumerate}
+\item We have a thin subcategory $\mathcal E_d$ of $\mathcal E_v$ of ``downcasts''
+\item $\mathcal E$ has all right restrictions of edges along downcasts
+\end{enumerate}
+
+We also want something like
+\[ F_c : \mathcal V_u^{op} \to \mathcal E_d \]
+\[ U_c : \mathcal E_d^{op} \to \mathcal V_u \]
+which ensures that if $R$ is a value edge equivalent to $A(u,-)$ then
+\[ F(R) = F(A(u,-)) = (F A)(-,F u) \]
+
