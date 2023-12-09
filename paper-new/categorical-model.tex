@@ -38,9 +38,25 @@ categories}. Since reflexive graphs form a topos we can get at this by
 interpreting the above definition \emph{internally} to the topos of
 reflexive graphs. Essentially what this means is that everything above
 has a ``vertex'' component and an ``edge'' component, so we get a
-cartesian category $\mathcal V_v$ which we think of as the value types
-and pure functions but we also get a cartesian category $\mathcal V_e$
+cartesian category $\mathcal V_f$ which we think of as the value types
+and pure functions but we also get a cartesian category $\mathcal V_{sq}$
 which we think of as the ``value edges'' and ``squares''.
+
+More formally, for the values, we have
+
+\begin{enumerate}
+  \item Cartesian categories $\mathcal V_f$ and $\mathcal V_e$ with the same set of objects,
+  namely, the value types.
+  The morphisms of $\mathcal V_f$ will be called \emph{(pure) functions}, and the
+  morphisms of $\mathcal V_e$ will be called \emph{edges} or \emph{relations}.
+
+  \item A cartesian category $\mathcal V_{sq}$ whose objects are the morphisms of $\mathcal V_e$
+  and whose morphisms are \emph{commuting squares}.
+
+  \item Functors $s, t : \mathcal V_{sq} \to \mathcal V_f$ and $i : \mathcal V_f \to \mathcal V_{sq}$.
+\end{enumerate}
+
+Likewise, we have an analogous definition for computations.
 
 We will work in ``locally thin'' models where there is at most one
 square with a given boundary.
@@ -50,30 +66,282 @@ with reflexive graph models we also have access to new notions of
 universal property that relate the ``function'' morphisms to the
 ``edges''.
 
-Let $f : \mathcal V_v(A_i, A_o)$ and $R : \mathcal V_e(A_o,A')$ then a
-\emph{left restriction} of $R$ along $f$ consists of
-\begin{enumerate}
-\item $R' : \mathcal V_e(A_i,A')$
-\item $S \Rightarrow_{g,h} R'$ naturally isomorphic to $S \Rightarrow_{fg,h}R$
-\end{enumerate}
-In relational semantics, $R(a_o,a')$ is a relation and the left
-restriction along $f$ is the relation $R(f(a_i), a')$.
+In particular, let $c \in \mathcal V_e(A, A')$ and $d \in \mathcal V_e(A',A'')$,
+and let $f \in \mathcal V_f(A, A')$ and $g \in \mathcal V_f(A', A'')$.
+We say that the pair $(c,d)$ is \emph{left-representable by} $(f, g)$
+if the following two squares commute:
 
-Then we can formulate our value edges as follows:
+\begin{center}
+  \begin{tabular}{ m{14em} m{14em} } 
+    % UpL
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \& {A'} \& {A''} \\
+      {A'} \&\& {A''}
+      \arrow["f"', from=1-1, to=2-1]
+      %
+      \arrow[from=1-3, to=2-3, Rightarrow, no head]
+      %
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow["d", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+      %
+      \arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+    \end{tikzcd}
+    &
+    % UpR
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \&\& {A'} \\
+      {A} \& {A'} \& {A''}
+      \arrow[from=1-1, to=2-1, Rightarrow, no head]
+      %
+      \arrow["g", from=1-3, to=2-3]
+      %
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      %
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["d"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+Dually, let $c \in \mathcal E_e(B, B')$ and $d \in \mathcal E_e(B', B'')$,
+and let $f \in \mathcal E_f(B'', B')$ and $g \in \mathcal E_f(B', B)$.
+We say the pair $(c,d)$ is \emph{right-representable by} $(f,g)$ if the
+following two squares commute:
+
+\begin{center}
+  \begin{tabular}{ m{14em} m{14em} } 
+    % DnR
+    \begin{tikzcd}[ampersand replacement=\&]
+      {B} \& {B'} \& {B''} \\
+      {B} \&\& {B'}
+      \arrow[from=1-1, to=2-1, Rightarrow, no head]
+      %
+      \arrow["f", from=1-3, to=2-3]
+      %
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow["d", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+      %
+      \arrow["c"', from=2-1, to=2-3, no head]
+    \end{tikzcd}
+    &
+    % DnL
+    \begin{tikzcd}[ampersand replacement=\&]
+      {B'} \&\& {B''} \\
+      {B} \& {B'} \& {B''}
+      \arrow["g"', from=1-1, to=2-1]
+      %
+      \arrow[from=1-3, to=2-3, Rightarrow, no head]
+      %
+      \arrow["d", from=1-1, to=1-3, no head]
+      %
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["d"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+Then we formulate the relationship between value edges and functions as follows:
 \begin{enumerate}
-\item We have a thin subcategory $\mathcal V_u$ of $\mathcal V_v$, of ``upcasts''
-\item $\mathcal V$ has all left restrictions of edges along upcasts
+  \item There is a functor $\upf : \mathcal V_e \to \mathcal V_f$ that is the
+  identity on objects, such that $\upf_*(\mathcal V_e)$, the essential image of
+  $\mathcal V_e$ under $\upf$, is thin.
+  The objects of $\upf_*(\mathcal V_e)$ are the objects of $\mathcal V_f$, and
+  the hom-set
+  $\upf_*(\mathcal V_e)(A, A') = \{ f \in \mathcal V_f(A,A') \mid \exists R \in \mathcal V_e(A,A'). \upf(R) = f \}$.
+  
+  \item Every pair of morphisms $(c,d) \in \mathcal V_e(A, A') \times \mathcal V_e(A', A'')$ is
+  left-representable by $(\upf(c), \upf(d))$.
 \end{enumerate}
 
-And our computation edges as follows:
+And likewise for computations:
 \begin{enumerate}
-\item We have a thin subcategory $\mathcal E_d$ of $\mathcal E_v$ of ``downcasts''
-\item $\mathcal E$ has all right restrictions of edges along downcasts
+  \item There is a functor $\dnf : \mathcal E_e^{op} \to \mathcal V_f$ that is
+  the identity on objects, such that the essential image of $\mathcal E_e$ under
+  $\dnf$ is thin.
+
+  \item Every pair of morphisms $(c,d) \in \mathcal E_e(B, B') \times \mathcal E_e(B',B'')$
+  is right-representable by $(\dnf(d), \dnf(c))$.
 \end{enumerate}
 
+We also require that the category $\mathcal V_e$ of relations is thin ``up to an
+identity square'', i.e., for any $R, R' \in \mathcal V_e(A, A')$ we have that the
+following square commutes:
+
+\[\begin{tikzcd}[ampersand replacement=\&]
+  A \& {A'} \\
+  A \& {A'}
+  \arrow[from=1-1, to=2-1, Rightarrow, no head]
+  \arrow[from=1-2, to=2-2, Rightarrow, no head]
+  \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  \arrow["R'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+
+\textbf{TODO: do we still need this?}
 We also want something like
 \[ F_c : \mathcal V_u^{op} \to \mathcal E_d \]
 \[ U_c : \mathcal E_d^{op} \to \mathcal V_u \]
 which ensures that if $R$ is a value edge equivalent to $A(u,-)$ then
 \[ F(R) = F(A(u,-)) = (F A)(-,F u) \]
+
+
+\subsection{Intensional Model}
+
+An intensional model of gradual typing is defined similarly to an extensional model,
+but unlike in the extensional model, here we work internally to the category of
+categories, giving us a double category.
+
+In particular, as before, we have cartesian categories $\mathcal V_f$,
+$\mathcal V_e$, and $\mathcal V_{sq}$, in addition to $\mathcal E_f$,
+$\mathcal E_e$, and $\mathcal E_{sq}$.
+But we now have horizontal composition of squares as well.
+
+Working intensionally means we need to take into consideration the steps
+taken by terms. One consequence of this is that the squares in the representable
+properties must now involve a notion of ``delay" or ``perturbation'' in order to
+keep the function morphisms on each side in lock-step. Intuitively, the perturbations
+have no effect other than to cause the function to which they are applied to ``wait''
+in a specific manner.
+We formalize this notion by requiring that for each object $A : \mathcal V_v$,
+there is a monoid of \emph{perturbations} $P^V_A$  and a monoid homomorphism
+$\ptb^V_A : P^V_A \to \mathcal V_v(A,A)$.
+Similarly, for each $B : \mathcal E_v$ there is a monoid $P^C_B$ and a
+homomorphism $\ptb^C_B : P^C_B \to \mathcal E_v(B,B)$.
+If $\delta \in P^V_A$, we will sometimes omit the homomorphism $\ptb^V_A$ and simply write
+$\delta$ to refer to the morphism $\ptb^V_A(\delta) \in \mathcal V_v(A,A)$, and likewise
+for computation perturbations. The context will make clear whether we are referring
+to an element of the perturbation monoid or the corresponding morphism.
+
+The perturbations must satisfy a property that we call the ``push-pull'' property,
+which is formulated as follows. Let $c \in \mathcal V_e(A, A')$.
+Given a perturbation $\delta \in P^V_A$, there is a corresponding perturbation
+$\push_c(\delta) \in P^V_{A'}$. % making the following square commute:
+%
+Likewise, given $\delta' \in P^V_{A'}$ there is a perturbation $\pull_c(\delta') \in P^V_A$.
+% making the following square commute:
+
+Moreover, the following squares commute:
+
+\begin{center}
+  \begin{tabular}{ m{9em} m{9em} } 
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \& {A'} \\
+      A \& {A'}
+      \arrow["\delta"', from=1-1, to=2-1]
+      \arrow["{\push_c(\delta)}", from=1-2, to=2-2]
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \end{tikzcd}
+    &
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \& {A'} \\
+      A \& {A'}
+      \arrow["{\pull_c(\delta')}"', from=1-1, to=2-1]
+      \arrow["{\delta'}", from=1-2, to=2-2]
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+The analogous property should also hold for computation relations and perturbations.
+
+A second consequence of working intensionally is that we need a way to specify
+that two morphisms are the same ``up to delay'', i.e., they differ only in that
+one may wait more than the other.
+%
+To this end, for any pair of objects $A$ and $A'$, in $\mathcal V_f$, we require that
+there is a reflexive, symmetric relation $\bisim_{A,A'}$ on the hom-set $\mathcal V_f(A, A')$,
+called the \emph{weak bisimilarity} relation.
+Similarly for the computation category: there is a relation $\bisim_{B,B'}$
+defined on each hom-set $\mathcal E_v(B, B')$.
+
+We require that all perturbations be weakly bisimilar to the identity function,
+capturing the notion that they have no effect other than to delay.
+
+The weak bisimilarity relation should respect composition:
+if $f \bisim_{A,A'} f'$ and $g \bisim_{A',A''} g'$, then
+$g \circ f \bisim_{A,A''} g' \circ f'$, and likewise for computations.
+
+% We similarly have thin subcategories $\mathcal V_u$ and $\mathcal E_d$ of
+% upcasts and downcasts. The relation between function morphisms and edges
+% is as follows.
+
+As is the case in the extensional model, there is a relationship between
+function morphisms and relation morphisms, but as mentioned above, now there
+are perturbations involved in order to keep both morphisms in lock-step.
+The precise definitions are as follows.
+
+Let $c \in \mathcal V_e(A, A')$. We say that $c$ is \emph{quasi-left-representable by}
+$f \in \mathcal V_f(A, A')$ if there exist perturbations $\delta_c^{l,e} \in P^V_A$ and
+$\delta_c^{r,e} \in P^V_{A'}$ such that the following squares commute:
+
+\begin{center}
+  \begin{tabular}{ m{7em} m{7em} } 
+    % UpL
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \& {A'} \\
+      {A'} \& {A'}
+      \arrow["f"', from=1-1, to=2-1]
+      \arrow["\delta_c^{r,e}", from=1-2, to=2-2]
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[from=2-1, to=2-2, Rightarrow, no head]
+    \end{tikzcd}
+    &
+    % UpR
+    \begin{tikzcd}[ampersand replacement=\&]
+      A \& {A} \\
+      {A} \& {A'}
+      \arrow["\delta_c^{l,e}"', from=1-1, to=2-1]
+      \arrow["f", from=1-2, to=2-2]
+      \arrow[from=1-1, to=1-2, Rightarrow, no head]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+Similarly, let $d \in \mathcal E_e(B, B')$. We say that $d$ is
+\emph{quasi-right-representable by} $f \in \mathcal E_f(B', B)$
+if there exist perturbations $\delta_d^{l,p} \in P^C_B$ and
+$\delta_d^{r,p} \in P^C{B'}$ such that the following squares commute:
+
+\begin{center}
+  \begin{tabular}{ m{7em} m{7em} } 
+    % DnR
+    \begin{tikzcd}[ampersand replacement=\&]
+      {B} \& {B'} \\
+      {B} \& {B}
+      \arrow["\delta_d^{l,p}"', from=1-1, to=2-1]
+      \arrow["g", from=1-2, to=2-2]
+      \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[from=2-1, to=2-2, Rightarrow, no head]
+    \end{tikzcd}
+    &
+    % DnL
+    \begin{tikzcd}[ampersand replacement=\&]
+      {B'} \& {B'} \\
+      {B} \& {B'}
+      \arrow["g"', from=1-1, to=2-1]
+      \arrow["\delta_d^{r,p}", from=1-2, to=2-2]
+      \arrow[from=1-1, to=1-2, Rightarrow, no head]
+      \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+
+Besides the perturbations, one other difference between the extensional
+and intensional versions of the representability axioms is that in the
+extensional setting, the rules build in the notion of composition, whereas
+their intensional counterparts do not.
+In the extensional setting, we do not have horizontal composition of squares, which
+is required to derive the versions of the rules that build in composition
+from the versions that do not.
+In the intensional setting, we do have horizontal composition of squares,
+so we can take the simpler versions as primitive and derive the ones
+involving composition (though we must be careful about the perturbations
+when doing so!).
+
+\subsection{Constructing an Extensional Model from an Intensional Model}
+
 
