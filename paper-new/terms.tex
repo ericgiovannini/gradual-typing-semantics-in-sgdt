@@ -4,8 +4,8 @@ In this section, we introduce the term syntax for the gradually-typed
 lambda calculus (GTLC) and give a set-theoretic denotational semantics
 using tools from SGDT.
 
-In the following section, we will extend the denotational semantics to accommodate
-the type and term precision orderings.
+In Section \ref{sec:gtlc-precision}, we will discuss how to extend the denotational
+semantics to accommodate the type and term precision orderings.
 
 
 \subsection{Syntax}\label{sec:term-syntax}
@@ -179,6 +179,8 @@ Finally, observe that for type precision derivations $c : A \ltdyn A'$ and $c' :
 can define their composition $c \relcomp c' : A \ltdyn A''$.
 This notion will be used below in the statement of transitivity of the term precision relation.
 
+
+\begin{comment}
 \subsection{Removing Casts as Primitives}
 
 % We now observe that all casts, except those between $\nat$ and $\dyn$
@@ -267,15 +269,15 @@ for case-nat (the rules for case-arrow are analogous).
   \label{fig:extlc-minus-minus-eqns}
 \end{figure}
 
+\end{comment}
 
 
+% \section{Term Semantics}\label{sec:term-semantics}
 
-\section{Term Semantics}\label{sec:term-semantics}
-
-\subsection{Domain-Theoretic Constructions}\label{sec:domain-theory}
+\subsection{Semantic Constructions}\label{sec:domain-theory}
 
 In this section, we discuss the fundamental objects of the model into which we will embed
-the gradual lambda calculus.
+the terms of the gradually-typed lambda calculus.
 It is important to remember that the constructions in this section are entirely
 independent of the syntax described in the previous section; the notions defined 
 here exist in their own right as purely mathematical constructs.
@@ -314,29 +316,35 @@ Then we define
 \[ D = \fix f. \]
 
 % TODO explain better
-As it turns out, this definition is not quite correct; let us try to understand why.
-The price we pay for such a simple solution to the above equation is that we have
-introduced a notion of ``time'', i.e., we must now consider the stepping behavior of terms.
+As it turns out, this definition is not quite correct, as it doesn't provide a way to
+model functions that are potentially non-terminating.
+Another way to think about this is that by using guarded recursion to solve the
+equation for the dynamic type, the solution to the equation involves a notion of
+``time" or ``steps".
+So, in addition to returning a value or erroring, programs may now take one or
+more observable steps of computation, and this possibility must be reflected in
+in the equation for the dynamic type.
+
 % Therefore, the semantics of terms will need to allow for terms that potentially
 % do not terminate. This is accomplished using an extension of the guarded lift monad,
 % which we describe in the next section.
-Thus, in the equation for the semantics of $\dyn$, the result of the function should be
-a computation that may return a value, error, \emph{or} take an observable step.
+More specifically, in the equation for the semantics of $\dyn$, the result of the
+function should be a computation that may return a value, error, \emph{or} take an observable step.
 We model such computations using an extension of the so-called guarded lift monad
 \cite{mogelberg-paviotti2016} which we describe in the next section.
-We will then discuss the correct definition of the semantics of the dynamic type.
+We will then use this to give the correct definition of the semantics of the dynamic type.
 
 \subsubsection{The Lift + Error Monad}
 
 % TODO ensure the previous section flows into this one
 When thinking about how to model gradually-typed programs where we track the steps they take,
 we should consider their possible behaviors. On the one hand, we have \emph{failure}: a program may fail
-at run-time because of a type error. In addition to this, a program may ``think'',
-i.e., take a step of computation. If a program thinks forever, then it never returns a value,
-so we can think of the idea of thinking as a way of intensionally modelling \emph{partiality}.
+at run-time because of a type error. In addition to this, a program may take one or more steps of computation.
+If a program steps forever, then it never returns a value,
+so we can think of the idea of stepping as a way of intensionally modelling \emph{partiality}.
 
 With this in mind, we can describe a semantic object that models these behaviors: a monad
-for embedding computations that has cases for failure and ``thinking''.
+for embedding computations that has cases for failure and ``stepping''.
 Previous work has studied such a construct in the setting of the latter, called the lift
 monad \cite{mogelberg-paviotti2016}; here, we augment it with the additional effect of failure.
 
@@ -359,7 +367,7 @@ Formally, the lift monad $\li A$ is defined as the solution to the guarded recur
 \[ \li A \cong A + 1 + \later \li A. \]
 
 An element of $\li A$ should be viewed as a computation that can either (1) return a value (via $\eta$),
-(2) raise an error and stop (via $\mho$), or (3) think for a step (via $\theta$).
+(2) raise an error and stop (via $\mho$), or (3) take a step (via $\theta$).
 %
 Notice there is a computation $\fix \theta$ of type $\li A$. This represents a computation
 that runs forever and never returns a value.
@@ -386,11 +394,10 @@ The set $D$ is defined to be the solution to the guarded equation
 
 \subsection{Interpretation}\label{sec:term-interpretation}
 
-We can now give a semantics to the gradual lambda calculus we defined
-in Section \ref{sec:step-sensitive-lc}.
+We can now give a semantics to the \emph{terms} of the gradual lambda calculus we defined
+above. The full definition is given in Figure \ref{fig:term-semantics}.
 %
-Much of the semantics is similar to a normal call-by-value denotational semantics;
-we highlight the differences.
+Much of the semantics is similar to a normal call-by-value denotational semantics:
 We will interpret types as sets, and terms as functions.
 Contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$
 will be interpreted as the product $\sem{A_1} \times \cdots \times \sem{A_n}$.
@@ -399,9 +406,9 @@ will be interpreted as the product $\sem{A_1} \times \cdots \times \sem{A_n}$.
 The semantics of the dynamic type $\dyn$ is the set $\Dyn$ introduced in Section
 \ref{sec:predomains}.
 %
-The interpretation of a value $\vhasty {\Gamma} V A$ will be a monotone function from
+The interpretation of a value $\vhasty {\Gamma} V A$ will be a function from
 $\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\phasty {\Gamma} M {{A}}$ will be interpreted
-as a monotone function from $\sem{\Gamma}$ to $\li \sem{A}$.
+as a function from $\sem{\Gamma}$ to $\li \sem{A}$.
 
 Recall that $\Dyn$ is isomorphic to $\Nat\, + \later (\Dyn \to \li \Dyn)$.
 Thus, the semantics of $\injnat{\cdot}$ is simply $\inl$ and the semantics
@@ -415,7 +422,7 @@ The interpretation of lambda is thus a function (in the ambient type theory) tha
 a value $a$ representing the argument and applies it (along with $\gamma$) as argument to
 the interpretation of $M$.
 %
-The interpretation of bind and of application both make use the monadic extend function on $\li A$.
+The interpretation of bind makes use the monadic extend function on $\li A$.
 %
 The interpretation of case-nat and case-arrow is simply a case inspection on the
 interpretation of the scrutinee, which has type $\Dyn$.
@@ -424,34 +431,39 @@ interpretation of the scrutinee, which has type $\Dyn$.
 \vspace{2ex}
 
 
-\noindent Types:
-\begin{align*}
-  \sem{\nat} &= \Nat \\
-  \sem{\dyn} &= \Dyn \\
-  \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
-\end{align*}
+\begin{figure*}
+  \noindent Types:
+  \begin{align*}
+    \sem{\nat} &= \Nat \\
+    \sem{\dyn} &= \Dyn \\
+    \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
+  \end{align*}
 
-% Contexts:
+  % Contexts:
 
-% TODO check these, especially the semantics of bind, case-nat, and case-arr
-% with respect to their context argument
-\noindent Values and terms:
-\begin{align*}
-  \sem{\zro}         &= \lambda \gamma . 0 \\
-  \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
-  \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
-  \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
-  \sem{\injnat{V_n}} &= \lambda \gamma . \inl\, (\sem{V_n}\, \gamma) \\
-  \sem{\injarr{V_f}} &= \lambda \gamma . \inr\, (\sem{V_f}\, \gamma) \\[2ex]
-  \sem{\nxt\, V}     &= \lambda \gamma . \nxt (\sem{V}\, \gamma) \\
-  \sem{\theta}       &= \lambda \gamma . \theta \\
-%
-  \sem{\err_B}         &= \lambda \delta . \mho \\
-  \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
-  \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
-  \sem{V_f\, V_x}      &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
-  \sem{\casedyn{V}{n}{M_{nat}}{\tilde{f}}{M_{fun}}} &=
-    \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
-    &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{nat}}(n) \\
-    &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{fun}}(\tilde{f})
-\end{align*}
+  % TODO check these, especially the semantics of bind, case-nat, and case-arr
+  % with respect to their context argument
+  \noindent Values and terms:
+  \begin{align*}
+    \sem{\zro}         &= \lambda \gamma . 0 \\
+    \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
+    \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
+    \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
+    \sem{\injnat{V_n}} &= \lambda \gamma . \inl\, (\sem{V_n}\, \gamma) \\
+    \sem{\injarr{V_f}} &= \lambda \gamma . \inr\, (\sem{V_f}\, \gamma) \\[2ex]
+    % \sem{\nxt\, V}     &= \lambda \gamma . \nxt (\sem{V}\, \gamma) \\
+    % \sem{\theta}       &= \lambda \gamma . \theta \\
+  %
+    \sem{\err_B}         &= \lambda \delta . \mho \\
+    \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
+    \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
+    \sem{V_f\, V_x}      &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
+    \sem{\casedyn{V}{n}{M_{nat}}{\tilde{f}}{M_{fun}}} &=
+      \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+      &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{nat}}(n) \\
+      &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{fun}}(\tilde{f})
+  \end{align*}
+
+  \caption{Term semantics for the gradually-typed lambda calculus.}
+  \label{fig:term-semantics}
+\end{figure*}
