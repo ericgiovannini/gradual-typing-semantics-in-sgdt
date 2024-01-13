@@ -54,8 +54,9 @@ derivations is composable, i.e., that the RHS of $\gamlt_1(x)$ is the same as th
 
 The rules for term precision come in two forms. We first have the \emph{congruence} rules,
 one for each term constructor. These assert that the term constructors respect term precision.
-The congruence rules are as follows:
+The congruence rules are shown in Figure \ref{fig:term-prec-congruence-rules}.
 
+\begin{figure*}
 \begin{mathpar}
 
   \inferrule*[right = Var]
@@ -96,14 +97,20 @@ The congruence rules are as follows:
      \etmprec {\gamlt, x : c} {N} {N'} {d} }
     {\etmprec {\gamlt} {\bind {x} {M} {N}} {\bind {x} {M'} {N'}} {d}}
 \end{mathpar}
+\caption{Term precision: congruence rules.}
+\label{fig:term-prec-congruence-rules}
+\end{figure*}
 
-We then have additional equational axioms, including $\beta$ and $\eta$ laws, and
-rules characterizing upcasts as least upper bounds, and downcasts as greatest lower bounds.
-For the sake of familiarity, we formulate the cast rules using arbitrary casts; later we
-will state the analogous versions for the version of the calculus without arbitrary casts.
+We then have additional equational axioms as shown in Figure \ref{fig:term-prec-additional-rules}.
+In particular, we have a rule stating that the error term is the bottom element,
+$\beta$ and $\eta$ laws as order-equivalences, and lastly rules characterizing upcasts
+as least upper bounds, and downcasts as greatest lower bounds.
+% For the sake of familiarity, we formulate the cast rules using arbitrary casts; later we
+% will state the analogous versions for the version of the calculus without arbitrary casts.
 
 We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
 
+\begin{figure*}
 \begin{mathpar}
   \inferrule*[right = $\err$]
     {\phasty {\Gamma} M B }
@@ -138,15 +145,19 @@ We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
       \etmprec {\gamlt} {M} {N} {c \circ d} } 
     { \etmprec {\gamlt} {M} {\dn {B} {C} N} {c} }
 \end{mathpar}
+\caption{Term precision: additional rules.}
+\label{fig:term-prec-additional-rules}
+\end{figure*}
 
 % TODO explain the least upper bound/greatest lower bound rules
-The rules UpR, UpL, DnL, and DnR were introduced in \cite{new-licata18} as a means
+The rules \textsc{UpR}, \textsc{UpL}, \textsc{DnL}, and \textsc{DnR}
+were introduced in \cite{new-licata18} as a means
 of cleanly axiomatizing the intended behavior of casts in a way that
 doesn't depend on the specific constructs of the language.
-Intuitively, rule UpR says that the upcast of $M$ is an upper bound for $M$
-in that $M$ may error more, and UpL says that the upcast is the \emph{least}
+Intuitively, rule \textsc{UpR} says that the upcast of $M$ is an upper bound for $M$
+in that $M$ may error more, and \textsc{UpL} says that the upcast is the \emph{least}
 such upper bound, in that it errors more than any other upper bound for $M$.
-Conversely, DnL says that the downcast of $M$ is a lower bound, and DnR says
+Conversely, \textsc{DnL} says that the downcast of $M$ is a lower bound, and \textsc{DnR} says
 that it is the \emph{greatest} lower bound.
 % These rules provide a clean axiomatization of the behavior of casts that doesn't
 % depend on the specific constructs of the language.
@@ -382,7 +393,11 @@ If $c$ is inj-arr, then when we downcast $M$ from $dyn$ to $\dyntodyn$,
 semantically this will involve a $\theta$ because the value of type $dyn$
 in the semantics will contain a \emph{later} function $\tilde{f}$.
 Thus, in order for the right-hand side to be related to the downcast,
-we need to insert a delay on the right.
+the right-hand side must be of the form $\theta(\dots)$, and the argument to
+$\theta$ on the LHS must be related to the argument of $\theta$ on the RHS.
+We can accomplish this by inserting a ``delay" on the right, i.e., wrapping the
+RHS in $\delta = \theta \circ \nxt$.
+% Maybe show the correct form of the rule in the special case $c = inj-arr$.
 %
 The need for delays affects the cast rules involving upcasts as well, because
 the upcast for functions involves a downcast on the domain:
@@ -391,10 +406,14 @@ the upcast for functions involves a downcast on the domain:
 
 Thus, the correct versions of the cast rules involve delays on the side that was not casted.
 
+The specific manner in which these delays must be inserted for a given type precision
+derivation $c$ is best examined in a more abstract setting, as it is independent of the
+particular concrete model under consideration.
+Thus, we postpone this discussion to the section on the abstract intensional categorical models of
+gradual typing (Section \ref{sec:abstract-intensional-models}).
 
-% Delays for function types and for inj-arr(c)
 
-
+\begin{comment}
 \subsubsection{Perturbations}
 
 We can describe precisely how the delays are inserted for any type precision
@@ -441,3 +460,6 @@ and it is the generator/source of all non-trivial perturbations.
 Given a perturbation $\delta$, we can turn it into a term, which we also write as
 $\delta$ unless there is opportunity for confusion.
 
+% Delays for function types and for inj-arr(c)
+
+\end{comment}
