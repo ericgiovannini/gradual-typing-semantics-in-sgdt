@@ -245,19 +245,19 @@ that are extensionally equal and may only differ in their stepping behavior.
 % an intensional, step-sensitive \emph{error ordering} and a \emph{bisimilarity relation}.
 
 
-\subsubsection{Double Posets}\label{sec:predomains}
+\subsubsection{Predomains}\label{sec:predomains}
 
 As discussed above, there are two relations that we would like to define
 in the semantics: a step-sensitive error ordering, and weak bisimilarity of computations.
 %
 The semantic objects that interpret our types should therefore be equipped with
-two relations. We call these objects ``double posets''.
-A double poset $A$ is a set with two relations: an partial order $\semlt_A$ on $A$, and
+two relations. We call these objects ``predomains''.
+A predomain $A$ is a set with two relations: an partial order $\semlt_A$ on $A$, and
 a reflexive, symmetric relation $\bisim_A$ on $A$.
 We write the underling set of $A$ as $\ty{A}$.
 
-We define morphisms of double posets as functions that preserve both
-the ordering and the bisimilarity relation. Given double posets
+We define morphisms of predomains as functions that preserve both
+the ordering and the bisimilarity relation. Given predomains
 $A$ and $B$, we write $f \colon A \monto B$ to indicate that $f$ is a morphism
 from $A$ to $B$, i.e, the following hold:
 (1) for all $a_1 \semlt_A a_2$, we have $f(a_1) \semlt_{B} f(a_2)$, and
@@ -266,48 +266,48 @@ from $A$ to $B$, i.e, the following hold:
 
 %%%%% RESUME HERE
 
-We define an ordering on morphisms of double posets as
+We define an ordering on morphisms of predomains as
 $f \le g$ if for all $a$ in $\ty{A_i}$, we have $f(a) \le_{A_o} g(a)$,
 and similarly bisimilarity extends to morphisms via
 $f \bisim g$ if for all $a$ in $\ty{A_i}$, we have $f(a) \bisim_{A_o} g(a)$.
 
-For each type we want to represent, we define a double poset for the corresponding semantic
-type. For instance, we define a double poset for natural numbers, for the
+For each type we want to represent, we define a predomain for the corresponding semantic
+type. For instance, we define a predomain for natural numbers, for the
 dynamic type, for functions, and for the lift monad. We
 describe each of these below.
 
 \begin{itemize}
-  \item There is a double poset $\Nat$ for natural numbers, where the ordering and the
+  \item There is a predomain $\Nat$ for natural numbers, where the ordering and the
   bisimilarity relations are both equality.
   
   % TODO explain that there is a theta operator for posets?
-  \item There is a double poset $\Dyn$ to represent the dynamic type. The underlying type
-  for this double poset is defined by guarded fixpoint to be such that
+  \item There is a predomain $\Dyn$ to represent the dynamic type. The underlying type
+  for this predomain is defined by guarded fixpoint to be such that
   $\ty{\Dyn} \cong \mathbb{N}\, +\, \later (\ty{\Dyn} \monto \li \ty{\Dyn})$.
   This definition is valid because the occurrences of Dyn are guarded by the $\later$.
   The ordering is defined via guarded recursion by cases on the argument, using the
   ordering on $\mathbb{N}$ and the ordering on monotone functions described above.
 
-  \item For a double poset $A$, there is a double poset $\li A$ for the ``lift'' of $A$
+  \item For a predomain $A$, there is a predomain $\li A$ for the ``lift'' of $A$
   using the lift monad. We use the same notation for $\li A$ when $A$ is a type
-  and $A$ is a double poset, since the context should make clear which one we are referring to.
+  and $A$ is a predomain, since the context should make clear which one we are referring to.
   The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
   type of $A$.
   The ordering on $\li A$ is the ``lock-step error-ordering'' which we describe in
   \ref{subsec:lock-step}. The bismilarity relation is the ``weak bisimilarity''
   described in Section \ref{}
 
-  \item For double posets $A_i$ and $A_o$, we form the double poset of monotone functions
+  \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
   from $A_i$ to $A_o$, which we denote by $A_i \To A_o$.
 
-  \item Given a double poset $A$, we can form the double poset $\later A$ whose underlying
+  \item Given a predomain $A$, we can form the predomain $\later A$ whose underlying
   type is $\later \ty{A}$. We define $\tilde{x} \le_{\later A} \tilde{y}$ to be
   $\later_t (\tilde{x}_t \le_A \tilde{y}_t)$.
 \end{itemize}
 
 \subsubsection{Step-Sensitive Error Ordering}\label{subsec:lock-step}
 
-As mentioned, the ordering on the lift of a double poset $A$ is called the
+As mentioned, the ordering on the lift of a predomain $A$ is called the
 \emph{step-sensitive error-ordering} (also called ``lock-step error ordering''),
 the idea being that two computations $l$ and $l'$ are related if they are in
 lock-step with regard to their intensional behavior, up to $l$ erroring.
@@ -321,11 +321,11 @@ Formally, we define this ordering as follows:
 \end{itemize}
 
 We also define a heterogeneous version of this ordering between the lifts of two
-different double posets $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
+different predomains $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
 
 \subsubsection{Weak Bisimilarity Relation}
 
-For a double poset $A$, we define a relation on $\li A$, called ``weak bisimilarity",
+For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
 written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent
 ``up to delays''.
 % We introduce the notation $x \sim_A y$ to mean $x \le_A y$ and $y \le_A x$.
