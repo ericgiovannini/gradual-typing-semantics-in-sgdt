@@ -59,7 +59,8 @@
 
 %\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
 \newcommand{\rel}{\mathrel{\circ\mkern-6mu-\mkern-6mu\bullet}}
-\newcommand{\wand}{\mathrel{-\mkern-6mu*}}
+% \newcommand{\wand}{\mathrel{-\mkern-6mu*}}
+\newcommand{\wand}{\mathrel{\multimap}}
 \newcommand{\ltdyn}{\sqsubseteq}
 \newcommand{\gtdyn}{\sqsupseteq}
 \newcommand{\equidyn}{\mathrel{\gtdyn\ltdyn}}
@@ -185,6 +186,8 @@
 \newcommand{\Fsq}{F_{sq}}
 \newcommand{\Uf}{U_f}
 \newcommand{\Usq}{U_{sq}}
+\newcommand{\arrf}{\arr_f}
+\newcommand{\arrsq}{\arr_{sq}}
 
 \newcommand{\vsim}{\mathcal{V}_{\bisim}}
 \newcommand{\esim}{\mathcal{E}_{\bisim}}
@@ -198,4 +201,10 @@
 
 
 \newcommand{\ve}{\mathcal{V}_e}
-\newcommand{\ee}{\mathcal{E}_e} 
+\newcommand{\ee}{\mathcal{E}_e}
+
+\newcommand{\relatedin}[3]{{#1}\, {#3}\, {#2}}
+\newcommand{\binrel}[1]{\mathbin{#1}}
+
+
+\newcommand{\da}{\downarrow}
