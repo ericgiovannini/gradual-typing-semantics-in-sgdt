@@ -1,0 +1,226 @@
+\section{Constructing a Concrete Model}
+
+In this section, we build a concrete extensional model of gradual typing.
+We begin by defining a step-1 intensional model, and then
+apply the abstract constructions outlined in the previous section
+to obtain an extensional model.
+
+We begin with some definitions. These concepts were first introduced in the section
+on the term semantics (Section \ref{sec:domain-theory}), but for completeness we repeat them here.
+% for ease of reference when instantiating the definition of step-1 model.
+
+\begin{definition}
+A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
+\begin{itemize}
+    \item A partial order $\le_A$.
+    \item A reflexive, symmetric ``bisimilarity'' relation $\bisim_A$.
+\end{itemize}
+\end{definition}
+
+% TODO: later of a predomain
+Given a predomain $A$, we can form the predomain $\later A$.
+The underlying set is $\later |A|$ and the relation is defined in the obvious way,
+i.e., $\tilde{x} \le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
+
+Morphisms of predomains are functions between the underlying sets that preserve the ordering
+and the bisimilarity relation. More formally:
+%
+\begin{definition}
+Let $A$ and $A'$ be predomains.
+A morphism $f : A \to A'$ is a function between the underlying sets such that for all $x, x'$,
+if $x \le_A x'$, then $f(x) \le f(x')$, and if $x \bisim_A x'$, then $f(x) \bisim_{A'} f(x')$.
+\end{definition}
+
+\begin{definition}
+An \textbf{error domain} $B$ consists of a predomain $B$ along with the following data:
+\begin{itemize}
+    \item A distinguished ``error" element $\mho_B \in B$
+    \item A morphism of predomains $\theta_B \colon \later B \to B$
+\end{itemize}
+\end{definition}
+
+
+Morphisms of error domains are morphisms of the underlying predomains that preserve the
+algebraic structure. More formally:
+%
+\begin{definition}
+Let $B$ and $B'$ be error domains.
+A morphism $\phi : B \wand B'$ is a morphism between the underlying predomains such that:
+\begin{enumerate}
+    \item $\phi(\mho_B) = \mho_{B'}$
+    \item $\phi(\theta_B(\tilde{x})) = \theta_{B'}(\lambda t. \phi(\tilde{x}_t))$
+\end{enumerate}
+\end{definition}
+
+
+We define a (monotone) relation on predomains $A$ and $A'$ to be a relation on the
+underlying sets that is downward-closed under $\le_A$ and upward-closed under $\le_{A'}$.
+More formally:
+
+\begin{definition}
+Let $A$ and $A'$ be predomains. A \emph{predomain relation} between $A$ and $A'$
+is a relation $R$ between the underlying sets such that:
+\begin{enumerate}
+    \item (Downward closure): For all $x_1, x_2 \in A$ and $y \in A'$,
+    if $x_1 \le_A x_2$ and $x_2 \mathbin{R} y$, then $x_1 \mathbin{R} y$.
+    \item (Upward closure): For all $x \in A$ and $y_1, y_2 \in A'$,
+    if $x \mathbin{R} y_1$ and $y_1 \le_{A'} y_2$, then $x \mathbin{R} y_2$.
+\end{enumerate}
+\end{definition}
+
+Composition of relations on predomains is the usual relational composition.
+
+Similarly, we define a (monotone) relation on error domains to be a relation on the
+underlying predomains that respects error and preserves $\theta$.
+%
+\begin{definition}
+    Let $B$ and $B'$ be error domains. An \emph{error domain relation} between
+    $B$ and $B'$ is a relation $R$ between the underlying predomains such that
+    \begin{enumerate}
+       \item (Respects error): For all $y \in B'$, we have $\mho_B \mathbin{R} y$.
+       \item (Preserves $\theta$): For all $\tilde{x}$ in $\later B$ and $\tilde{y} \in \later B'$,
+       if 
+       \[ \later_t( \tilde{x}_t \mathbin{R} \tilde{y}_t ), \]
+       then
+       \[ \theta_B(\tilde{x}) \mathbin{R} \theta_{B'}(\tilde{y}). \]
+    \end{enumerate}
+\end{definition}
+
+
+We define composition of error domain relations $R$ on $B_1$ and $B_2$ and $S$
+on $B_2$ and $B_3$ to be the least relation containing $R$ and $S$ that respects
+error and preserves $\theta$.
+Specifically, it is defined inductively by the following rules:
+
+\begin{mathpar}
+    \inferrule*[right = Comp]
+    {b_1 \mathbin{R} b_2 \and b_2 \mathbin{S} b_3}
+    {b_1 \mathbin{R \relcomp S} b_3}
+
+    \inferrule*[right = PresErr]
+    { }
+    {\mho_{B_1} \mathbin{R \relcomp S} b_3}
+
+    \inferrule*[right = PresTheta]
+    {\later_t( \tilde{b_1} \mathbin{R \relcomp S} \tilde{b_3} ) }
+    {\theta_{B_1}(\tilde{b_1}) \mathbin{R \relcomp S} \theta_{B_3}(\tilde{b_3}) }
+\end{mathpar}
+
+% We note that this composition has the following universal property.
+
+
+We now describe the ``commuting squares".
+Suppose we are given predomains $A_i, A_o, A_i'$, and $A_o'$,
+relations $R_i$ and $R_o$, and morphisms $f, f'$ as shown below.
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMSwwLCJBX2knIl0sWzAsMSwiQV9vIl0sWzEsMSwiQV9vJyJdLFswLDIsImYiLDJdLFsxLDMsImYnIl0sWzAsMSwiUl9pIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiwzLCJSX28iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsIlxcbHRkeW4iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_i} \& {A_i'} \\
+	{A_o} \& {A_o'}
+	\arrow[""{name=0, anchor=center, inner sep=0}, "f"', from=1-1, to=2-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{f'}", from=1-2, to=2-2]
+	\arrow["{R_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{R_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["\ltdyn"{description}, draw=none, from=0, to=1]
+\end{tikzcd}\]
+
+We say that the above square commutes, written $f \le f'$, if for all
+$x \in A_i$ and $x' \in A_i'$ with $x \mathbin{R_i} x'$, we have
+$f(x) \mathbin{R_o} f'(x')$.
+
+We make the analogous definition for error domains.
+
+
+
+% Lift monad
+The guarded lift monad $\li$ takes a predomain $A$ to the error domain $\li A$;
+the precise definition is given in Section \ref{sec:lift-monad}.
+The partial order $\le_{\li A}$ is the lock-step error ordering defined in Section
+\ref{sec:lock-step}, and the bisimilarity relation $\bisim_{\li A}$ is the weak bisimilarity
+relation defined in Section \ref{sec:weak-bisimilarity}.
+We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
+``heterogeneous" version of the lock-step error lifting of $R$ (see Section \ref{sec:lift-monad}).
+
+% TODO action of \li on commuting squares
+
+There is a functor $U$ from error domains to predomains that on objects simply takes the
+underlying predomain, and on morphisms takes the underlying morphism of predomains.
+%
+% TODO check this
+One can verify that there is a free-forgetful adjunction between the functors $\li$ and $U$;
+this holds because $\li A$ is the initial/free error- and later-algebra on the predomain $A$,
+i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
+predomain morphisms from $A$ to $UB$.
+
+% internal hom for predomains and error domains
+Given predomains $A$ and $A'$, we can form the predomain of
+predomain morphisms from $A$ to $A'$, denoted $A \To A'$.
+\begin{itemize}
+    % Should we give the definition involving x and x'?
+    \item The ordering is defined by $f \le_{A \To A'} f'$ iff for all
+    $x \in A$, we have $f(x) \le_{A'} f'(x)$.
+    \item The bisimilarity relation is defined by $f \bisim_{A \To A'} f'$ iff
+    for all $x, x' \in A$ with $x \bisim_{A} x'$, we have $f(x) \bisim_{A'} f'(x')$. 
+\end{itemize}
+
+Given a predomain $A$ and error domain $B$, we define $A \arr B := A \To UB$.
+We note that $A \arr B$ carries a natural error domain structure
+(in the below, the lambda is a meta-theoretic notation):
+\begin{itemize}
+    \item The error is given by $\lambda x . \mho_B$
+    \item The $\theta$ operation is defined by
+      \[ \theta_{A \arr B}(\tilde{f}) = \lambda x . \theta_B(\lambda t . \tilde{f}_t(x)). \]
+\end{itemize}
+
+It is easily verified that $A \arr B$ is an exponential of $UB$ by $A$
+in the category of predomains and their morphisms.
+
+Lastly, given a relation of predomains $R$ between $A$ and $A'$, and a relation
+of error domains $S$ between $B$ and $B'$, we can form a relation $R \arr S$
+between $A \arr B$ and $A' \arr B'$ in the obvious way, i.e., $f \in A \arr B$
+is related to $g \in A' \arr B'$ iff for all $x \in A$ and $x' \in A'$ with
+$x \mathrel{R} x'$, we have $f(x) \mathrel{S} g(x')$.
+
+
+With all of the above data, we can form a step-1 intensional model of gradual typing
+(See Definition \ref{def:step-1-model}).
+
+\subsection{The Dynamic Type}
+
+
+% dynamic type
+The underlying set of the dynamic type will be defined using guarded recursion as the
+solution to the equation
+
+\[ D \cong \mathbb{N} + \later (D \to \li D). \]
+
+The perturbation monoid for $D$ is defined inductively as the free monoid $M$ equipped
+with an operation $\To : M \times M \to M$, i.e., we take the set defined inductively by
+
+\begin{mathpar}
+    \inferrule*[]
+    {}
+    {e \in M}
+
+    \inferrule*[]
+    {p \in M \and p' \in M}
+    {p \odot p' \in M}
+
+    \inferrule*[]
+    {p \in M \and p' \in M}
+    {p \To p' \in M}
+\end{mathpar}
+
+and quotient by the necessary monoid equations.
+
+% perturbations and quasi-representability
+
+
+
+\subsection{Obtaining an Extensional Model}
+
+Now that we have defined an intensional model, we can apply
+the abstract construction introduced in Section \ref{sec:extensional-model-construction}.
+Doing so, we obtain an extensional model of gradual typing.
+
+ 
