@@ -168,12 +168,12 @@ that it is the \emph{greatest} lower bound.
 
 As a first attempt at giving a semantics to the ordering, we could try to model types as
 sets equipped with an ordering that models term precision. Since term precision is reflexive
-and transitive, and since we identify terms that are equi-precise, we choose to model types
-as partially-ordered sets. We model the term precision ordering $M \ltdyn N : A \ltdyn B$ as an
-ordering relation between the posets denoted by $A$ and $B$.
+and transitive, and since we identify terms that are equi-precise, we could model types
+as partially-ordered sets and terms $\Gamma \vdash M : B$ as monotone functions.
+We could then model the term precision ordering $M \ltdyn N : A \ltdyn B$ as an
+ordering relation between the monotone functions denoted by $M$ and $N$.
 
-However, it turns out that modeling term precision by a relation defined by guarded fixpoint
-is not as straightforward as one might hope.
+However, it turns out that modeling term precision is not as straightforward as one might hope.
 A first attempt might be to define an ordering $\semltbad$ between $\li X$ and $\li Y$
 that allows for computations that may take different numbers of steps to be related.
 The relation is parameterized by a relation $\le$ between $X$ and $Y$, and is defined
@@ -223,8 +223,8 @@ The problem with this definition is that the resulting relation is \emph{provabl
 transitive: it can be shown (in Clocked Cubical Type Theory) that if $R$ is a
 relation on $\li X$ satisfying three specific properties, one of which is
 transitivity, then that relation is trivial.
-(The other two properties are that the relation is a congruence with respect to $\theta$,
-and that the relation is closed under delays $\delta = \theta \circ \nxt$ on either side.)
+The other two properties are that the relation is a congruence with respect to $\theta$,
+and that the relation is closed under delays $\delta = \theta \circ \nxt$ on either side.
 Since the above relation \emph{does} satisfy the other two properties, we conclude
 that it must not be transitive.
 
@@ -234,12 +234,15 @@ that it must not be transitive.
 We are therefore led to wonder whether we can formulate a version of the relation
 that \emph{is} transitive.
 It turns out that we can, by sacrificing another of the three properties from
-the above lemma. Namely, we give up on closure under delays. Doing so, we end up
+the above result. Namely, we give up on closure under delays. Doing so, we end up
 with a \emph{lock-step} error ordering, where, roughly speaking, in order for
 computations to be related, they must have the same stepping behavior.
 %
 We then formulate a separate relation, \emph{weak bisimilarity}, that relates computations
 that are extensionally equal and may only differ in their stepping behavior.
+
+Finally, the semantics of term precision will be a combination of these two relations.
+% TODO Define it here?
 
 % As a result, we instead separate the semantics of term precision into two relations:
 % an intensional, step-sensitive \emph{error ordering} and a \emph{bisimilarity relation}.
@@ -294,7 +297,7 @@ describe each of these below.
   The underling type of $\li A$ is simply $\li \ty{A}$, i.e., the lift of the underlying
   type of $A$.
   The ordering on $\li A$ is the ``lock-step error-ordering'' which we describe in
-  \ref{subsec:lock-step}. The bismilarity relation is the ``weak bisimilarity''
+  \ref{sec:lock-step}. The bismilarity relation is the ``weak bisimilarity''
   described in Section \ref{}
 
   \item For predomains $A_i$ and $A_o$, we form the predomain of monotone functions
@@ -305,10 +308,10 @@ describe each of these below.
   $\later_t (\tilde{x}_t \le_A \tilde{y}_t)$.
 \end{itemize}
 
-\subsubsection{Step-Sensitive Error Ordering}\label{subsec:lock-step}
+\subsubsection{Lock-Step Error Ordering}\label{sec:lock-step}
 
 As mentioned, the ordering on the lift of a predomain $A$ is called the
-\emph{step-sensitive error-ordering} (also called ``lock-step error ordering''),
+\emph{lock-step error-ordering} (also called the ``step-sensitive error ordering''),
 the idea being that two computations $l$ and $l'$ are related if they are in
 lock-step with regard to their intensional behavior, up to $l$ erroring.
 Formally, we define this ordering as follows:
@@ -320,10 +323,10 @@ Formally, we define this ordering as follows:
           $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
 \end{itemize}
 
-We also define a heterogeneous version of this ordering between the lifts of two
+We similarly define a heterogeneous version of this ordering between the lifts of two
 different predomains $A$ and $B$, parameterized by a relation $R$ between $A$ and $B$.
 
-\subsubsection{Weak Bisimilarity Relation}
+\subsubsection{Weak Bisimilarity Relation}\label{sec:weak-bisimilarity}
 
 For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
 written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent
@@ -411,6 +414,12 @@ derivation $c$ is best examined in a more abstract setting, as it is independent
 particular concrete model under consideration.
 Thus, we postpone this discussion to the section on the abstract intensional categorical models of
 gradual typing (Section \ref{sec:abstract-intensional-models}).
+
+% To manage this construction, we break it down into multiple steps and do it modularly
+
+% We're not proving that the term model satisfies graduality 
+% (ex. the exponential in the term model includes all functions, whereas the
+% predomain model only includes monotone functions)
 
 
 \begin{comment}
