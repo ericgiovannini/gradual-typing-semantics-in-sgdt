@@ -1,4 +1,4 @@
-\section{Abstract Categorical Models of Graduality}
+\section{Abstract Categorical Models of Graduality}\label{sec:abstract-models}
 
 First, what is a categorical model of call-by-push-value? We will use
 the following notion as our basic structure\footnote{There are models
@@ -123,13 +123,14 @@ That is, for the values, we have
   $\rv : \mathcal V_f \to \mathcal V_{sq}$.
 \end{enumerate}
 
-Likewise, we have an analogous definition for computations.
+Likewise, we have the analogous definitions for computations.
 
 We write $c : A \rel A'$ to mean that $c \in \ob(\vsq)$ such that 
-$\sv(c) = A$ and $\tv(A) = A'$.
+$\sv(c) = A$ and $\tv(c) = A'$.
+%
 Likewise, let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$,
 and let $f \in \vf(A_i, A_o)$ and $f' \in \vf(A_i', A_o')$.
-The judgment $\beta : f \ltdyn_{c_o}^{c_i} f'$ is defined to mean
+The notation $\beta : f \ltdyn_{c_o}^{c_i} f'$ is defined to mean
 
 \begin{enumerate}
   \item $\beta \in \vsq(c_i, c_o)$
@@ -153,6 +154,10 @@ Picorially, this is depicted as a commuting square:
 	\arrow["\alpha"{description}, draw=none, from=0, to=1]
 \end{tikzcd}\]
 
+% Note: When the identity of the square $\beta$ is not important, we may omit it
+% and write $f \ltdyn_{c_o}^{c_i} f'$. In this case the meaning is that there exists
+% a square $\beta : f \ltdyn_{c_o}^{c_i} f'$.
+
 Composition of squares $\beta : f \ltdyn_{c_2}^{c_1} g$ and $\beta' : f' \ltdyn_{c_3}^{c_2} g'$
 corresponds to ``stacking'' the square for $\beta'$ below the square for $\beta$.
 Fuctoriality of $s$ and $t$ ensure that the left and right sides of the resulting square are as expected,
@@ -170,6 +175,8 @@ All of the above holds in an analogous manner for the computations.
 We will work in ``locally thin'' models where there is at most one
 square with a given boundary.
 That is, if $\beta, \beta' : f \ltdyn_{c_o}^{c_i} f'$, then $\beta = \beta'$.
+Thus, we may unambiguously omit the identity of the square, i.e., we may write
+$f \ltdyn_{c_o}^{c_i} f'$.
 
 We also have a ``horizontal" composition operation on value edges and on computation edges.
 That is, let 
@@ -342,11 +349,13 @@ In summary, an extensional model consists of:
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Intensional Models}\label{sec:abstract-intensional-models}
 
 An intensional model of gradual typing is defined similarly to an extensional model,
-with two key differences that will be discussed below.
+with a few key differences that will be discussed below.
 %
 The starting point is similar to that of the extensional model: an intensional model
 will be given by a diagram in the category of CBPV objects, satisfying
@@ -372,16 +381,17 @@ In particular, this consists of a functor
 $m_{\mathcal{V}} : \vsq \times_{\sv = \tv} \vsq \to \vsq$ for composition of value
 relations/squares, and a functor $m_{\mathcal{E}} : \esq \times_{\se = \te} \esq \to \esq$
 for composition of computation relations/squares.
+Furthermore, $s \circ m = s \circ \pi_1$ and $t \circ m = t \circ \pi_2$.
 
 % If we spell this all out explicitly, we end up with a definition similar to the
 % one for the extensional case, but now with the addition of a functor $m_{\mathcal{V}}$ for
 % composition of value relations/squares and a functor $m_{\mathcal{E}}$ for
 % composition of computation relations/squares.
 
-For the sake of ease of reference, we recap the definition of a step-1 model:
+For the sake of ease of reference, we recap the definition of a step-0 model:
 
 \begin{definition}
-  A \emph{step-1} model of intensional gradual typing consists of a category internal to the
+  A \emph{step-0} model of intensional gradual typing consists of a category internal to the
   category of CBPV models.
 \end{definition}
 
@@ -391,7 +401,7 @@ For the sake of ease of reference, we recap the definition of a step-1 model:
 % But we now have horizontal composition of squares as well.
 
 
-\subsubsection{Bisimilarity}
+\subsubsection{Bisimilarity}\label{sec:abstract-model-bisimilarity}
 
 Working intensionally means we need to take into consideration the steps
 taken by terms. One consequence of this is that we need a way to specify
@@ -412,7 +422,7 @@ We can specify all of this abstractly via categories $\vsim$ and $\esim$ along w
 functors $\rvsim : \vf \to \vsim$ and $\svsim, \tvsim : \vsim \to \vf$,
 and likewise for computations.
 Since bisimilarity of morphisms $f$ and $f'$ requires that they share source and target,
-we require that $\svsim$ and $\tvsim$ agree on objects and likewise for $\sesim and \tesim$.
+we require that $\svsim$ and $\tvsim$ agree on objects and likewise for $\sesim$ and $\tesim$.
 Thus, the objects of $\vsim$ are identified with $\ob(\vf)$.
 The morphisms of $\vsim$ are ``bisimilarity proofs'', analogous to the commuting squares of $\vsq$.
 
@@ -423,16 +433,26 @@ and $\text{sym}_{\mathcal{V}}^\bisim \circ \text{sym}_{\mathcal{V}}^\bisim$ is t
 Likewise there is a symmetry endofunctor $\text{sym}_{\mathcal{E}}^\bisim : \esim \to \esim$.
 
 % TODO explain what this means in terms of bisimilarity "squares"?
+In this setting, we write $\refl_A : A \bisim A$ to mean that $\refl_A \in \ob(\vsim)$,
+such that $\svsim(\refl_A) = A = \tvsim(\refl_A)$.
+Let $f, f' \in \vf(A_i, A_o)$.
+The judgment $\gamma : f \bisim_{A_i, A_o} f'$ is defined to mean:
+
+\begin{enumerate}
+  \item $\gamma \in \vsim(\refl_{A_i}, \refl_{A_o})$
+  \item $\svsim(\gamma) = f$
+  \item $\tvsim(\gamma) = f'$
+\end{enumerate}
 
 
 % Spelling this all out concretely, for any pair...
 
-\begin{definition}
-A \emph{step-2 intensional model} consists of all the data of a step-1 intensional model along
+\begin{definition}\label{def:step-1-model}
+A \emph{step-1 intensional model} consists of all the data of a step-0 intensional model along
 with the additional categories and functors for bisimiarity described above.
 \end{definition}
 
-\subsubsection{Perturbations}
+\subsubsection{Perturbations}\label{sec:abstract-model-perturbations}
 
 A second consequence of working intensionally is that the squares in the representable
 properties must now involve a notion of ``delay" or ``perturbation'' in order to
@@ -492,8 +512,8 @@ forms a monoid under composition.
 
 This is summarized below:
 
-\begin{definition}
-  A \emph{step-3} model of intensional gradual typing consists of all the data of a step-2 model plus:
+\begin{definition}\label{def:step-2-model}
+  A \emph{step-2} model of intensional gradual typing consists of all the data of a step-1 model plus:
   \begin{enumerate}
     \item $\pv_A$ and a monoid homomorphism 
       \[ \ptbv_A : \pv_A \to \{ f \in \vf(A,A) \mid f \bisim \id \} \]
@@ -517,7 +537,8 @@ but as mentioned above, now there
 are perturbations involved in order to keep both sides ``in lock-step".
 The precise definitions are as follows.
 
-Let $c : A \rel A'$. We say that $c$ is \emph{quasi-left-representable by}
+\begin{definition}\label{def:quasi-left-representable}
+Let $c : A \rel A'$ be a value relation. We say that $c$ is \emph{quasi-left-representable by}
 $f \in \vf(A, A')$ if there are perturbations $\delta_c^{l,e} \in \pv_A$ and
 $\delta_c^{r,e} \in \pv_{A'}$ such that the following squares commute:
 
@@ -544,8 +565,10 @@ $\delta_c^{r,e} \in \pv_{A'}$ such that the following squares commute:
     \end{tikzcd}
   \end{tabular}
 \end{center}
+\end{definition}
 
-Similarly, let $d : B \rel B'$. We say that $d$ is
+\begin{definition}\label{def:quasi-right-representable}
+Let $d : B \rel B'$ be a computation relation. We say that $d$ is
 \emph{quasi-right-representable by} $f \in \ef(B', B)$
 if there exist perturbations $\delta_d^{l,p} \in \pe_B$ and
 $\delta_d^{r,p} \in \pe_{B'}$ such that the following squares commute:
@@ -573,7 +596,7 @@ $\delta_d^{r,p} \in \pe_{B'}$ such that the following squares commute:
     \end{tikzcd}
   \end{tabular}
 \end{center}
-
+\end{definition}
 
 Besides the perturbations, one other difference between the extensional
 and intensional versions of the representability axioms is that in the
@@ -587,15 +610,177 @@ so we can take the simpler versions as primitive and derive the ones
 involving composition (though we must be careful about the perturbations
 when doing so!).
 
-\begin{definition}
-  A \emph{step-4 intensional model}, or simply an \emph{intensional model}, consists
-  of all the data of a step-3 intensional model, with the following additional data:
+\begin{definition}\label{def:step-3-model}
+  A \emph{step-3 intensional model} consists
+  of all the data of a step-2 intensional model, with the following additional data:
   \begin{enumerate}
     \item Functors $\upf : \ve \to \vf$ and $\dnf : \ee^{op} \to \ef$ % TODO: image is thin?
     \item Every value edge $c : A \rel A'$ is quasi-left-representable by $\upf(c)$ and
     every computation edge $d : B \rel B'$ is quasi-right-representable by $\dnf(d)$.
   \end{enumerate}
 \end{definition}
+
+
+\subsubsection{The Dynamic Type}
+
+Now we can discuss what it means for an intensional model to model the dynamic type.
+
+\begin{definition}\label{def:step-4-model}
+  A \emph{step-4 intensional model}, or simply an \emph{intensional model}, consists
+  of all the data of a step-3 intensional model, along with 
+  %a distinguished value object $D \in \ob(\vf)$ such that:
+  %
+  \begin{enumerate}
+    \item A distinguished value object $D \in \ob(\vf)$.
+    (By definition of a step-3 model, this means there is also a monoid $\pv_D$ of
+    perturbations and a homomorphism $\ptbv_D$.)
+    \item For each value type $A$, there is a value relation $\text{inj}_A : A \rel D$.
+    (By definition of a step-3 model, this relation satisfies the push-pull property and is
+    quasi-left-representable.)
+    \item If $c : A \rel A'$, then $\text{inj}_{A} = c \comp \text{inj}_{A'}$.
+  \end{enumerate}
+\end{definition}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Constructing an Extensional Model}\label{sec:extensional-model-construction}
+
+In the previous section, we have given the definition of an intensional model
+of gradual typing as a series of steps with each definition building on the previous one.
+%
+Here, we discuss how to construct an extensional model from an intensional model.
+We do so in several phases, beginning with a step-1 intensional model
+and ending with an extensional model.
+Moreover, this construction is \emph{modular}, in that each phase of the
+construction does not depend on the details of the previous ones.
+However, this process cannot proceed in isolation: some phases require
+additional inputs. We will make clear what data must be supplied to each phase.
+
+% Going from a step-1 intensional model $\mathcal{M}_1$ to a step-2 intensional model
+% requires defining a bisimilarity relation on the value morphisms and on
+% the computation morphisms of $\mathcal{M}_1$.
+% In particular, we need for every $A$ and $A'$ a reflexive, symmetric relation 
+% $\bisim_{A,A'}$ on $\vf(A, A')$ and for every $B$ and $B'$ a reflexive, symmetric relation
+% $\bisim_{B,B'}$ on $\ef(B, B')$. Moreover, the relation must respect composition of morphisms.
+% This phase of the construction is quite simple, because it consists entirely of extra structure
+% supplied as input to the construction.
+
+\subsubsection{Adding Perturbations}
+
+Suppose we have a \hyperref[def:step-1-model]{step-1 intensional model} $\mathcal{M}$.
+Recall that a step-1 intensional model consists of a step-0 model (i.e., a
+category internal to the category of CBPV models), along with the necessary
+categories and functors for bisimilarity as discussed in Section
+\ref{sec:abstract-model-bisimilarity}.
+Further, recall that a \hyperref[def:step-2-model]{step-2 model} has everything
+a step-1 model has, with the addition of perturbation monoids $\pv_A$ for all
+$A$ and $\pe_B$ for all $B$.
+% These perturbations must be interpretable as endomorphisms via homomorphisms
+% $\ptb_A$ and $\ptb_B$, 
+These perturbations must be interpretable via homomorphisms
+$\ptb_A$ and $\ptb_B$ as endomorphisms bisimilar to the identity,
+and moreover, the push-pull property must hold for all
+value relations $c$ and all computation relations $d$.
+
+% TODO do we really need all of this data?
+What ``external" data do we need to define such a model?
+Suppose we are given, for each value type $A$, a monoid $\pv_A$ with homomorphism
+$\ptb_A$ into the endomorphisms on $A$ bisimilar to the identity, and likewise, for
+each computation type $B$, a monoid $\pv_B$ and homomorphism $\ptb_B$.
+Furthermore, suppose we are given, for each value type $A$, a distinguished endomorphism
+$\delta_A \in \ef(FA, FA)$ such that $\delta_A \bisim \id_{FA}$.
+Finally, suppose that each value relation $c : A \rel A'$ satisfies the push-pull property
+and likewise for each computation relation $d : B \rel B'$.
+
+Then we claim that from the above data, we can construct a step-2 intensional model.
+For the proof, see Lemma \ref{lem:step-1-model-to-step-2-model} in the Appendix.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Adding Quasi-Representability}
+
+Now suppose we have a step-2 intensional model $\mathcal{M}$.
+We will describe how to construct a \hyperref[def:step-3-model]{step-3 intensional model} $\mathcal{M'}$.
+We begin with a definition.
+
+\begin{definition}[representation structure]
+Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure} $\rho^L_c$ for $c$ consists of
+a value morphism $u \in \vf(A, A')$ such that $c$ is quasi-left-representable by $u$ (see Definition \ref{def:quasi-left-representable}).
+
+Likewise, let $d : B \rel B'$. A \emph{right-representation structure} $\rho^R_d$ for $d$ consists of
+a computation morphism $d \in \ef(B', B)$ such that $d$ is quasi-right-representable by $d$ (see Definition \ref{def:quasi-right-representable}).
+\end{definition}
+
+(Notice that the direction of the morphism is opposite in the definition of
+right-representation structure.)
+
+We now describe the construction of a step-3 model $\mathcal M'$.
+The objects of $\mathcal M'$ are defined to be the same as the objects of the
+step-2 model $\mathcal M$.
+The value and computation morphisms in $\mathcal M'$ are the same as those of
+$\mathcal M$.
+A value relation is defined to be a pair $(c, \rho^L_c)$ with $c$ a value
+relation in $\mathcal M$ and $\rho^L_c$ a left-representation structure for $c$.
+Likewise, a computation relation is defined to be a pair $(d, \rho^R_d)$ with
+$d$ a computation relation in $\mathcal M$ and $\rho^R_d$ a right-representation
+structure for $d$.
+Lastly, morphisms of value relations (i.e., value squares) are defined by simply
+ignoring the representation structure. That is, a morphism of value relations
+$\alpha \in \vsq'((c, \rho^L_c), (c' \rho^L_{c'}))$ is simply a morphism of value
+relations in $\vsq(c, c')$. Likewise for computations.
+
+Now we define the functors $F$, $U$, and $\arr$.
+On objects, the behavior is the same as the respective functors in $\mathcal M$.
+For relations, we define 
+$\Fsq' (c, \rho^L_c) = (\Fsq c, \rho^R_{F c})$ and
+$\Usq' (d, \rho^R_d) = (\Usq d, \rho^L_{U d})$.
+We define $(c, \rho^L_c) \arr (d, \rho^R_d) = (c \arr d, \rho^R_{c \arr d})$.
+
+
+
+We now verify that the construction meets the requirements of a step-3 model.
+First, we check that composition of value relations (resp. computation relations)
+is well-defined. This might seem obvious, but there is actually a subtlety here:
+what should the representation structure be for the composition?
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Defining an Extensional Model}
+
+Finally, suppose $\mathcal M$ is a step-3 intensional model.
+We now describe how to build an extensional model.
+
+The idea is to define an extensional model whose squares are the ``bisimilarity-closure''
+of the squares of the provided intensional model $\mathcal M$.
+  
+The categories $\vf$, $\ef$ are the same as those of $\mathcal M$.
+Additionally, the objects of $\vsq$ and $\esq$, i.e., the value and
+computation relations, are the same.
+The difference arises in the \emph{morphisms} of $\vsq$ and $\esq$,
+i.e., the commuting squares. In particular, a morphism
+$\alpha_e \in \vsq'(c_i, c_o)$ with source $f$ and target $g$ is given by:
+\begin{itemize}
+  \item a morphism $f' \in \vf(A_i, A_o)$ with $f \bisim f'$.
+  \item a morphism $g' \in \vf(A_i', A_o')$ with $g \bisim g'$.
+  \item a square $\alpha_i \in \vsq(c_i, c_o)$ with source $f'$ and target $g'$.
+\end{itemize}
+
+Using our existing notation, we say that $f \le_{c_o}^{c_i} g$ if there exist $f'$ and $g'$ such that
+
+\[ f \bisim_{A_i,A_o} f' \ltdyn_{c_o}^{c_i} g' \bisim_{A_i',A_o'} g. \]
+
+We make the analogous construction for the computation squares.
+
+Next, we check that the requirements of an extensional model are satisfied.
+In particular, we need to verify the representability properties.
+We define functors $\upf$ and $\dnf$
+
 
 
 
