@@ -2,7 +2,10 @@
 
 In this section, we introduce the term syntax for the gradually-typed
 lambda calculus (GTLC) and give a set-theoretic denotational semantics
-using tools from SGDT.
+using tools from SGDT. This serves two purposes: First, it is a simple setting
+in which to employ the tools of SGDT.
+Second, constructing this semantic model establishes the validity of the
+beta and eta principles for the gradually-typed lambda calculus.
 
 In Section \ref{sec:gtlc-precision}, we will discuss how to extend the denotational
 semantics to accommodate the type and term precision orderings.
@@ -334,7 +337,7 @@ We model such computations using an extension of the so-called guarded lift mona
 \cite{mogelberg-paviotti2016} which we describe in the next section.
 We will then use this to give the correct definition of the semantics of the dynamic type.
 
-\subsubsection{The Lift + Error Monad}
+\subsubsection{The Lift + Error Monad}\label{sec:lift-monad}
 
 % TODO ensure the previous section flows into this one
 When thinking about how to model gradually-typed programs where we track the steps they take,
