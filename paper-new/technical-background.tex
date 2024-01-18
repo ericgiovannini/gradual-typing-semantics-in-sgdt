@@ -85,7 +85,7 @@
   % Synthetic guarded domain theory allows the resulting logical relation to look almost
   % identical to a typical, non-step-indexed logical relation.
 
-\subsection{Synthetic Guarded Domain Theory}
+\subsection{Synthetic Guarded Domain Theory}\label{sec:sgdt}
 One way to avoid the tedious reasoning associated with step-indexing is to work
 axiomatically inside of a logical system that can reason about non-well-founded recursive
 constructions while abstracting away the specific details of step-indexing required
@@ -126,6 +126,8 @@ If we only ever had one clock, then we would not need to bother defining this no
 However, the notion of \emph{clock quantification} is crucial for encoding coinductive types using guarded
 recursion, an idea first introduced by Atkey and McBride \cite{atkey-mcbride2013}.
 
+Most of the developments in this paper will take place in the context of a single clock $k$,
+but in Section \ref{TODO}, we will need to make use of clock quantification.
 
 % Clocked Cubical Type Theory
 \subsubsection{Ticked Cubical Type Theory}
@@ -149,8 +151,9 @@ a term $M[t'] : A[t'/t]$. We will also write tick application as $M_t$.
 Conversely, if in a context $\Gamma, t : \tick\, k$ we have that $M$ has type $A$,
 then in context $\Gamma$ we have $\lambda t.M$ has type $\later A$. % TODO dependent version?
 
-The statements in this paper have been formalized in a variant of Agda called
-Guarded Cubical Agda \cite{veltri-vezzosi2020}, an implementation of Clocked Cubical Type Theory.
+% TODO mention Agda implementation of Clocked Cubical Type Theory?
+%The statements in this paper have been formalized in a variant of Agda called
+%Guarded Cubical Agda \cite{veltri-vezzosi2020}, an implementation of Clocked Cubical Type Theory.
 
 
 % TODO axioms (clock irrelevance, tick irrelevance)?
