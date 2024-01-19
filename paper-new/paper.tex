@@ -1,4 +1,4 @@
-\documentclass[sigconf,anonymous,review,screen]{acmart}
+\documentclass[sigconf,anonymous,review,screen,9pt]{acmart}
 \let\Bbbk\relax
 
 \usepackage{quiver}
@@ -124,6 +124,11 @@
 
 % 5. Formalization in Guarded Cubical Agda
 
+\newif\ifdraft
+\drafttrue
+\renewcommand{\max}[1]{\ifdraft{\color{blue}[{\bf Max}: #1]}\fi}
+\newcommand{\eric}[1]{\ifdraft{\color{orange}[{\bf Steven}: #1]}\fi}
+\newcommand{\tingting}[1]{\ifdraft{\color{red}[{\bf Pedro}: #1]}\fi}
 
 \input{intro}
 

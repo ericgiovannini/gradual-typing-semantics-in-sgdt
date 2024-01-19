@@ -11,10 +11,9 @@ program is free of type errors, and moreover, soundness of the equational theory
 that program optimizations are valid.
 Meanwhile, dynamic typing allows the programmer to rapidly prototype
 their application code without needing to commit to fixed type signatures for their
-functions. Unfortunately, most languages choose between static or dynamic typing.
-As a result, programmers that initially write their code in a dynamically typed language
-in order to benefit from faster prototyping and development time will need to rewrite the
-entire codebase in a static language if they would like to receive the benefits of static
+functions. Most languages choose between static or dynamic typing and as a result, programmers that initially write their code in a dynamically typed language
+in order to benefit from faster prototyping and development time need to rewrite the
+some or all of their codebase in a static language if they would like to receive the benefits of static
 typing once their codebase has matured.
 
 \emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to resolve this tension
@@ -36,7 +35,6 @@ dynamic to static, and allow for those different parts to interact with one anot
 Moreover, gradually-typed languages should support the smooth migration from
 dynamic typing to static typing, in that the programmer can initially leave off the
 typing annotations and provide them later without altering the meaning of the program.
-
 % Sound gradual typing
 Furthermore, the parts of the program that are written in a dynamic style should soundly
 interoperate with the parts that are written in a static style.
@@ -53,16 +51,32 @@ violated the typing contract imposed by statically typed code.
 % this interaction should respect the guarantees made by the static types.
 
 % Graduality property
-Formally speaking, gradually typed languages should satisfy the 
+One of the fundamental theorems for gradually typed languages is 
 \emph{dynamic gradual guarantee}, originally defined by Siek, Vitousek, Cimini,
-and Boyland \cite{siek_et_al:LIPIcs:2015:5031}.
-This property is also referred to as \emph{graduality} \cite{new-ahmed2018},
+and Boyland \cite{siek_et_al:LIPIcs:2015:5031}, also called \emph{graduality} \cite{new-ahmed2018},
 by analogy with parametricity.
-Intuitively, graduality says that going from a dynamic to static style should not
-introduce changes in the meaning of the program.
-More specifically, making the types more precise by adding typing annotations
-will either result in the same behavior as the original, less precise program,
-or will result in a type error.
+Informally, graduality says that going from a dynamic to static style should only allow for the introduction of static or dynamic type errors, and not otherwise change the meaning of the program.
+%
+This is a way to capture programmer intuition that increasing type
+precision corresponds to a generalized form assertions at runtime
+only, and so they can trust that prior observed behavior of their
+dynamically typed code will remain unchanged as long as it satisfies
+the new stricter typing discipline.
+
+Additionally, gradually typed languages should offer some of the
+benefits of static typing. While classical type soundness, that
+well-typed programs are free from runtime errors, is not compatible
+with runtime type errors, we can instead focus on \emph{type-based
+reasoning}. For instance, while dynamically typed $\lambda$ calculi
+only satisfy $\beta$ equality for their type formers, statically typed
+$\lambda$ calculi additionally satisfy type-dependent $\eta$
+properties that ensure that functions are determined by their behavior
+under application and that pattern matching on data types
+is safe and exhaustive.
+
+Our goal in this work is to provide a reusable semantic framework for
+gradually typed languages that can be used to prove the aforementioned
+properties: graduality and type-based reasoning. \max{TODO: say more here}
 
 
 \subsection{Current Approaches to Proving Graduality}
