@@ -444,12 +444,16 @@ The judgment $\gamma : f \bisim_{A_i, A_o} f'$ is defined to mean:
   \item $\tvsim(\gamma) = f'$
 \end{enumerate}
 
+Lastly, we require that for any value object $A$, the hom-set $\ef(FA, FA)$ contains a
+distinguished morphism $\delta_A$, such that $\delta_A \bisim_{FA, FA} \id_{FA}$.
+
 
 % Spelling this all out concretely, for any pair...
 
 \begin{definition}\label{def:step-1-model}
 A \emph{step-1 intensional model} consists of all the data of a step-0 intensional model along
-with the additional categories and functors for bisimiarity described above.
+with the additional categories and functors for bisimiarity described above, as  well as
+the existence of a distinguised computation morphism $\delta_A \bisim \id_{FA}$ for each $A$.
 \end{definition}
 
 \subsubsection{Perturbations}\label{sec:abstract-model-perturbations}
@@ -468,6 +472,10 @@ If $\delta \in P^V_A$, we will sometimes omit the homomorphism $\ptbv_A$ and sim
 $\delta$ to refer to the morphism $\ptbv_A(\delta) \in \vf(A,A)$, and likewise
 for computation perturbations. The context will make clear whether we are referring
 to an element of the perturbation monoid or the corresponding morphism.
+
+We require that $\delta_A \in \pe_{FA}$ for all $A$, where $\delta_A$ is the distinguished
+morphism that is required to be present in every hom-set $\ef(FA, FA)$ per the definition
+of a step-1 model.
 
 The perturbations must be preserved by $\times$, $\arr$, $U$, and $F$.
 
@@ -624,22 +632,26 @@ when doing so!).
 \subsubsection{The Dynamic Type}
 
 Now we can discuss what it means for an intensional model to model the dynamic type.
+This applies to any of the above abstract model definitions, i.e., steps 0-3.
 
 \begin{definition}\label{def:step-4-model}
-  A \emph{step-4 intensional model}, or simply an \emph{intensional model}, consists
-  of all the data of a step-3 intensional model, along with 
+  A \emph{step-$i$ intensional model with dyn} is a step-$i$ model $\mathcal M$ such that:
   %a distinguished value object $D \in \ob(\vf)$ such that:
   %
   \begin{enumerate}
-    \item A distinguished value object $D \in \ob(\vf)$.
-    (By definition of a step-3 model, this means there is also a monoid $\pv_D$ of
-    perturbations and a homomorphism $\ptbv_D$.)
+    \item There is a distinguished value object $D \in \ob(\vf)$.
+   
     \item For each value type $A$, there is a value relation $\text{inj}_A : A \rel D$.
-    (By definition of a step-3 model, this relation satisfies the push-pull property and is
-    quasi-left-representable.)
+    
     \item If $c : A \rel A'$, then $\text{inj}_{A} = c \comp \text{inj}_{A'}$.
   \end{enumerate}
 \end{definition}
+
+% (By definition of a step-3 model, this relation satisfies the push-pull property and is
+% quasi-left-representable.)
+
+% (By definition of a step-3 model, this means there is also a monoid $\pv_D$ of
+% perturbations and a homomorphism $\ptbv_D$.)
 
 
 
@@ -651,26 +663,17 @@ Now we can discuss what it means for an intensional model to model the dynamic t
 In the previous section, we have given the definition of an intensional model
 of gradual typing as a series of steps with each definition building on the previous one.
 %
-Here, we discuss how to construct an extensional model from an intensional model.
-We do so in several phases, beginning with a step-1 intensional model
+Here, we discuss how to construct an extensional model from an intensional model with dyn.
+We do so in several phases, beginning with a step-1 intensional model with dyn
 and ending with an extensional model.
 Moreover, this construction is \emph{modular}, in that each phase of the
 construction does not depend on the details of the previous ones.
-However, this process cannot proceed in isolation: some phases require
-additional inputs. We will make clear what data must be supplied to each phase.
-
-% Going from a step-1 intensional model $\mathcal{M}_1$ to a step-2 intensional model
-% requires defining a bisimilarity relation on the value morphisms and on
-% the computation morphisms of $\mathcal{M}_1$.
-% In particular, we need for every $A$ and $A'$ a reflexive, symmetric relation 
-% $\bisim_{A,A'}$ on $\vf(A, A')$ and for every $B$ and $B'$ a reflexive, symmetric relation
-% $\bisim_{B,B'}$ on $\ef(B, B')$. Moreover, the relation must respect composition of morphisms.
-% This phase of the construction is quite simple, because it consists entirely of extra structure
-% supplied as input to the construction.
+% However, this process cannot proceed in isolation: some phases require
+% additional inputs. We will make clear what data must be supplied to each phase.
 
 \subsubsection{Adding Perturbations}
 
-Suppose we have a \hyperref[def:step-1-model]{step-1 intensional model} $\mathcal{M}$.
+Suppose we have a \hyperref[def:step-1-model]{step-1 intensional model} $\mathcal{M}$ with dyn.
 Recall that a step-1 intensional model consists of a step-0 model (i.e., a
 category internal to the category of CBPV models), along with the necessary
 categories and functors for bisimilarity as discussed in Section
@@ -678,8 +681,6 @@ categories and functors for bisimilarity as discussed in Section
 Further, recall that a \hyperref[def:step-2-model]{step-2 model} has everything
 a step-1 model has, with the addition of perturbation monoids $\pv_A$ for all
 $A$ and $\pe_B$ for all $B$.
-% These perturbations must be interpretable as endomorphisms via homomorphisms
-% $\ptb_A$ and $\ptb_B$, 
 These perturbations must be interpretable via homomorphisms
 $\ptb_A$ and $\ptb_B$ as endomorphisms bisimilar to the identity,
 and moreover, the push-pull property must hold for all
@@ -704,47 +705,8 @@ For the proof, see Lemma \ref{lem:step-1-model-to-step-2-model} in the Appendix.
 
 Now suppose we have a step-2 intensional model $\mathcal{M}$.
 We will describe how to construct a \hyperref[def:step-3-model]{step-3 intensional model} $\mathcal{M'}$.
-We begin with a definition.
-
-\begin{definition}[representation structure]
-Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure} $\rho^L_c$ for $c$ consists of
-a value morphism $u \in \vf(A, A')$ such that $c$ is quasi-left-representable by $u$ (see Definition \ref{def:quasi-left-representable}).
-
-Likewise, let $d : B \rel B'$. A \emph{right-representation structure} $\rho^R_d$ for $d$ consists of
-a computation morphism $d \in \ef(B', B)$ such that $d$ is quasi-right-representable by $d$ (see Definition \ref{def:quasi-right-representable}).
-\end{definition}
-
-(Notice that the direction of the morphism is opposite in the definition of
-right-representation structure.)
 
 We now describe the construction of a step-3 model $\mathcal M'$.
-The objects of $\mathcal M'$ are defined to be the same as the objects of the
-step-2 model $\mathcal M$.
-The value and computation morphisms in $\mathcal M'$ are the same as those of
-$\mathcal M$.
-A value relation is defined to be a pair $(c, \rho^L_c)$ with $c$ a value
-relation in $\mathcal M$ and $\rho^L_c$ a left-representation structure for $c$.
-Likewise, a computation relation is defined to be a pair $(d, \rho^R_d)$ with
-$d$ a computation relation in $\mathcal M$ and $\rho^R_d$ a right-representation
-structure for $d$.
-Lastly, morphisms of value relations (i.e., value squares) are defined by simply
-ignoring the representation structure. That is, a morphism of value relations
-$\alpha \in \vsq'((c, \rho^L_c), (c' \rho^L_{c'}))$ is simply a morphism of value
-relations in $\vsq(c, c')$. Likewise for computations.
-
-Now we define the functors $F$, $U$, and $\arr$.
-On objects, the behavior is the same as the respective functors in $\mathcal M$.
-For relations, we define 
-$\Fsq' (c, \rho^L_c) = (\Fsq c, \rho^R_{F c})$ and
-$\Usq' (d, \rho^R_d) = (\Usq d, \rho^L_{U d})$.
-We define $(c, \rho^L_c) \arr (d, \rho^R_d) = (c \arr d, \rho^R_{c \arr d})$.
-
-
-
-We now verify that the construction meets the requirements of a step-3 model.
-First, we check that composition of value relations (resp. computation relations)
-is well-defined. This might seem obvious, but there is actually a subtlety here:
-what should the representation structure be for the composition?
 
 
 
