@@ -1,3 +1,67 @@
+\section{Call-by-push-value}
+
+In CBPV models, all the type constructors are interpreted as functors:
+\begin{enumerate}
+\item $\to : \op\calV \times \calE \to \calE$
+\item $\times : \calV \times \calV \to \calV$
+\item $F : \calV \to \calE$
+\item $U : \calE \to \calV$
+\end{enumerate}
+That is, they all have functorial actions on \emph{pure} morphisms of
+value types and \emph{linear} morphisms of computation types.
+%
+We use these functorial actions extensively in the construction of
+casts and their corresponding perturbations. But when defining
+downcasts of value types and upcasts of computation types, we
+additionally need a second functorial action of these categories:
+functoriality in \emph{impure} morphisms of value types and
+\emph{non-linear} morphisms of computation types. These notions of
+morphism are given by the \emph{Kleisli} categories $\calVk$ and
+$\calEk$ which have value types and computation types as objects but
+morphisms are defined as
+\[ \calVk(A,A') = \calE(F A, FA')\]
+\[ \calEk(B,B') = \calV(U B, U B')\]
+with composition given by composition in $\calE/\calV$.  That is we
+need to define a second functorial action, that agrees with the above
+on objects for these Kleisli categories:
+\begin{enumerate}
+\item $\tok : \op\calVk \square \calEk \to \calEk$
+\item $\timesk : \calVk \square \calVk \to \calVk$
+\item $\Fk : \calVk \to \calEk$
+\item $\Uk : \calEk \to \calVk$
+\end{enumerate}
+Note that rather than the product of categories we use the ``funny
+tensor product'' $\square$. This is because the action on
+impure/non-linear morphisms for $\tok/\timesk$ do not satisfy ``joint
+functoriality'' but instead only ``separate functoriality'', meaning
+we give rather than an action on morphisms in both categories
+simultaneously instead an action on each argument categories morphisms
+with the object in the other category fixed. The existence of these
+functorial actions for $\tok$ and $\timesk$ is reliant on the
+\emph{strength} of the adjunction. We describe them using the internal
+language of CBPV in order to more easily verify their
+existence/functoriality:
+\begin{enumerate}
+\item For $\tok$ we define for $l : \calE(F A,F A')$ and $B \in \calE$ the morphism $l \tok B : \calV(U(A' \to B),U(A\to B))$ as
+  \[ t:U(A'\to B) \vdash l \tok B = \{ \lambda x. x' \leftarrow l\,[\ret x]; ! t x'\} : U(A \to B) \]
+  and for $A \in \calV$ and $f : \calV(UB,UB')$ we define $A \tok f : \calV(U(A \to B),U(A\to B'))$ as
+  \[ t : U(A \to B) \vdash A \tok f = \{ \lambda x. !f[\{ ! t x \}]\} \]
+\item For $\timesk$ we define for $l : \calE(F A_1,FA_2)$ and $A' \in \calV$ the morphism $l \timesk A_2$ as
+  \[ \bullet : F(A_1\times A_2) \vdash l \timesk A_2 = (x_1,x_2) \leftarrow \bullet; x_1' \leftarrow l[\ret x_1]; \ret (x_1',x_2) : F(A_1'\times A_2)\]
+  and $A_1 \timesk l$ is defined symmetrically.
+\item For $\Uk$ we need to define for $f : \calV(UB,UB')$ a morphism $\Uk f : \calE(FUB,FUB')$. This is simply given by the functorial action of $F$: $\Uk f = F(f)$
+\item Similarly $\Fk l = Ul$
+\end{enumerate}
+
+Functoriality in each argument is easily established, meaning for
+example for the function type is functorial in each argument:
+\begin{enumerate}
+\item $(l \circ l') \tok B = (l' \tok B) \circ (l \tok B)$
+\item $\id \tok B = \id$
+\item $A \tok (f \circ f') = (A \tok f) \circ (A \tok f)$
+\item $A \tok \id = \id$
+\end{enumerate}
+
 \section{Details of the Construction of an Extensional Model}
 
 In Section \ref{sec:extensional-model-construction}, we outline the construction
