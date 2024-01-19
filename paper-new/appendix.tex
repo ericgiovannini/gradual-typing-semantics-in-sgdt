@@ -69,73 +69,156 @@ of an extensional model of gradual typing starting from a step-1 intensional mod
 In this section, we provide the details for each of the constructions mentioned there.
 
 \begin{lemma}\label{lem:step-1-model-to-step-2-model}
-Let $\mathcal M$ be a \hyperref[def:step-1-model]{step-1 intensional model}.
-Suppose we are given the following data:
+Let $\mathcal M$ be a \hyperref[def:step-1-model]{step-1 intensional model} with dyn.
 
-\begin{enumerate}
-    \item For each value type $A$, a monoid $\pv_A$ and homomorphism 
-    \[ \ptbv_A : \pv_A \to \{ f \in \vf(A,A) \mid f \bisim \id \} \]
-
-    \item For each computation type $B$, a monoid $\pv_B$ and homomorphism
-    \[ \ptbe_B : \pe_B \to \{ g \in \ef(B,B) \mid g \bisim \id \} \]
-
-    \item For each value type $A$, a distinguished endomorphism
-    $\delta_A \in \ef(FA, FA)$ such that $\delta_A \bisim \id_{FA}$.
-\end{enumerate}
-
-Then we can construct a \hyperref[def:step-2-model]{step-2 intensional model}.
+Then we can construct a \hyperref[def:step-2-model]{step-2 intensional model} with dyn.
 \end{lemma}
 \begin{proof}
-    Write 
-    %
-    \[ \mathcal M = (\vf, \vsq, \ef, \esq, \Ff, \Fsq, \Uf, \Usq, \arrf, \arrsq). \] 
-    %
-    Define a step-2 model as follows:
+    % Write 
+    % %
+    % \[ \mathcal M = (\vf, \vsq, \ef, \esq, \Ff, \Fsq, \Uf, \Usq, \arrf, \arrsq). \] 
+    % %
+
+    Define a step-2 model $\mathcal M'$ as follows:
     \begin{itemize}
-      \item Value objects are tuples of an object $A$ in $\vf$ along with the monoid
-      $\pv_A$ and homomorphism $\ptbv_A$:
-      $\ob(\vf') = \{ (A, \pv_A, \ptbv_A) \mid A \in \ob(\vf) \}$.
-      
-      \item Morphisms are given by morphisms of the underlying objects in $\vf$, i.e.,
-       $\vf'((A, \pv_A, \ptbv_A), (A', \pv_{A'}, \ptbv_{A'})) = \vf(A, A')$.
-      
-      \item Computation objects are tuples 
-      $\ob(\ef') = \{ (B, \pe_B, \ptbe_B) \mid B \in \ob(\ef) \}$.
-      
-      \item Computation morphisms are $\ef'((B, \pv_B, \ptbv_B), (B', \pv_{B'}, \ptbv_{B'})) = \ef(B, B')$.
-      
-      \item The objects $\vsq'$ and $\esq'$ are the same as those of $\vsq$ and $\esq$.
-      
-      \item The morphisms of $\vsq'$ and $\esq'$ are the same as those of $\vsq$ and $\esq$.
-    %   \item $\ob(\vsq') = \ob(\vsq)$
-    %   \item $\ob(\esq') = \ob(\esq)$
-    %   \item $\vsq'(c, c') = \vsq(c, c')$
-    %   \item $\esq'(d, d') = \esq(d, d')$
+      \item Value objects are tuples consisting of:
+      \begin{itemize}
+        \item A value object $A$ in $\vf$ 
+        \item A monoid of ``pure'' perturbations $P_A$ 
+        \item A homomorphism of monoids $\ptb_A : P_A \to \{ f \in \vf(A, A) \mid f \bisim \id_A \}$
+        \item A monoid of ``impure'' perturbations $P^K_A$ that contains a distinguished element $\delta^*$
+        \item A homomorphism of monoids $\ptbk_A : P^K_A \to \{ \phi \in \ef(FA, FA) \mid \phi \bisim \id_{FA} \}$
+        such that $\ptbk_A(\delta^*) = \delta_A^*$
+      \end{itemize}  
+
+      \item Computation objects are tuples consisting of:
+      \begin{itemize}
+        \item A computation object $B$ in $\ef$
+        \item A monoid of ``pure'' perturbations $P_B$
+        \item A homomorphism of monoids $\ptb_B : P_B \to \{ \phi \in \ef(B, B) \mid \phi \bisim \id_B \}$
+        \item A monoid of ``impure'' perturbations $P^K_B$
+        \item A homomorphism of monoids $\ptbk_B : P^K_B \to \{ g \in \vf(UB, UB) \mid g \bisim \id_{UB} \}$.
+      \end{itemize}
+
+      \item Morphisms are given by morphisms of the underlying objects in $\vf$ and $\ef$, respectively
+      %, i.e.,
+      % \[ \vf'((A, P_A, \ptb_A, P^K_A, \ptbk_A), (A', P_{A'}, \ptb_{A'}, P^K_{A'}, \ptbk_{A'})) = \vf(A, A') \]
+      %
+      % and likewise for computations.
+   
+    \end{itemize}
+
+    Before introducing the relations, we make a definition.
+
+    \begin{definition}[push-pull structure]
+      Let $c : A \rel A'$ be a value relation of $\mathcal M$. A \emph{value push-pull structure} $\piv_c$ for $c$ consists of:
+      \begin{itemize}
+        \item A function $\push : P_A \to P_{A'}$ 
+              such that for all $\delta^l \in P_A$ we have $\delta^l \ltdyn_c^c \push(\delta^l)$.
+        \item A function $\push^K : P^K_A \to P^K_{A'}$ 
+              such that for all $\delta^K_l \in P^K_A$ we have $\delta^K_l \ltdyn_{Fc}^{Fc} \push(\delta^K_l)$.
+        \item A function $\pull : P_{A'} \to P_A$
+              such that for all $\delta_r \in P_{A'}$ we have $\pull(\delta^r) \ltdyn_{c}^c \delta^r$.
+        \item A function $\pull^K : P^K_{A'} \to P^K_A$
+              such that for all $\delta^K_r \in P^K_{A'}$ we have $\pull(\delta^K_r) \ltdyn_{Fc}^{Fc} \delta^K_r$.
+      \end{itemize}
+
+      For $d : B \rel B'$ a computation relation, we define a \emph{computation push-pull structure} $\pie_d$ for $d$
+      in an analogous manner.
+    \end{definition}
+
+
+    Now we continue with the description of the construction:
+    \begin{itemize}
+
+      \item The objects of $\vsq'$ (i.e., the value relations) are pairs consisting of:
+      \begin{itemize}
+        \item A value relation $c \in \vsq$
+        \item A push-pull structure $\piv_c$ for $c$
+      \end{itemize}
+
+      The objects of $\esq'$ are defined analogously.
+            
+      \item The morphisms of $\vsq'$ and $\esq'$ are given by the morphisms of $\vsq$ and $\esq$.
       
       % Functors \times, +, F, U, arrow
-      \item We define $F$ on objects by $F (A, \pv_A, \ptbv_A) = (FA, (1 + \pv_A), h_F)$
-      where $1$ is the trivial monoid, $+$ is the coproduct in the category of monoids, and $h_F$ is the homomorphism defined as follows:
+     
+      % \item We define $F$ on objects by $F (A, \pv_A, \ptbv_A) = (FA, (1 + \pv_A), h_F)$
+      % where $1$ is the trivial monoid, $+$ is the coproduct in the category of monoids, and $h_F$ is the homomorphism defined as follows:
 
-      \item We define $U$ on objects by $U (B, \pe_B, \ptbe_B) = (UB, \pe_B, h_U)$
-      where $h_U(p_B) = U(\ptbe_B(p_B))$.
+      % \item We define $U$ on objects by $U (B, \pe_B, \ptbe_B) = (UB, \pe_B, h_U)$
+      % where $h_U(p_B) = U(\ptbe_B(p_B))$.
       
-      \item We define $(A, \pv_A, \ptbv_A) \arr (B, \pe_B, \ptbe_B) = (A \arr B, \pv_A \times \pe_B, h_\arr)$
-      where $\times$ is the product in the category of monoids, and $h_\arr$ is defined by 
-      $h_\arr(p_A, p_B) = \ptbv_A(p_A) \arr \ptbe_B(p_B)$.
+      % \item We define $(A, \pv_A, \ptbv_A) \arr (B, \pe_B, \ptbe_B) = (A \arr B, \pv_A \times \pe_B, h_\arr)$
+      % where $\times$ is the product in the category of monoids, and $h_\arr$ is defined by 
+      % $h_\arr(p_A, p_B) = \ptbv_A(p_A) \arr \ptbe_B(p_B)$.
     \end{itemize}
 \end{proof}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{lemma}\label{lem:step-2-model-to-step-3-model}
-    Let $\mathcal M$ be a \hyperref[def:step-2-model]{step-2 intensional model}.
-    Suppose we are given the following data:
+  Let $\mathcal M$ be a \hyperref[def:step-2-model]{step-2 intensional model}.
 
-    Then we can construct a \hyperref[def:step-3-model]{step-3 intensional model}.
+  Then we can construct a \hyperref[def:step-3-model]{step-3 intensional model}.
 \end{lemma}
 \begin{proof}
+  Write 
+  %
+  \[ \mathcal M = (\vf, \vsq, \ef, \esq, \Ff, \Fsq, \Uf, \Usq, \arrf, \arrsq). \] 
+  %
 
+  We begin with a definition.
+
+  \begin{definition}[representation structure]
+  Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure} $\rho^L_c$ for $c$ consists of
+  a value morphism $e_c \in \vf(A, A')$ such that $c$ is quasi-left-representable by $e_c$ (see Definition \ref{def:quasi-left-representable}).
+  
+  Likewise, let $d : B \rel B'$. A \emph{right-representation structure} $\rho^R_d$ for $d$ consists of
+  a computation morphism $p_d \in \ef(B', B)$ such that $d$ is quasi-right-representable by $p_d$ (see Definition \ref{def:quasi-right-representable}).
+  \end{definition}
+  
+  (Notice that the direction of the morphism is opposite in the definition of right-representation structure.)
+
+  We define a step-3 model $\mathcal M'$ as follows:
+  \begin{itemize}
+    \item The objects of $\mathcal M'$ are defined to be the same as the objects of $\mathcal M$.
+    \item The value and computation morphisms in $\mathcal M'$ are the same as those of $\mathcal M$.
+    \item A value relation is defined to be a tuple $(c, \rho^L_c, \rho^R_{Fc})$ where:
+    \begin{itemize}
+      \item $c$ is a value relation in $\mathcal M$, and 
+      \item $\rho^L_c$ a left-representation structure for $c$, and 
+      \item $\rho^R_{Fc}$ a right-representation structure for $Fc$.
+    \end{itemize}
+    \item Likewise, a computation relation is defined to be a tuple $(d, \rho^R_d, \rho^L_{Ud})$ with
+    \begin{itemize}
+      \item $d$ a computation relation in $\mathcal M$
+      \item $\rho^R_d$ a right-representation structure for $d$
+      \item $\rho^L_{Ud}$ a left-representation structure for $Ud$
+    \end{itemize}
+    \item Morphisms of value relations (i.e., the value squares) are defined by simply
+    ignoring the representation structures. That is, a morphism of value relations
+    $\alpha \in \vsq'((c, \rho^L_c, \rho^R_{Fc}), (c' \rho^L_{c'}, \rho^R_{Fc'}))$ is simply a morphism of value
+    relations in $\vsq(c, c')$. Likewise for computations.
+  \end{itemize}
 \end{proof}
+
+% Now we define the functors $F$, $U$, $\times$, and $\arr$.
+
+% On objects, the behavior is the same as the respective functors in $\mathcal M$.
+
+% For relations, we define 
+% $\Fsq' (c, \rho^L_c, \rho^R_{Fc}) = (\Fsq c, \rho^R_{Fc}, UF(\rho^L_c))$ and
+% $\Usq' (d, \rho^R_d, \rho^L_{Ud}) = (\Usq d, \rho^L_{Ud}, FU(\rho^R_d))$.
+
+% We define $(c, \rho^L_c) \arr (d, \rho^R_d) = (c \arr d, \rho^R_{c \arr d})$.
+
+
+
+% We now verify that the construction meets the requirements of a step-3 model.
+% First, we check that composition of value relations (resp. computation relations)
+% is well-defined.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
