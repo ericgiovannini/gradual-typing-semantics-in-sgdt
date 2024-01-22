@@ -42,21 +42,21 @@ functorial actions for $\tok$ and $\timesk$ is reliant on the
 language of CBPV in order to more easily verify their
 existence/functoriality:
 \begin{enumerate}
-\item For $\tok$ we define for $l : \calE(F A,F A')$ and $B \in \calE$ the morphism $l \tok B : \calV(U(A' \to B),U(A\to B))$ as
-  \[ t:U(A'\to B) \vdash l \tok B = \{ \lambda x. x' \leftarrow l\,[\ret x]; ! t x'\} : U(A \to B) \]
+\item For $\tok$ we define for $\phi : \calE(F A,F A')$ and $B \in \calE$ the morphism $\phi \tok B : \calV(U(A' \to B),U(A\to B))$ as
+  \[ t:U(A'\to B) \vdash \phi \tok B = \{ \lambda x. x' \leftarrow \phi\,[\ret x]; ! t x'\} : U(A \to B) \]
   and for $A \in \calV$ and $f : \calV(UB,UB')$ we define $A \tok f : \calV(U(A \to B),U(A\to B'))$ as
   \[ t : U(A \to B) \vdash A \tok f = \{ \lambda x. !f[\{ ! t x \}]\} \]
-\item For $\timesk$ we define for $l : \calE(F A_1,FA_2)$ and $A' \in \calV$ the morphism $l \timesk A_2$ as
-  \[ \bullet : F(A_1\times A_2) \vdash l \timesk A_2 = (x_1,x_2) \leftarrow \bullet; x_1' \leftarrow l[\ret x_1]; \ret (x_1',x_2) : F(A_1'\times A_2)\]
-  and $A_1 \timesk l$ is defined symmetrically.
+\item For $\timesk$ we define for $\phi : \calE(F A_1,FA_2)$ and $A' \in \calV$ the morphism $\phi \timesk A_2$ as
+  \[ \bullet : F(A_1\times A_2) \vdash \phi \timesk A_2 = (x_1,x_2) \leftarrow \bullet; x_1' \leftarrow \phi[\ret x_1]; \ret (x_1',x_2) : F(A_1'\times A_2)\]
+  and $A_1 \timesk \phi$ is defined symmetrically.
 \item For $\Uk$ we need to define for $f : \calV(UB,UB')$ a morphism $\Uk f : \calE(FUB,FUB')$. This is simply given by the functorial action of $F$: $\Uk f = F(f)$
-\item Similarly $\Fk l = Ul$
+\item Similarly $\Fk \phi = U\phi$
 \end{enumerate}
 
 Functoriality in each argument is easily established, meaning for
 example for the function type is functorial in each argument:
 \begin{enumerate}
-\item $(l \circ l') \tok B = (l' \tok B) \circ (l \tok B)$
+\item $(\phi \circ \phi') \tok B = (\phi' \tok B) \circ (\phi \tok B)$
 \item $\id \tok B = \id$
 \item $A \tok (f \circ f') = (A \tok f) \circ (A \tok f)$
 \item $A \tok \id = \id$
@@ -65,8 +65,8 @@ example for the function type is functorial in each argument:
 Finally, note that all of these constructions lift to squares in a
 double CBPV model since the squares themselves form a CBPV model and
 the projection functions preserve CBPV structure. For instance, given a square
-$\alpha : l \ltdyn_{F c_o}^{F c_i} l'$ and a horizontal morphism $d : B \rel B'$ of appropriate type, we get a square
-\[ \alpha \tok d : l \tok B \ltdyn_{U(c_o \to d)}^{U(c_i \to d)} l' \tok B' \]
+$\alpha : \phi \ltdyn_{F c_o}^{F c_i} \phi'$ and a horizontal morphism $d : B \rel B'$ of appropriate type, we get a square
+\[ \alpha \tok d : \phi \tok B \ltdyn_{U(c_o \to d)}^{U(c_i \to d)} \phi' \tok B' \]
 
 \section{Details of the Construction of an Extensional Model}
 
