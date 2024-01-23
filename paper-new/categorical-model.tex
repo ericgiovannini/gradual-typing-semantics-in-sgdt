@@ -222,131 +222,110 @@ such that $\upf\, c$ ``represents $c$" (we will define this shortly). % such tha
 In reality, it is slightly more complicated, since we need to build composition of edges
 into the definition, but the idea is similar.
 
-In particular, let $c : A \rel A'$ and $d : A' \rel A''$,
-and let $f \in \mathcal V_f(A, A')$ and $g \in \mathcal V_f(A', A'')$.
-We say that the pair $(c,d)$ is \emph{left-representable by} $(f, g)$
-if the following two squares commute:
-
+In particular, let $c : A \rel A'$ and $f \in \mathcal V_f(A, A')$. We
+say that $c$ is \emph{left-representable by} $f$ if for any $c_l : A_l
+\rel A$ and $c_r : A' \rel A_r$ the following squares commute\max{is ``commute'' good terminology?}:
 \begin{center}
   \begin{tabular}{ m{14em} m{14em} } 
     % UpL
     \begin{tikzcd}[ampersand replacement=\&]
-      A \& {A'} \& {A''} \\
-      {A'} \&\& {A''}
+      A \& {A'} \& {A_r} \\
+      {A'} \&\& {A_r}
       \arrow["f"', from=1-1, to=2-1]
       %
       \arrow[from=1-3, to=2-3, Rightarrow, no head]
       %
       \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-      \arrow["d", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+      \arrow["c_r", "\shortmid"{marking}, no head, from=1-2, to=1-3]
       %
-      \arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+      \arrow["c_r"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
     \end{tikzcd}
     &
     % UpR
     \begin{tikzcd}[ampersand replacement=\&]
-      A \&\& {A'} \\
-      {A} \& {A'} \& {A''}
+      A_l \&\& {A} \\
+      {A_l} \& {A} \& {A'}
       \arrow[from=1-1, to=2-1, Rightarrow, no head]
       %
-      \arrow["g", from=1-3, to=2-3]
+      \arrow["f", from=1-3, to=2-3]
       %
-      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow["c_l", "\shortmid"{marking}, no head, from=1-1, to=1-3]
       %
-      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \arrow["d"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+      \arrow["c_l"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
     \end{tikzcd}
   \end{tabular}
 \end{center}
 
-Dually, let $c \in \mathcal E_e(B, B')$ and $d \in \mathcal E_e(B', B'')$,
-and let $f \in \mathcal E_f(B'', B')$ and $g \in \mathcal E_f(B', B)$.
-We say the pair $(c,d)$ is \emph{right-representable by} $(f,g)$ if the
-following two squares commute:
+Dually, let $d \in B \rel B'$ and $\phi \in \mathcal E_f(B', B)$.  We
+say that $d$ is \emph{right-representable by} $\phi$ if for any $d_l :
+B_l \rel B$ and $d_r : B' \rel B_r$ the following two squares commute:
 
 \begin{center}
   \begin{tabular}{ m{14em} m{14em} } 
     % DnR
     \begin{tikzcd}[ampersand replacement=\&]
-      {B} \& {B'} \& {B''} \\
-      {B} \&\& {B'}
+      {B_l} \& {B} \& {B'} \\
+      {B_l} \&\& {B}
       \arrow[from=1-1, to=2-1, Rightarrow, no head]
       %
-      \arrow["f", from=1-3, to=2-3]
+      \arrow["\phi", from=1-3, to=2-3]
       %
-      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow["d_l", "\shortmid"{marking}, no head, from=1-1, to=1-2]
       \arrow["d", "\shortmid"{marking}, no head, from=1-2, to=1-3]
       %
-      \arrow["c"', from=2-1, to=2-3, no head]
+      \arrow["d_l"', from=2-1, to=2-3, no head]
     \end{tikzcd}
     &
     % DnL
     \begin{tikzcd}[ampersand replacement=\&]
-      {B'} \&\& {B''} \\
-      {B} \& {B'} \& {B''}
-      \arrow["g"', from=1-1, to=2-1]
+      {B'} \&\& {B_r} \\
+      {B} \& {B'} \& {B_r}
+      \arrow["\phi"', from=1-1, to=2-1]
       %
       \arrow[from=1-3, to=2-3, Rightarrow, no head]
       %
-      \arrow["d", from=1-1, to=1-3, no head]
+      \arrow["d_r", from=1-1, to=1-3, no head]
       %
-      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \arrow["d"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+      \arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["d_r"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
     \end{tikzcd}
   \end{tabular}
 \end{center}
 
-Then we formulate the relationship between value relation morphisms and
+Then we formulate the relationship between relation morphisms and
 function morphisms as follows:
 \begin{enumerate}
-  \item There is a functor $\upf : \mathcal V_e \to \mathcal V_f$ that is the
-  identity on objects, such that $\upf_*(\mathcal V_e)$, the essential image of
-  $\mathcal V_e$ under $\upf$, is thin.
-  The objects of $\upf_*(\mathcal V_e)$ are the objects of $\mathcal V_f$, and
-  the hom-set
-  $\upf_*(\mathcal V_e)(A, A') = \{ f \in \mathcal V_f(A,A') \mid \exists c \in \mathcal V_e(A,A'). \upf(c) = f \}$.
-  
-  \item Every pair of morphisms $(c,d) \in \mathcal V_e(A, A') \times \mathcal V_e(A', A'')$ is
-  left-representable by $(\upf(c), \upf(d))$.
+\item There is an identity-on-objects functor $\upf : \mathcal V_e \to
+  \mathcal V_f$ such that every $c$ is left-representable by $\upf(c)$.
+\item There is an identity-on-objects functor $\dnf : \mathcal
+  E_e^{op} \to \mathcal \mathcal E_f$ such that every $d$ is
+  right-representable by $\dnf(d)$.
 \end{enumerate}
 
-And likewise for computations:
-\begin{enumerate}
-  \item There is a functor $\dnf : \mathcal E_e^{op} \to \mathcal V_f$ that is
-  the identity on objects, such that the essential image of $\mathcal E_e$ under
-  $\dnf$ is thin.
-
-  \item Every pair of morphisms $(c,d) \in \mathcal E_e(B, B') \times \mathcal E_e(B',B'')$
-  is right-representable by $(\dnf(d), \dnf(c))$.
-\end{enumerate}
-
-
-
-\textbf{TODO: do we still need this?}
-We also want something like
-\[ F_c : \mathcal V_u^{op} \to \mathcal E_d \]
-\[ U_c : \mathcal E_d^{op} \to \mathcal V_u \]
-which ensures that if $R$ is a value edge equivalent to $A(u,-)$ then
-\[ F(R) = F(A(u,-)) = (F A)(-,F u) \]
+%% \textbf{TODO: do we still need this?}
+%% We also want something like
+%% \[ F_c : \mathcal V_u^{op} \to \mathcal E_d \]
+%% \[ U_c : \mathcal E_d^{op} \to \mathcal V_u \]
+%% which ensures that if $R$ is a value edge equivalent to $A(u,-)$ then
+%% \[ F(R) = F(A(u,-)) = (F A)(-,F u) \]
 
 In summary, an extensional model consists of:
 \begin{enumerate}
-  \item CBPV models $\mathcal M_f$ and $\mathcal M_{sq}$
-  \item CBPV morphisms $r : \mathcal M_f \to \mathcal M_{sq}$ and $s, t : \mathcal M_{sq} \to \mathcal M_f$
-  \item Thinness: there is at most one square with a given boundary
-  \item A ``horizontal composition" operation on value relations and on computation relations
-  (from which we can define the categories $\ve$ and $\ee$ of value types/relations and computation types/relations, repsectively).
-  \item The categories $\ve$ and $\ee$ are thin up to an identity square
-  \item A functor $\upf : \mathcal V_e \to \mathcal V_f$ that is the identity on objects,
-  such that $\upf_*(\mathcal V_e)$, the essential image of $\mathcal V_e$ under $\upf$, is thin.
-  \item Every pair of morphisms $(c,d) \in \mathcal V_e(A, A') \times \mathcal V_e(A', A'')$ is
-  left-representable by $(\upf(c), \upf(d))$.
-  \item A functor $\dnf : \mathcal E_e^{op} \to \mathcal V_f$ that is
-  the identity on objects, such that the essential image of $\mathcal E_e$ under $\dnf$ is thin.
-  \item Every pair of morphisms $(c,d) \in \mathcal E_e(B, B') \times \mathcal E_e(B',B'')$
-  is right-representable by $(\dnf(d), \dnf(c))$.
+  \item A CBPV model internal to reflexive graphs.
+  \item Composition and identity on value and computation relations that form a category.
+  \item An identity-on-objects functor $\upf : \mathcal V_e \to \mathcal V_f$ taking each value relation to a morphism that left-represents it.
+  \item An identity-on-objects functor $\dnf : \mathcal E_e^{op} \to \mathcal E_f$ taking each computation relation to a morphism that right-represents it.
+  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations
+    \begin{itemize}
+    \item $U(dd') = U(d)U(d')$
+    \item $F(cc'') = F(c)F(c')$
+    \item $(cc') \to (dd') = (c \to d)(c' \to d')$
+    \item $(c_1c_1') \times (c_2c_2') = (c_1 \times c_2)(c_1'\times c_2')$
+    \end{itemize}
+  \item A distinguished value type $D$ with distinguished relation
+    $\injarr{}: U(D \to F D) \rel D$ satisfying $\dnc {\injarr{}}F(\upc{\injarr{}}) = \id$
 \end{enumerate}
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
