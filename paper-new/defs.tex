@@ -36,8 +36,8 @@
 \newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
 \newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
 
-\newcommand{\upc}[2]{\text{up}\,{#1}\,{#2}}
-\newcommand{\dnc}[2]{\text{dn}\,{#1}\,{#2}}
+\newcommand{\upc}[1]{\text{up}\,{#1}\,}
+\newcommand{\dnc}[1]{\text{dn}\,{#1}\,}
 
 
 % \newcommand{\ret}{\mathsf{ret}}
@@ -45,6 +45,11 @@
 \newcommand{\zro}{\textsf{zro}}
 \newcommand{\suc}{\textsf{suc}}
 \newcommand{\lda}[2]{\lambda {#1} . {#2}}
+
+\newcommand{\Injarr}{\textsf{Inj}_\ra}
+\newcommand{\Injnat}{\textsf{Inj}_\nat}
+\newcommand{\Injtimes}{\textsf{Inj}_\times}
+
 \newcommand{\injarr}[1]{\textsf{Inj}_\ra ({#1})}
 \newcommand{\injnat}[1]{\textsf{Inj}_\text{nat} ({#1})}
 \newcommand{\casenat}[4]{\text{Case}_\text{nat} ({#1}) \{ \text{no} \to {#2} \alt \text{nat}({#3}) \to {#4} \}}
@@ -249,4 +254,3 @@
 \newcommand{\tnat}{\text{nat}}
 \newcommand{\ttimes}{\text{times}}
 \newcommand{\tfun}{\text{fun}}
-

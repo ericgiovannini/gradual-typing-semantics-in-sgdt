@@ -3,6 +3,8 @@
 \subsection{Related Work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 
+% Discuss Jeremy Siek's work on graduality in Agda
+
 \subsection{Mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
 
@@ -10,17 +12,25 @@
 
 \subsection{Synthetic Ordering}
 
-While the use of synthetic guarded domain theory allows us to very
-conveniently work with non-well-founded recursive constructions while
-abstracting away the precise details of step-indexing, we do work with
-the error ordering in a mostly analytic fashion in that gradual types
-are interpreted as sets equipped with an ordering relation, and all
-terms must be proven to be monotone.
+A key to managing the complexity of our concrete construction is in
+using a \emph{synthetic} approach to step-indexing rather than working
+analytically with presheaves. This has helped immensely in our ongoing
+mechanization in cubical Agda as it sidesteps the need to formalize
+these constructions internally. 
 %
-It is possible that a combination of synthetic guarded domain theory
-with \emph{directed} type theory would allow for an a synthetic
-treatment of the error ordering as well.
+However, there are other aspects of the model, the bisimilarity and
+the monotonicity, which are treated analytically and are .
+%
+It may be possible to utilize further synthetic techniques to reduce
+this burden as well, and have all type intrinsically carry a notion of
+bisimilarity and ordering relation, and all constructions to
+automatically preserve them.
+%
+A synthetic approach to ordering is common in (non-guarded) synthetic
+domain theory and has also been used for synthetic reasoning for cost
+models \cite{synthetic-domain-theory,decalf}.
 
 \subsection{Future Work}
+
 
 % Cite GrEff paper

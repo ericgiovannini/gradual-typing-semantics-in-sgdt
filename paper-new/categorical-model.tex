@@ -312,11 +312,11 @@ function morphisms as follows:
 
 In summary, an extensional model consists of:
 \begin{enumerate}
-  \item A CBPV model internal to reflexive graphs.
-  \item Composition and identity on value and computation relations that form a category.
+  \item A reflexive graph internal to CBPV models.
+  \item Composition of value and computation relations that form a category with the reflexive relations as identity.
   \item An identity-on-objects functor $\upf : \mathcal V_e \to \mathcal V_f$ taking each value relation to a morphism that left-represents it.
   \item An identity-on-objects functor $\dnf : \mathcal E_e^{op} \to \mathcal E_f$ taking each computation relation to a morphism that right-represents it.
-  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations
+  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
     \begin{itemize}
     \item $U(dd') = U(d)U(d')$
     \item $F(cc') = F(c)F(c')$
@@ -326,6 +326,9 @@ In summary, an extensional model consists of:
   \item A distinguished value type $D$ with distinguished relation
     $\injarr{}: U(D \to F D) \rel D$ satisfying $\dnc {\injarr{}}F(\upc{\injarr{}}) = \id$
 \end{enumerate}
+
+\subsection{Stuff about Intensional Models}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

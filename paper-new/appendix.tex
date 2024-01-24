@@ -77,18 +77,37 @@ gradual guarantee rules are as follows:
   }
   {\Gamma^\ltdyn \vdash (M :: A_2) \ltdyn M' : c'}
 \end{mathpar}
+Where the cast $M :: A_2$ is defined to be
+\[ \dnc {dyn(A_2)}{\upc {dyn(A)} M} \]
+
 These two rules are admissible from the following principles:
-
 %% \begin{mathpar}
-%%   \inferrule
-%%   {}
-%%   {\dnc {\injarr{}} \upc {\injarr{}} M \equidyn M}
-
-%%   %% \inferrule
-%%   %% {}
-%%   %% {}
 %% \end{mathpar}
 
+For the first rule, we first prove that $\dnc {dyn(A_2)}\upc {dyn(A)} M = \dnc {c'}\upc{c} M$
+\begin{align*}
+  \dnc {dyn(A_2)}\upc {dyn(A)} M
+  &= \dnc {c \,\textrm{dyn}(A')}\upc{c' \,\textrm{dyn}(A')} M \tag{All derivations are equal}\\
+  &= \dnc {c}\dnc {\textrm{dyn}(A')}\upc{\textrm{dyn}(A')}\upc{c'} M\tag{functoriality}\\
+  &= \dnc {c}\upc{c'} M\tag{retraction}\\
+\end{align*}
+
+Then the rest follows by the up/dn rules above and the fact that precision derivations are all equal.
+\begin{mathpar}
+  \inferrule*
+  {c' = \textrm{dyn}(A_2)\max{todo}}
+  {\dnc {c'}\upc {c} M \ltdyn M' : c'}
+\end{mathpar}
+
+Thus the following properties are sufficient to provide an extensional
+model of gradual typing without requiring transitivity of term
+precision:
+\begin{enumerate}
+\item Every precision is representable in the above sense,
+\item The association of casts to precision is functorial
+\item Type constructors are covariant functorial with respect to
+  relational identity and composition
+\end{enumerate}
 
 \section{Call-by-push-value}
 

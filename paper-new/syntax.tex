@@ -1,819 +1,893 @@
-\section{GTLC}\label{sec:GTLC}
-
-Here we describe the syntax and typing for the gradually-typed lambda calculus.
-We also give the rules for syntactic type and term precision.
-% We define four separate calculi: the normal gradually-typed lambda calculus, which we
-% call the extensional or \emph{step-insensitive} lambda calculus ($\extlc$),
-% as well as an \emph{intensional} lambda calculus
-% ($\intlc$) whose syntax makes explicit the steps taken by a program.
-
-Before diving into the details, let us give a brief overview of what we will define.
-We begin with a gradually-typed lambda calculus $(\extlc)$, which is similar to
-the normal call-by-value gradually-typed lambda calculus, but differs in that it
-is actually a fragment of call-by-push-value specialized such that there are no
-non-trivial computation types. We do this for convenience, as either way
-we would need a distinction between values and effectful terms; the framework of
-of call-by-push-value gives us a convenient language to define what we need.
-
-We then show that composition of type precision derivations is admissible, as is
-heterogeneous transitivity for term precision, so it will suffice to consider a new
-language ($\extlcm$) in which we don't have composition of type precision derivations
-or heterogeneous transitivity of term precision.
-
-We then observe that all casts, except those between $\nat$ and $\dyn$
-and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
-% (we can define the cast of a function type functorially using the casts for its domain and codomain).
-This means it will be sufficient to consider a new language ($\extlcmm$) in which
-instead of having arbitrary casts, we have injections from $\nat$ and
-$\dyn \ra \dyn$ into $\dyn$, and case inspections from $\dyn$ to $\nat$ and
-$\dyn$ to $\dyn \ra \dyn$.
-
-From here, we define a \emph{step-sensitive} (also called \emph{intensional}) GSTLC,
-so-named because it makes the intensional stepping behavior of programs explicit in the syntax.
-This is accomplished by adding a syntactic ``later'' type and a
-syntactic $\theta$ that maps terms of type later $A$ to terms of type $A$.
-Finally, we define a \emph{quotiented} version of the step-sensitive language where
-we add a rule that equates terms that are the same up to their stepping behavior.
-
-% ---------------------------------------------------------------------------------------
-% ---------------------------------------------------------------------------------------
-
-\subsection{Syntax}
-
-The language is based on Call-By-Push-Value \cite{levy01:phd}, and as such it has two kinds of types:
-\emph{value types}, representing pure values, and \emph{computation types}, representing
-potentially effectful computations.
-In the language, all computation types have the form $\Ret A$ for some value type $A$.
-Given a value $V$ of type $A$, the term $\ret V$ views $V$ as a term of computation type $\Ret A$.
-Given a term $M$ of computation type $B$, the term $\bind{x}{M}{N}$ should be thought of as
-running $M$ to a value $V$ and then continuing as $N$, with $V$ in place of $x$.
-
-
-We also have value contexts and computation contexts, where the latter can be viewed
-as a pair consisting of (1) a stoup $\Sigma$, which is either empty or a hole of type $B$,
-and (2) a (potentially empty) value context $\Gamma$.
-
-\begin{align*} % TODO is hole a term?
-  &\text{Value Types } A := \nat \alt \,\dyn \alt (A \ra A') \\
-  &\text{Computation Types } B := \Ret A \\
-  &\text{Value Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
-  &\text{Computation Contexts } \Delta := \cdot \alt \hole B \alt \Delta , x : A \\
-  &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \up{A}{B} V \\ 
-  &\text{Terms } M, N := \err_B \alt \matchnat {V} {M} {n} {M'} \\ 
-  &\quad\quad \alt \ret {V} \alt \bind{x}{M}{N} \alt V_f\, V_x \alt \dn{A}{B} M 
-\end{align*}
-
-The value typing judgment is written $\hasty{\Gamma}{V}{A}$ and 
-the computation typing judgment is written $\hasty{\Delta}{M}{B}$.
-
-\begin{comment}
-We define substitution for value contexts by the following rules:
-
-\begin{mathpar}
-  \inferrule*
-  { \gamma : \Gamma' \to \Gamma \and 
-    \hasty{\Gamma'}{V}{A}}
-  { (\gamma , V/x ) \colon \Gamma' \to \Gamma , x : A }
-
-  \inferrule*
-  {}
-  {\cdot \colon \cdot \to \cdot}
-\end{mathpar}
-
-We define substitution for computation contexts by the following rules:
-
-\begin{mathpar}
-    \inferrule*
-    { \delta : \Delta' \to \Delta \and 
-      \hasty{\Delta'|_V}{V}{A}}
-    { (\delta , V/x ) \colon \Delta' \to \Delta , x : A }
-
-    \inferrule*
-    {}
-    {\cdot \colon \cdot \to \cdot}
-
-    \inferrule*
-    {\hasty{\Delta'}{M}{B}}
-    {M \colon \Delta' \to \hole{B}}
-\end{mathpar}
-\end{comment}
-
-The typing rules are as expected, with a cast between $A$ to $B$ allowed only when $A \ltdyn B$.
-Notice that the upcast of a value is a value, since it always succeeds, while the downcast
-of a value is a computation, since it may fail.
-
-\begin{mathpar}
-    % Var
-    \inferrule*{ }{\hasty {\cdot, \Gamma, x : A, \Gamma'} x A}
-
-    % Err
-    \inferrule*{ }{\hasty {\cdot, \Gamma} {\err_B} B} 
-  
-    % Zero and suc
-    \inferrule*{ }{\hasty \Gamma \zro \nat}
-  
-    \inferrule*{\hasty \Gamma V \nat} {\hasty \Gamma {\suc\, V} \nat}
-
-    % Match-nat
-    \inferrule*
-    {\hasty \Gamma V \nat \and 
-     \hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
-    {\hasty \Delta {\matchnat {V} {M} {n} {M'}} B}
-  
-    % Lambda
-    \inferrule* 
-    {\hasty {\cdot, \Gamma, x : A} M {\Ret A'}} 
-    {\hasty \Gamma {\lda x M} {A \ra A'}}
-  
-    % App
-    \inferrule*
-    {\hasty \Gamma {V_f} {A \ra A'} \and \hasty \Gamma {V_x} A}
-    {\hasty {\cdot , \Gamma} {V_f \, V_x} {\Ret A'}}
-
-    % Ret
-    \inferrule*
-    {\hasty \Gamma V A}
-    {\hasty {\cdot , \Gamma} {\ret\, V} {\Ret A}}
-    % TODO should this involve a Delta?
-
-    % Bind
-    \inferrule*
-    {\hasty \Delta M {\Ret A} \and \hasty{\cdot , \Delta|_V , x : A}{N}{B} } % Need x : A in context
-    {\hasty {\Delta} {\bind{x}{M}{N}} {B}}
-
-    % Upcast
-    \inferrule*
-    {A \ltdyn A' \and \hasty \Gamma V A}
-    {\hasty \Gamma {\up A {A'} V} {A'} }
-
-    % Downcast
-    % \inferrule*
-    % {A \ltdyn A' \and \hasty {\Gamma} V {A'}}
-    % {\hasty {\cdot, \Gamma} {\dn A {A'} V} {\Ret A}}
-
-    \inferrule* % TODO is this correct?
-    {B \ltdyn B' \and \hasty {\Delta} {M} {B'}}
-    {\hasty {\Delta} {\dn B {B'} M} {B}}
-
-\end{mathpar}
-
-
-In the equational theory, we have $\beta$ and $\eta$ laws for function type,
-as well a $\beta$ and $\eta$ law for $\Ret A$.
-
-% TODO do we need to add a substitution rule here?
-\begin{mathpar}
-  % Function Beta and Eta
-  \inferrule*
-  {\hasty {\cdot, \Gamma, x : A} M {\Ret A'} \and \hasty \Gamma V A}
-  {(\lda x M)\, V = M[V/x]}
-
-  \inferrule*
-  {\hasty \Gamma V {A \ra A}}
-  {\Gamma \vdash V = \lda x {V\, x}}
-
-  % Ret Beta and Eta
-  \inferrule*
-  {}
-  {(\bind{x}{\ret\, V}{N}) = N[V/x]}
-
-  \inferrule*
-  {\hasty {\hole{\Ret A} , \Gamma} {M} {B}}
-  {\hole{\Ret A}, \Gamma \vdash M = (\bind{x}{\bullet}{M[\ret\, x]})}
-
-  % Match-nat Beta
-  \inferrule*
-  {\hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
-  {\matchnat{\zro}{M}{n}{M'} = M}
-
-  \inferrule*
-  {\hasty \Gamma V \nat \and 
-   \hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
-  {\matchnat{\suc\, V}{M}{n}{M'} = M'}
-
-  % Match-nat Eta
-  % This doesn't build in substitution
-  \inferrule*
-  {\hasty {\Delta , x : \nat} M A}
-  {M = \matchnat{x} {M[\zro / x]} {n} {M[(\suc\, n) / x]}}
-
-
-
-\end{mathpar}
-
-% ---------------------------------------------------------------------------------------
-% ---------------------------------------------------------------------------------------
-
-\subsection{Type Precision}
-
-The type precision rules specify what it means for a type $A$ to be more precise than $A'$.
-We have reflexivity rules for $\dyn$ and $\nat$, as well as rules that $\nat$ is more precise than $\dyn$
-and $\dyn \ra \dyn$ is more precise than $\dyn$.
-We also have a transitivity rule for composition of type precision,
-and also a rule for function types stating that given $A_i \ltdyn A'_i$ and $A_o \ltdyn A'_o$, we can prove
-$A_i \ra A_o \ltdyn A'_i \ra A'_o$.
-Finally, we can lift a relation on value types $A \ltdyn A'$ to a relation $\Ret A \ltdyn \Ret A'$ on
-computation types.
-
-\begin{mathpar}
-  \inferrule*[right = \dyn]
-    { }{\dyn \ltdyn\, \dyn}
-
-  \inferrule*[right = \nat]
-    { }{\nat \ltdyn \nat}
-
-  \inferrule*[right = $\ra$]
-    {A_i \ltdyn A'_i \and A_o \ltdyn A'_o }
-    {(A_i \ra A_o) \ltdyn (A'_i \ra A'_o)}
-
-  \inferrule*[right = $\textsf{Inj}_\nat$]
-    { }{\nat \ltdyn\, \dyn}
-
-  \inferrule*[right=$\textsf{Inj}_{\ra}$]
-    { }
-    {(\dyn \ra \dyn) \ltdyn\, \dyn}
-
-  \inferrule*[right=ValTrans]
-    {A \ltdyn A' \and A' \ltdyn A''}
-    {A \ltdyn A''}
-
-  \inferrule*[right=CompTrans]
-    {B \ltdyn B' \and B' \ltdyn B''}
-    {B \ltdyn B''}
-
-  \inferrule*[right=$\Ret{}$]
-    {A \ltdyn A'}
-    {\Ret {A} \ltdyn \Ret {A'}}
-
-    % TODO are there other rules needed for computation types?
-
-  
-\end{mathpar}
-
-% Type precision derivations
-Note that as a consequence of this presentation of the type precision rules, we
-have that if $A \ltdyn A'$, there is a unique precision derivation that witnesses this.
-As in previous work, we go a step farther and make these derivations first-class objects,
-known as \emph{type precision derivations}.
-Specifically, for every $A \ltdyn A'$, we have a derivation $c : A \ltdyn A'$ that is constructed
-using the rules above. For instance, there is a derivation $\dyn : \dyn \ltdyn \dyn$, and a derivation
-$\nat : \nat \ltdyn \nat$, and if $c_i : A_i \ltdyn A_i$ and $c_o : A_o \ltdyn A'_o$, then
-there is a derivation $c_i \ra c_o : (A_i \ra A_o) \ltdyn (A'_i \ra A'_o)$. Likewise for
-the remaining rules. The benefit to making these derivations explicit in the syntax is that we
-can perform induction over them.
-Note also that for any type $A$, we use $A$ to denote the reflexivity derivation that $A \ltdyn A$,
-i.e., $A : A \ltdyn A$.
-Finally, observe that for type precision derivations $c : A \ltdyn A'$ and $c' : A' \ltdyn A''$, we
-can define (via the rule ValComp) their composition $c \relcomp c' : A \ltdyn A''$.
-The same holds for computation type precision derivations.
-This notion will be used below in the statement of transitivity of the term precision relation.
-
-% ---------------------------------------------------------------------------------------
-% ---------------------------------------------------------------------------------------
-
-\subsection{Term Precision}
-
-We allow for a \emph{heterogeneous} term precision judgment on terms values $V$ of type
-$A$ and $V'$ of type $A'$ provided that $A \ltdyn A'$ holds. Likewise, for computation
-types $B \ltdyn B'$, if $M$ has type $B$ and $M'$ has type $B'$, we can form the judgment
-that $M \ltdyn M'$.
-
-% Type precision contexts
-% TODO should we include the formal definitions of value and computation type precision contexts?
-In order to deal with open terms, we will need the notion of a type precision \emph{context}, which we denote
-$\gamlt$. This is similar to a normal context but instead of mapping variables to types,
-it maps variables $x$ to related types $A \ltdyn A'$, where $x$ has type $A$ in the left-hand term
-and $B$ in the right-hand term. We may also write $x : d$ where $d : A \ltdyn A'$ to indicate this.
-Similarly, we have computation type precision contexts $\Delta^\ltdyn$. Similar to ``normal'' computation
-type precision contexts $\Delta$, these consist of (1) a stoup $\Sigma$ which is either empty or
-has a hole $\hole{d}$ for some computation type precision derivation $d$, and (2) a value type precision context
-$\Gamma^\ltdyn$.
-
-% An equivalent way of thinking of type precision contexts is as a pair of ``normal" typing
-% contexts $\Gamma, \Gamma'$ with the same domain such that $\Gamma(x) \ltdyn \Gamma'(x)$ for
-% each $x$ in the domain.
-% We will write $\gamlt : \Gamma \ltdyn \Gamma'$ when we want to emphasize the pair of contexts.
-% Conversely, if we are given $\gamlt$, we write $\gamlt_l$ and $\gamlt_r$ for the normal typing contexts on each side.
-
-An equivalent way of thinking of a type precision context $\gamlt$ is as a
-pair of ``normal" typing contexts, $\gamlt_l$ and $\gamlt_r$, with the same
-domain and such that $\gamlt_l(x) \ltdyn \gamlt_r(x)$ for each $x$ in the domain.
-We will write $\gamlt : \gamlt_l \ltdyn \gamlt_r$ when we want to emphasize the pair of contexts.
-
-As with type precision derivations, we write $\Gamma$ to mean the ``reflexivity" type precision context
-$\Gamma : \Gamma \ltdyn \Gamma$.
-Concretely, this consists of reflexivity type precision derivations $\Gamma(x) \ltdyn \Gamma(x)$ for
-each $x$ in the domain of $\Gamma$.
-Similarly, we also have reflexivity for computation type precision contexts.
-%
-Furthermore, we write $\gamlt_1 \relcomp \gamlt_2$ to denote the ``composition'' of $\gamlt_1$ and $\gamlt_2$
---- that is, the precision context whose value at $x$ is the type precision derivation
-$\gamlt_1(x) \relcomp \gamlt_2(x)$. This of course assumes that each of the type precision
-derivations is composable, i.e., that the RHS of $\gamlt_1(x)$ is the same as the left-hand side of $\gamlt_2(x)$.
-We define the same for computation type precision contexts $\deltalt_1$ and $\deltalt_2$,
-provided that both the computation type precision contexts have the same ``shape'', which is defined as
-(1) either the stoup is empty in both, or the stoup has a hole in both, say $\hole{d}$ and $\hole{d'}$
-where $d$ and $d'$ are composable, and (2) their value type precision contexts are composable as described above.
-
-The rules for term precision come in two forms. We first have the \emph{congruence} rules,
-one for each term constructor. These assert that the term constructors respect term precision.
-The congruence rules are as follows:
-
-\begin{mathpar}
-
-  \inferrule*[right = Var]
-    { c : A \ltdyn B \and \gamlt(x) = (A, B) } 
-    { \etmprec {\gamlt} x x c }
-
-  \inferrule*[right = Zro]
-    { } {\etmprec \gamlt \zro \zro \nat }
-
-  \inferrule*[right = Suc]
-    { \etmprec \gamlt V {V'} \nat } {\etmprec \gamlt {\suc\, V} {\suc\, V'} \nat}
-
-  \inferrule*[right = MatchNat]
-  {\etmprec \gamlt V {V'} \nat \and 
-    \etmprec \deltalt M {M'} d \and \etmprec {\deltalt, n : \nat} {N} {N'} d}
-  {\etmprec \deltalt {\matchnat {V} {M} {n} {N}} {\matchnat {V'} {M'} {n} {N'}} d}
-
-  \inferrule*[right = Lambda]
-    { c_i : A_i \ltdyn A'_i \and 
-      c_o : A_o \ltdyn A'_o \and 
-      \etmprec {\cdot , \gamlt , x : c_i} {M} {M'} {\Ret c_o} } 
-    { \etmprec \gamlt {\lda x M} {\lda x {M'}} {(c_i \ra c_o)} }
-
-  \inferrule*[right = App]
-    { c_i : A_i \ltdyn A'_i \and
-      c_o : A_o \ltdyn A'_o \\\\
-      \etmprec \gamlt {V_f} {V_f'} {(c_i \ra c_o)} \and
-      \etmprec \gamlt {V_x} {V_x'} {c_i}
-    } 
-    { \etmprec {\cdot , \gamlt} {V_f\, V_x} {V_f'\, V_x'} {\Ret {c_o}}}
-
-  \inferrule*[right = Ret]
-    {\etmprec {\gamlt} V {V'} c}
-    {\etmprec {\cdot , \gamlt} {\ret\, V} {\ret\, V'} {\Ret c}}
-
-  \inferrule*[right = Bind]
-    {\etmprec {\deltalt} {M} {M'} {\Ret c} \and 
-     \etmprec {\cdot , \deltalt|_V , x : c} {N} {N'} {d} }
-    {\etmprec {\deltalt} {\bind {x} {M} {N}} {\bind {x} {M'} {N'}} {d}}
-\end{mathpar}
-
-We then have additional equational axioms, including transitivity, $\beta$ and $\eta$ laws, and
-rules characterizing upcasts as least upper bounds, and downcasts as greatest lower bounds.
-
-We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
-
-% TODO adapt these for value/computation distinction
-% TODO substitution rules for values and terms?
-\begin{mathpar}
-  \inferrule*[right = $\err$]
-    { \hasty {\deltalt_l} M B }
-    {\etmprec {\Delta} {\err_B} M B}
-
-  \inferrule*[right = Transitivity]
-    { d : B \ltdyn B' \and d' : B' \ltdyn B'' \\\\
-     \etmprec {\deltalt_1} {M} {M'} {d} \and
-     \etmprec {\deltalt_2} {M'} {M''} {d'} } 
-    {\etmprec {\deltalt_1 \relcomp \deltalt_2} {M} {M''} {d \relcomp d'} }
-
-
-  \inferrule*[right = $\beta$-fun]
-    { \hasty {\cdot, \Gamma, x : A_i} M {\Ret A_o} \and
-      \hasty {\Gamma} V {A_i} } 
-    { \etmequidyn {\cdot, \Gamma} {(\lda x M)\, V} {M[V/x]} {\Ret A_o} }
-
-  \inferrule*[right = $\eta$-fun]
-    { \hasty {\Gamma} {V} {A_i \ra A_o} } 
-    { \etmequidyn \Gamma {\lda x (V\, x)} V {A_i \ra A_o} }
-
-  % Match-nat beta and eta
-
-
-
-  \inferrule*[right = $\beta$-ret]
-    {}
-    {\bind{x}{\ret\, V}{N} \equidyn N[V/x]}
-
-  \inferrule*[right = $\eta$-ret]
-    {\hasty {\hole{\Ret A} , \Gamma} {M} {B}}
-    {\hole{\Ret A}, \Gamma \vdash M \equidyn \bind{x}{\bullet}{M[\ret\, x]}}
-    
-
-  % Could specify \gamlt : \Gamma \ltdyn \Gamma'
-  % and then we wouldn't need to say l and r
-
-  \inferrule*[right = UpR]
-    { d : A \ltdyn A' \and 
-      \hasty {\Delta} {M} {A} } 
-    { \etmprec {\Delta} {M} {\up {A} {A'} M} {d}  }
-
-  \inferrule*[right = UpL]
-    { d : A \ltdyn A' \and
-      \etmprec {\deltalt} {M} {N} {d} } 
-    { \etmprec {\deltalt} {\up {A} {A'} M} {N} {A'} }
-
-  \inferrule*[right = DnL]
-    { d : B \ltdyn B' \and 
-      \hasty {\Delta} {M} {B'} } 
-    { \etmprec {\Delta} {\dn {B} {B'} M} {M} {d} }
-
-  \inferrule*[right = DnR]
-    { d : B \ltdyn B' \and
-      \etmprec {\deltalt} {M} {N} {d} } 
-    { \etmprec {\deltalt} {M} {\dn {B} {B'} N} {B} }
-\end{mathpar}
-
-% TODO explain the least upper bound/greatest lower bound rules
-The rules UpR, UpL, DnL, and DnR were introduced in \cite{new-licata18} as a means
-of cleanly axiomatizing the intended behavior of casts in a way that
-doesn't depend on the specific constructs of the language.
-Intuitively, rule UpR says that the upcast of $M$ is an upper bound for $M$
-in that $M$ may error more, and UpL says that the upcast is the \emph{least}
-such upper bound, in that it errors more than any other upper bound for $M$.
-Conversely, DnL says that the downcast of $M$ is a lower bound, and DnR says
-that it is the \emph{greatest} lower bound.
-% These rules provide a clean axiomatization of the behavior of casts that doesn't
-% depend on the specific constructs of the language.
-
-% ---------------------------------------------------------------------------------------
-% ---------------------------------------------------------------------------------------
-\subsection{Removing Transitivity as a Primitive}
-
-The first observation we make is that transitivity of type precision, and heterogeneous
-transitivity of term precision, are admissible. That is, consider a related language which
-is the same as $\extlc$ except that we have removed the composition rule for type precision and
-the heterogeneous transitivity rule for type precision. Denote this language by $\extlcm$.
-We claim that in this new language, the rules we removed are derivable from the remaining rules.
-
-To see this, suppose $\gamlt : \Gamma \ltdyn \Gamma'$ and $d : A \ltdyn A'$, and that
- $\etmprec {\gamlt} {V} {V'} {d}$, as shown in the diagram below:
-
-% https://q.uiver.app/?q=WzAsNCxbMCwwLCJcXEdhbW1hIl0sWzAsMSwiXFxHYW1tYSciXSxbMSwwLCJBIl0sWzEsMSwiQSciXSxbMCwxLCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsIlYiXSxbMSwzLCJWJyJdLFs2LDcsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	\Gamma \& A \\
-	{\Gamma'} \& {A'}
-	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
-	\arrow["\ltdyn"{marking}, draw=none, from=1-2, to=2-2]
-	\arrow[""{name=0, anchor=center, inner sep=0}, "V", from=1-1, to=1-2]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}", from=2-1, to=2-2]
-	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
-\end{tikzcd}\]
-
-Now note that this is equivalent, by the cast rule UpL, to
-$\etmprec {\Gamma'} {\up{A}{A'} V} {V'} {A'}$,
-where as noted above, $\Gamma'$ refers to the context $\Gamma'$ viewed as a reflexivity
-precision context and likewise the $A'$ at the end refers to the reflexivity derivation $A' \ltdyn A'$.
-
-% https://q.uiver.app/?q=WzAsMixbMCwwLCJcXEdhbW1hJyJdLFsxLDAsIkEnIl0sWzAsMSwiXFx1cCB7QX0ge0EnfSBWIiwwLHsiY3VydmUiOi0yfV0sWzAsMSwiViciLDIseyJjdXJ2ZSI6Mn1dLFsyLDMsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{\Gamma'} \& {A'}
-	\arrow[""{name=0, anchor=center, inner sep=0}, "{\up {A} {A'} V}", curve={height=-12pt}, from=1-1, to=1-2]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}"', curve={height=12pt}, from=1-1, to=1-2]
-	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
-\end{tikzcd}\]
-
-Now consider the situation shown below:
-
-% https://q.uiver.app/?q=WzAsNixbMCwwLCJcXEdhbW1hIl0sWzAsMSwiXFxHYW1tYSciXSxbMCwyLCJcXEdhbW1hJyciXSxbMiwwLCJBIl0sWzIsMSwiQSciXSxbMiwyLCJBJyciXSxbMiw1LCJWJyciXSxbMSw0LCJWJyJdLFswLDMsIlYiXSxbMyw0LCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcbHRkeW4iLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCIiLDEseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzgsNywiXFxsdGR5biIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs3LDYsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	\Gamma \&\& A \\
-	{\Gamma'} \&\& {A'} \\
-	{\Gamma''} \&\& {A''}
-	\arrow[""{name=0, anchor=center, inner sep=0}, "{V''}", from=3-1, to=3-3]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}", from=2-1, to=2-3]
-	\arrow[""{name=2, anchor=center, inner sep=0}, "V", from=1-1, to=1-3]
-	\arrow["\ltdyn"{marking}, draw=none, from=1-3, to=2-3]
-	\arrow["\ltdyn"{marking}, draw=none, from=2-3, to=3-3]
-	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
-	\arrow[draw=none, from=2-1, to=3-1]
-	\arrow["\ltdyn"{marking}, draw=none, from=2-1, to=3-1]
-	\arrow["\ltdyn"{marking}, draw=none, from=2, to=1]
-	\arrow["\ltdyn"{marking}, draw=none, from=1, to=0]
-\end{tikzcd}\]
-
-
-Using the above observation, we have that the above is equivalent to
-
-% https://q.uiver.app/?q=WzAsNCxbMCwwLCJcXEdhbW1hJyJdLFswLDEsIlxcR2FtbWEnJyJdLFsyLDAsIkEnIl0sWzIsMSwiQScnIl0sWzAsMiwiXFx1cCB7QX0ge0EnfSBWIiwwLHsiY3VydmUiOi0yfV0sWzAsMiwiViciLDIseyJjdXJ2ZSI6Mn1dLFsxLDMsIlYnJyIsMix7ImN1cnZlIjoyfV0sWzAsMSwiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsIlxcbHRkeW4iLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNCw1LCJcXGx0ZHluIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNiwiXFxsdGR5biIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{\Gamma'} \&\& {A'} \\
-	{\Gamma''} \&\& {A''}
-	\arrow[""{name=0, anchor=center, inner sep=0}, "{\up {A} {A'} V}", curve={height=-12pt}, from=1-1, to=1-3]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}"', curve={height=12pt}, from=1-1, to=1-3]
-	\arrow[""{name=2, anchor=center, inner sep=0}, "{V''}"', curve={height=12pt}, from=2-1, to=2-3]
-	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
-	\arrow["\ltdyn"{marking}, draw=none, from=1-3, to=2-3]
-	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
-	\arrow["\ltdyn"{marking}, draw=none, from=1, to=2]
-\end{tikzcd}\]
-
-% TODO finish the explanation
-  
-
-% ---------------------------------------------------------------------------------------
-% ---------------------------------------------------------------------------------------
-
-\subsection{Removing Casts as Primitives}
-
-% We now observe that all casts, except those between $\nat$ and $\dyn$
-% and between $\dyn \ra \dyn$ and $\dyn$, are admissible, in the sense that
-% we can start from $\extlcm$, remove casts except the aforementioned ones,
-% and in the resulting language we will be able to derive the other casts.
-
-We now observe that all casts, except those between $\nat$ and $\dyn$
-and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
-That is, consider a new language ($\extlcmm$) in which
-instead of having arbitrary casts, we have injections from $\nat$ and
-$\dyn \ra \dyn$ into $\dyn$, and case inspections from $\dyn$ to $\nat$ and
-$\dyn$ to $\dyn \ra \dyn$. We claim that in $\extlcmm$, all of the casts
-present in $\extlcm$ are derivable.
-It will suffice to verify that casts for function type are derivable.
-This holds because function casts are constructed inductively from the casts
-of their domain and codomain. The base case is one of the casts involving $\nat$
-or $\dyn \ra \dyn$ which are present in $\extlcmm$ as injections and case inspections.
-
-
-The resulting calculus $\extlcmm$ now lacks transitivity of type precision,
-heterogeneous transitivity of term precision, and arbitrary casts as primitive
-notions.
-
-\begin{align*}
-  &\text{Value Types } A := \nat \alt \dyn \alt (A \ra A') \\
-  &\text{Computation Types } B := \Ret A \\
-  &\text{Value Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
-  &\text{Computation Contexts } \Delta := \cdot \alt \hole B \alt \Delta , x : A \\
-  &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \injnat V \alt \injarr V \\ 
-  &\text{Terms } M, N := \err_B \alt \ret {V} \alt \bind{x}{M}{N}
-    \alt V_f\, V_x \alt
-    \\ & \quad\quad \casenat{V}{M_{no}}{n}{M_{yes}} 
-    \alt \casearr{V}{M_{no}}{f}{M_{yes}}
-\end{align*}
-
-In this setting, rather than type precision, it makes more sense to
-speak of arbitrary \emph{monotone relations} on types, which we denote by $A \rel A'$.
-We have relations on value types, as well as on computation types. We also have
-value relation contexts and computation relation contexts, analogous to the value type
-precision contexts and computation type precision contexts from before.
-
-\begin{align*}
-  &\text{Value Relations } R := \nat \alt \dyn \alt (R \ra R) \alt\, \dyn\, R(V_1, V_2)\\
-  &\text{Computation Relations } S := \li R \\
-  &\text{Value Relation Contexts } \Gamma^{\rel} := \cdot \alt \Gamma^{\rel} , A^{\rel} (x_l : A_l , x_r : A_r)\\
-  &\text{Computation Relation Contexts } \Delta^{\rel} := \cdot \alt \hole{B^{\rel}} \alt 
-    \Delta^{\rel} , A^{\rel} (x_l : A_l , x_r : A_r)   \\
-\end{align*}
-
-% TODO rules for relations
-The forms for relations are as follows:
-
-\begin{align*}
-  A^{\rel}      &\colon A_l      \rel A_r \\
-  \Gamma^{\rel} &\colon \Gamma_l \rel \Gamma_r \\
-  B^{\rel}      &\colon B_l      \rel B_r \\
-  \Delta^{\rel} &\colon \Delta_l \rel \Delta_r
-\end{align*}
-
-
-
-Figure \ref{fig:relation-rules} shows the rules for relations. We show only those for value types;
-the corresponding computation type relation rules are analogous.
-The rules for relations are as follows. First, we require relations to be reflexive.
-We also require that they are \emph{profunctorial}, in the sense that a relation between
-$A$ and $A'$ is closed under the ``homogeneous'' relations on both sides.
-We also require that they satisfy a substitution principle.
-
+\section{Syntactic Theory of Gradually Typed Lambda Calculus}\label{sec:GTLC}
+
+Here we give an overview of a fairly standard cast calculus for
+gradual typing along with its (in-)equational theory that capture our
+desired notion of type-based reasoning and graduality. The main
+departure from prior work is our explicit treatment of type precision
+derivations and an equational theory of those derivations.
+
+\max{TODO: ordinary cbv syntax}
+
+The graduality theorem is formulated in terms of \emph{type} and
+\emph{term precision}, usually presented as binary relations on types
+and terms. Here we will, like \citet{who?} use an explicit term
+assignment for type precision.
+
+\max{TODO: prose about type precision derivations and equivalence
+  of type precision derivations}
 \begin{figure}
   \begin{mathpar}
-    \inferrule*[right = Reflexivity]
-    {\hasty \Gamma V A}
-    {\refl(\Gamma) \vdash \refl(A)(V, V)}
-
-    \inferrule*[right = Profunctoriality]
-    { \refl(\Gamma^{\rel}_l) \vdash  \refl(A^{\rel}_l) (V_l' , V_l) \\\\ 
-        \Gamma^{\rel}    \vdash    A^{\rel}    (V_l  , V_r) \\\\
-      \refl(\Gamma^{\rel}_r) \vdash  \refl(A^{\rel}_r) (V_r  , V_r')
-    }
-    {\Gamma^{\rel} \vdash A^{\rel} (V_l', V_r')}
-
-    \inferrule*[right = Subst]
-    { \Gamma'^{\rel} \vdash \Gamma^{\rel} (\gamma_l, \gamma_r) \\\\
-      \Gamma^{\rel} A^{\rel} (V_l, V_r)
-    }
-    {\Gamma'^{\rel} \vdash A^{\rel} (V_l[\gamma_l] , V_r[\gamma_r]) }
-
-    % \inferrule*[right = TermSubst]
-    % { \Delta'^{\rel} \vdash \Delta^{\rel} (\delta_l, \delta_r) \\\\
-    %   \Delta^{\rel} B^{\rel} (M_l, M_r)
-    % }
-    % {\Delta'^{\rel} \vdash B^{\rel} (M_l[\delta_l] , M_r[\delta_r]) }
-
+    \inferrule{}{r(A) : A \ltdyn A}\and
+    \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
+    \inferrule{}{\Injarr : D \ra D \ltdyn D}\and
+    \inferrule{}{\Injnat : \nat \ltdyn D}\and
+    \inferrule{}{\Injarr : D \times D \ltdyn D}\and
+    \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}\and
+    \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}\and
+     r(A)c \equiv c\and
+     c \equiv cr(A')\and
+     c(c'c'') \equiv (cc')c''\and
+     r(A_i \ra A_o) \equiv r(A_i) \ra r(A_o)\and
+     r(A_1\times A_2) \equiv r(A_1) \times r(A_2)\and
+     (c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra c_oc_o') \and
+     (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
   \end{mathpar}
-  \caption{Rules for value type relations. The rules for computation type relations are analogous.}
-  \label{fig:relation-rules}
+  \caption{Type Precision Derivations and equational theory}
 \end{figure}
 
-We also have a rule for the restriction of a relation along a function,
-and we have a rule characterizing relation at function type. The latter states that
-if under the assumption that $x$ is related to $x'$ by $A^{\rel}$, we can show that $M$
-is related to $M'$ by $\li A'^{\rel}$, then we have that $\lda{x}{M}$ is related to
-$\lda{x'}{M'}$ by $A^{\rel} \ra A'^{\rel}$.
-
-\begin{mathpar}
-  \mprset{fraction={===}}
-
-  % \inferrule*[]
-  % { A^{\rel}  (x_l, x_r) \vdash A^{\rel} (V_l, V_r) }
-  % { A'^{\rel} (x_l, x_r) \vdash A^{\rel} (V_l, V_r)(x_l, x_r) }
-
-  \inferrule*[right = Restriction]
-  { \Gamma^{\rel} \vdash A^{\rel} (V_l (V_l'), V_r (V_r')) }
-  { \Gamma^{\rel} \vdash (A^{\rel} (V_l, V_r)) (V_l', V_r') }
-
-  \inferrule*[right = $\text{Rel}_\ra$]
-  { A^{\rel} (x, x') \vdash (\li A'^{\rel})(M , M') }
-  {  \vdash (A^{\rel} \ra A'^{\rel}) (\lda{x}{M}) , (\lda{x'}{M'})}
-
-\end{mathpar}
-
-
-
-% New rules
-Figure \ref{fig:extlc-minus-minus-typing} shows the new typing rules,
-and Figure \ref{fig:extlc-minus-minus-eqns} shows the equational rules
-for case-nat (the rules for case-arrow are analogous).
-
+In addition to congruence rules and CBV $\beta\eta$ equality, we have
+the following rules.\max{TODO: more about beta-eta}
 \begin{figure}
   \begin{mathpar}
-      % inj-nat
-      \inferrule*
-      {\hasty \Gamma M \nat}
-      {\hasty \Gamma {\injnat M} \dyn}
-
-      % inj-arr 
-      \inferrule*
-      {\hasty \Gamma M (\dyn \ra \dyn)}
-      {\hasty \Gamma {\injarr M} \dyn}
-
-      % Case nat
-      \inferrule*
-      {\hasty{\Delta|_V}{V}{\dyn} \and 
-        \hasty{\Delta , x : \nat }{M_{yes}}{B} \and 
-        \hasty{\Delta}{M_{no}}{B}}
-      {\hasty {\Delta} {\casenat{V}{M_{no}}{n}{M_{yes}}} {B}}
-    
-      % Case arr
-      \inferrule*
-      {\hasty{\Delta|_V}{V}{\dyn} \and 
-        \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{yes}}{B} \and 
-        \hasty{\Delta}{M_{no}}{B}}
-      {\hasty {\Delta} {\casearr{V}{M_{no}}{f}{M_{yes}}} {B}}
-  \end{mathpar}
-  \caption{New typing rules for $\extlcmm$.}
-  \label{fig:extlc-minus-minus-typing}
-\end{figure}
-
-
-\begin{figure}
-  \begin{mathpar}
-     % Case-nat Beta
-     \inferrule*
-     {\hasty \Gamma V \nat}
-     {\casenat {\injnat {V}} {M_{no}} {n} {M_{yes}} = M_{yes}[V/n]}
-
-     \inferrule*
-     {\hasty \Gamma V {\dyn \ra \dyn} }
-     {\casenat {\injarr {V}} {M_{no}} {n} {M_{yes}} = M_{no}}
-
-     % Case-nat Eta
-     \inferrule*
-     {}
-     {\Gamma , x :\, \dyn \vdash M = \casenat{x}{M}{n}{M[(\injnat{n}) / x]} }
-
-
-     % Case-arr Beta
-
-
-     % Case-arr Eta
-
-
-  \end{mathpar}
-  \caption{New equational rules for $\extlcmm$ (rules for case-arrow are analogous
-           and hence are omitted).}
-  \label{fig:extlc-minus-minus-eqns}
-\end{figure}
-
-
-
-% TODO : Updated term precision rules
-
-
-
-\subsection{The Step-Sensitive Lambda Calculus}\label{sec:step-sensitive-lc}
-
-% \textbf{TODO: Subject to change!}
-
-Rather than give a semantics to $\extlcmm$ directly, we first introduce another intermediary
-language, a \emph{step-sensitive} (also called \emph{intensional}) calculus.
-As mentioned, this language makes the intensional stepping behavior of programs
-explicit in the syntax. We do this by adding a syntactic ``later'' type and a
-syntactic $\theta$ that takes terms of type later $A$ to terms of type $A$.
-
-% In the step-sensitive syntax, we add a type constructor for later, as well as a
-% syntactic $\theta$ term and a syntactic $\nxt$ term.
-We add rules for these new constructs, and also modify the rules for inj-arr and
-case-arrow, since now the function is not $\Dyn \ra \Dyn$ but rather $\later (\Dyn \ra \Dyn)$.
-We also add congruence relations for $\later$ and $\nxt$.
-
-% TODO show changes
-
-\noindent Modified syntax:
-\begin{align*}
-  &\text{Value Types } A := \nat \alt \dyn \alt (A \ra A') \alt {\color{red} \later A} \\
-  &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \injnat V \alt \injarr V 
-    \alt {\color{red} \nxt\, V} \alt {\color{red} \mathbf{\theta}}
-\end{align*}
-
-\noindent Additional typing rules:
-\begin{mathpar}
   \inferrule
-  {\hasty \Gamma V A}
-  {\hasty \Gamma {\nxt\, V} {\later A}}
+  {M \ltdyn M' : c \and c \equiv c'}
+  {M \ltdyn M' : c'}
 
   \inferrule
   {}
-  {\hasty \Gamma \theta {\later A \ra A}}
+  {\dnc {c} \upc {c} M \equidyn M}
 
-  % \theta(\nxt x) = \theta(y); \texttt{ret}\, x
-\end{mathpar}
+  \inferrule
+  {}
+  {\upc{c}\upc{c'}M \equidyn \upc{cc'}M}
 
-\noindent Modified typing rules:
-\begin{mathpar}
+  \inferrule
+  {}
+  {\dnc{c'}\dnc{c}M \equidyn \dnc{cc'}M}
 
-  % inj-arr 
-  \inferrule*
-  {\hasty \Gamma M {\color{red} \later (\dyn \ra \dyn)}}
-  {\hasty \Gamma {\injarr M} \dyn}
+  \inferrule
+  {M \ltdyn M' : cc_r}
+  {\upc {c} M \ltdyn M' : c_r}
 
-  % Case arr
-  % TODO if the extensional version is incorrect and needs to change, make
-  % sure to change this one accordingly
-  \inferrule*
-  {\hasty{\Delta|_V}{V}{\dyn} \and 
-    \hasty{\Delta , x \colon {\color{red} \later (\dyn \ra \dyn)} }{M_{yes}}{B} \and 
-    \hasty{\Delta}{M_{no}}{B}}
-  {\hasty {\Delta} {\casearr{V}{M_{no}}{\tilde{f}}{M_{yes}}} {B}}  
-\end{mathpar}
+  \inferrule
+  {M \ltdyn M' : c_l}
+  {M \ltdyn \upc {c} M' : c_lc}
 
-\noindent Additional relations:
-\begin{mathpar}
-  \inferrule*[]
-  {A^{\rel} : A_l \rel A_r}
-  {\later A^{\rel} : \later A_l \rel \later A_r}
+  \inferrule
+  {M \ltdyn M' : c_r}
+  {\dnc {c} M \ltdyn M' : cc_r}
 
-  \inferrule*[]
-  {A^{\rel} (V_l, V_r)}
-  {\later A^{\rel} (\nxt\, V_l, \nxt\, V_r)}
+  \inferrule
+  {M \ltdyn M' : c_lc}
+  {M \ltdyn \dnc {c} M' : c_l}
+  \end{mathpar}
+  \caption{Term Precision Rules (Selected)}
+\end{figure}
 
-\end{mathpar}
+%% Here we describe the syntax and typing for the gradually-typed lambda calculus.
+%% We also give the rules for syntactic type and term precision.
+%% % We define four separate calculi: the normal gradually-typed lambda calculus, which we
+%% % call the extensional or \emph{step-insensitive} lambda calculus ($\extlc$),
+%% % as well as an \emph{intensional} lambda calculus
+%% % ($\intlc$) whose syntax makes explicit the steps taken by a program.
 
-% TODO what about the relation for theta? Or is that automatic since it's a function symbol?
+%% Before diving into the details, let us give a brief overview of what we will define.
+%% We begin with a gradually-typed lambda calculus $(\extlc)$, which is similar to
+%% the normal call-by-value gradually-typed lambda calculus, but differs in that it
+%% is actually a fragment of call-by-push-value specialized such that there are no
+%% non-trivial computation types. We do this for convenience, as either way
+%% we would need a distinction between values and effectful terms; the framework of
+%% of call-by-push-value gives us a convenient language to define what we need.
 
-% TODO beta rule for theta
+%% We then show that composition of type precision derivations is admissible, as is
+%% heterogeneous transitivity for term precision, so it will suffice to consider a new
+%% language ($\extlcm$) in which we don't have composition of type precision derivations
+%% or heterogeneous transitivity of term precision.
 
-We define the term $\delta$ to be the function $\lda {x} {\theta\, (\nxt\, x)}$.
+%% We then observe that all casts, except those between $\nat$ and $\dyn$
+%% and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
+%% % (we can define the cast of a function type functorially using the casts for its domain and codomain).
+%% This means it will be sufficient to consider a new language ($\extlcmm$) in which
+%% instead of having arbitrary casts, we have injections from $\nat$ and
+%% $\dyn \ra \dyn$ into $\dyn$, and case inspections from $\dyn$ to $\nat$ and
+%% $\dyn$ to $\dyn \ra \dyn$.
 
-% We define an erasure function from step-sensitive syntax to step-insensitive syntax
-% by induction on the step-sensitive types and terms.
-% The basic idea is that the syntactic type $\later A$ erases to $A$,
-% and $\nxt$ and $\theta$ erase to the identity.
+%% From here, we define a \emph{step-sensitive} (also called \emph{intensional}) GSTLC,
+%% so-named because it makes the intensional stepping behavior of programs explicit in the syntax.
+%% This is accomplished by adding a syntactic ``later'' type and a
+%% syntactic $\theta$ that maps terms of type later $A$ to terms of type $A$.
+%% Finally, we define a \emph{quotiented} version of the step-sensitive language where
+%% we add a rule that equates terms that are the same up to their stepping behavior.
+
+%% % ---------------------------------------------------------------------------------------
+%% % ---------------------------------------------------------------------------------------
+
+%% \subsection{Syntax}
+
+%% The language is based on Call-By-Push-Value \cite{levy01:phd}, and as such it has two kinds of types:
+%% \emph{value types}, representing pure values, and \emph{computation types}, representing
+%% potentially effectful computations.
+%% In the language, all computation types have the form $\Ret A$ for some value type $A$.
+%% Given a value $V$ of type $A$, the term $\ret V$ views $V$ as a term of computation type $\Ret A$.
+%% Given a term $M$ of computation type $B$, the term $\bind{x}{M}{N}$ should be thought of as
+%% running $M$ to a value $V$ and then continuing as $N$, with $V$ in place of $x$.
+
+
+%% We also have value contexts and computation contexts, where the latter can be viewed
+%% as a pair consisting of (1) a stoup $\Sigma$, which is either empty or a hole of type $B$,
+%% and (2) a (potentially empty) value context $\Gamma$.
+
+%% \begin{align*} % TODO is hole a term?
+%%   &\text{Value Types } A := \nat \alt \,\dyn \alt (A \ra A') \\
+%%   &\text{Computation Types } B := \Ret A \\
+%%   &\text{Value Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
+%%   &\text{Computation Contexts } \Delta := \cdot \alt \hole B \alt \Delta , x : A \\
+%%   &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \up{A}{B} V \\ 
+%%   &\text{Terms } M, N := \err_B \alt \matchnat {V} {M} {n} {M'} \\ 
+%%   &\quad\quad \alt \ret {V} \alt \bind{x}{M}{N} \alt V_f\, V_x \alt \dn{A}{B} M 
+%% \end{align*}
+
+%% The value typing judgment is written $\hasty{\Gamma}{V}{A}$ and 
+%% the computation typing judgment is written $\hasty{\Delta}{M}{B}$.
+
+%% \begin{comment}
+%% We define substitution for value contexts by the following rules:
+
+%% \begin{mathpar}
+%%   \inferrule*
+%%   { \gamma : \Gamma' \to \Gamma \and 
+%%     \hasty{\Gamma'}{V}{A}}
+%%   { (\gamma , V/x ) \colon \Gamma' \to \Gamma , x : A }
+
+%%   \inferrule*
+%%   {}
+%%   {\cdot \colon \cdot \to \cdot}
+%% \end{mathpar}
+
+%% We define substitution for computation contexts by the following rules:
+
+%% \begin{mathpar}
+%%     \inferrule*
+%%     { \delta : \Delta' \to \Delta \and 
+%%       \hasty{\Delta'|_V}{V}{A}}
+%%     { (\delta , V/x ) \colon \Delta' \to \Delta , x : A }
+
+%%     \inferrule*
+%%     {}
+%%     {\cdot \colon \cdot \to \cdot}
+
+%%     \inferrule*
+%%     {\hasty{\Delta'}{M}{B}}
+%%     {M \colon \Delta' \to \hole{B}}
+%% \end{mathpar}
+%% \end{comment}
+
+%% The typing rules are as expected, with a cast between $A$ to $B$ allowed only when $A \ltdyn B$.
+%% Notice that the upcast of a value is a value, since it always succeeds, while the downcast
+%% of a value is a computation, since it may fail.
+
+%% \begin{mathpar}
+%%     % Var
+%%     \inferrule*{ }{\hasty {\cdot, \Gamma, x : A, \Gamma'} x A}
+
+%%     % Err
+%%     \inferrule*{ }{\hasty {\cdot, \Gamma} {\err_B} B} 
+  
+%%     % Zero and suc
+%%     \inferrule*{ }{\hasty \Gamma \zro \nat}
+  
+%%     \inferrule*{\hasty \Gamma V \nat} {\hasty \Gamma {\suc\, V} \nat}
+
+%%     % Match-nat
+%%     \inferrule*
+%%     {\hasty \Gamma V \nat \and 
+%%      \hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
+%%     {\hasty \Delta {\matchnat {V} {M} {n} {M'}} B}
+  
+%%     % Lambda
+%%     \inferrule* 
+%%     {\hasty {\cdot, \Gamma, x : A} M {\Ret A'}} 
+%%     {\hasty \Gamma {\lda x M} {A \ra A'}}
+  
+%%     % App
+%%     \inferrule*
+%%     {\hasty \Gamma {V_f} {A \ra A'} \and \hasty \Gamma {V_x} A}
+%%     {\hasty {\cdot , \Gamma} {V_f \, V_x} {\Ret A'}}
+
+%%     % Ret
+%%     \inferrule*
+%%     {\hasty \Gamma V A}
+%%     {\hasty {\cdot , \Gamma} {\ret\, V} {\Ret A}}
+%%     % TODO should this involve a Delta?
+
+%%     % Bind
+%%     \inferrule*
+%%     {\hasty \Delta M {\Ret A} \and \hasty{\cdot , \Delta|_V , x : A}{N}{B} } % Need x : A in context
+%%     {\hasty {\Delta} {\bind{x}{M}{N}} {B}}
+
+%%     % Upcast
+%%     \inferrule*
+%%     {A \ltdyn A' \and \hasty \Gamma V A}
+%%     {\hasty \Gamma {\up A {A'} V} {A'} }
+
+%%     % Downcast
+%%     % \inferrule*
+%%     % {A \ltdyn A' \and \hasty {\Gamma} V {A'}}
+%%     % {\hasty {\cdot, \Gamma} {\dn A {A'} V} {\Ret A}}
+
+%%     \inferrule* % TODO is this correct?
+%%     {B \ltdyn B' \and \hasty {\Delta} {M} {B'}}
+%%     {\hasty {\Delta} {\dn B {B'} M} {B}}
+
+%% \end{mathpar}
+
+
+%% In the equational theory, we have $\beta$ and $\eta$ laws for function type,
+%% as well a $\beta$ and $\eta$ law for $\Ret A$.
+
+%% % TODO do we need to add a substitution rule here?
+%% \begin{mathpar}
+%%   % Function Beta and Eta
+%%   \inferrule*
+%%   {\hasty {\cdot, \Gamma, x : A} M {\Ret A'} \and \hasty \Gamma V A}
+%%   {(\lda x M)\, V = M[V/x]}
+
+%%   \inferrule*
+%%   {\hasty \Gamma V {A \ra A}}
+%%   {\Gamma \vdash V = \lda x {V\, x}}
+
+%%   % Ret Beta and Eta
+%%   \inferrule*
+%%   {}
+%%   {(\bind{x}{\ret\, V}{N}) = N[V/x]}
+
+%%   \inferrule*
+%%   {\hasty {\hole{\Ret A} , \Gamma} {M} {B}}
+%%   {\hole{\Ret A}, \Gamma \vdash M = (\bind{x}{\bullet}{M[\ret\, x]})}
+
+%%   % Match-nat Beta
+%%   \inferrule*
+%%   {\hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
+%%   {\matchnat{\zro}{M}{n}{M'} = M}
+
+%%   \inferrule*
+%%   {\hasty \Gamma V \nat \and 
+%%    \hasty \Delta M B \and \hasty {\Delta, n : \nat} {M'} B}
+%%   {\matchnat{\suc\, V}{M}{n}{M'} = M'}
+
+%%   % Match-nat Eta
+%%   % This doesn't build in substitution
+%%   \inferrule*
+%%   {\hasty {\Delta , x : \nat} M A}
+%%   {M = \matchnat{x} {M[\zro / x]} {n} {M[(\suc\, n) / x]}}
 
 
 
-\subsection{Quotienting by Syntactic Bisimilarity}
+%% \end{mathpar}
 
-We now define a quotiented variant of the above step-sensitive calculus,
-which we denote by $\intlcbisim$.
-In this syntax, we add a rule saying, roughly speaking, that 
-$\theta \circ \nxt$ is the identity. This causes terms that differ only in
-their intensional behavior to become equal.
-Note that a priori, this is not the same language as the step-insensitive
-calculus on which we based the insensitive calculus.
+%% % ---------------------------------------------------------------------------------------
+%% % ---------------------------------------------------------------------------------------
 
-Formally, the equational theory for the quotiented syntax is the same as
-that of the original step-sensitive language, with the addition of the following
-rule:
+%% \subsection{Type Precision}
 
-% TODO is this correct?
-\begin{mathpar}
-  \inferrule*
-  { }
-  { \theta\, (\nxt\, x) = \bind{y}{(\theta\, V')}{\ret\, x}  }
-\end{mathpar}
+%% The type precision rules specify what it means for a type $A$ to be more precise than $A'$.
+%% We have reflexivity rules for $\dyn$ and $\nat$, as well as rules that $\nat$ is more precise than $\dyn$
+%% and $\dyn \ra \dyn$ is more precise than $\dyn$.
+%% We also have a transitivity rule for composition of type precision,
+%% and also a rule for function types stating that given $A_i \ltdyn A'_i$ and $A_o \ltdyn A'_o$, we can prove
+%% $A_i \ra A_o \ltdyn A'_i \ra A'_o$.
+%% Finally, we can lift a relation on value types $A \ltdyn A'$ to a relation $\Ret A \ltdyn \Ret A'$ on
+%% computation types.
 
-This states that the application of $\theta$ to $\nxt\, x$ is equivalent to
-the computation that applies $\theta$ to $V'$ to obtain a variable $y$, and
-then simply returns $x$.
+%% \begin{mathpar}
+%%   \inferrule*[right = \dyn]
+%%     { }{\dyn \ltdyn\, \dyn}
+
+%%   \inferrule*[right = \nat]
+%%     { }{\nat \ltdyn \nat}
+
+%%   \inferrule*[right = $\ra$]
+%%     {A_i \ltdyn A'_i \and A_o \ltdyn A'_o }
+%%     {(A_i \ra A_o) \ltdyn (A'_i \ra A'_o)}
+
+%%   \inferrule*[right = $\textsf{Inj}_\nat$]
+%%     { }{\nat \ltdyn\, \dyn}
+
+%%   \inferrule*[right=$\textsf{Inj}_{\ra}$]
+%%     { }
+%%     {(\dyn \ra \dyn) \ltdyn\, \dyn}
+
+%%   \inferrule*[right=ValTrans]
+%%     {A \ltdyn A' \and A' \ltdyn A''}
+%%     {A \ltdyn A''}
+
+%%   \inferrule*[right=CompTrans]
+%%     {B \ltdyn B' \and B' \ltdyn B''}
+%%     {B \ltdyn B''}
+
+%%   \inferrule*[right=$\Ret{}$]
+%%     {A \ltdyn A'}
+%%     {\Ret {A} \ltdyn \Ret {A'}}
+
+%%     % TODO are there other rules needed for computation types?
+
+  
+%% \end{mathpar}
+
+%% % Type precision derivations
+%% Note that as a consequence of this presentation of the type precision rules, we
+%% have that if $A \ltdyn A'$, there is a unique precision derivation that witnesses this.
+%% As in previous work, we go a step farther and make these derivations first-class objects,
+%% known as \emph{type precision derivations}.
+%% Specifically, for every $A \ltdyn A'$, we have a derivation $c : A \ltdyn A'$ that is constructed
+%% using the rules above. For instance, there is a derivation $\dyn : \dyn \ltdyn \dyn$, and a derivation
+%% $\nat : \nat \ltdyn \nat$, and if $c_i : A_i \ltdyn A_i$ and $c_o : A_o \ltdyn A'_o$, then
+%% there is a derivation $c_i \ra c_o : (A_i \ra A_o) \ltdyn (A'_i \ra A'_o)$. Likewise for
+%% the remaining rules. The benefit to making these derivations explicit in the syntax is that we
+%% can perform induction over them.
+%% Note also that for any type $A$, we use $A$ to denote the reflexivity derivation that $A \ltdyn A$,
+%% i.e., $A : A \ltdyn A$.
+%% Finally, observe that for type precision derivations $c : A \ltdyn A'$ and $c' : A' \ltdyn A''$, we
+%% can define (via the rule ValComp) their composition $c \relcomp c' : A \ltdyn A''$.
+%% The same holds for computation type precision derivations.
+%% This notion will be used below in the statement of transitivity of the term precision relation.
+
+%% % ---------------------------------------------------------------------------------------
+%% % ---------------------------------------------------------------------------------------
+
+%% \subsection{Term Precision}
+
+%% We allow for a \emph{heterogeneous} term precision judgment on terms values $V$ of type
+%% $A$ and $V'$ of type $A'$ provided that $A \ltdyn A'$ holds. Likewise, for computation
+%% types $B \ltdyn B'$, if $M$ has type $B$ and $M'$ has type $B'$, we can form the judgment
+%% that $M \ltdyn M'$.
+
+%% % Type precision contexts
+%% % TODO should we include the formal definitions of value and computation type precision contexts?
+%% In order to deal with open terms, we will need the notion of a type precision \emph{context}, which we denote
+%% $\gamlt$. This is similar to a normal context but instead of mapping variables to types,
+%% it maps variables $x$ to related types $A \ltdyn A'$, where $x$ has type $A$ in the left-hand term
+%% and $B$ in the right-hand term. We may also write $x : d$ where $d : A \ltdyn A'$ to indicate this.
+%% Similarly, we have computation type precision contexts $\Delta^\ltdyn$. Similar to ``normal'' computation
+%% type precision contexts $\Delta$, these consist of (1) a stoup $\Sigma$ which is either empty or
+%% has a hole $\hole{d}$ for some computation type precision derivation $d$, and (2) a value type precision context
+%% $\Gamma^\ltdyn$.
+
+%% % An equivalent way of thinking of type precision contexts is as a pair of ``normal" typing
+%% % contexts $\Gamma, \Gamma'$ with the same domain such that $\Gamma(x) \ltdyn \Gamma'(x)$ for
+%% % each $x$ in the domain.
+%% % We will write $\gamlt : \Gamma \ltdyn \Gamma'$ when we want to emphasize the pair of contexts.
+%% % Conversely, if we are given $\gamlt$, we write $\gamlt_l$ and $\gamlt_r$ for the normal typing contexts on each side.
+
+%% An equivalent way of thinking of a type precision context $\gamlt$ is as a
+%% pair of ``normal" typing contexts, $\gamlt_l$ and $\gamlt_r$, with the same
+%% domain and such that $\gamlt_l(x) \ltdyn \gamlt_r(x)$ for each $x$ in the domain.
+%% We will write $\gamlt : \gamlt_l \ltdyn \gamlt_r$ when we want to emphasize the pair of contexts.
+
+%% As with type precision derivations, we write $\Gamma$ to mean the ``reflexivity" type precision context
+%% $\Gamma : \Gamma \ltdyn \Gamma$.
+%% Concretely, this consists of reflexivity type precision derivations $\Gamma(x) \ltdyn \Gamma(x)$ for
+%% each $x$ in the domain of $\Gamma$.
+%% Similarly, we also have reflexivity for computation type precision contexts.
+%% %
+%% Furthermore, we write $\gamlt_1 \relcomp \gamlt_2$ to denote the ``composition'' of $\gamlt_1$ and $\gamlt_2$
+%% --- that is, the precision context whose value at $x$ is the type precision derivation
+%% $\gamlt_1(x) \relcomp \gamlt_2(x)$. This of course assumes that each of the type precision
+%% derivations is composable, i.e., that the RHS of $\gamlt_1(x)$ is the same as the left-hand side of $\gamlt_2(x)$.
+%% We define the same for computation type precision contexts $\deltalt_1$ and $\deltalt_2$,
+%% provided that both the computation type precision contexts have the same ``shape'', which is defined as
+%% (1) either the stoup is empty in both, or the stoup has a hole in both, say $\hole{d}$ and $\hole{d'}$
+%% where $d$ and $d'$ are composable, and (2) their value type precision contexts are composable as described above.
+
+%% The rules for term precision come in two forms. We first have the \emph{congruence} rules,
+%% one for each term constructor. These assert that the term constructors respect term precision.
+%% The congruence rules are as follows:
+
+%% \begin{mathpar}
+
+%%   \inferrule*[right = Var]
+%%     { c : A \ltdyn B \and \gamlt(x) = (A, B) } 
+%%     { \etmprec {\gamlt} x x c }
+
+%%   \inferrule*[right = Zro]
+%%     { } {\etmprec \gamlt \zro \zro \nat }
+
+%%   \inferrule*[right = Suc]
+%%     { \etmprec \gamlt V {V'} \nat } {\etmprec \gamlt {\suc\, V} {\suc\, V'} \nat}
+
+%%   \inferrule*[right = MatchNat]
+%%   {\etmprec \gamlt V {V'} \nat \and 
+%%     \etmprec \deltalt M {M'} d \and \etmprec {\deltalt, n : \nat} {N} {N'} d}
+%%   {\etmprec \deltalt {\matchnat {V} {M} {n} {N}} {\matchnat {V'} {M'} {n} {N'}} d}
+
+%%   \inferrule*[right = Lambda]
+%%     { c_i : A_i \ltdyn A'_i \and 
+%%       c_o : A_o \ltdyn A'_o \and 
+%%       \etmprec {\cdot , \gamlt , x : c_i} {M} {M'} {\Ret c_o} } 
+%%     { \etmprec \gamlt {\lda x M} {\lda x {M'}} {(c_i \ra c_o)} }
+
+%%   \inferrule*[right = App]
+%%     { c_i : A_i \ltdyn A'_i \and
+%%       c_o : A_o \ltdyn A'_o \\\\
+%%       \etmprec \gamlt {V_f} {V_f'} {(c_i \ra c_o)} \and
+%%       \etmprec \gamlt {V_x} {V_x'} {c_i}
+%%     } 
+%%     { \etmprec {\cdot , \gamlt} {V_f\, V_x} {V_f'\, V_x'} {\Ret {c_o}}}
+
+%%   \inferrule*[right = Ret]
+%%     {\etmprec {\gamlt} V {V'} c}
+%%     {\etmprec {\cdot , \gamlt} {\ret\, V} {\ret\, V'} {\Ret c}}
+
+%%   \inferrule*[right = Bind]
+%%     {\etmprec {\deltalt} {M} {M'} {\Ret c} \and 
+%%      \etmprec {\cdot , \deltalt|_V , x : c} {N} {N'} {d} }
+%%     {\etmprec {\deltalt} {\bind {x} {M} {N}} {\bind {x} {M'} {N'}} {d}}
+%% \end{mathpar}
+
+%% We then have additional equational axioms, including transitivity, $\beta$ and $\eta$ laws, and
+%% rules characterizing upcasts as least upper bounds, and downcasts as greatest lower bounds.
+
+%% We write $M \equidyn N$ to mean that both $M \ltdyn N$ and $N \ltdyn M$.
+
+%% % TODO adapt these for value/computation distinction
+%% % TODO substitution rules for values and terms?
+%% \begin{mathpar}
+%%   \inferrule*[right = $\err$]
+%%     { \hasty {\deltalt_l} M B }
+%%     {\etmprec {\Delta} {\err_B} M B}
+
+%%   \inferrule*[right = Transitivity]
+%%     { d : B \ltdyn B' \and d' : B' \ltdyn B'' \\\\
+%%      \etmprec {\deltalt_1} {M} {M'} {d} \and
+%%      \etmprec {\deltalt_2} {M'} {M''} {d'} } 
+%%     {\etmprec {\deltalt_1 \relcomp \deltalt_2} {M} {M''} {d \relcomp d'} }
+
+
+%%   \inferrule*[right = $\beta$-fun]
+%%     { \hasty {\cdot, \Gamma, x : A_i} M {\Ret A_o} \and
+%%       \hasty {\Gamma} V {A_i} } 
+%%     { \etmequidyn {\cdot, \Gamma} {(\lda x M)\, V} {M[V/x]} {\Ret A_o} }
+
+%%   \inferrule*[right = $\eta$-fun]
+%%     { \hasty {\Gamma} {V} {A_i \ra A_o} } 
+%%     { \etmequidyn \Gamma {\lda x (V\, x)} V {A_i \ra A_o} }
+
+%%   % Match-nat beta and eta
+
+
+
+%%   \inferrule*[right = $\beta$-ret]
+%%     {}
+%%     {\bind{x}{\ret\, V}{N} \equidyn N[V/x]}
+
+%%   \inferrule*[right = $\eta$-ret]
+%%     {\hasty {\hole{\Ret A} , \Gamma} {M} {B}}
+%%     {\hole{\Ret A}, \Gamma \vdash M \equidyn \bind{x}{\bullet}{M[\ret\, x]}}
+    
+
+%%   % Could specify \gamlt : \Gamma \ltdyn \Gamma'
+%%   % and then we wouldn't need to say l and r
+
+%%   \inferrule*[right = UpR]
+%%     { d : A \ltdyn A' \and 
+%%       \hasty {\Delta} {M} {A} } 
+%%     { \etmprec {\Delta} {M} {\up {A} {A'} M} {d}  }
+
+%%   \inferrule*[right = UpL]
+%%     { d : A \ltdyn A' \and
+%%       \etmprec {\deltalt} {M} {N} {d} } 
+%%     { \etmprec {\deltalt} {\up {A} {A'} M} {N} {A'} }
+
+%%   \inferrule*[right = DnL]
+%%     { d : B \ltdyn B' \and 
+%%       \hasty {\Delta} {M} {B'} } 
+%%     { \etmprec {\Delta} {\dn {B} {B'} M} {M} {d} }
+
+%%   \inferrule*[right = DnR]
+%%     { d : B \ltdyn B' \and
+%%       \etmprec {\deltalt} {M} {N} {d} } 
+%%     { \etmprec {\deltalt} {M} {\dn {B} {B'} N} {B} }
+%% \end{mathpar}
+
+%% % TODO explain the least upper bound/greatest lower bound rules
+%% The rules UpR, UpL, DnL, and DnR were introduced in \cite{new-licata18} as a means
+%% of cleanly axiomatizing the intended behavior of casts in a way that
+%% doesn't depend on the specific constructs of the language.
+%% Intuitively, rule UpR says that the upcast of $M$ is an upper bound for $M$
+%% in that $M$ may error more, and UpL says that the upcast is the \emph{least}
+%% such upper bound, in that it errors more than any other upper bound for $M$.
+%% Conversely, DnL says that the downcast of $M$ is a lower bound, and DnR says
+%% that it is the \emph{greatest} lower bound.
+%% % These rules provide a clean axiomatization of the behavior of casts that doesn't
+%% % depend on the specific constructs of the language.
+
+%% % ---------------------------------------------------------------------------------------
+%% % ---------------------------------------------------------------------------------------
+%% \subsection{Removing Transitivity as a Primitive}
+
+%% The first observation we make is that transitivity of type precision, and heterogeneous
+%% transitivity of term precision, are admissible. That is, consider a related language which
+%% is the same as $\extlc$ except that we have removed the composition rule for type precision and
+%% the heterogeneous transitivity rule for type precision. Denote this language by $\extlcm$.
+%% We claim that in this new language, the rules we removed are derivable from the remaining rules.
+
+%% To see this, suppose $\gamlt : \Gamma \ltdyn \Gamma'$ and $d : A \ltdyn A'$, and that
+%%  $\etmprec {\gamlt} {V} {V'} {d}$, as shown in the diagram below:
+
+%% % https://q.uiver.app/?q=WzAsNCxbMCwwLCJcXEdhbW1hIl0sWzAsMSwiXFxHYW1tYSciXSxbMSwwLCJBIl0sWzEsMSwiQSciXSxbMCwxLCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsIlYiXSxbMSwzLCJWJyJdLFs2LDcsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	\Gamma \& A \\
+%% 	{\Gamma'} \& {A'}
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-2, to=2-2]
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "V", from=1-1, to=1-2]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}", from=2-1, to=2-2]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
+%% \end{tikzcd}\]
+
+%% Now note that this is equivalent, by the cast rule UpL, to
+%% $\etmprec {\Gamma'} {\up{A}{A'} V} {V'} {A'}$,
+%% where as noted above, $\Gamma'$ refers to the context $\Gamma'$ viewed as a reflexivity
+%% precision context and likewise the $A'$ at the end refers to the reflexivity derivation $A' \ltdyn A'$.
+
+%% % https://q.uiver.app/?q=WzAsMixbMCwwLCJcXEdhbW1hJyJdLFsxLDAsIkEnIl0sWzAsMSwiXFx1cCB7QX0ge0EnfSBWIiwwLHsiY3VydmUiOi0yfV0sWzAsMSwiViciLDIseyJjdXJ2ZSI6Mn1dLFsyLDMsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	{\Gamma'} \& {A'}
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "{\up {A} {A'} V}", curve={height=-12pt}, from=1-1, to=1-2]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}"', curve={height=12pt}, from=1-1, to=1-2]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
+%% \end{tikzcd}\]
+
+%% Now consider the situation shown below:
+
+%% % https://q.uiver.app/?q=WzAsNixbMCwwLCJcXEdhbW1hIl0sWzAsMSwiXFxHYW1tYSciXSxbMCwyLCJcXEdhbW1hJyciXSxbMiwwLCJBIl0sWzIsMSwiQSciXSxbMiwyLCJBJyciXSxbMiw1LCJWJyciXSxbMSw0LCJWJyJdLFswLDMsIlYiXSxbMyw0LCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcbHRkeW4iLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCIiLDEseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJcXGx0ZHluIiwzLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzgsNywiXFxsdGR5biIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs3LDYsIlxcbHRkeW4iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	\Gamma \&\& A \\
+%% 	{\Gamma'} \&\& {A'} \\
+%% 	{\Gamma''} \&\& {A''}
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "{V''}", from=3-1, to=3-3]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}", from=2-1, to=2-3]
+%% 	\arrow[""{name=2, anchor=center, inner sep=0}, "V", from=1-1, to=1-3]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-3, to=2-3]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=2-3, to=3-3]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
+%% 	\arrow[draw=none, from=2-1, to=3-1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=2-1, to=3-1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=2, to=1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1, to=0]
+%% \end{tikzcd}\]
+
+
+%% Using the above observation, we have that the above is equivalent to
+
+%% % https://q.uiver.app/?q=WzAsNCxbMCwwLCJcXEdhbW1hJyJdLFswLDEsIlxcR2FtbWEnJyJdLFsyLDAsIkEnIl0sWzIsMSwiQScnIl0sWzAsMiwiXFx1cCB7QX0ge0EnfSBWIiwwLHsiY3VydmUiOi0yfV0sWzAsMiwiViciLDIseyJjdXJ2ZSI6Mn1dLFsxLDMsIlYnJyIsMix7ImN1cnZlIjoyfV0sWzAsMSwiXFxsdGR5biIsMyx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsIlxcbHRkeW4iLDMseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNCw1LCJcXGx0ZHluIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNiwiXFxsdGR5biIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	{\Gamma'} \&\& {A'} \\
+%% 	{\Gamma''} \&\& {A''}
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "{\up {A} {A'} V}", curve={height=-12pt}, from=1-1, to=1-3]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "{V'}"', curve={height=12pt}, from=1-1, to=1-3]
+%% 	\arrow[""{name=2, anchor=center, inner sep=0}, "{V''}"', curve={height=12pt}, from=2-1, to=2-3]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-1, to=2-1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1-3, to=2-3]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=0, to=1]
+%% 	\arrow["\ltdyn"{marking}, draw=none, from=1, to=2]
+%% \end{tikzcd}\]
+
+%% % TODO finish the explanation
+  
+
+%% % ---------------------------------------------------------------------------------------
+%% % ---------------------------------------------------------------------------------------
+
+%% \subsection{Removing Casts as Primitives}
+
+%% % We now observe that all casts, except those between $\nat$ and $\dyn$
+%% % and between $\dyn \ra \dyn$ and $\dyn$, are admissible, in the sense that
+%% % we can start from $\extlcm$, remove casts except the aforementioned ones,
+%% % and in the resulting language we will be able to derive the other casts.
+
+%% We now observe that all casts, except those between $\nat$ and $\dyn$
+%% and between $\dyn \ra \dyn$ and $\dyn$, are admissible.
+%% That is, consider a new language ($\extlcmm$) in which
+%% instead of having arbitrary casts, we have injections from $\nat$ and
+%% $\dyn \ra \dyn$ into $\dyn$, and case inspections from $\dyn$ to $\nat$ and
+%% $\dyn$ to $\dyn \ra \dyn$. We claim that in $\extlcmm$, all of the casts
+%% present in $\extlcm$ are derivable.
+%% It will suffice to verify that casts for function type are derivable.
+%% This holds because function casts are constructed inductively from the casts
+%% of their domain and codomain. The base case is one of the casts involving $\nat$
+%% or $\dyn \ra \dyn$ which are present in $\extlcmm$ as injections and case inspections.
+
+
+%% The resulting calculus $\extlcmm$ now lacks transitivity of type precision,
+%% heterogeneous transitivity of term precision, and arbitrary casts as primitive
+%% notions.
+
+%% \begin{align*}
+%%   &\text{Value Types } A := \nat \alt \dyn \alt (A \ra A') \\
+%%   &\text{Computation Types } B := \Ret A \\
+%%   &\text{Value Contexts } \Gamma := \cdot \alt (\Gamma, x : A) \\
+%%   &\text{Computation Contexts } \Delta := \cdot \alt \hole B \alt \Delta , x : A \\
+%%   &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \injnat V \alt \injarr V \\ 
+%%   &\text{Terms } M, N := \err_B \alt \ret {V} \alt \bind{x}{M}{N}
+%%     \alt V_f\, V_x \alt
+%%     \\ & \quad\quad \casenat{V}{M_{no}}{n}{M_{yes}} 
+%%     \alt \casearr{V}{M_{no}}{f}{M_{yes}}
+%% \end{align*}
+
+%% In this setting, rather than type precision, it makes more sense to
+%% speak of arbitrary \emph{monotone relations} on types, which we denote by $A \rel A'$.
+%% We have relations on value types, as well as on computation types. We also have
+%% value relation contexts and computation relation contexts, analogous to the value type
+%% precision contexts and computation type precision contexts from before.
+
+%% \begin{align*}
+%%   &\text{Value Relations } R := \nat \alt \dyn \alt (R \ra R) \alt\, \dyn\, R(V_1, V_2)\\
+%%   &\text{Computation Relations } S := \li R \\
+%%   &\text{Value Relation Contexts } \Gamma^{\rel} := \cdot \alt \Gamma^{\rel} , A^{\rel} (x_l : A_l , x_r : A_r)\\
+%%   &\text{Computation Relation Contexts } \Delta^{\rel} := \cdot \alt \hole{B^{\rel}} \alt 
+%%     \Delta^{\rel} , A^{\rel} (x_l : A_l , x_r : A_r)   \\
+%% \end{align*}
+
+%% % TODO rules for relations
+%% The forms for relations are as follows:
+
+%% \begin{align*}
+%%   A^{\rel}      &\colon A_l      \rel A_r \\
+%%   \Gamma^{\rel} &\colon \Gamma_l \rel \Gamma_r \\
+%%   B^{\rel}      &\colon B_l      \rel B_r \\
+%%   \Delta^{\rel} &\colon \Delta_l \rel \Delta_r
+%% \end{align*}
+
+
+
+%% Figure \ref{fig:relation-rules} shows the rules for relations. We show only those for value types;
+%% the corresponding computation type relation rules are analogous.
+%% The rules for relations are as follows. First, we require relations to be reflexive.
+%% We also require that they are \emph{profunctorial}, in the sense that a relation between
+%% $A$ and $A'$ is closed under the ``homogeneous'' relations on both sides.
+%% We also require that they satisfy a substitution principle.
+
+%% \begin{figure}
+%%   \begin{mathpar}
+%%     \inferrule*[right = Reflexivity]
+%%     {\hasty \Gamma V A}
+%%     {\refl(\Gamma) \vdash \refl(A)(V, V)}
+
+%%     \inferrule*[right = Profunctoriality]
+%%     { \refl(\Gamma^{\rel}_l) \vdash  \refl(A^{\rel}_l) (V_l' , V_l) \\\\ 
+%%         \Gamma^{\rel}    \vdash    A^{\rel}    (V_l  , V_r) \\\\
+%%       \refl(\Gamma^{\rel}_r) \vdash  \refl(A^{\rel}_r) (V_r  , V_r')
+%%     }
+%%     {\Gamma^{\rel} \vdash A^{\rel} (V_l', V_r')}
+
+%%     \inferrule*[right = Subst]
+%%     { \Gamma'^{\rel} \vdash \Gamma^{\rel} (\gamma_l, \gamma_r) \\\\
+%%       \Gamma^{\rel} A^{\rel} (V_l, V_r)
+%%     }
+%%     {\Gamma'^{\rel} \vdash A^{\rel} (V_l[\gamma_l] , V_r[\gamma_r]) }
+
+%%     % \inferrule*[right = TermSubst]
+%%     % { \Delta'^{\rel} \vdash \Delta^{\rel} (\delta_l, \delta_r) \\\\
+%%     %   \Delta^{\rel} B^{\rel} (M_l, M_r)
+%%     % }
+%%     % {\Delta'^{\rel} \vdash B^{\rel} (M_l[\delta_l] , M_r[\delta_r]) }
+
+%%   \end{mathpar}
+%%   \caption{Rules for value type relations. The rules for computation type relations are analogous.}
+%%   \label{fig:relation-rules}
+%% \end{figure}
+
+%% We also have a rule for the restriction of a relation along a function,
+%% and we have a rule characterizing relation at function type. The latter states that
+%% if under the assumption that $x$ is related to $x'$ by $A^{\rel}$, we can show that $M$
+%% is related to $M'$ by $\li A'^{\rel}$, then we have that $\lda{x}{M}$ is related to
+%% $\lda{x'}{M'}$ by $A^{\rel} \ra A'^{\rel}$.
+
+%% \begin{mathpar}
+%%   \mprset{fraction={===}}
+
+%%   % \inferrule*[]
+%%   % { A^{\rel}  (x_l, x_r) \vdash A^{\rel} (V_l, V_r) }
+%%   % { A'^{\rel} (x_l, x_r) \vdash A^{\rel} (V_l, V_r)(x_l, x_r) }
+
+%%   \inferrule*[right = Restriction]
+%%   { \Gamma^{\rel} \vdash A^{\rel} (V_l (V_l'), V_r (V_r')) }
+%%   { \Gamma^{\rel} \vdash (A^{\rel} (V_l, V_r)) (V_l', V_r') }
+
+%%   \inferrule*[right = $\text{Rel}_\ra$]
+%%   { A^{\rel} (x, x') \vdash (\li A'^{\rel})(M , M') }
+%%   {  \vdash (A^{\rel} \ra A'^{\rel}) (\lda{x}{M}) , (\lda{x'}{M'})}
+
+%% \end{mathpar}
+
+
+
+%% % New rules
+%% Figure \ref{fig:extlc-minus-minus-typing} shows the new typing rules,
+%% and Figure \ref{fig:extlc-minus-minus-eqns} shows the equational rules
+%% for case-nat (the rules for case-arrow are analogous).
+
+%% \begin{figure}
+%%   \begin{mathpar}
+%%       % inj-nat
+%%       \inferrule*
+%%       {\hasty \Gamma M \nat}
+%%       {\hasty \Gamma {\injnat M} \dyn}
+
+%%       % inj-arr 
+%%       \inferrule*
+%%       {\hasty \Gamma M (\dyn \ra \dyn)}
+%%       {\hasty \Gamma {\injarr M} \dyn}
+
+%%       % Case nat
+%%       \inferrule*
+%%       {\hasty{\Delta|_V}{V}{\dyn} \and 
+%%         \hasty{\Delta , x : \nat }{M_{yes}}{B} \and 
+%%         \hasty{\Delta}{M_{no}}{B}}
+%%       {\hasty {\Delta} {\casenat{V}{M_{no}}{n}{M_{yes}}} {B}}
+    
+%%       % Case arr
+%%       \inferrule*
+%%       {\hasty{\Delta|_V}{V}{\dyn} \and 
+%%         \hasty{\Delta , x : (\dyn \ra \dyn) }{M_{yes}}{B} \and 
+%%         \hasty{\Delta}{M_{no}}{B}}
+%%       {\hasty {\Delta} {\casearr{V}{M_{no}}{f}{M_{yes}}} {B}}
+%%   \end{mathpar}
+%%   \caption{New typing rules for $\extlcmm$.}
+%%   \label{fig:extlc-minus-minus-typing}
+%% \end{figure}
+
+
+%% \begin{figure}
+%%   \begin{mathpar}
+%%      % Case-nat Beta
+%%      \inferrule*
+%%      {\hasty \Gamma V \nat}
+%%      {\casenat {\injnat {V}} {M_{no}} {n} {M_{yes}} = M_{yes}[V/n]}
+
+%%      \inferrule*
+%%      {\hasty \Gamma V {\dyn \ra \dyn} }
+%%      {\casenat {\injarr {V}} {M_{no}} {n} {M_{yes}} = M_{no}}
+
+%%      % Case-nat Eta
+%%      \inferrule*
+%%      {}
+%%      {\Gamma , x :\, \dyn \vdash M = \casenat{x}{M}{n}{M[(\injnat{n}) / x]} }
+
+
+%%      % Case-arr Beta
+
+
+%%      % Case-arr Eta
+
+
+%%   \end{mathpar}
+%%   \caption{New equational rules for $\extlcmm$ (rules for case-arrow are analogous
+%%            and hence are omitted).}
+%%   \label{fig:extlc-minus-minus-eqns}
+%% \end{figure}
+
+
+
+%% % TODO : Updated term precision rules
+
+
+
+%% \subsection{The Step-Sensitive Lambda Calculus}\label{sec:step-sensitive-lc}
+
+%% % \textbf{TODO: Subject to change!}
+
+%% Rather than give a semantics to $\extlcmm$ directly, we first introduce another intermediary
+%% language, a \emph{step-sensitive} (also called \emph{intensional}) calculus.
+%% As mentioned, this language makes the intensional stepping behavior of programs
+%% explicit in the syntax. We do this by adding a syntactic ``later'' type and a
+%% syntactic $\theta$ that takes terms of type later $A$ to terms of type $A$.
+
+%% % In the step-sensitive syntax, we add a type constructor for later, as well as a
+%% % syntactic $\theta$ term and a syntactic $\nxt$ term.
+%% We add rules for these new constructs, and also modify the rules for inj-arr and
+%% case-arrow, since now the function is not $\Dyn \ra \Dyn$ but rather $\later (\Dyn \ra \Dyn)$.
+%% We also add congruence relations for $\later$ and $\nxt$.
+
+%% % TODO show changes
+
+%% \noindent Modified syntax:
+%% \begin{align*}
+%%   &\text{Value Types } A := \nat \alt \dyn \alt (A \ra A') \alt {\color{red} \later A} \\
+%%   &\text{Values } V :=  \zro \alt \suc\, V \alt \lda{x}{M} \alt \injnat V \alt \injarr V 
+%%     \alt {\color{red} \nxt\, V} \alt {\color{red} \mathbf{\theta}}
+%% \end{align*}
+
+%% \noindent Additional typing rules:
+%% \begin{mathpar}
+%%   \inferrule
+%%   {\hasty \Gamma V A}
+%%   {\hasty \Gamma {\nxt\, V} {\later A}}
+
+%%   \inferrule
+%%   {}
+%%   {\hasty \Gamma \theta {\later A \ra A}}
+
+%%   % \theta(\nxt x) = \theta(y); \texttt{ret}\, x
+%% \end{mathpar}
+
+%% \noindent Modified typing rules:
+%% \begin{mathpar}
+
+%%   % inj-arr 
+%%   \inferrule*
+%%   {\hasty \Gamma M {\color{red} \later (\dyn \ra \dyn)}}
+%%   {\hasty \Gamma {\injarr M} \dyn}
+
+%%   % Case arr
+%%   % TODO if the extensional version is incorrect and needs to change, make
+%%   % sure to change this one accordingly
+%%   \inferrule*
+%%   {\hasty{\Delta|_V}{V}{\dyn} \and 
+%%     \hasty{\Delta , x \colon {\color{red} \later (\dyn \ra \dyn)} }{M_{yes}}{B} \and 
+%%     \hasty{\Delta}{M_{no}}{B}}
+%%   {\hasty {\Delta} {\casearr{V}{M_{no}}{\tilde{f}}{M_{yes}}} {B}}  
+%% \end{mathpar}
+
+%% \noindent Additional relations:
+%% \begin{mathpar}
+%%   \inferrule*[]
+%%   {A^{\rel} : A_l \rel A_r}
+%%   {\later A^{\rel} : \later A_l \rel \later A_r}
+
+%%   \inferrule*[]
+%%   {A^{\rel} (V_l, V_r)}
+%%   {\later A^{\rel} (\nxt\, V_l, \nxt\, V_r)}
+
+%% \end{mathpar}
+
+%% % TODO what about the relation for theta? Or is that automatic since it's a function symbol?
+
+%% % TODO beta rule for theta
+
+%% We define the term $\delta$ to be the function $\lda {x} {\theta\, (\nxt\, x)}$.
+
+%% % We define an erasure function from step-sensitive syntax to step-insensitive syntax
+%% % by induction on the step-sensitive types and terms.
+%% % The basic idea is that the syntactic type $\later A$ erases to $A$,
+%% % and $\nxt$ and $\theta$ erase to the identity.
+
+
+
+%% \subsection{Quotienting by Syntactic Bisimilarity}
+
+%% We now define a quotiented variant of the above step-sensitive calculus,
+%% which we denote by $\intlcbisim$.
+%% In this syntax, we add a rule saying, roughly speaking, that 
+%% $\theta \circ \nxt$ is the identity. This causes terms that differ only in
+%% their intensional behavior to become equal.
+%% Note that a priori, this is not the same language as the step-insensitive
+%% calculus on which we based the insensitive calculus.
+
+%% Formally, the equational theory for the quotiented syntax is the same as
+%% that of the original step-sensitive language, with the addition of the following
+%% rule:
+
+%% % TODO is this correct?
+%% \begin{mathpar}
+%%   \inferrule*
+%%   { }
+%%   { \theta\, (\nxt\, x) = \bind{y}{(\theta\, V')}{\ret\, x}  }
+%% \end{mathpar}
+
+%% This states that the application of $\theta$ to $\nxt\, x$ is equivalent to
+%% the computation that applies $\theta$ to $V'$ to obtain a variable $y$, and
+%% then simply returns $x$.
 
 
