@@ -7,6 +7,73 @@
 
 \subsection{Mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
+We will use Guarded Cubical Agda to prove graduality in the syntax of 
+GTLC, which involves the construction of the abstract model described in 
+\ref{sec:concrete-model} and the extensional model with external dynamic 
+type. This part is still work-in-progress.
+
+% step-1
+Currently, we have defined the step-1 intensional model in Cubical 
+Agda. For value types, we constructed predomain which holds ordering and 
+bisimilarity, and morphisms between predmains. For computation types, we 
+constructed error domain which contains its underlying predomain, 
+elements of $\mho$ and $\theta$ and morphisms between error domains. We 
+also defined two functors $U$ and $F$ which support conversions between 
+predomains and error domains.
+
+% step-2 
+Then we plan to construct the step-2 intensional model. Besides all the 
+data in step-1, we need to include perturbations on value and computation 
+types, functors $\times$, $\arr$, $U$, and $F$ that preserve 
+perturbations and push/pull properties for all morphisms on value and 
+computation types. Notice that for any object $A$ which has value type, 
+we will take not only the monoid of perturbations $P^V_A$ and the monoid 
+homomorphism $\ptbv_A : \pv_A \to \vf(A,A)$ on itself, but also $P^C_{F A}
+$ and $\ptbe_{F A} : \pe_{F A} \to \ef(F A,F A)$ on $F A$, which have 
+computation types. Similarly, for any computation object $B$, we will 
+construct the perturbations on $U B$ besides the monoid $P^C_B$ and 
+monoid homomorphism $\ptbe_B : \pe_B \to \ef(B,B)$. Also, for functors 
+that preserves perturbations, we need to include the ones in the context 
+of Kleisli category. 
+
+% step-3
+In the step-3 intensional model, we will enhance it with 
+quasi-representability. For any value relation $c : A \rel A'$, we need 
+to show that there exists a left-representation structure for $c$ and a 
+right-representation structure for $F\ c$. Correspondingly, for any 
+computation relation $d : B \rel B'$, we will show there exists a 
+right-representation structure for $d$ and a left-representation 
+structure for $U\ d$. As we define the quasi-representability for value 
+and computation relation, we will construct the quasi-representability on 
+the function and product of the relation, which makes it necessary to 
+have the dual version of quasi-representability.
+
+% step-4 construct a concrete dynamic type and apply it to the abstract model
+After defining the abstract model and its interface, we will model GTLC 
+by providing explicit construction triples of dynamic type at each step, 
+which includes defining Dyn as a predomain, its pure and Kleisli 
+perturbation monoids, push/pull property for pure and Kleisli 
+perturbation, as well as quasi-representability. The 
+quasi-representability involves explicit rules which show that Nat is 
+more precise than Dyn (Inj-Nat) and Dyn $\to$ Dyn is more precise than 
+Dyn (Inj-Arr). Currently, we have formalized the concrete construction of 
+Dyn in Cubical Agda and it was more challenging than expected because we 
+define Dyn using the technique of fixed point, which means that every 
+time we analyze the case inside of Dyn, we need to unfold it and add 
+corresponding proof. 
+
+% adequacy
+Besides the abstract model and its concrete construction on dynamic type, 
+we will also formalize the adequacy result in \ref{sec:appendix-adequacy}, 
+which involves clock quantification of the lift monad, the weak bisim 
+relation, and the lock-step error ordering. In order to prove adequacy, 
+we will first prove that the global lift of X is isomorphic to Delay(1 + X)
+whether X is clock-irrelevant or not. Then, we aim to prove the equivalence 
+between the global lock-step error ordering and the error ordering observed 
+in Delay(1 + X) and equivalence between the global weak bisimilarity 
+relation and the weak bisimilarity relation on Delay(1 + X). We have 
+finished some prerequisite proofs on clock quantification and postulated 
+some theorems on clock globalization.
 
 \subsection{Benefits and Drawbacks of the Synthetic Approach}
 
