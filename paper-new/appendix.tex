@@ -111,6 +111,42 @@ precision:
 
 \section{Call-by-push-value}
 
+\subsection{Morphisms of CBPV Models}
+
+There are two relevant notions of \emph{morphism} of CBPV models:
+\emph{strict} and \emph{lax}.
+% morphisms of CBPV models
+Given call-by-push-value models
+$\mathcal M_1 = (\mathcal V_1, \mathcal E_1, \arr_1, U_1, F_1)$ and
+$\mathcal M_2 = (\mathcal V_2, \mathcal E_2, \arr_2, U_2, F_2)$,
+A \emph{strict} morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
+$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$
+that strictly presere the constructors:
+\begin{enumerate}
+  \item $G_{\mathcal{E}} \circ F_1 = F_2 \circ G_{\mathcal{V}}$
+  \item $G_{\mathcal{V}} \circ U_1 = U_2 \circ G_{\mathcal{E}}$
+  \item $G_{\mathcal{E}}(A \arr_1 B) = G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) = G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) = 1_2$
+\end{enumerate}
+As well as strictly preserving the corresponding universal morphisms
+and coherence isomorphisms.
+
+A lax morphism instead preserves these only up to transformation
+\begin{enumerate}
+  \item $G_{\mathcal{E}} \circ F_1 \Rightarrow F_2 \circ G_{\mathcal{V}}$
+  \item $G_{\mathcal{V}} \circ U_1 \Rightarrow U_2 \circ G_{\mathcal{E}}$
+  \item $G_{\mathcal{E}}(A \arr_1 B) \Rightarrow G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) \Rightarrow G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) \Rightarrow 1_2$
+\end{enumerate}
+Additionally a lax morphism should have a relationship between these
+transformations and the universal morphisms, but we will only consider
+lax morphisms of thin categories, where such conditions hold
+trivially.
+
+\subsection{Kleisli Actions of CBPV Type Constructors}
+
 In CBPV models, all the type constructors are interpreted as functors:
 \begin{enumerate}
 \item $\to : \op\calV \times \calE \to \calE$
