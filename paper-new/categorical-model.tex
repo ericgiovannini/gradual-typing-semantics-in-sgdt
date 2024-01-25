@@ -21,37 +21,55 @@ and contexts but this suffices for all of the models we consider}:
   and that $U\alpha$ and $Ui$ are mapped to the canonical isomorphisms
   for exponentials.
 \item A left adjoint $F \dashv U$
-\item Distributive finite coproducts in $\mathcal V$
 \end{enumerate}
 
 \begin{example}
   Given a strong monad $T$ on a bicartesian closed category $\mathcal
   V$, we can extend this to a CBPV model by defining $\mathcal E$ to
-  be the category $\mathcal V^T$ of algebras
+  be the category $\mathcal V^T$ of algebras, defining $A \to B$ as
+  the powering of algebras, $F$ as the free algebra and $U$ as the
+  underlying object functor.
 \end{example}
 
+There are two relevant notions of \emph{morphism} of CBPV models:
+\emph{strict} and \emph{lax}.
 % morphisms of CBPV models
 Given call-by-push-value models
 $\mathcal M_1 = (\mathcal V_1, \mathcal E_1, \arr_1, U_1, F_1)$ and
 $\mathcal M_2 = (\mathcal V_2, \mathcal E_2, \arr_2, U_2, F_2)$,
-A morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
-$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$ such that
-
+A \emph{strict} morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
+$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$
+that strictly presere the constructors:
 \begin{enumerate}
   \item $G_{\mathcal{E}} \circ F_1 = F_2 \circ G_{\mathcal{V}}$
   \item $G_{\mathcal{V}} \circ U_1 = U_2 \circ G_{\mathcal{E}}$
   \item $G_{\mathcal{E}}(A \arr_1 B) = G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) = G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) = 1_2$
 \end{enumerate}
+As well as strictly preserving the corresponding universal morphisms
+and coherence isomorphisms.
 
+A lax morphism instead preserves these only up to transformation
+\begin{enumerate}
+  \item $G_{\mathcal{E}} \circ F_1 \Rightarrow F_2 \circ G_{\mathcal{V}}$
+  \item $G_{\mathcal{V}} \circ U_1 \Rightarrow U_2 \circ G_{\mathcal{E}}$
+  \item $G_{\mathcal{E}}(A \arr_1 B) \Rightarrow G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) \Rightarrow G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) \Rightarrow 1_2$
+\end{enumerate}
+Additionally a lax morphism should have a relationship between these
+transformations and the universal morphisms, but we will only consider
+lax morphisms of thin categories, where such conditions hold
+trivially.
 % TODO what about the product and coproducts in V?
 % Do we need that G_V(A \times_1 A') = G_V(A) \times_2 G_V(A')
 % and likewise for coproducts?
 
-With these definitions, we can define a category whose objects are CBPV
-models, and whose arrows are CBPV morphisms.
-This category will serve as the setting in which we formulate the definition
-of a model of extensional gradual typing.
-
+With these definitions, we can define categories $\textrm{CBPV}_s$ and
+$\textrm{CBPV}_l$ whose objects are CBPV models, and whose arrows are
+CBPV morphisms.  This category will serve as the setting in which we
+formulate the definition of a model of extensional gradual typing.
 
 \subsection{Extensional Models of Gradual Typing}
 
