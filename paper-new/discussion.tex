@@ -10,7 +10,7 @@
 We will use Guarded Cubical Agda to prove graduality in the syntax of 
 GTLC, which involves the construction of the abstract model described in 
 \ref{sec:concrete-model} and the extensional model with external dynamic 
-type. This part is still work-in-progress.
+type. We also plan to formalize the adequacy result in \ref{sec:appendix-adequacy}.
 
 % step-1
 Currently, we have defined the step-1 intensional model in Cubical 
@@ -23,8 +23,7 @@ predomains and error domains.
 
 % step-2 
 Then we plan to construct the step-2 intensional model. Besides all the 
-data in step-1, we need to include perturbations on value and computation 
-types, functors $\times$, $\arr$, $U$, and $F$ that preserve 
+data in step-1, we need to include perturbations, functors $\times$, $\arr$, $U$, and $F$ that preserve 
 perturbations and push/pull properties for all morphisms on value and 
 computation types. Notice that for any object $A$ which has value type, 
 we will take not only the monoid of perturbations $P^V_A$ and the monoid 
@@ -34,7 +33,13 @@ computation types. Similarly, for any computation object $B$, we will
 construct the perturbations on $U B$ besides the monoid $P^C_B$ and 
 monoid homomorphism $\ptbe_B : \pe_B \to \ef(B,B)$. Also, for functors 
 that preserves perturbations, we need to include the ones in the context 
-of Kleisli category. 
+of Kleisli category. For this part, we need to define the perturbation on 
+not only the objects itself, but also the global lift and delay of objects, 
+which requires us to provide each piece of supporting constructor. This step 
+and futher steps towards to the model construction are still 
+work-in-progress, but once it's finished, we will provide a complete 
+framework which takes formalization on an explicit type and obtains an 
+extensional model.
 
 % step-3
 In the step-3 intensional model, we will enhance it with 
@@ -58,9 +63,9 @@ quasi-representability involves explicit rules which show that Nat is
 more precise than Dyn (Inj-Nat) and Dyn $\to$ Dyn is more precise than 
 Dyn (Inj-Arr). Currently, we have formalized the concrete construction of 
 Dyn in Cubical Agda and it was more challenging than expected because we 
-define Dyn using the technique of fixed point, which means that every 
-time we analyze the case inside of Dyn, we need to unfold it and add 
-corresponding proof. 
+define Dyn using the technique of guarded recursion and fixed point, which 
+means that every time we analyze the case inside of Dyn, we need to unfold 
+it and add corresponding proof. 
 
 % adequacy
 Besides the abstract model and its concrete construction on dynamic type, 
