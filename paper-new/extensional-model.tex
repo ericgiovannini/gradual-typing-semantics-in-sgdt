@@ -65,20 +65,22 @@ Thus a CBPV model is sufficient to interpret the CBV term language. We
 will require additional structure to interpret the precision and type
 casts.
 
-New and Licata modeled call-by-name gradual typing using \emph{double
-categories}, which are defined to be categories internal to the
-category of categories. That is, a double category $\mathcal C$
-consists of a category $\mathcal C_o$ of ``objects and function
-morphisms'' and a category $\mathcal C_{sq}$ of ``relation morphisms
-and squares'' with functors (reflexive relation) $r : C_o \to C_{sq}$
-and (source and target) $s,t : C_{sq} \to C_o$ satisfying $sr = tr =
-\id$ as well as a composition operation $c : C_{sq} \times_{s,t}
-C_{sq} \to C_{sq}$ respecting source and target. This models an
-abstract notion of functions and relations. For notation, we write
-function morphisms as $f : A \to B$ and relation morphisms as $c : A
-\rel B$ where $c \in C_{sq}$ and $s(c) = A$ and $t(c) = B$. Finally a
-morphism $\alpha$ from $c$ to $d$ with $s(\alpha) = f$ and $s(\beta) =
-g$ is visualized as
+\subsection{Double Categorical Semantics of Graduality}
+
+New and Licata modeled the graduality and type casts for call-by-name
+gradual typing using \emph{double categories}, which are defined to be
+categories internal to the category of categories. That is, a double
+category $\mathcal C$ consists of a category $\mathcal C_o$ of
+``objects and function morphisms'' and a category $\mathcal C_{sq}$ of
+``relation morphisms and squares'' with functors (reflexive relation)
+$r : C_o \to C_{sq}$ and (source and target) $s,t : C_{sq} \to C_o$
+satisfying $sr = tr = \id$ as well as a composition operation $c :
+C_{sq} \times_{s,t} C_{sq} \to C_{sq}$ respecting source and
+target. This models an abstract notion of functions and relations. For
+notation, we write function morphisms as $f : A \to B$ and relation
+morphisms as $c : A \rel B$ where $c \in C_{sq}$ and $s(c) = A$ and
+$t(c) = B$. Finally a morphism $\alpha$ from $c$ to $d$ with
+$s(\alpha) = f$ and $s(\beta) = g$ is visualized as
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkEnIl0sWzEsMSwiQiciXSxbMCwyLCJmIiwyXSxbMSwzLCJnIl0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiZCIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
 	A \& B \\
