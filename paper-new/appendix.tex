@@ -258,7 +258,7 @@ of the model.
 %%%%%%%%%%%%%%%
 % Composition %
 %%%%%%%%%%%%%%%
-\begin{lemma}
+\begin{lemma}\label{lem:push-pull-comp}
   Let $c : A \rel A'$ and $c' : A' \rel A''$ be value relations,
   and let $P_A, P_{A'}$ and $P_{A''}$ be monoids of perturbations.
   Given a push-pull structure $\piv_c$ for $c$ with respect to $P_A$ and $P_{A'}$, and
@@ -285,25 +285,40 @@ of the model.
   The push-pull structure for the composition of computation relations is defined analogously.
 \end{proof}
 
-%%%%%%%%%%%%%
-% UF and FU %
-%%%%%%%%%%%%%
-\begin{lemma}
+%%%%%%%%%%%
+% U and F %
+%%%%%%%%%%%
+\begin{lemma}\label{lem:push-pull-U-F}
   Let $c : A \rel A'$ and let $P_A$ and $P_{A'}$ be monoids of perturbations.
   Given a push-pull structure $\piv_c$ for $c$ with respect to $P_A$ and $P_{A'}$,
-  we can define a push-pull structure $\pie_{UF(c)}$ for $UF(c)$ with respect to $UF(P_{A})$
-  and $UF(P_{A'})$.
-  % Eric: Are we assuming here that F and U preserve perturbations?
+  we can define a push-pull structure $\pie_{Fc}$ for $F(c)$ with respect to
+  $\mathbb{N} \times P_{A}$ and $\mathbb{N} \times P_{A'}$.
+
+  Likewise, from a push-pull structure for $d$ with respect to $P_B$ and $P_{B'}$,
+  we can define a push-pull structure for $Ud$ with respect to $\mathbb{N} \times P_B$
+  and $\mathbb{N} \times P_{B'}$.
 \end{lemma}
 \begin{proof}
-  Follows by the functorial action of $UF$ and $FU$ on perturations and squares.
+  
+  We define $\push_{Fc} : \mathbb{N} \times P_{A} \to \mathbb{N} \times P_{A'}$.
+  Since the product of commutative monoids coincides with the coproduct, it
+  suffices by the universal property of the coproduct to consider the two cases separately.
+
+  Given $n \in \mathbb{N}$ we define the push to be $n$.
+  Then the required square is $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$ which exists by
+  the definition of a step-1 model.
+  On the other hand, given $a \in P_{A}$, we define the push to be $\push_c(a)$
+  and then the required exists by the push property for $c$.
+  Defining $\pull_{Fc}$ is done similarly.
+
+  The proof for $Ud$ is analogous.
 \end{proof}
 
 
 %%%%%%%%%%%%
 % Products %
 %%%%%%%%%%%%
-\begin{lemma}
+\begin{lemma}\label{lem:push-pull-times}
   Let $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$, and let $P_{A_1}$,
   $P_{A_2}$, $P_{A_1'}$ and $P_{A_2'}$ be monoids of perturbations.
   Given push-pull structures 
@@ -312,11 +327,11 @@ of the model.
   we can define a push-pull structure $\piv_{c_1 \times c_2}$
   with respect to $P_{A_1} \times P_{A_2}$ and $P_{A_1'} \times P_{A_2'}$.
 
-  Likewise, given push-pull structures 
-  $\pie_{Fc_1}$ with respect to $F(P_{A_1})$ and $F(P_{A_1'})$, and
-  $\pie_{Fc_2}$ with respect to $F(P_{A_2})$ and $F(P_{A_2'})$,
-  we can define a push-pull structure $\pie_{F(c_1 \times c_2)}$
-  with respect to $F(P_{A_1} \times P_{A_2})$ and $F(P_{A_1'} \times P_{A_2'})$.
+  % Likewise, given push-pull structures 
+  % $\pie_{Fc_1}$ with respect to $F(P_{A_1})$ and $F(P_{A_1'})$, and
+  % $\pie_{Fc_2}$ with respect to $F(P_{A_2})$ and $F(P_{A_2'})$,
+  % we can define a push-pull structure $\pie_{F(c_1 \times c_2)}$
+  % with respect to $F(P_{A_1} \times P_{A_2})$ and $F(P_{A_1'} \times P_{A_2'})$.
 \end{lemma}
 \begin{proof}
 We define the push function for $\piv_{c_1 \times c_2}$ by 
@@ -327,48 +342,40 @@ The push-pull property holds because it holds for each component.
 %%%%%%%%%
 % Arrow %
 %%%%%%%%%
-\begin{lemma}
+\begin{lemma}\label{lem:push-pull-arrow}
   Let $c : A \rel A'$ and $d : B \rel B'$.
   Given push-pull structures $\piv_c$ for $c$ and $\pie_d$ for $d$,
   we can define a push-pull structure $\pie_{c \arr d}$ for $c \arr d$.
 
-  Given push-pull structures $\pie_{Fc}$ for $Fc$ and $\piv_{Ud}$ for $Ud$,
-  we can define a push-pull structure $\piv_{U(c \arr d)}$ for $U(c \arr d)$
-  with respect to the monoids $(P_{FA})^{op} \oplus P_B$
+  % Given push-pull structures $\pie_{Fc}$ for $Fc$ and $\piv_{Ud}$ for $Ud$,
+  % we can define a push-pull structure $\piv_{U(c \arr d)}$ for $U(c \arr d)$
+  % with respect to the monoids $(P_{FA})^{op} \oplus P_B$
 \end{lemma}
 \begin{proof}
-  The former follows from the functorial action of $\arr$ on perturbations and squares,
-  and the latter uses the functorial action of $\tok$ on perturbations and squares.
+  Follows from the functorial action of $\arr$ on perturbations and squares.
+  % and the latter uses the functorial action of $\tok$ on perturbations and squares.
 \end{proof}
 
 %%%%%%%%%%%%%%%%%%%%%%
 % Model Construction %
 %%%%%%%%%%%%%%%%%%%%%%
 We now proceed with the construction of the model:
-    % Write 
-    % %
-    % \[ \mathcal M = (\vf, \vsq, \ef, \esq, \Ff, \Fsq, \Uf, \Usq, \arrf, \arrsq). \] 
-    % %
 
     Define a step-2 model $\mathcal M'$ as follows:
     \begin{itemize}
-      \item Value objects are triples consisting of:
+      \item Value objects are pairs consisting of:
       \begin{itemize}
-        \item A value object $A$ in $\vf$ 
-        \item A monoid $P_A$ of ``pure'' perturbations that is a submonoid of 
-        $\{ f \in \vf(A, A) \mid f \bisim \id_A \}$
-        \item A monoid $P^K_A$ of ``impure'' or ``Kleisli'' perturbations that is a submonoid of
-        $\{ \phi \in \ef(FA, FA) \mid \phi \bisim \id_{FA} \}$ such that $P^K_A$ contains
-        $\delta_A^*$
+        \item A value object $A$ in $\vf$.
+        \item A commutative monoid $P_A$ of perturbations
+        and a monoid homomorphism $\ptb_A : P_A \to \{ f \in \vf(A, A) \mid f \bisim \id_A \}$.
+       
       \end{itemize}  
 
-      \item Computation objects are triples consisting of:
+      \item Computation objects are pairs consisting of:
       \begin{itemize}
-        \item A computation object $B$ in $\ef$
-        \item A monoid $P_B$ of ``pure'' perturbations that is a submonoid of
-        $\{ \phi \in \ef(B, B) \mid \phi \bisim \id_B \}$
-        \item A monoid $P^K_B$ of ``impure'' or ``Kleisli'' perturbations that is a submonoid
-        of $\{ g \in \vf(UB, UB) \mid g \bisim \id_{UB} \}$
+        \item A computation object $B$ in $\ef$.
+        \item A commutative monoid $P_B$ of perturbations and a monoid homomorphism
+        $\ptb_B : P_B \to \{ \phi \in \ef(B, B) \mid \phi \bisim \id_B \}$.
       \end{itemize}
 
       \item Morphisms are given by morphisms of the underlying objects in $\vf$ and $\ef$, respectively.
@@ -376,51 +383,26 @@ We now proceed with the construction of the model:
       % \[ \vf'((A, P_A, \ptb_A, P^K_A, \ptbk_A), (A', P_{A'}, \ptb_{A'}, P^K_{A'}, \ptbk_{A'})) = \vf(A, A') \]
       %
       % and likewise for computations.
-   
-    \end{itemize}
 
-    % Before introducing the relations, we make a definition.
-
-    % \begin{definition}[push-pull structure]
-    %   Let $c : A \rel A'$ be a value relation of $\mathcal M$. A \emph{value push-pull structure} $\piv_c$ for $c$ consists of:
-    %   \begin{itemize}
-    %     \item A function $\push : P_A \to P_{A'}$ 
-    %           such that for all $\delta^l \in P_A$ we have $\delta^l \ltdyn_c^c \push(\delta^l)$.
-    %     \item A function $\push^K : P^K_A \to P^K_{A'}$ 
-    %           such that for all $\delta^K_l \in P^K_A$ we have $\delta^K_l \ltdyn_{Fc}^{Fc} \push(\delta^K_l)$.
-    %     \item A function $\pull : P_{A'} \to P_A$
-    %           such that for all $\delta_r \in P_{A'}$ we have $\pull(\delta^r) \ltdyn_{c}^c \delta^r$.
-    %     \item A function $\pull^K : P^K_{A'} \to P^K_A$
-    %           such that for all $\delta^K_r \in P^K_{A'}$ we have $\pull(\delta^K_r) \ltdyn_{Fc}^{Fc} \delta^K_r$.
-    %   \end{itemize}
-
-    %   For $d : B \rel B'$ a computation relation, we define a \emph{computation push-pull structure} $\pie_d$ for $d$
-    %   in an analogous manner.
-    % \end{definition}
-
-
-    % Now we continue with the description of the construction:
-    \begin{itemize}
-
-      \item The objects of $\vsq'$ (i.e., the value relations) are triples consisting of:
+      \item The objects of $\vsq'$ (i.e., the value relations) are pairs consisting of:
       \begin{itemize}
         \item A value relation $c \in \vsq$.
         \item A push-pull structure $\piv_c$ for $c$ with respect to $P_A$ and $P_{A'}$.
-        \item A push-pull structure $\pie_{Fc}$ for $Fc$ with respect to $P^K_A$ and $P^K_{A'}$.
+        %\item A push-pull structure $\pie_{Fc}$ for $Fc$ with respect to $P^K_A$ and $P^K_{A'}$.
       \end{itemize}
 
       The objects of $\esq'$ are defined analogously, i.e.,
       \begin{itemize}
         \item A computation relation $d \in \esq$.
         \item A push-pull structure $\pie_d$ for $d$ with respect to $P_B$ and $P_{B'}$.
-        \item A push-pull structure $\piv_{Ud}$ for $Ud$ with respect to $P^K_B$ and $P^K_{B'}$.
+        %\item A push-pull structure $\piv_{Ud}$ for $Ud$ with respect to $P^K_B$ and $P^K_{B'}$.
       \end{itemize}
             
       \item The morphisms of $\vsq'$ and $\esq'$ are given by the morphisms of $\vsq$ and $\esq$.
       
-      \item We define composition of relations $(c, \piv_c, \pie_{Fc})$ and 
-      $(c', \piv_{c'}, \pie_{Fc'})$ as $(c \comp c', \piv_{c \comp c'}, \pie_{Fc \comp Fc'})$
-      and likewise for computation relations.
+      \item We define composition of relations $(c, \piv_c)$ and $(c', \piv_{c'})$
+      as $(c \comp c', \piv_{c \comp c'})$ where $\piv_{c \comp c'}$ is as in Lemma
+      \ref{lem:push-pull-comp}, and likewise for computation relations.
 
     \end{itemize}
       
@@ -428,68 +410,112 @@ We now proceed with the construction of the model:
       Now we define the actions of the functors:
       \begin{itemize}
 
-      % \item We begin with the functor $m$ that composes relations and squares horizontally.
-      % Given value relations $(c ,\piv_c, \pie_{Fc})$ and $(c', \piv_{c'}, \pie_{Fc'})$ where $c : A \rel A'$ and $c' : A' \rel A''$,
-      % we define their composition to be the triple $(c \comp c', \piv_{c \comp c'})$ where we define
-      % $\piv_{c \comp c'}$ as the following push-pull structure:
-
-      % \begin{itemize}
-      %   \item $\push_{c \comp c'} = \push_{c'} \circ \push_{c}$
-      %   \item $\push^K_{c \comp c'} = \push^K_{c'} \circ \push^K_{c}$
-      %   \item $\pull_{c \comp c'} = \pull_{c} \circ \pull_{c'}$
-      %   \item $\pull^K_{c \comp c'} = \pull^K_{c} \circ \pull^K_{c'}$
-      % \end{itemize}
-
-      % We observe that each of the components satisfies the commuting necessary square.
-
       \item We define $\times$ on objects by
       
-      \[ (A_1, P_{A_1}, P^K_{A_1}) \times (A_2, P_{A_2}, P^K_{A_2}) =
-        (A_1 \times A_2, P_{A_1} \times P_{A_2}, P^K_{A_1} \oplus P^K{A_2}). \]
+      \[ (A_1, P_{A_1}) \times (A_2, P_{A_2}) =
+        (A_1 \times A_2, P_{A_1} \times P_{A_2}). \]
 
       where $\oplus$ is the coproduct in the category of monoids.
 
-      We define $\times$ on relations by
+      Using Lemma \ref{lem:push-pull-times}, we define $\times$ on relations by
 
-      \[ (c_1, \piv_{c_1}, \pie_{Fc_1}), (c_2 \piv_{c_2}, \pie_{Fc_2}) = 
-        (c_1 \times c_2, \piv_{c_1 \times c_2}, \pie_{F(c_1 \times c_2)}). \]
+      \[ (c_1, \piv_{c_1}), (c_2 \piv_{c_2}) = 
+        (c_1 \times c_2, \piv_{c_1 \times c_2}). \]
 
       \item We define $F$ on objects by 
       
-      \[ F(A, P_A, P^K_A) = (FA, P^K_A, UF(P_A)). \]
+      \[ F(A, P_A, \ptb_A) = (FA, \mathbb{N} \times P_A, \ptb_{FA}), \]
 
-      We define $F$ on relations by
+      where we define $\ptb_{FA}(n, a) = (\delta_{FA}^*)^n \circ F(\ptb_A(a))$.
 
-      \[ F(c, \piv_c, \pie_{Fc}) = (Fc, \pie_{Fc}, \piv_{UF(c)}). \]
+      Using Lemma \ref{lem:push-pull-U-F}, we define $F$ on relations by
+
+      \[ F(c, \piv_c) = (Fc, \pie_{Fc}). \]
 
       \item We define $U$ on objects by
        
-      \[ U(B, P_B, P^K_B) = (UB, P^K_B, FU(P_B). )\]
+      \[ U(B, P_B, \ptb_B) = (UB, \mathbb{N} \times P_B, \ptb_{UB}), \]
 
-      We define $U$ on relations by
+      where we define $\ptb_{UB}(n, b) = (\delta_{UB}^*)^n \circ U(\ptb_B(b))$.
 
-      \[ U(d, \pie_d, \piv_{Ud}) = (Ud, \piv_{Ud}, \pie_{FU(d)})  \]
+      Using Lemma \ref{lem:push-pull-U-F}, we define $U$ on relations by
+
+      \[ U(d, \pie_d) = (Ud, \piv_{Ud}).  \]
 
       We define $\arr$ on objects by
 
-      \[ (A, P_A, P^K_A) \arr (B, P_B, P^K_B) = 
-        (A \arr B, (P_A)^{op} \times P_B, (P^K_A)^{op} \oplus P^K_B). \]
+      \[ (A, P_A, \ptb_A) \arr (B, P_B, \ptb_B) = 
+        (A \arr B, P_A \times P_B, \ptb_{A \arr B}), \]
 
-      We define $\arr$ on relations by
+      where we define $\ptb_{A \arr B}(a, b) = \ptb_A(a) \arr \ptb_B(b)$.
 
-      \[ (c, \piv_c, \pie_{Fc}) \arr (d, \pie_d, \piv_{Ud}) =
-        (c \arr d, \pie_{c \arr d}, \piv_{U(c \arr d)}). \]
+      Using Lemma \ref{lem:push-pull-arrow}, we define $\arr$ on relations by
 
-      % \item We define $F$ on objects by $F (A, \pv_A, \ptbv_A) = (FA, (1 + \pv_A), h_F)$
-      % where $1$ is the trivial monoid, $+$ is the coproduct in the category of monoids, and $h_F$ is the homomorphism defined as follows:
+      \[ (c, \piv_c) \arr (d, \pie_d) =
+        (c \arr d, \pie_{c \arr d}). \]
 
-      % \item We define $U$ on objects by $U (B, \pe_B, \ptbe_B) = (UB, \pe_B, h_U)$
-      % where $h_U(p_B) = U(\ptbe_B(p_B))$.
-      
-      % \item We define $(A, \pv_A, \ptbv_A) \arr (B, \pe_B, \ptbe_B) = (A \arr B, \pv_A \times \pe_B, h_\arr)$
-      % where $\times$ is the product in the category of monoids, and $h_\arr$ is defined by 
-      % $h_\arr(p_A, p_B) = \ptbv_A(p_A) \arr \ptbe_B(p_B)$.
     \end{itemize}
+
+    \eric{Make sure this part is correct}
+    We define a ``Kleisli arrow'' operation taking a perturbation in $P_{UB}$
+    to a perturbation in $P_{U(A \to B)}$, as follows:
+    Given a perturbation $u = (n, b) \in P_{UB}$ we define $\id \tok u$ to be 
+    $(n, \id_{P_A}, b) \in P_{U(A \to B)}$.
+    We need to show that
+%
+    \[ \ptb_{U(A \arr B)}(\id \tok (n, b)) = \id \tok \ptb_{UB}(n, b). \]
+%
+    Since the product and coproduct coincide in the category of commutative monoids,
+    and since $\mathbb{N}$ is generated by the element $1$,
+    it suffices by the universal property of the coproduct to show
+%
+    \[ \ptb_{U(A \arr B)}(\id \tok (1, \id_{P_B})) = \id \tok \ptb_{UB}(1, \id_{P_B}), \]
+%
+    and
+%
+    \[ \ptb_{U(A \arr B)}(\id \tok (0, b)) = \id \tok \ptb_{UB}(0, b). \]
+
+    For the former, the LHS is
+%
+    \begin{align*}
+      \ptb_{U(A \arr B)}&(\id \tok (1, \id_{P_B})) \\ 
+      &= \ptb_{U(A \arr B)}(1, \id_{P_A}, \id_{P_B}) \\ 
+      &= \delta_{U(A \arr B)}^* \circ U(\ptb_A(\id_{P_A}) \arr \ptb_B(\id_{P_B})) \\
+      %&= \delta_{U(A \arr B)}^* \circ U(\id_A \arr \id_B) \\
+      &= \delta_{U(A \arr B)}^*
+    \end{align*}
+%
+    and we need to show that this is equal to 
+    $\id \tok \ptb_{UB}(1, \id_{P_B}) = \id \tok \delta_{UB}^*$.
+    But this holds because $\delta_{UB}^*$ commutes with all computation morphisms,
+    in particular, with bind and application.
+    
+    For the latter, we need to show
+%
+    \[ U(\id \arr \ptb_B(b)) = \id \tok U(\ptb_B(b)), \]
+%
+    which holds by definition of $\tok$.
+
+    Given a perturbation $q = (n, a) \in P_{FA}$ we define
+    $(n, a) \tok \id = (n, a, \id_{P_B}) \in P_{U(A \to B)}$.
+    We need to show that
+  %
+    \[ \ptb_{U(A \arr B)}((n, a) \tok \id) = \ptb_{FA}(n, a) \tok \id. \]
+  %
+    By similar reasoning to the above, it will suffice to show that
+
+    \[ \delta_{U(A \arr B)}^* = \delta_{FA}^* \tok \id \]
+
+    And this follows from the fact that $\delta_{FA}^*$ commutes with all computation morphisms.
+
+    We can similarly construct the Kleisli product operation on perturbations.
+    Given a perturbation $(n, a_1, a_2) \in P_{F(A_1 \times A_2)}$ we define
+    $(n, a_1, a_2) \timesk \id = (n, a_1, \id_{P_{A_2}})$,
+    and likewise we define $\id \timesk (n, a_1, a_2) = (n, \id_{P_{A_1}}, a_2)$.
+
+% We have $\ptb_{U(A \arr B)}(\id \tok (n, b)) = \ptb_{U(A \arr B)}(n, \id, b)$, 
+% which is equal to $\delta_{U(A \arr B)}^n (\id \to \ptb_B(b))$
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -506,20 +532,86 @@ The goal of this section is to prove the following lemma:
 Before proceeding with the proof, we begin with a definition.
 
 \begin{definition}[representation structure]
-Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure}
-$\rho^L_c$ for $c$ consists of a value morphism $e_c \in \vf(A, A')$ such that
-$c$ is quasi-left-representable by $e_c$ (see Definition \ref{def:quasi-left-representable}).
+  Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure}
+  $\rho^L_c$ for $c$ consists of a value morphism $e_c \in \vf(A, A')$ such that
+  $c$ is quasi-left-representable by $e_c$ (see Definition \ref{def:quasi-left-representable}).
+  We similarly define a {right-representation structure} $\rho^R_c$ for $c$ to consist of a morphism
+  $p_c \in \vf{A', A}$ such that $c$ is quasi-right-representable by $p_c$ (see Definition \ref{def:quasi-right-representable}).
+  % (Notice that the direction of the morphism is opposite in the definition of
+  % right-representation structure.)
 
-Likewise, let $d : B \rel B'$ be a computation relation. A \emph{right-representation structure}
-$\rho^R_d$ for $d$ consists of a computation morphism $p_d \in \ef(B', B)$
-such that $d$ is quasi-right-representable by $p_d$ (see Definition
-\ref{def:quasi-right-representable}).
+  Likewise, let $d : B \rel B'$ be a computation relation. Left- and right-representation
+  structures for $d$ are defined in a similar manner, except the representing morphisms
+  are now computation morphisms rather than value morphisms.
+
+  % Likewise, let $d : B \rel B'$ be a computation relation. A \emph{right-representation structure}
+  % $\rho^R_d$ for $d$ consists of a computation morphism $p_d \in \ef(B', B)$
+  % such that $d$ is quasi-right-representable by $p_d$ (see Definition
+  % \ref{def:quasi-right-representable}).
 \end{definition}
 
-(Notice that the direction of the morphism is opposite in the definition of
-right-representation structure.)
-
 % TODO establish the notation
+
+\begin{definition}
+  Let $c, c' : A \rel A'$. We say that $c$ and $c'$ are \emph{quasi-order-equivalent},
+  written $c \qordeq c'$, if there exist perturbations $\delta^l_1, \delta^l_2 \in \pv_A$ and 
+  $\delta^r_1, \delta^r_2 \in \pv_{A'}$ such that the following two squares exist:
+
+  \begin{center}
+    \begin{tabular}{ m{9em} m{9em} } 
+      \begin{tikzcd}[ampersand replacement=\&]
+        A \& {A'} \\
+        A \& {A'}
+        \arrow["\delta^l_1"', from=1-1, to=2-1]
+        \arrow["\delta^r_1", from=1-2, to=2-2]
+        \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["c'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \end{tikzcd}
+      &
+      \begin{tikzcd}[ampersand replacement=\&]
+        A \& {A'} \\
+        A \& {A'}
+        \arrow["\delta^l_2"', from=1-1, to=2-1]
+        \arrow["\delta^r_2", from=1-2, to=2-2]
+        \arrow["c'", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \end{tikzcd}
+    \end{tabular}
+  \end{center}
+
+  We make the analogous definition for computation relations $d, d' : B \rel B'$.
+\end{definition}
+
+\begin{lemma}\label{lem:left-rep-by-same-morphism}
+  Let $c, c' : A \rel A'$. If $c$ and $c'$ are both quasi-left-representable
+  by the same $f$, then $c \qordeq c'$.
+\end{lemma}
+\begin{proof}
+  By $\upr$ for $c'$, there exists a perturbation $\delle_{c'}$ and a square
+  $\upr_{c'} : \delle_{c'} \ltdyn_{c'}^{r(A)} f$.
+
+  By $\upl$ for $c$, there exists a perturbation $\delre_c$ and a square 
+  $\upl_c : f \ltdyn_{r(A')}^{c} \delre_c$.
+  
+  Composing these horizontally we get the following square:
+
+  % https://q.uiver.app/#q=WzAsNixbMCwwLCJBIl0sWzEsMCwiQSJdLFsyLDAsIkEnIl0sWzAsMSwiQSJdLFsxLDEsIkEnIl0sWzIsMSwiQSciXSxbMCwxLCJyKEEpIl0sWzEsMiwiYyJdLFszLDQsImMnIiwyXSxbNCw1LCJyKEEnKSIsMl0sWzAsMywiXFxkZWxsZV97Yyd9IiwyXSxbMSw0LCJmIiwyXSxbMiw1LCJcXGRlbHJlX2MiXV0=
+  \[\begin{tikzcd}[ampersand replacement=\&]
+    A \& A \& {A'} \\
+    A \& {A'} \& {A'}
+    \arrow["{r(A)}", from=1-1, to=1-2]
+    \arrow["c", from=1-2, to=1-3]
+    \arrow["{c'}"', from=2-1, to=2-2]
+    \arrow["{r(A')}"', from=2-2, to=2-3]
+    \arrow["{\delle_{c'}}"', from=1-1, to=2-1]
+    \arrow["f"', from=1-2, to=2-2]
+    \arrow["{\delre_c}", from=1-3, to=2-3]
+  \end{tikzcd}\]
+
+  And since $r(A) \comp c = c$ and $c' \comp r(A') = c'$, we are finished.
+
+  The other square (i.e., with $c'$ on top) is constructed in an analogous manner.
+\end{proof}
 
 %%%%%%%%%%%%%%%
 % Composition %
@@ -572,15 +664,86 @@ right-representation structure.)
     \end{itemize}
 
     % 3.
-    \item We define $\rho^R_{F(c \comp c')}$ as follows:
-    \begin{itemize}
-      \item $p_{F(c \comp c')} = p_{Fc} \circ p_{Fc'}$ % : FA'' \to FA
-      \item $\dellp_{F(c \comp c')} = $
-      \item $\delrp_{F(c \comp c')} = $
-    \end{itemize}
+    \item We define $\rho^R_{F(c \comp c')}$ as follows.
+    % First, we observe that by Lemma \ref{lem:left-rep-by-same-morphism},
+    % $F(c \comp c')$ and $Fc \comp Fc'$ are quasi-order-equivalent,
+    % as both are left-represented by $Fe_c' \circ Fe_c$.
+
+    First, we claim that $F(c \comp c')$ and $Fc \comp Fc'$ are
+    both left-represented by $Fe_{c'} \circ Fe_c$.
+    Indeed, we have by part (1) that $e_c' \circ e_c$ left-represents $c \comp c'$,
+    and then since $F$ preserves perturbations and squares it follows that
+    $F(e_c' \circ e_c) = Fe_{c'} \circ Fe_c$ quasi-left-represents $F(c \comp c')$.
+    On the other hand, we also know that $Fe_c$ quasi-left-represents $Fc$ and $Fe_{c'}$
+    left-represents $Fc'$, so their composition quasi-left-represents $Fc \comp Fc'$.
+    Thus, there is a square $\alpha$ of the form
+
+    % https://q.uiver.app/#q=WzAsNSxbMCwwLCJGQSJdLFsyLDAsIkZBJyciXSxbMCwxLCJGQSJdLFsxLDEsIkZBJyJdLFsyLDEsIkZBJyciXSxbMCwxLCJGKGMgXFxjb21wIGMnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiRmMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsIkZjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMiwiXFxkZWx0YV5sIiwyXSxbMSw0LCJcXGRlbHRhXnIiXSxbOCw5LCJcXGFscGhhIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+    \[\begin{tikzcd}[ampersand replacement=\&]
+      FA \&\& {FA''} \\
+      FA \& {FA'} \& {FA''}
+      \arrow["{F(c \comp c')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow["Fc", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{Fc'}", "\shortmid"{marking}, no head, from=2-2, to=2-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\delta^l}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\delta^r}", from=1-3, to=2-3]
+      \arrow["\alpha"{description}, draw=none, from=0, to=1]
+    \end{tikzcd}\]
+
+    for some perturbations $\delta^l$ and $\delta^r$.
+    We define the projection $p_{F(c \comp c')}$ to be $p_{Fc \comp Fc'} \circ \delta^r$.
+    We define $\dellp_{F(c \comp c')}$ to be $\dellp_{Fc \comp Fc'} \circ \delta^l$
+
+    Then we can build the square for $\dnr$ by pasting the square $\alpha$ on top of
+    the $\dnr$ square for the composition $Fc \comp Fc'$, as shown below:
+
+    % https://q.uiver.app/#q=WzAsNyxbMCwwLCJGQSJdLFsyLDAsIkZBJyciXSxbMCwxLCJGQSJdLFsxLDEsIkZBJyJdLFsyLDEsIkZBJyciXSxbMCwyLCJGQSJdLFsyLDIsIkZBIl0sWzAsMSwiRihjIFxcY29tcCBjJykiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJGYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs1LDYsInIoRkEpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCJcXGRlbHRhXmwiLDJdLFsyLDUsIlxcZGVsbHBfe0ZjIFxcY29tcCBGYyd9IiwyXSxbMSw0LCJcXGRlbHRhXnIiXSxbNCw2LCJwX3tGYyBcXGNvbXAgRmMnfSJdLFsxMSwxMywiXFxhbHBoYSIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNCwiXFxkbnJfe0ZjIFxcY29tcCBGYyd9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+    \[\begin{tikzcd}[ampersand replacement=\&]
+      FA \&\& {FA''} \\
+      FA \& {FA'} \& {FA''} \\
+      FA \&\& FA
+      \arrow["{F(c \comp c')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow["Fc", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{Fc'}", "\shortmid"{marking}, no head, from=2-2, to=2-3]
+      \arrow["{r(FA)}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\delta^l}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\dellp_{Fc \comp Fc'}}"', from=2-1, to=3-1]
+      \arrow[""{name=2, anchor=center, inner sep=0}, "{\delta^r}", from=1-3, to=2-3]
+      \arrow[""{name=3, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}", from=2-3, to=3-3]
+      \arrow["\alpha"{marking, allow upside down}, draw=none, from=0, to=2]
+      \arrow["{\dnr_{Fc \comp Fc'}}"{description}, draw=none, from=1, to=3]
+    \end{tikzcd}\]
+
+    We define $\delrp_{F(c \comp c')}$ to be $\delrp_{Fc \comp Fc'} \circ \delta^r$.
+    For $\dnl$, we paste the identity square $\delta^r \ltdyn \delta^r$ on top of
+    the $\dnl$ square for the composition $Fc \comp Fc'$, and below that we paste
+    the square $\id \ltdyn_{F(c \comp c')}^{Fc \comp Fc'} \id$ which we get from
+    the lax property of $F$.
+
+    % https://q.uiver.app/#q=WzAsOSxbMCwwLCJGQScnIl0sWzIsMCwiRkEnJyJdLFswLDEsIkZBJyciXSxbMiwxLCJGQScnIl0sWzAsMiwiRkEiXSxbMiwyLCJGQScnIl0sWzAsMywiRkEiXSxbMiwzLCJGQScnIl0sWzEsMiwiRkEnIl0sWzAsMSwicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzYsNywiRihjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsIlxcZGVsdGFeciIsMl0sWzIsNCwicF97RmMgXFxjb21wIEZjJ30iLDJdLFs0LDYsIlxcaWQiLDJdLFsxLDMsIlxcZGVsdGFeciJdLFszLDUsIlxcZGVscnBfe0ZjIFxcY29tcCBGYyd9Il0sWzUsNywiXFxpZCJdLFs0LDgsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbOCw1LCJGYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNSwicihcXGRlbHRhXnIpIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEzLDE2LCJcXGRubF97RmMgXFxjb21wIEZjJ30iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    \[\begin{tikzcd}[ampersand replacement=\&]
+      {FA''} \&\& {FA''} \\
+      {FA''} \&\& {FA''} \\
+      FA \& {FA'} \& {FA''} \\
+      FA \&\& {FA''}
+      \arrow["{r(FA'')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow["{r(FA'')}", "\shortmid"{marking}, no head, from=2-1, to=2-3]
+      \arrow["{F(c \comp c')}"', "\shortmid"{marking}, no head, from=4-1, to=4-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\delta^r}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}"', from=2-1, to=3-1]
+      \arrow["\id"', from=3-1, to=4-1]
+      \arrow[""{name=2, anchor=center, inner sep=0}, "{\delta^r}", from=1-3, to=2-3]
+      \arrow[""{name=3, anchor=center, inner sep=0}, "{\delrp_{Fc \comp Fc'}}", from=2-3, to=3-3]
+      \arrow["\id", from=3-3, to=4-3]
+      \arrow["Fc", "\shortmid"{marking}, no head, from=3-1, to=3-2]
+      \arrow["{Fc'}", "\shortmid"{marking}, no head, from=3-2, to=3-3]
+      \arrow["{r(\delta^r)}"{marking, allow upside down}, draw=none, from=0, to=2]
+      \arrow["{\dnl_{Fc \comp Fc'}}"{description}, draw=none, from=1, to=3]
+    \end{tikzcd}\]
+
 
     % 4.
-    \item We define $\rho^L{(U(d \comp d'))}$ as follows:
+    \item We define $\rho^L{(U(d \comp d'))}$ in an analogous manner to the above.
 
   \end{enumerate}
 \end{proof}
@@ -895,14 +1058,32 @@ Then for $X$ satisfying a certain technical requirement known as \emph{clock-irr
 we can define the ``global lift'' monad as $\li^{gl} X := \forall k. \li^k X$.
 
 Similarly, we can define a ``global'' version of the lock-step error ordering and the
-weak bisimilarity relation on morphisms.
+weak bisimilarity relation on elements of the global lift; the former is defined by
 
+\[ x \le^{gl} y := \forall k. x[k] \le y[k], \]
 
-It can be shown that the global lift monad is isomorphic to the so-called Delay monad of Capretta \cite{TODO}.
-Recall that the delay monad $\text{Delay}(X)$ is defined as the coinductive solution to the equation $\text{Delay}(X) \cong X + \text{Delay}(X)$.
-It can be shown that $\li^{gl} X \cong \text{Delay}(X + 1)$ for $X$ a clock-irrelevant type.
+and the latter is defined by
 
-Moreover, we claim that modulo this isomorphism, the global version of the extensional error ordering
+\[ x \bisim^{gl} y := \forall k. x[k] \bisim y[k]. \]
+
+It can be shown that there is an isomorphism between the global lift monad and the
+so-called Delay monad of Capretta \cite{lmcs:2265}.
+Recall that the delay monad $\text{Delay}(X)$ is defined as the coinductive solution
+to the equation
+
+\[ \text{Delay}(X) \cong X + \text{Delay}(X). \]
+
+It can be shown that for a clock-irrelevant type $X$, $\li^{gl} X$ is a final
+coalgebra of the functor $F(Y) = X + 1 + Y$ (For example, this follows from Theorem 4.3 in
+\cite{kristensen-mogelberg-vezzosi2022}.) Since $\text{Delay}(X + 1)$ is also a final coalgebra
+of this functor, then we have $\li^{gl} X \cong \text{Delay}(X + 1)$.
+
+We can define a ``lock-step error ordering'' on $\text{Delay}(X + 1)$
+
+And we similarly define a ``weak bisimilarity'' on $\text{Delay}(X + 1)$
+
+We claim that modulo the above isomorphism, the ``global" version of the
+extensional error ordering on $\li^{gl} X$ is equivalent to
 
 
 % We have been writing the type as $\li X$, but it is perhaps more accurate to write it as $\li^k X$ to
