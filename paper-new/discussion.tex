@@ -2,6 +2,19 @@
 
 \subsection{Related Work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
+Eremondi \cite{Eremondi_2023} uses guarded type theory to
+define a syntactic model for a gradually-typed source
+language with dependent types. By working in guarded type theory, they are
+able to give an exact semantics to non-terminating computations in a language
+which is logically consistent, allowing for metatheoretic results about the
+source language to be proven.
+%
+Similarly to our approach, they define a guarded lift monad to model potentially-
+nonterminating computations and use guarded recursion to model the dynamic type.
+However, they do not give a denotational semantics to term precision and it is unclear
+how to prove the gradual guarantee in this setting.
+The work includes a formalization of the syntactic model in Guarded Cubical Agda.
+
 
 % Discuss Jeremy Siek's work on graduality in Agda
 
@@ -80,7 +93,7 @@ relation and the weak bisimilarity relation on Delay(1 + X). We have
 finished some prerequisite proofs on clock quantification and postulated 
 some theorems on clock globalization.
 
-\subsection{Benefits and Drawbacks of the Synthetic Approach}
+\subsection{Comparison to Explicit Step-Indexing}
 
 \subsection{Synthetic Ordering}
 
