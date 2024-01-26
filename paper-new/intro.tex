@@ -236,6 +236,7 @@ corresponding technical reports having 50+ pages of proofs.
 % is tracked.
 \end{comment}
 
+\max{the stuff below is out of date}
 An alternative approach, which we investigate in this paper, is provided by
 \emph{synthetic guarded domain theory}\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
 The techniques of synthetic guarded domain theory allow us to internalize the
@@ -260,7 +261,17 @@ The main contribution of this work is a categorical and denotational
 semantics for gradually typed langauges that models not just the term
 language but the graduality property as well.
 \begin{enumerate}
-\item First, we give a rational reconstruction \max{todo: more shit.}
+\item First, we give a simple abstract categorical model of GTT using CBPV double categories.
+\item Next, we modify this semantics to develop reflexive graph- and
+  double categorical models that abstract over the details of
+  step-indexed models, and provide a method for constructing such models.
+\item We instantiate the abstract construction to provide a concrete
+  semantics in informal guarded type theory which supports the
+  addition of arbitrary algebraic effects.
+\item We prove that the resulting denotational model is
+  \emph{adequate} for the graduality property: a closed term precision
+  $M \ltdyn N : \nat$ has the expected semantics, that $M$ errors or
+  $M$ and $N$ have the same extensional behavior.
 \end{enumerate}
 
 Our main contribution is a compositional denotational semantics for step-aware gradual typing,
