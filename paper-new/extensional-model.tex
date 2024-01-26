@@ -1,0 +1,237 @@
+\section{What is a Model of Gradual Typing?}
+
+In order to organize our construction of denotational models we first
+develop sufficient \emph{abstract} categorical semantics of gradually
+typed languages. We start by modeling the type and term structure of
+gradual typing and then extend this to type and term precision.
+%
+Gradually typed languages inherently involve computational effects of
+errors and non-termination and typically in practice many others such
+as mutable state and I/O.
+%
+To model this cleanly categorically, we follow New, Licata and Ahmed's
+GTT calculus and base our models off of Levy's Call-by-push-value
+(CBPV) calculus which is a standard model of effectful programming
+\cite{levycbpv}.
+%
+There are several notions of model of CBPV from the literature with
+varying requirements of which connectives are present
+\cite{levy,fioremm,eec}, we will use a variant which models precisely
+the connectives we require and no more
+($1,\times,F,U,\to$)\footnote{It is essential in this case that we do
+not require a cartesian closed category of values as there is no way
+to implement casts for an exponential in general.}.
+
+\begin{enumerate}
+\item A cartesian category $\mathcal V$
+\item A category $\mathcal E$
+\item An action of $\mathcal V^{op}$ (with the $\mathcal V$ cartesian
+  product as monoidal structure) on $\mathcal E$. We write this with
+  an arrow $A \arr B$.
+
+  This means we have 
+  \[ \alpha : {A_1 \times A_2} \arr B \cong A_2 \arr (A_1 \arr B) \]
+  and
+  \[ i : 1 \arr B \cong B \]
+  satisfying coherence isomorphisms.
+\item A functor $U : \mathcal E \to \mathcal V$ that ``preserves
+  powering'' in that every $U(A \arr B)$ is an exponential of $UB$ by $A$
+  and that $U\alpha$ and $Ui$ are mapped to the canonical isomorphisms
+  for exponentials.
+\item A left adjoint $F \dashv U$
+\end{enumerate}
+
+\begin{example}
+  Given a strong monad $T$ on a bicartesian closed category $\mathcal
+  V$, we can extend this to a CBPV model by defining $\mathcal E$ to
+  be the category $\mathcal V^T$ of algebras of the monad, defining $A
+  \to B$ as the powering of algebras, $F$ as the free algebra and $U$
+  as the underlying object functor.
+\end{example}
+
+We can then model CBV terms and types in a straightforward adaptation
+of Levy's interpretation of CBV in CBPV. We interpret types $A$ as
+objects $A \in \mathcal V$ and CBV terms $\Gamma \vdash M : A$ as
+morphism of any of the equivalent forms $\mathcal E(F(\times\Gamma),
+F(A)) \cong \mathcal V(\times\Gamma \vdash UF(A)) \cong \mathcal
+E(F(1), \Gamma \to F(A))$. The most interesting type translation is
+the CBV function type: $A \ra A' = U(A \to F A')$.
+%
+Such a model validates all type-based equational reasoning, i.e.,
+$\beta\eta$ equality, and models the introduction and elimination
+rules for CBV.
+%
+Thus a CBPV model is sufficient to interpret the CBV term language. We
+will require additional structure to interpret the precision and type
+casts.
+
+New and Licata modeled call-by-name gradual typing using \emph{double
+categories}, which are defined to be categories internal to the
+category of categories. That is, a double category $\mathcal C$
+consists of a category $\mathcal C_o$ of ``objects and function
+morphisms'' and a category $\mathcal C_{sq}$ of ``relation morphisms
+and squares'' with functors (reflexive relation) $r : C_o \to C_{sq}$
+and (source and target) $s,t : C_{sq} \to C_o$ satisfying $sr = tr =
+\id$ as well as a composition operation $c : C_{sq} \times_{s,t}
+C_{sq} \to C_{sq}$ respecting source and target. This models an
+abstract notion of functions and relations. For notation, we write
+function morphisms as $f : A \to B$ and relation morphisms as $c : A
+\rel B$ where $c \in C_{sq}$ and $s(c) = A$ and $t(c) = B$. Finally a
+morphism $\alpha$ from $c$ to $d$ with $s(\alpha) = f$ and $s(\beta) =
+g$ is visualized as
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkEnIl0sWzEsMSwiQiciXSxbMCwyLCJmIiwyXSxbMSwzLCJnIl0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiZCIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	A \& B \\
+	{A'} \& {B'}
+	\arrow["f"', from=1-1, to=2-1]
+	\arrow["g", from=1-2, to=2-2]
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+And is thought of as an abstraction of the notion of relatedness of
+functions: functions take related inputs to related outputs. The
+composition operations and functoriality give us a notion of
+composition of relations as well as functions and vertical and
+horizontal composition of squares. In this work we will be chiefly
+interested in \emph{locally thin} double categories, that is, double
+categories where there is at most one square for any $f,c,g,d$. In
+this case we use the notation $f \leq_{c,d} g$ to mean that a square
+like the above exists.
+
+New, Licata and Ahmed \cite{newlicataahmed} extended the axiomatic
+syntax to call-by-push-value but did not analyze the structure
+categorically. We fill in this missing analysis now: a model of the
+congruence rules of their system can be given by a locally thin
+``double CBPV model'', which we define as a category internal to the
+category of CBPV models and \emph{strict} homomorphisms of CBPV
+models\footnote{it may be possible to also define this as a notion of
+CBPV model internal to some structured $2$-category of categories, but
+the authors are not aware of any such definition of an internal CBPV
+model}. A strict homomorphism of CBPV models from $(\mathcal
+V,\mathcal E,\ldots)$ to $(\mathcal V', \mathcal E',\ldots)$ consists
+of functors $G_v : \mathcal V \to \mathcal V'$ and $G_e : \mathcal E
+\to \mathcal E'$ that strictly preserve all CBPV constructions, see
+the appendix for a more detailed definition.
+Some of that data can be visualized as follows:
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXHZzcSJdLFsyLDAsIlxcZXNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFxzdiIsMCx7ImN1cnZlIjotMn1dLFswLDIsIlxcdHYiLDIseyJjdXJ2ZSI6Mn1dLFsxLDMsIlxcc2UiLDAseyJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHRlIiwyLHsiY3VydmUiOjJ9XSxbMywxLCJcXHJlIl0sWzQsNSwiXFxib3QiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw3LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\vsq \&\& \esq \\
+	\\
+	\vf \&\& \ef
+	\arrow[""{name=0, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=3-1, to=3-3]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=3-3, to=3-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=1-1, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=1-3, to=1-1]
+	\arrow["\rv", from=3-1, to=1-1]
+	\arrow["\sv", curve={height=-12pt}, from=1-1, to=3-1]
+	\arrow["\tv"', curve={height=12pt}, from=1-1, to=3-1]
+	\arrow["\se", curve={height=-12pt}, from=1-3, to=3-3]
+	\arrow["\te"', curve={height=12pt}, from=1-3, to=3-3]
+	\arrow["\re", from=3-3, to=1-3]
+	\arrow["\bot"{description}, draw=none, from=0, to=1]
+	\arrow["\bot"{description}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+Type precision $A \ltdyn A'$ is interpreted as a relation morphism
+$c_A : A \rel A'$ in $\mathcal V_{sq}$, and term precision $\Gamma
+\ltdyn \Gamma' \vdash M \ltdyn M' : A \ltdyn A'$ is interpreted as a
+square $M \ltdyn_{c_\Gamma,UF c_A} M'$. The fact that $t,r$ and the
+composition are all given by strict CBPV homomorphisms says that all
+the type constructors lift to precision (monotonicity of type
+constructors) as well as all term constructors (congruence). Further,
+$r$ and composition being strict homomorphisms implies that all type
+constructors strictly preserve the identity relation (identity
+extension) and composition.
+
+Next, to model type casts, their model further requires that every
+value relation $c : A \rel A'$ is \emph{left representable} by a
+function $u_c : A \to A'$ and every computation relation $d : B \rel
+B'$ is \emph{right representable} by a function $d_c : B' \to B$. In a locally thin double category, these are defined as follows:
+\begin{definition}
+  $c : A \rel B$ is left representable by $f : A \to B$ if $f \ltsq{c}{r(B)} \id$ and $\id \ltsq{r(A)}{c} f $.
+
+  Dually, $c : A \rel B$ is right representable by $g : B \to A$ if
+  $\id \ltsq{c}{r(A)} g$ and $g \ltsq{r(B)}{c} \id$.
+\end{definition}
+These rules are sufficient to model the UpL/UpR/DnL/DnR rules for
+casts. Additionally, since representable morphisms compose and so the
+compositionality of casts comes for free. However, the retraction
+property must be added as an additional axiom to the model.  Finally,
+the dynamic type can be modeled as an arbitrary value type $D$ with
+arbitrary relations $\nat \rel D$ and $D \ra D \rel D$ and $D \times D
+\rel D$ (or whatever basic type cases are required).
+
+\begin{example}
+  (Adapted from \cite{new-licata}): Define a double CBPV model where
+  $\mathcal V$ is the category of predomain preorders: sets with an
+  $\omega$-CPO structure $\leq$ as well as a poset structure
+  $\ltdyn$. Functional morphisms are given by $\leq$-continuous and
+  $\ltdyn$-monotone functions. Then define $\mathcal E$ to be the
+  category of pointed domain preorders which are domain preorders with
+  least elements $\bot$ for $\leq$ and $\mho$ for $\ltdyn$ such that
+  $\bot$ is $\ltdyn$-maximal, and morphisms are as before but preserve
+  $\bot$ and $\mho$. This can be extended to a CBPV model with
+  forgetful functor $U : \mathcal E \to \mathcal V$. $D$ can be
+  defined by solving a domain equation.
+
+  This can be extended to a double CBPV model by defining a value
+  relation $A \rel A'$ to be a $\ltdyn$-\emph{embedding}: a morphism
+  $e : A \to A'$ that is injective and such that $F e : F A \to F A'$
+  has a right adjoint (with respect to $\ltdyn$) and a square $f
+  \ltsq{e}{e'} f' = f \circ e \ltdyn e' \circ f$. Similarly
+  computation relations $B \rel B'$ are defined to be
+  \emph{projections}: morphisms $p : B' \to B$ that are surjective and
+  $Up$ has a left adjoint, with squares defined similarly. A suitable
+  dynamic type can be constructed by solving a domain equation $D
+  \cong \nat + U(D \to FD) + (D \times D)$.
+\end{example}
+
+\subsection{Weakening the Double Category Semantics}
+
+While the double categorical semantics can be satisfied with classical
+domain theoretic models, there are obstructions to developing a
+semantics based on \emph{guarded} recursion. While guarded type theory
+makes construction of arbitrary guarded recursive definitions
+possible, it comes at a significant cost to reasoning: unfolding of
+recursive definitions is explicit. In a denotational semantics, this
+means that non-well-founded recursion must perform a kind of
+\emph{observable step}. This is a difficulty in proving graduality,
+which is a property that is oblivious to the number of steps that a
+program takes. Therefore to prove graduality we must impose a kind of
+weak bisimilarity relation on our programs to reason about
+step-independent relational properties. However, here we arrive at the
+fundamental issue with double categorical semantics using
+representable relations:
+
+\begin{enumerate}
+\item When reasoning up to weak bisimilarity, transitive reasoning is
+  not possible, and so horizontal pasting of squares is not a valid
+  reasoning principle.
+\item When reasoning with observable computation steps, certain casts
+  take observable steps, and can no longer be modeled using
+  representable morphisms.
+\end{enumerate}
+
+Our solution to this dilemma comes in two parts. Since graduality
+ignores computational steps, the syntactic theory of graduality must
+be modeled up to weak bisimilarity, where transitive reasoning is not
+valid. For this purpose we develop a notion of \emph{extensional}
+model which weakens from double categories to a reflexive graph
+categories, dropping the operation of horizontal pasting of squares,
+but still maintaining a form of representability of
+relations.
+
+However, transitive reasoning is essential for compositional semantic
+constructions, and so we need to work with an intermediate notion of
+\emph{intensional} model which is based on double categories, but
+where representability has to be weakened to
+``quasi-representability'', a kind of representability \emph{up to}
+observable steps. To reason up to observable steps without using weak
+bisimilarity, we develop a notion we call \emph{perturbations},
+certain terms that are bisimilar to the identity but can be
+manipulated explicitly in constructions. We then show that the
+compositional construction of casts from domain theoretic models can
+be adapted to this guarded setting by incorporating some explicit
+manipulation of perturbations. Finally, we show that taking an
+``extensional collapse'' by bisimilarity provides a model of the
+extensional theory, which can then be used to model the global
+graduality property.
