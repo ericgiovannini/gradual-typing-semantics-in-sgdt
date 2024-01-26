@@ -45,7 +45,7 @@ In summary, an extensional model consists of:
   \item Composition of value and computation relations that form a category with the reflexive relations as identity. Call these categories $\mathcal V_r,\mathcal E_r$
   \item An identity-on-objects functor $\upf : \mathcal V_r \to \mathcal V_f$ taking each value relation to a morphism that universally left-represents it.
   \item An identity-on-objects functor $\dnf : \mathcal E_r^{op} \to \mathcal E_f$ taking each computation relation to a morphism that universally right-represents it.
-  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
+  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations up to equivalence\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
     \begin{itemize}
     \item $U(dd') \equidyn U(d)U(d')$
     \item $F(cc') \equidyn F(c)F(c')$
@@ -53,6 +53,8 @@ In summary, an extensional model consists of:
     \item $(c_1c_1') \times (c_2c_2') \equidyn (c_1 \times c_2)(c_1'\times c_2')$
     \end{itemize}
     where $c \equidyn c'$ means $\id \ltsq{c}{c'}\id$ and $\id \ltsq{c'}{c} \id$.
+  \item A natural transformation $\mho : 1 \Rightarrow U$ such that
+    $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$
   \item Distinguished value type $\nat$ with morphisms $z : \mathcal
     V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
   \item Distinguished value types $D$ with distinguished relations
