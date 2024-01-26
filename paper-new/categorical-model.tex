@@ -1,117 +1,111 @@
-\section{Abstract Categorical Models of Graduality}\label{sec:abstract-models}
+\section{Revised Categorical Models of Graduality}\label{sec:abstract-models}
 
-First, what is a categorical model of call-by-push-value? We will use
-the following notion as our basic structure\footnote{There are models
-that are closer to syntax e.g., which distinguish between value types
-and contexts but this suffices for all of the models we consider}:
-\begin{enumerate}
-\item A cartesian category $\mathcal V$
-\item A category $\mathcal E$
-\item An action of $\mathcal V^{op}$ (with the $\mathcal V$ cartesian
-  product as monoidal structure) on $\mathcal E$. We write this with
-  an arrow $A \arr B$.
-
-  This means we have 
-  \[ \alpha : {A_1 \times A_2} \arr B \cong A_2 \arr (A_1 \arr B) \]
-  and
-  \[ i : 1 \arr B \cong B \]
-  satisfying coherence isomorphisms.
-\item A functor $U : \mathcal E \to \mathcal V$ that ``preserves
-  powering'' in that every $U(A \arr B)$ is an exponential of $UB$ by $A$
-  and that $U\alpha$ and $Ui$ are mapped to the canonical isomorphisms
-  for exponentials.
-\item A left adjoint $F \dashv U$
-\end{enumerate}
-
-\begin{example}
-  Given a strong monad $T$ on a bicartesian closed category $\mathcal
-  V$, we can extend this to a CBPV model by defining $\mathcal E$ to
-  be the category $\mathcal V^T$ of algebras, defining $A \to B$ as
-  the powering of algebras, $F$ as the free algebra and $U$ as the
-  underlying object functor.
-\end{example}
-
-There are two relevant notions of \emph{morphism} of CBPV models:
-\emph{strict} and \emph{lax}.
-% morphisms of CBPV models
-Given call-by-push-value models
-$\mathcal M_1 = (\mathcal V_1, \mathcal E_1, \arr_1, U_1, F_1)$ and
-$\mathcal M_2 = (\mathcal V_2, \mathcal E_2, \arr_2, U_2, F_2)$,
-A \emph{strict} morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
-$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$
-that strictly presere the constructors:
-\begin{enumerate}
-  \item $G_{\mathcal{E}} \circ F_1 = F_2 \circ G_{\mathcal{V}}$
-  \item $G_{\mathcal{V}} \circ U_1 = U_2 \circ G_{\mathcal{E}}$
-  \item $G_{\mathcal{E}}(A \arr_1 B) = G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
-  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) = G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
-  \item $G_{\mathcal{V}}(1_1) = 1_2$
-\end{enumerate}
-As well as strictly preserving the corresponding universal morphisms
-and coherence isomorphisms.
-
-A lax morphism instead preserves these only up to transformation
-\begin{enumerate}
-  \item $G_{\mathcal{E}} \circ F_1 \Rightarrow F_2 \circ G_{\mathcal{V}}$
-  \item $G_{\mathcal{V}} \circ U_1 \Rightarrow U_2 \circ G_{\mathcal{E}}$
-  \item $G_{\mathcal{E}}(A \arr_1 B) \Rightarrow G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
-  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) \Rightarrow G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
-  \item $G_{\mathcal{V}}(1_1) \Rightarrow 1_2$
-\end{enumerate}
-Additionally a lax morphism should have a relationship between these
-transformations and the universal morphisms, but we will only consider
-lax morphisms of thin categories, where such conditions hold
-trivially.
-% TODO what about the product and coproducts in V?
-% Do we need that G_V(A \times_1 A') = G_V(A) \times_2 G_V(A')
-% and likewise for coproducts?
-
-With these definitions, we can define categories $\textrm{CBPV}_s$ and
-$\textrm{CBPV}_l$ whose objects are CBPV models, and whose arrows are
-CBPV morphisms.  This category will serve as the setting in which we
-formulate the definition of a model of extensional gradual typing.
+Next, we develop our appropriate weakened notions of models of
+graduality, which we divide into \emph{extensional} models, where
+ordering is up to weak bisimilarity, and \emph{intensional} models,
+where ordering relates terms that considers computational steps to be
+observable. We develop the notion of intensional model of gradual
+typing in stages and show how to develop one from a base model of
+effectful functions and relations.
 
 \subsection{Extensional Models of Gradual Typing}
 
-An model $\mathcal{M}$ of extensional gradual typing consists of:
-\begin{itemize}
-  \item CBPV models $\mathcal M_f$ and $\mathcal M_{sq}$
-  \item CBPV morphisms $r : \mathcal M_f \to \mathcal M_{sq}$ and 
-  $s, t : \mathcal M_{sq} \to \mathcal M_f$
-\end{itemize}
+Since we lack transitivity of ordering when reasoning in guarded type
+theory, our weakened notion of extensional model is based on reflexive
+graph categories rather than double categories. This means we lose the
+reasoning principle of horizontal pasting of squares. We will still
+require a notion of \emph{composition} of relations, to model the
+transitivity of type precision. We note that without horizontal
+pasting of squares, the notion of left/right representability of
+squares is not sufficient to interpret the cast rules of gradual
+typing. Instead we generalize it slightly as follows.
 
-satisfying certain additional conditions that will be described below.
+Let $c : A \rel A'$ and $f : A \to A'$ in a reflexive graph category
+with composition of relations. We say that $c$ is \emph{universally
+left-representable by} $f$ if for any $c_l : A_l \rel A$ and $c_r : A'
+\rel A_r$ we have $f \ltsq{cc_r}{c_r} \id$ and $\id \ltsq{c_l}{c_lc}
+f$. Dually, let $d : B \rel B'$ and $g : B' \to B$.  We say that $d$
+is \emph{universally right-representable by} $g$ if for any $d_l : B_l
+\rel B$ and $d_r : B' \rel B_r$ we have $\id \ltsq{d_ld}{d_l} \phi$
+and $\phi \ltsq{d_r}{dd_r}\id$. In a reflexive graph category these
+are stronger than the definitions of left/right representability since
+we can pick $c_l,c_r,d_l,d_r$ to be the reflexive relations. In a
+double category these are equivalent, but the equivalence uses
+horizontal pasting.
 
-% % https://q.uiver.app/#q=WzAsMixbMCwxLCJcXG1hdGhjYWx7TX1fe3NxfSJdLFswLDAsIlxcbWF0aGNhbHtNfV9mIl0sWzEsMCwiciJdLFswLDEsInMiLDAseyJjdXJ2ZSI6LTJ9XSxbMCwxLCJ0IiwyLHsiY3VydmUiOjJ9XV0=
-% \[\begin{tikzcd}[ampersand replacement=\&]
-% 	{\mathcal{M}_f} \\
-% 	{\mathcal{M}_{sq}}
-% 	\arrow["r", from=1-1, to=2-1]
-% 	\arrow["s", curve={height=-12pt}, from=2-1, to=1-1]
-% 	\arrow["t"', curve={height=12pt}, from=2-1, to=1-1]
-% \end{tikzcd}\]
+Additionally, while in the presence of horizontal pasting
+compositionality of representable morphisms is automatic, without this
+principle we must require it explicitly. Finally, we explicitly add in
+a requirement that the type constructors are functorial in the 
 
-Spelling this out in light of the above definitions, we see that this is
-equivalent to the following in the category $\textbf{Cat}$:
+In summary, an extensional model consists of:
+\begin{enumerate}
+  \item A locally thin reflexive graph internal to CBPV models.
+  \item Composition of value and computation relations that form a category with the reflexive relations as identity.
+  \item An identity-on-objects functor $\upf : \mathcal V_e \to \mathcal V_f$ taking each value relation to a morphism that universally left-represents it.
+  \item An identity-on-objects functor $\dnf : \mathcal E_e^{op} \to \mathcal E_f$ taking each computation relation to a morphism that universally right-represents it.
+  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
+    \begin{itemize}
+    \item $U(dd') \equidyn U(d)U(d')$
+    \item $F(cc') \equidyn F(c)F(c')$
+    \item $(cc') \to (dd') \equidyn (c \to d)(c' \to d')$
+    \item $(c_1c_1') \times (c_2c_2') \equidyn (c_1 \times c_2)(c_1'\times c_2')$
+    \end{itemize}
+    where $c \equidyn c'$ means $\id \ltsq{c}{c'}\id$ and $\id \ltsq{c'}{c} \id$.
+  \item Distinguished value type $\nat$ with morphisms $z : \mathcal
+    V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+  \item Distinguished value types $D$ with distinguished relations
+    $\iarr{}: U(D \to F D) \rel D$ and $\inat : \nat \rel D$ and $\itimes : D \times D \rel D$
+    each satisfying the retraction property $\dnc {\injarr{}}F(\upc{\injarr{}}) \equidyn \id$.
+\end{enumerate}
 
-% https://q.uiver.app/#q=WzAsNCxbMCwyLCJcXHZzcSJdLFsyLDIsIlxcZXNxIl0sWzAsMCwiXFx2ZiJdLFsyLDAsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFxzdiIsMCx7ImN1cnZlIjotMn1dLFsyLDAsIlxcdHYiLDAseyJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHNlIiwwLHsiY3VydmUiOi0yfV0sWzMsMSwiXFx0ZSIsMCx7ImN1cnZlIjotMn1dLFszLDEsIlxccmUiXSxbNCw1LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDcsIlxcYm90IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
-\[\begin{tikzcd}[ampersand replacement=\&]
-	\vf \&\& \ef \\
-	\\
-	\vsq \&\& \esq
-	\arrow[""{name=0, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=1-1, to=1-3]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=1-3, to=1-1]
-	\arrow[""{name=2, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=3-1, to=3-3]
-	\arrow[""{name=3, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=3-3, to=3-1]
-	\arrow["\rv", from=1-1, to=3-1]
-	\arrow["\sv", curve={height=-12pt}, from=3-1, to=1-1]
-	\arrow["\tv", curve={height=-12pt}, from=1-1, to=3-1]
-	\arrow["\se", curve={height=-12pt}, from=3-3, to=1-3]
-	\arrow["\te", curve={height=-12pt}, from=1-3, to=3-3]
-	\arrow["\re", from=1-3, to=3-3]
-	\arrow["\bot"{description}, draw=none, from=0, to=1]
-	\arrow["\bot"{description}, draw=none, from=2, to=3]
-\end{tikzcd}\]
+
+%% %% A model $\mathcal{M}$ of extensional gradual typing consists of the
+%% %% following:
+%% \begin{itemize}
+%% \item A reflexive graph internal to the category of CBPV models and
+%%   strict morphisms that is locally thin: there is at most one morphism
+%%   in $\mathcal V_{sq}$ for any given domain, codomain, source and
+%%   target, and as well for $\mathcal E$.
+%% \item 
+%% \item A natural transformation $\mho : 1 \Rightarrow U$ satisfying $\mho \circ ! \ltsq{r(A)}{r(B)} f$ for every $f$.
+%% \item Such that all relation value morphisms are \emph{universally}
+%%   left representable and all relation computation morphisms are
+%%   universally right representable.
+%% \end{itemize}
+
+%% satisfying certain additional conditions that will be described below.
+
+%% % % https://q.uiver.app/#q=WzAsMixbMCwxLCJcXG1hdGhjYWx7TX1fe3NxfSJdLFswLDAsIlxcbWF0aGNhbHtNfV9mIl0sWzEsMCwiciJdLFswLDEsInMiLDAseyJjdXJ2ZSI6LTJ9XSxbMCwxLCJ0IiwyLHsiY3VydmUiOjJ9XV0=
+%% % \[\begin{tikzcd}[ampersand replacement=\&]
+%% % 	{\mathcal{M}_f} \\
+%% % 	{\mathcal{M}_{sq}}
+%% % 	\arrow["r", from=1-1, to=2-1]
+%% % 	\arrow["s", curve={height=-12pt}, from=2-1, to=1-1]
+%% % 	\arrow["t"', curve={height=12pt}, from=2-1, to=1-1]
+%% % \end{tikzcd}\]
+
+%% Spelling this out in light of the above definitions, we see that this is
+%% equivalent to the following in the category $\textbf{Cat}$:
+
+%% % https://q.uiver.app/#q=WzAsNCxbMCwyLCJcXHZzcSJdLFsyLDIsIlxcZXNxIl0sWzAsMCwiXFx2ZiJdLFsyLDAsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFxzdiIsMCx7ImN1cnZlIjotMn1dLFsyLDAsIlxcdHYiLDAseyJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHNlIiwwLHsiY3VydmUiOi0yfV0sWzMsMSwiXFx0ZSIsMCx7ImN1cnZlIjotMn1dLFszLDEsIlxccmUiXSxbNCw1LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDcsIlxcYm90IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	\vf \&\& \ef \\
+%% 	\\
+%% 	\vsq \&\& \esq
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=1-1, to=1-3]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=1-3, to=1-1]
+%% 	\arrow[""{name=2, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=3-1, to=3-3]
+%% 	\arrow[""{name=3, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=3-3, to=3-1]
+%% 	\arrow["\rv", from=1-1, to=3-1]
+%% 	\arrow["\sv", curve={height=-12pt}, from=3-1, to=1-1]
+%% 	\arrow["\tv", curve={height=-12pt}, from=1-1, to=3-1]
+%% 	\arrow["\se", curve={height=-12pt}, from=3-3, to=1-3]
+%% 	\arrow["\te", curve={height=-12pt}, from=1-3, to=3-3]
+%% 	\arrow["\re", from=1-3, to=3-3]
+%% 	\arrow["\bot"{description}, draw=none, from=0, to=1]
+%% 	\arrow["\bot"{description}, draw=none, from=2, to=3]
+%% \end{tikzcd}\]
 
 
 % The above definition can be interpreted in any compact closed equipment
@@ -126,200 +120,123 @@ equivalent to the following in the category $\textbf{Cat}$:
 % and pure functions but we also get a cartesian category $\mathcal V_{sq}$
 % which we think of as the ``value edges'' and ``squares''.
 
-That is, for the values, we have
+%% That is, for the values, we have
 
-\begin{enumerate}
-  \item A cartesian category $\mathcal V_f$.
-  The objects of $\mathcal V_f$ will be called \emph{value types}.
-  The morphisms of $\mathcal V_f$ will be called \emph{(pure) functions}.
+%% \begin{enumerate}
+%%   \item A cartesian category $\mathcal V_f$.
+%%   The objects of $\mathcal V_f$ will be called \emph{value types}.
+%%   The morphisms of $\mathcal V_f$ will be called \emph{(pure) functions}.
   
-  \item A cartesian category $\mathcal V_{sq}$. 
-  The objects of $\mathcal V_{sq}$ will be called \emph{value edges} or
-  \emph{value relations}, and the morphisms are \emph{commuting squares}.
+%%   \item A cartesian category $\mathcal V_{sq}$. 
+%%   The objects of $\mathcal V_{sq}$ will be called \emph{value edges} or
+%%   \emph{value relations}, and the morphisms are \emph{commuting squares}.
 
-  \item Functors $\sv, \tv : \mathcal V_{sq} \to \mathcal V_f$ and 
-  $\rv : \mathcal V_f \to \mathcal V_{sq}$.
-\end{enumerate}
+%%   \item Functors $\sv, \tv : \mathcal V_{sq} \to \mathcal V_f$ and 
+%%   $\rv : \mathcal V_f \to \mathcal V_{sq}$.
+%% \end{enumerate}
 
-Likewise, we have the analogous definitions for computations.
+%% Likewise, we have the analogous definitions for computations.
 
-We write $c : A \rel A'$ to mean that $c \in \ob(\vsq)$ such that 
-$\sv(c) = A$ and $\tv(c) = A'$.
-%
-Likewise, let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$,
-and let $f \in \vf(A_i, A_o)$ and $f' \in \vf(A_i', A_o')$.
-The notation $\beta : f \ltdyn_{c_o}^{c_i} f'$ is defined to mean
+%% We write $c : A \rel A'$ to mean that $c \in \ob(\vsq)$ such that 
+%% $\sv(c) = A$ and $\tv(c) = A'$.
+%% %
+%% Likewise, let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$,
+%% and let $f \in \vf(A_i, A_o)$ and $f' \in \vf(A_i', A_o')$.
+%% The notation $\beta : f \ltdyn_{c_o}^{c_i} f'$ is defined to mean
 
-\begin{enumerate}
-  \item $\beta \in \vsq(c_i, c_o)$
-  \item $\sv(\beta) = f$
-  \item $\tv(\beta) = f'$
-\end{enumerate}
+%% \begin{enumerate}
+%%   \item $\beta \in \vsq(c_i, c_o)$
+%%   \item $\sv(\beta) = f$
+%%   \item $\tv(\beta) = f'$
+%% \end{enumerate}
 
-(Recall that $\sv$ and $\tv$ are functors, so in addition to acting on
-the objects of $\vsq$ they also act on morphisms.)
+%% (Recall that $\sv$ and $\tv$ are functors, so in addition to acting on
+%% the objects of $\vsq$ they also act on morphisms.)
 
-Picorially, this is depicted as a commuting square:
+%% Picorially, this is depicted as a commuting square:
 
-% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMSwwLCJBX2knIl0sWzAsMSwiQV9vIl0sWzEsMSwiQV9vJyJdLFswLDIsImYiLDJdLFsxLDMsImYnIl0sWzAsMSwiY19pIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiwzLCJjX28iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsIlxcYWxwaGEiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{A_i} \& {A_i'} \\
-	{A_o} \& {A_o'}
-	\arrow[""{name=0, anchor=center, inner sep=0}, "f"', from=1-1, to=2-1]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{f'}", from=1-2, to=2-2]
-	\arrow["{c_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-	\arrow["{c_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-	\arrow["\alpha"{description}, draw=none, from=0, to=1]
-\end{tikzcd}\]
+%% % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMSwwLCJBX2knIl0sWzAsMSwiQV9vIl0sWzEsMSwiQV9vJyJdLFswLDIsImYiLDJdLFsxLDMsImYnIl0sWzAsMSwiY19pIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiwzLCJjX28iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsIlxcYWxwaGEiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	{A_i} \& {A_i'} \\
+%% 	{A_o} \& {A_o'}
+%% 	\arrow[""{name=0, anchor=center, inner sep=0}, "f"', from=1-1, to=2-1]
+%% 	\arrow[""{name=1, anchor=center, inner sep=0}, "{f'}", from=1-2, to=2-2]
+%% 	\arrow["{c_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%% 	\arrow["{c_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%% 	\arrow["\alpha"{description}, draw=none, from=0, to=1]
+%% \end{tikzcd}\]
 
-% Note: When the identity of the square $\beta$ is not important, we may omit it
-% and write $f \ltdyn_{c_o}^{c_i} f'$. In this case the meaning is that there exists
-% a square $\beta : f \ltdyn_{c_o}^{c_i} f'$.
+%% % Note: When the identity of the square $\beta$ is not important, we may omit it
+%% % and write $f \ltdyn_{c_o}^{c_i} f'$. In this case the meaning is that there exists
+%% % a square $\beta : f \ltdyn_{c_o}^{c_i} f'$.
 
-Composition of squares $\beta : f \ltdyn_{c_2}^{c_1} g$ and $\beta' : f' \ltdyn_{c_3}^{c_2} g'$
-corresponds to ``stacking'' the square for $\beta'$ below the square for $\beta$.
-Fuctoriality of $s$ and $t$ ensure that the left and right sides of the resulting square are as expected,
-i.e., we get $\beta' \circ \beta : f' \circ f \ltdyn_{c_3}^{c_1} g' \circ g$.
+%% Composition of squares $\beta : f \ltdyn_{c_2}^{c_1} g$ and $\beta' : f' \ltdyn_{c_3}^{c_2} g'$
+%% corresponds to ``stacking'' the square for $\beta'$ below the square for $\beta$.
+%% Fuctoriality of $s$ and $t$ ensure that the left and right sides of the resulting square are as expected,
+%% i.e., we get $\beta' \circ \beta : f' \circ f \ltdyn_{c_3}^{c_1} g' \circ g$.
 
-% Fuctoriality of $s$ and $t$ ensure that we can ``vertically" compose 
-% $\beta : f \ltdyn_{c_2}^{c_1} g$ and $\beta' : f' \ltdyn_{c_3}^{c_2} g'$
-% to obtain $\beta' \circ \beta : f' \circ f \ltdyn_{c_3}^{c_1} g' \circ g$.
-% Pictorially, this is represented by ``stacking'' the square for
-% $\beta'$ below the square for $\beta$.
+%% % Fuctoriality of $s$ and $t$ ensure that we can ``vertically" compose 
+%% % $\beta : f \ltdyn_{c_2}^{c_1} g$ and $\beta' : f' \ltdyn_{c_3}^{c_2} g'$
+%% % to obtain $\beta' \circ \beta : f' \circ f \ltdyn_{c_3}^{c_1} g' \circ g$.
+%% % Pictorially, this is represented by ``stacking'' the square for
+%% % $\beta'$ below the square for $\beta$.
 
-All of the above holds in an analogous manner for the computations.
-
-
-We will work in ``locally thin'' models where there is at most one
-square with a given boundary.
-That is, if $\beta, \beta' : f \ltdyn_{c_o}^{c_i} f'$, then $\beta = \beta'$.
-Thus, we may unambiguously omit the identity of the square, i.e., we may write
-$f \ltdyn_{c_o}^{c_i} f'$.
-
-We also have a ``horizontal" composition operation on value edges and on computation edges.
-That is, let 
-%
-\[ X = \{ (c, c') \in \ob(\vsq) \times \ob(\vsq) \mid \tv(c) = \sv(c') \}. \]
-%
-There is an operation $\comp : X \to \ob(\vsq)$ such that $\sv(c \comp c') = \sv(c)$
-and $\tv(c \comp c') = \tv(c')$. Likewise for computations.
-%
-Importantly, we emphasize that this composition is \emph{not} a functor: we only
-require that it act on \emph{objects} of $\vsq$ (i.e. edges) and not on the morphisms
-(i.e. the squares). Intuivitely, this has to do with the fact that in the extensional
-setting, the semantic term precision function is \emph{not} transitive.
-
-With this definition, is easily shown that there is a category $\ve$ of value relations,
-whose objects are the objects of $\vf$, and such that $\ve(A, A')$ is the set of objects
-$c$ of $\vsq$ whose source is $A$ and whose target is $A'$.
-Composition of morphisms is defined using the above operation $\comp$.
-Similarly, we have a category $\ee$ of computation relations.
+%% All of the above holds in an analogous manner for the computations.
 
 
-We also require that the category $\ve$ of relations is thin ``up to an
-identity square'', i.e., for any $c, c' \in \ve(A, A')$ we have that the
-following square commutes:
+%% We will work in ``locally thin'' models where there is at most one
+%% square with a given boundary.
+%% That is, if $\beta, \beta' : f \ltdyn_{c_o}^{c_i} f'$, then $\beta = \beta'$.
+%% Thus, we may unambiguously omit the identity of the square, i.e., we may write
+%% $f \ltdyn_{c_o}^{c_i} f'$.
 
-\[\begin{tikzcd}[ampersand replacement=\&]
-  A \& {A'} \\
-  A \& {A'}
-  \arrow[from=1-1, to=2-1, Rightarrow, no head]
-  \arrow[from=1-2, to=2-2, Rightarrow, no head]
-  \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-  \arrow["c'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-\end{tikzcd}\]
+%% We also have a ``horizontal" composition operation on value edges and on computation edges.
+%% That is, let 
+%% %
+%% \[ X = \{ (c, c') \in \ob(\vsq) \times \ob(\vsq) \mid \tv(c) = \sv(c') \}. \]
+%% %
+%% There is an operation $\comp : X \to \ob(\vsq)$ such that $\sv(c \comp c') = \sv(c)$
+%% and $\tv(c \comp c') = \tv(c')$. Likewise for computations.
+%% %
+%% Importantly, we emphasize that this composition is \emph{not} a functor: we only
+%% require that it act on \emph{objects} of $\vsq$ (i.e. edges) and not on the morphisms
+%% (i.e. the squares). Intuivitely, this has to do with the fact that in the extensional
+%% setting, the semantic term precision function is \emph{not} transitive.
+
+%% With this definition, is easily shown that there is a category $\ve$ of value relations,
+%% whose objects are the objects of $\vf$, and such that $\ve(A, A')$ is the set of objects
+%% $c$ of $\vsq$ whose source is $A$ and whose target is $A'$.
+%% Composition of morphisms is defined using the above operation $\comp$.
+%% Similarly, we have a category $\ee$ of computation relations.
+
+
+%% We also require that the category $\ve$ of relations is thin ``up to an
+%% identity square'', i.e., for any $c, c' \in \ve(A, A')$ we have that the
+%% following square commutes:
+
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%%   A \& {A'} \\
+%%   A \& {A'}
+%%   \arrow[from=1-1, to=2-1, Rightarrow, no head]
+%%   \arrow[from=1-2, to=2-2, Rightarrow, no head]
+%%   \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%%   \arrow["c'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%% \end{tikzcd}\]
 
 % In addition to the ordinary universal properties above, when working
 % with reflexive graph models we also have access to new notions of
 % universal property that relate the ``function'' morphisms to the
 % ``edges''.
 
-Finally, we specify the abstract behavior of casts.
-In brief, given $c : A \rel A'$, an upcast will be a morphism $\upf\, c$ in $\vf(A, A')$
-such that $\upf\, c$ ``represents $c$" (we will define this shortly). % such that $c$ is \emph{left-representable} by $\up c$.
-In reality, it is slightly more complicated, since we need to build composition of edges
-into the definition, but the idea is similar.
-
-In particular, let $c : A \rel A'$ and $f \in \mathcal V_f(A, A')$. We
-say that $c$ is \emph{left-representable by} $f$ if for any $c_l : A_l
-\rel A$ and $c_r : A' \rel A_r$ the following squares commute\max{is ``commute'' good terminology?}:
-\begin{center}
-  \begin{tabular}{ m{14em} m{14em} } 
-    % UpL
-    \begin{tikzcd}[ampersand replacement=\&]
-      A \& {A'} \& {A_r} \\
-      {A'} \&\& {A_r}
-      \arrow["f"', from=1-1, to=2-1]
-      %
-      \arrow[from=1-3, to=2-3, Rightarrow, no head]
-      %
-      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-      \arrow["c_r", "\shortmid"{marking}, no head, from=1-2, to=1-3]
-      %
-      \arrow["c_r"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
-    \end{tikzcd}
-    &
-    % UpR
-    \begin{tikzcd}[ampersand replacement=\&]
-      A_l \&\& {A} \\
-      {A_l} \& {A} \& {A'}
-      \arrow[from=1-1, to=2-1, Rightarrow, no head]
-      %
-      \arrow["f", from=1-3, to=2-3]
-      %
-      \arrow["c_l", "\shortmid"{marking}, no head, from=1-1, to=1-3]
-      %
-      \arrow["c_l"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \arrow["c"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
-    \end{tikzcd}
-  \end{tabular}
-\end{center}
-
-Dually, let $d \in B \rel B'$ and $\phi \in \mathcal E_f(B', B)$.  We
-say that $d$ is \emph{right-representable by} $\phi$ if for any $d_l :
-B_l \rel B$ and $d_r : B' \rel B_r$ the following two squares commute:
-
-\begin{center}
-  \begin{tabular}{ m{14em} m{14em} } 
-    % DnR
-    \begin{tikzcd}[ampersand replacement=\&]
-      {B_l} \& {B} \& {B'} \\
-      {B_l} \&\& {B}
-      \arrow[from=1-1, to=2-1, Rightarrow, no head]
-      %
-      \arrow["\phi", from=1-3, to=2-3]
-      %
-      \arrow["d_l", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-      \arrow["d", "\shortmid"{marking}, no head, from=1-2, to=1-3]
-      %
-      \arrow["d_l"', from=2-1, to=2-3, no head]
-    \end{tikzcd}
-    &
-    % DnL
-    \begin{tikzcd}[ampersand replacement=\&]
-      {B'} \&\& {B_r} \\
-      {B} \& {B'} \& {B_r}
-      \arrow["\phi"', from=1-1, to=2-1]
-      %
-      \arrow[from=1-3, to=2-3, Rightarrow, no head]
-      %
-      \arrow["d_r", from=1-1, to=1-3, no head]
-      %
-      \arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \arrow["d_r"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
-    \end{tikzcd}
-  \end{tabular}
-\end{center}
-
-Then we formulate the relationship between relation morphisms and
-function morphisms as follows:
-\begin{enumerate}
-\item There is an identity-on-objects functor $\upf : \mathcal V_e \to
-  \mathcal V_f$ such that every $c$ is left-representable by $\upf(c)$.
-\item There is an identity-on-objects functor $\dnf : \mathcal
-  E_e^{op} \to \mathcal \mathcal E_f$ such that every $d$ is
-  right-representable by $\dnf(d)$.
-\end{enumerate}
+%% Then we formulate the relationship between relation morphisms and
+%% function morphisms as follows:
+%% \begin{enumerate}
+%% \item There is an identity-on-objects functor $\upf : \mathcal V_e \to
+%%   \mathcal V_f$ such that every $c$ is left-representable by $\upf(c)$.
+%% \item There is an identity-on-objects functor $\dnf : \mathcal
+%%   E_e^{op} \to \mathcal \mathcal E_f$ such that every $d$ is
+%%   right-representable by $\dnf(d)$.
+%% \end{enumerate}
 
 %% \textbf{TODO: do we still need this?}
 %% We also want something like
@@ -327,27 +244,6 @@ function morphisms as follows:
 %% \[ U_c : \mathcal E_d^{op} \to \mathcal V_u \]
 %% which ensures that if $R$ is a value edge equivalent to $A(u,-)$ then
 %% \[ F(R) = F(A(u,-)) = (F A)(-,F u) \]
-
-In summary, an extensional model consists of:
-\begin{enumerate}
-  \item A reflexive graph internal to CBPV models.
-  \item Composition of value and computation relations that form a category with the reflexive relations as identity.
-  \item An identity-on-objects functor $\upf : \mathcal V_e \to \mathcal V_f$ taking each value relation to a morphism that left-represents it.
-  \item An identity-on-objects functor $\dnf : \mathcal E_e^{op} \to \mathcal E_f$ taking each computation relation to a morphism that right-represents it.
-  \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
-    \begin{itemize}
-    \item $U(dd') = U(d)U(d')$
-    \item $F(cc') = F(c)F(c')$
-    \item $(cc') \to (dd') = (c \to d)(c' \to d')$
-    \item $(c_1c_1') \times (c_2c_2') = (c_1 \times c_2)(c_1'\times c_2')$
-    \end{itemize}
-  \item A distinguished value type $D$ with distinguished relation
-    $\injarr{}: U(D \to F D) \rel D$ satisfying $\dnc {\injarr{}}F(\upc{\injarr{}}) = \id$
-\end{enumerate}
-
-\subsection{Stuff about Intensional Models}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

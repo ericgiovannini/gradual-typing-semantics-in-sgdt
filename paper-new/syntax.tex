@@ -8,6 +8,20 @@ derivations and an equational theory of those derivations.
 
 \max{TODO: ordinary cbv syntax}
 
+\begin{figure}
+  \begin{mathpar}
+    \begin{array}{rcl}
+    \text{Types } A &::=& \nat \alt \,\dyn \alt A \ra A' \alt A \times A'\\
+    \text{Type Precision } c &::=& r(A) \alt \iarr \alt \inat \alt \itimes \alt c \ra c' \alt c \times c'\\
+    \text{Terms } M,N &::=& \err\alt \upc c M \alt \dnc c M \alt \zro \alt \suc\, M \alt \lda{x}{M} \\ 
+     &&\alt M\, N \alt (M,N) \alt \textrm{let } (x,y) = M \textrm{ in } N\\
+    \text{Contexts } \Gamma &::= &\cdot \alt \Gamma, x : A \\
+    \text{Ctx Precision } \Delta &::=& \cdot\alt \Delta,x:c
+  \end{array}
+  \end{mathpar}
+  \caption{GTLC Cast Calculus Syntax}
+\end{figure}
+
 The graduality theorem is formulated in terms of \emph{type} and
 \emph{term precision}, usually presented as binary relations on types
 and terms. Here we will, like \citet{who?} use an explicit term
@@ -19,9 +33,9 @@ assignment for type precision.
   \begin{mathpar}
     \inferrule{}{r(A) : A \ltdyn A}\and
     \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
-    \inferrule{}{\Injarr : D \ra D \ltdyn D}\and
-    \inferrule{}{\Injnat : \nat \ltdyn D}\and
-    \inferrule{}{\Injarr : D \times D \ltdyn D}\and
+    \inferrule{}{\iarr : D \ra D \ltdyn D}\and
+    \inferrule{}{\inat : \nat \ltdyn D}\and
+    \inferrule{}{\iarr : D \times D \ltdyn D}\and
     \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}\and
     \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}\and
      r(A)c \equiv c\and

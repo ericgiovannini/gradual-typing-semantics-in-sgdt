@@ -1,4 +1,5 @@
-\section{What is a Model of Gradual Typing?}
+\section{Idealized Double Categorical Models of Graduality}
+\label{sec:cbpv}
 
 In order to organize our construction of denotational models we first
 develop sufficient \emph{abstract} categorical semantics of gradually
@@ -48,6 +49,11 @@ to implement casts for an exponential in general.}.
   \to B$ as the powering of algebras, $F$ as the free algebra and $U$
   as the underlying object functor.
 \end{example}
+
+To additionally model the error terms, we add a requirement that there
+is a natural transformation $\mho : 1 \to U$. The naturality
+requirement encodes that strict morphisms (e.g., the denotations of
+evaluation contexts) preserve errors.
 
 We can then model CBV terms and types in a straightforward adaptation
 of Levy's interpretation of CBV in CBPV. We interpret types $A$ as
@@ -157,8 +163,10 @@ B'$ is \emph{right representable} by a function $d_c : B' \to B$. In a locally t
 These rules are sufficient to model the UpL/UpR/DnL/DnR rules for
 casts. Additionally, since representable morphisms compose and so the
 compositionality of casts comes for free. However, the retraction
-property must be added as an additional axiom to the model.  Finally,
-the dynamic type can be modeled as an arbitrary value type $D$ with
+property must be added as an additional axiom to the model.  To model
+the error being a least element we add the requirement that $\mho
+\circ ! \ltsq{r(A)}{r(UB)} f$ holds for all $f : \mathcal V(A,B)$.
+Finally, the dynamic type can be modeled as an arbitrary value type $D$ with
 arbitrary relations $\nat \rel D$ and $D \ra D \rel D$ and $D \times D
 \rel D$ (or whatever basic type cases are required).
 
