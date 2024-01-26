@@ -18,7 +18,8 @@ require a notion of \emph{composition} of relations, to model the
 transitivity of type precision. We note that without horizontal
 pasting of squares, the notion of left/right representability of
 squares is not sufficient to interpret the cast rules of gradual
-typing. Instead we generalize it slightly as follows.
+typing. Instead we generalize the notion of representability to match
+the syntactic rules in Section~\ref{sec:GTLC}.
 
 Let $c : A \rel A'$ and $f : A \to A'$ in a reflexive graph category
 with composition of relations. We say that $c$ is \emph{universally
@@ -41,9 +42,9 @@ a requirement that the type constructors are functorial in the
 In summary, an extensional model consists of:
 \begin{enumerate}
   \item A locally thin reflexive graph internal to CBPV models.
-  \item Composition of value and computation relations that form a category with the reflexive relations as identity.
-  \item An identity-on-objects functor $\upf : \mathcal V_e \to \mathcal V_f$ taking each value relation to a morphism that universally left-represents it.
-  \item An identity-on-objects functor $\dnf : \mathcal E_e^{op} \to \mathcal E_f$ taking each computation relation to a morphism that universally right-represents it.
+  \item Composition of value and computation relations that form a category with the reflexive relations as identity. Call these categories $\mathcal V_r,\mathcal E_r$
+  \item An identity-on-objects functor $\upf : \mathcal V_r \to \mathcal V_f$ taking each value relation to a morphism that universally left-represents it.
+  \item An identity-on-objects functor $\dnf : \mathcal E_r^{op} \to \mathcal E_f$ taking each computation relation to a morphism that universally right-represents it.
   \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
     \begin{itemize}
     \item $U(dd') \equidyn U(d)U(d')$
@@ -59,6 +60,24 @@ In summary, an extensional model consists of:
     each satisfying the retraction property $\dnc {\injarr{}}F(\upc{\injarr{}}) \equidyn \id$.
 \end{enumerate}
 
+This mathematical structure is sufficient to interpret the theory of
+gradual typing in Section~\ref{sec:gtlc}.
+\begin{definition}
+  Given any extensional gradual typing model, we interpret
+  \begin{enumerate}
+  \item Each type $A$ as a value type, interpreting the base types and
+    $\times$ as their semantic analogues and $\sem {A \ra A'}$ as $U(\sem{A} \to
+    F(\sem{A'}))$.
+  \item Every type precision derivation $c : A \ltdyn A'$ is
+    interpreted as a relation morphism $\sem{c} : \sem{A} \rel \sem{A'}$ in the obvious
+    way. Every equivalence axiom $c \equiv c'$ implies that $\sem{c} \equidyn \sem{c'}$.
+  \item Every term $\Gamma \vdash M : A$ is interpreted as a morphism
+    $\sem{M} : \mathcal V_f (\times\sem{\Gamma},UF\sem{A})$. Upcasts are interpreted as
+    $UF(u_{\sem{c}})$ and downcasts as $Ud_{F\sem{c}}$.
+  \item If $\Delta \vdash M \ltdyn M' : c$ then $\sem{M}
+    \ltsq{\times\sem{\Delta}}{\sem{c}} \sem{M'}$ holds.
+  \end{enumerate}
+\end{definition}
 
 %% %% A model $\mathcal{M}$ of extensional gradual typing consists of the
 %% %% following:

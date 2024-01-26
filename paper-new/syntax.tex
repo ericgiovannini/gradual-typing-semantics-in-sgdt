@@ -13,11 +13,22 @@ derivations and an equational theory of those derivations.
     \begin{array}{rcl}
     \text{Types } A &::=& \nat \alt \,\dyn \alt A \ra A' \alt A \times A'\\
     \text{Type Precision } c &::=& r(A) \alt \iarr \alt \inat \alt \itimes \alt c \ra c' \alt c \times c'\\
+    \text{Values } V &::=& \upc c V \alt \zro \alt \suc\, V \alt \lda{x}{M} \alt (V,V') \\ 
     \text{Terms } M,N &::=& \err\alt \upc c M \alt \dnc c M \alt \zro \alt \suc\, M \alt \lda{x}{M} \\ 
      &&\alt M\, N \alt (M,N) \alt \textrm{let } (x,y) = M \textrm{ in } N\\
     \text{Contexts } \Gamma &::= &\cdot \alt \Gamma, x : A \\
     \text{Ctx Precision } \Delta &::=& \cdot\alt \Delta,x:c
   \end{array}
+
+  \inferrule
+  {\Gamma \vdash M : A \and c : A \ltdyn A'}
+  {\Gamma \vdash \upc c M : A'}
+
+  \inferrule
+  {\Gamma \vdash N : A' \and c : A \ltdyn A'}
+  {\Gamma \vdash \dnc c N  A}
+
+  \inferrule{}{\Gamma \vdash \mho : A}
   \end{mathpar}
   \caption{GTLC Cast Calculus Syntax}
 \end{figure}
@@ -53,39 +64,41 @@ In addition to congruence rules and CBV $\beta\eta$ equality, we have
 the following rules.\max{TODO: more about beta-eta}
 \begin{figure}
   \begin{mathpar}
+  (\lambda x. M)(V) = M[V/x] \and (V : A \ra A') = \lambda x. V\,x\\
+
+   \textrm{let } (x,y) = (V,V') \textrm{ in } N = N[V/x,V'/y] \and
+   M[V:A\times A'/p] = \textrm{let } (x,y) = p \textrm{ in } M[(x,y)/p]
+
+  \upc{(r(A))}M = M \and
+  \upc{c'}\upc{c}M = \upc{cc'}M \and
+  \dnc{(r(A))}M = M \and
+  \dnc{c}\dnc{c'}M = \dnc{cc'}M
+
   \inferrule
-  {M \ltdyn M' : c \and c \equiv c'}
-  {M \ltdyn M' : c'}
+  {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
+  {\Delta\vdash M \ltdyn M' : c'}
 
   \inferrule
   {}
   {\dnc {c} \upc {c} M \equidyn M}
 
-  \inferrule
-  {}
-  {\upc{c}\upc{c'}M \equidyn \upc{cc'}M}
-
-  \inferrule
-  {}
-  {\dnc{c'}\dnc{c}M \equidyn \dnc{cc'}M}
-
-  \inferrule
+  \inferrule*[Right=UpL]
   {M \ltdyn M' : cc_r}
   {\upc {c} M \ltdyn M' : c_r}
 
-  \inferrule
+  \inferrule*[Right=UpR]
   {M \ltdyn M' : c_l}
   {M \ltdyn \upc {c} M' : c_lc}
 
-  \inferrule
+  \inferrule*[Right=DnL]
   {M \ltdyn M' : c_r}
   {\dnc {c} M \ltdyn M' : cc_r}
 
-  \inferrule
+  \inferrule*[Right=DnR]
   {M \ltdyn M' : c_lc}
   {M \ltdyn \dnc {c} M' : c_l}
   \end{mathpar}
-  \caption{Term Precision Rules (Selected)}
+  \caption{Equality and Term Precision Rules (Selected)}
 \end{figure}
 
 %% Here we describe the syntax and typing for the gradually-typed lambda calculus.
