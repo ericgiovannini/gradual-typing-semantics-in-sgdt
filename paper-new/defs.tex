@@ -96,6 +96,7 @@
 % SGDT and Intensional Stuff
 
 \newcommand{\later}{\vartriangleright}
+\newcommand{\laterhs}{\later \hspace{-0.2em}}
 \newcommand{\type}{\texttt{Type}}
 \newcommand{\lob}{\text{L\"{o}b}}
 \newcommand{\tick}{\mathsf{tick}}
@@ -248,6 +249,24 @@
 \newcommand{\itimes}{\text{Inj}_\times}
 \newcommand{\iarr}{\text{Inj}_\to}
 
-\newcommand{\tnat}{\text{nat}}
-\newcommand{\ttimes}{\text{times}}
-\newcommand{\tfun}{\text{fun}}
+\newcommand{\tnat}{\mathsf{nat}}
+\newcommand{\ttimes}{\mathsf{times}}
+\newcommand{\tfun}{\mathsf{fun}}
+
+\newcommand{\cased}[7]{
+    \begin{align*}
+    \text{Case}_D ({#1}) &\text{ of } \{ \\
+        &\alt \text{nat}({#2}) \to {#3}  \\
+        &\alt \text{times}({#4}) \to {#5}  \\
+        &\alt \text{fun}({#6}) \to {#7} \}
+    \end{align*}
+}
+
+\newcommand{\inone}{\mathsf{in}_1}
+\newcommand{\intwo}{\mathsf{in}_2}
+\newcommand{\inthree}{\mathsf{in}_3}
+\newcommand{\infour}{\mathsf{in}_4}
+\newcommand{\infive}{\mathsf{in}_5}
+
+
+
