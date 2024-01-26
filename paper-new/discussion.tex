@@ -15,8 +15,15 @@ However, they do not give a denotational semantics to term precision and it is u
 how to prove the gradual guarantee in this setting.
 The work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
-
 % Discuss Jeremy Siek's work on graduality in Agda
+Siek and Chen \cite{siekchen2021} give a proof in Agda of graduality
+for an operational semantics. While they do not use the Guarded
+Cubical extension, they do use a guarded logic of propositions
+shallowly embedded in Agda. Our denotational approach requires full
+guarded type theory not just guarded logic. An advantage of the
+denotational approach is that it easily validates equational
+reasoning, not just graduality, and it is completely independent of
+any particular syntax of gradual typing.
 
 \subsection{Mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
