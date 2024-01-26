@@ -5,9 +5,7 @@ We begin by defining a step-1 intensional model, and then
 apply the abstract constructions outlined in the previous section
 to obtain an extensional model.
 
-We begin with some definitions. These concepts were first introduced in the section
-on the term semantics (Section \ref{sec:domain-theory}), but for completeness we repeat them here.
-% for ease of reference when instantiating the definition of step-1 model.
+We begin with some definitions:
 
 \begin{definition}
 A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
@@ -21,6 +19,10 @@ A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 Given a predomain $A$, we can form the predomain $\later A$.
 The underlying set is $\later |A|$ and the relation is defined in the obvious way,
 i.e., $\tilde{x} \le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
+Likewise for bisimilarity.
+
+We also give a predomain structure to the natural numbers $\mathbb{N}$, where both the
+ordering and the bisimiarity relation are equality.
 
 Morphisms of predomains are functions between the underlying sets that preserve the ordering
 and the bisimilarity relation. More formally:
@@ -132,25 +134,120 @@ We make the analogous definition for error domains.
 
 
 
+\subsection{Guarded Lift Monad}\label{sec:guarded-lift-monad}
+
 % Lift monad
-The guarded lift monad $\li$ takes a predomain $A$ to the error domain $\li A$;
-the precise definition is given in Section \ref{sec:lift-monad}.
-The partial order $\le_{\li A}$ is the lock-step error ordering defined in Section
-\ref{sec:lock-step}, and the bisimilarity relation $\bisim_{\li A}$ is the weak bisimilarity
-relation defined in Section \ref{sec:weak-bisimilarity}.
-We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
-``heterogeneous" version of the lock-step error lifting of $R$ (see Section \ref{sec:lift-monad}).
+The guarded error-lift monad $\li$ takes a predomain $A$ to the error domain $\li A$.
+It is defined as follows:
+
+\begin{align*}
+  \li A &:= \\
+  &\eta \colon A \to \li A \\
+  &\mho \colon \li A \\
+  &\theta \colon \later (\li A) \to \li A
+\end{align*}
+
+Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
+
+\[ \li A \cong A + 1 + \later \li A. \]
+
+This captures the intuition that a program may either return a value,
+fail at run-time, or take one or more observable steps of computation.
+Previous work has studied such a similar construct, called the guarded lift
+monad \cite{mogelberg-paviotti2016}; our version here our version augments it with the notion of error.
+
+Since we claimed that $\li A$ is a monad, we need to define the monadic operations
+and show that they respect the monadic laws. The return is just $\eta$, and the monadic extend
+is defined via guarded recursion by cases on the input.
+Verifying that the monadic laws hold uses \lob-induction and is straightforward.
+
+% \eric{Check}
+% We can also show that $\li A$ is the free error- and -later algebra on $A$, in that
+% for any morphism of predomains $f : A \to UB$, there is a unique morphism of error domains
+% $f^* : \li A \to \li A$ extending $f$.
+
+There is a functor $U$ from error domains to predomains that on objects simply returns the
+underlying predomain, and on morphisms returns the underlying morphism of predomains.
+%
+% TODO check this
+
+It is easily verified that $\li A$ is the free error- and later-algebra on the predomain $A$,
+so we have that $\li$ is left-adjoint to $U$.
+
+% i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
+% predomain morphisms from $A$ to $UB$.
+
+% We define $\delta : U(\li A) \To U(\li A)$ by $\delta(x) = \theta(\nxt x)$.
+% We define $\hat{\delta} : \li A \arr \li A$ by $\hat{\delta} = \ext{(\delta \circ \eta)}{}$.
+% Note that by definition of $\text{ext}$, we have that $\hat{\delta}$ is a morphism of error domains.
+
+%\subsubsection{Lock-Step Error Ordering}\label{sec:lock-step}
+
+The partial order $\le_{\li A}$ is the lock-step error ordering defined by guarded recursion as follows:
+
+\begin{itemize}
+    \item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
+    \item 	$\mho \ltls l$ for all $l$ 
+    \item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
+            $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+  \end{itemize}
+
+The idea is that two computations $l$ and $l'$ are related if they are in
+lock-step with regard to their intensional behavior, up to $l$ erroring.
+
+Given a relation $R : A \rel A'$, we define in an analogous manner a heterogeneous
+version of the lock-step error ordering between $\li R : \li A \rel \li A'$.
+% We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
+% ``heterogeneous" version of the lock-step error ordering.
 
 % TODO action of \li on commuting squares
 
-There is a functor $U$ from error domains to predomains that on objects simply takes the
-underlying predomain, and on morphisms takes the underlying morphism of predomains.
+%\subsubsection{Weak Bisimilarity}\label{sec:weak-bisimilarity}
+
+For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
+written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delay''.
+The weak bisimilarity relation is defined by guarded recursion as follows:
+
+\begin{align*}
+  &\mho \bisim \mho \\
 %
-% TODO check this
-One can verify that there is a free-forgetful adjunction between the functors $\li$ and $U$;
-this holds because $\li A$ is the initial/free error- and later-algebra on the predomain $A$,
-i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
-predomain morphisms from $A$ to $UB$.
+  &\eta\, x \bisim \eta\, y \text{ if } 
+    x \bisim_A y \\
+%		
+  &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+    \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+%	
+  &\theta\, \tilde{x} \bisim \mho \text{ if } 
+    \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+    (\theta\, \tilde{x} = \delta^n(\eta\, x))
+  \text { for some $n$ and $x : \ty{A}$ such that $x \bisim_A y$ } \\
+%
+  &\mho \bisim \theta\, \tilde{y} \text { if } 
+    \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+%	
+  &\eta\, x \bisim \theta\, \tilde{y} \text { if }
+    (\theta\, \tilde{y} = \delta^n (\eta\, y))
+  \text { for some $n$ and $y : \ty{A}$ such that $x \bisim_A y$ }
+\end{align*}
+
+When both sides are $\eta$, then we ensure that the underlying values are related
+by the bisimilarity relation on $A$.
+When one side is a $\theta$ and the other is $\eta x$ (i.e., one side steps),
+we stipulate that the $\theta$-term runs to $\eta y$ where $x$ is bisimilar to $y$.
+Similarly when one side is $\theta$ and the other $\mho$.
+If both sides step, then we allow one time step to pass and compare the resulting terms.
+In this way, the definition captures the intuition of terms being equivalent up to
+delays.
+
+It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
+However, it can also be shown that this relation is \emph{not} transitive:
+The argument is the same as that used to show that the step-insensitive error
+ordering $\semltbad$ described above is not transitive. Namely, we show that
+if it were transitive, then it would have to be trivial in that $l \bisim l'$ for all $l, l'$.
+that if this relation were transitive, then it would relate all values of type $\li A$.
+
 
 % internal hom for predomains and error domains
 Given predomains $A$ and $A'$, we can form the predomain of
@@ -163,64 +260,266 @@ predomain morphisms from $A$ to $A'$, denoted $A \To A'$.
     for all $x, x' \in A$ with $x \bisim_{A} x'$, we have $f(x) \bisim_{A'} f'(x')$. 
 \end{itemize}
 
-Given a predomain $A$ and error domain $B$, we define $A \arr B := A \To UB$.
-We note that $A \arr B$ carries a natural error domain structure
+Given $f : A_1' \to A_1$ and $g : A_2 \to A_2'$ we define the predomain morphism
+$f \To g : (A_1 \To A_2) \to (A_1' \To A_2')$ by $\lambda h. \lambda x'. g(h(f(x')))$.
+
+% TODO: include this?
+% The monadic extension operation $\ext{\cdot}{} : (A_1 \To U (\li A_2)) \To (\li A_1 \To U(\li A_2))$
+% is a morphism of predomains from $A_1 \To U(\li A_2)$ to $U(\li A_1) \To U(\li A_2)$, i.e.,
+% it preserves the ordering and bisimilarity relations.
+
+
+% Given a predomain $A$ and error domain $B$, we define $A \arr B := A \To UB$.
+We note that $A \To UB$ carries a natural error domain structure
 (in the below, the lambda is a meta-theoretic notation):
 \begin{itemize}
     \item The error is given by $\lambda x . \mho_B$
     \item The $\theta$ operation is defined by
-      \[ \theta_{A \arr B}(\tilde{f}) = \lambda x . \theta_B(\lambda t . \tilde{f}_t(x)). \]
+      \[ \theta_{A \To UB}(\tilde{f}) = \lambda x . \theta_B(\lambda t . \tilde{f}_t(x)). \]
 \end{itemize}
+
+Given a predomain $A$ and error domain $B$, we define
+$A \arr B$ to be the error domain such that $U(A \arr B) = A \To UB$,
+and whose error and $\theta$ operations are as defined above.
+We can define the functorial action of $\arr$ on morphisms
+$f \arr \phi$ in the obvious way.
 
 It is easily verified that $A \arr B$ is an exponential of $UB$ by $A$
 in the category of predomains and their morphisms.
 
 Lastly, given a relation of predomains $R$ between $A$ and $A'$, and a relation
-of error domains $S$ between $B$ and $B'$, we can form a relation $R \arr S$
+of error domains $S$ between $B$ and $B'$, we define the relation $R \arr S$
 between $A \arr B$ and $A' \arr B'$ in the obvious way, i.e., $f \in A \arr B$
 is related to $g \in A' \arr B'$ iff for all $x \in A$ and $x' \in A'$ with
 $x \mathrel{R} x'$, we have $f(x) \mathrel{S} g(x')$.
-
+%
+One can verify that this relation is indeed a relation of error domains
+in that it respects error and preserves $\theta$.
 
 With all of the above data, we can form a step-1 intensional model of gradual typing
 (See Definition \ref{def:step-1-model}).
 
 \subsection{The Dynamic Type}
 
+The predomain representing the dynamic type will be defined using guarded recursion
+as the solution to the equation
 
-% dynamic type
-The underlying set of the dynamic type will be defined using guarded recursion as the
-solution to the equation
+\[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr FD). \]
 
-\[ D \cong \mathbb{N} + \later (D \to \li D). \]
+% Note that the operators in the above equation are all combinators for predomains, so
+% this also defines the ordering and the bisimilarity relation for $D$.
 
-The perturbation monoid for $D$ is defined inductively as the free monoid $M$ equipped
-with an operation $\To : M \times M \to M$, i.e., we take the set defined inductively by
+For the sake of clarity, we name the ``constructors" $\text{nat}$, $\text{times}$,
+and $\text{fun}$, respectively.
 
-\begin{mathpar}
-    \inferrule*[]
-    {}
-    {e \in M}
+We define $e_\mathbb{N} : \mathbb{N} \to D$ to be the injection into the first
+component of the sum, and $e_\times : D \times D \to D$ to be the injection into
+the second component of the sum, and $e_\to : U(D \arr F D)$ to be the morphism
+$\nxt$ followed by the injection into the third component of the sum.
 
-    \inferrule*[]
-    {p \in M \and p' \in M}
-    {p \odot p' \in M}
+Explicitly, the ordering on $D$ is given by:
 
-    \inferrule*[]
-    {p \in M \and p' \in M}
-    {p \To p' \in M}
-\end{mathpar}
+\begin{align*}
+    \tnat(n) \le \tnat(n') 
+        &\iff n = n' \\
+    \ttimes (d_1, d_2) \le \ttimes (d_1', d_2')
+        &\iff d_1 \le d_2 \text{ and } d_1' \le d_2'\\
+    \tfun(\tilde{f}) \le \tfun(\tilde{f'}) 
+        &\iff \later_t(\tilde{f}_t \le \tilde{f'}_t)
+\end{align*}
 
-and quotient by the necessary monoid equations.
+We define a relation $\inat : \mathbb{N} \rel D$ by
+$(n, d) \in \inat$ iff $e_\mathbb{N} \le_D d$.
+We similarly define $\itimes : D \times D \rel D$ by
+$((d_1, d_2), d) \in \itimes$ iff $e_\times(d_1, d_2) \le_D d$,
+and we define $\text{inj}_\to : U(D \arr F D) \rel D$ by
+$(f, d) \in \iarr$ iff $e_\to(f) \le_D d$.
+
+Now we define the perturbations for $D$.
+Recall from our construction of a model with perturbations
+(Section \ref{sec:constructing-perturbations}) that for each value
+type $A$ we associate a commutative monoid $P_A$ of perturbations
+and a homomorphism into the monoid of endomorphisms bisimilar to the identity.
+
+We define the perturbations for $D$ via least-fixpoint in the category of
+commutative monoids as
+
+\[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
+
+where $\oplus$ is the product (also the coproduct) of commutative monoids.
+
+We now explain how to interpret these perturbations as endomorphisms.
+We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ as in the below.
+Note the use of the functorial action of $\arr$ on morphisms.
+% via the universal property of the coproduct of monoids, giving a case for each of the generators.
+% In the below, note the use of the functorial action of $\arr$ on morphisms.
+
+%
+% \[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
+%
+
+$\ptb_D(p_1, p_2, p_3, n, p_4) = \lambda d.\text{case $d$ of}$
+\begin{align*}
+    &\alt \tnat(m) \mapsto \tnat(m) \\
+    &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_D(p_1)(d_1), \ptb_D(p_2)(d_2))} \\
+    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. (\ptb_D(p_3) \arr (\delta^n \circ F(\ptb_D(p_4))))(\tilde{f}_t))} \\
+\end{align*}
+
+One can verify that this forms a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
+For this it is easiest to use the fact that the product coindices with the coproduct
+in the category of commutative monoids, and thus it suffices to check the condition for each summand separately.
+
+We claim that the three relations $\inat$, $\itimes$, and $\iarr$
+%and their lifted versions 
+satisfy the push-pull property.
+As an illustrative case, we establish the pull property for the relation $\iarr$.
+
+We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by cases as
+
+\[ \pull_{\iarr}(p_1, p_2, p_3, n, p_4) = (0, p_3, n, p_4) \]
+
+(recall that $P_{UB} = \mathbb{N} \times P_B$, and $P_{A \arr B} = P_A \times P_B$,
+so $P_{U(D \arr FD)}) = \mathbb{N} \times P_D \times \mathbb{N} \times P_D$.
+
+Now let $(f, d) \in \iarr$. This means that $d$ must be of the form $\tfun{\tilde{f}}$ where
+Then we have $\ptb_{U(D \arr FD)}(0, p_3, n, p_4) = $
+
+\eric{Details}
+
+\eric{Quasi-representability}
+
+    % \item $\ptb_D(1)$
+    % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has
+    % \[ \id \arr i^K(\delta^K_D) \] instead.
+    % \item $\ptb_D(\delta^K_D) = \lambda d.\text{case $d$ of}$
+    %   \begin{align*} 
+    %     &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(i^K(\delta^K_D)(d_1), d_2)} \\
+    %     &\alt d' \to d'
+    %   \end{align*}
+    % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has 
+    % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
+
+
+
+\begin{comment}
+Before defining the perturbations, recall from our concrete construction
+(Section \ref{TODO}) that to each value type $A$ we associate a monoid $P_A$
+of pure perturbations and a monoid $P^K_{A}$ of Kleisli perturbations.
+
+We define simultaneously the pure and Kleisli perturbation monoids for $D$,
+denoted $P_D$ and $P^K_D$ respectively.
+We define $P_D$ to be the monoid such that
+
+\[ P_D \cong ((P^K_D)^{op} \times P_D) \oplus (P_D \times P_D), \]
+
+and we define $P^K_D$ to be the monoid such that
+
+\[ P^K_D \cong \mathbb{N} \oplus ((P_D)^{op} \oplus P^K_D) \oplus (P^K_D \oplus P^K_D), \]
+
+where we use $\mathbb{N}$ because it is the free monoid on one generator.
+
+Now we explain how to interpret these monoids as submonoids of endomorphisms.
+We define $i : P_D \to \{ f : D \to D \mid f \bisim \id \}$
+and $i^K : P^K_D \to \{ \phi : FD \to FD \mid \phi \bisim \id \}$ mutually
+via the universal property of the coproduct of monoids, giving a case for each of the generators.
+In the below, note the use of the functorial action of $\arr$ on morphisms.
+
+\begin{itemize}
+    \item $i(\delta^K_D, \delta_D) = \lambda d.\text{case $d$ of}$
+    \begin{align*}
+        &\alt \tfun(\tilde{f}) \mapsto 
+          \tfun(\lambda t. (i^K(\delta^K_D) \to i(\delta_D))(\tilde{f}_t)) \\
+        &\alt d' \to d'
+    \end{align*}
+
+    \item $i(\delta_D^1, \delta_D^2) = \lambda d.\text{case $d$ of}$ 
+    \begin{align*}
+        &\alt \ttimes(d_1, d_2) \mapsto
+           \ttimes(i(\delta_D^1)(d_1), i(\delta_D^2)(d_2)) \\
+        &\alt d' \to d'
+    \end{align*}
+\end{itemize}
+
+We define $i^K(\delta^D)$ by
+%
+%  P^K_D \cong \mathbb{N} \oplus ((P_D)^{op} \oplus P^K_D) \oplus (P^K_D \oplus P^K_D)
+%
+\begin{itemize}
+    \item $i^K(1) = \hat{\delta}$
+    \item $i^K(\delta_D) = F(\lambda d.\text{case $d$ of}$
+      \begin{align*} 
+        &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. (i(\delta_D) \arr \id)(\tilde{f}_t))} \\
+        &\alt d' \to d')
+      \end{align*}
+    \item $i^K(\delta^K_D)$ is defined similarly to the previous but has
+    \[ \id \arr i^K(\delta^K_D) \] instead.
+    \item $i^K(\delta^K_D) = F(\lambda d.\text{case $d$ of}$
+      \begin{align*} 
+        &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(i^K(\delta^K_D)(d_1), d_2)} \\
+        &\alt d' \to d')
+      \end{align*}
+    \item $i^K(\delta^K_D)$ is defined similarly to the previous but has 
+    \[ (d_1, i^K(\delta^K_D)(d_2)) \] instead.
+\end{itemize}
+
 
 % perturbations and quasi-representability
+We claim that the three relations $\inat$, $\itimes$, and $\iarr$ and their lifted
+versions satisfy the push-pull property.
+As an illustrative case, we establish the pull property for the $\li \iarr$.
+We define $\pull : P^K_D \to P^K_{U(D \arr FD)}$ by cases as
+
+\begin{align*}
+ \pull(1) = \hat{\delta}
+\end{align*}
+
+We need to check that the relevant squares commute for all $\delta \in P^K_D$.
+It suffices by the universal property of the coproduct of monoids to ensure that
+this holds for the generators.
+
+We claim that the relations $\inat$, $\itimes$, and $\iarr$ are quasi-left-representable,
+and that their lifts are quasi-right-representable.
+Indeed, since the relations are functional, it is easy to see that they are left-representable
+where the perturbations are simply the identity.
+
+The most interesting case is the right-quasi-representability of $\li(\iarr)$.
+We define the projection as follows:
+
+\begin{align*}
+\end{align*}
+
+And for the perturbations, we take
 
 
 
-\subsection{Obtaining an Extensional Model}
 
-Now that we have defined an intensional model, we can apply
+% The perturbation monoid for $D$ is defined inductively as the free monoid $M$ equipped
+% with an operation $\To : M \times M \to M$, i.e., we take the set defined inductively by
+
+% \begin{mathpar}
+%     \inferrule*[]
+%     {}
+%     {e \in M}
+
+%     \inferrule*[]
+%     {p \in M \and p' \in M}
+%     {p \odot p' \in M}
+
+%     \inferrule*[]
+%     {p \in M \and p' \in M}
+%     {p \To p' \in M}
+% \end{mathpar}
+
+% and quotient by the necessary monoid equations.
+
+\end{comment}
+
+
+% \subsection{Obtaining an Extensional Model}
+
+Now that we have defined an intensional model with an interpetation for the dynamic type, we can apply
 the abstract construction introduced in Section \ref{sec:extensional-model-construction}.
-Doing so, we obtain an extensional model of gradual typing.
+Doing so, we obtain an extensional model of gradual typing, where the squares are given by the
+``bisimilarity closure'' of the intensional error ordering.
 
  
