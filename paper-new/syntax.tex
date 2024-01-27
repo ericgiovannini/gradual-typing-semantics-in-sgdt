@@ -191,14 +191,14 @@ the following properties for closed terms of type $\nat$:
 \item If $\sem{M}\ltdyn \sem{M'}$ then
   \begin{itemize}
   \item If $\sem{M} \equidyn \sem{n}$ then $\sem{M'} \equidyn \sem{n}$
-  \item If $\sem{M}\equidyn \sem{\Omega}$ then $\sem{M'} \equidyn \sem{\Omega}$
+  \item If $\sem{M'} \equidyn \sem{\mho}$ then $\sem{M} \equidyn \sem{\mho}$
+  \item If $\sem{M'}\equidyn \sem{n}$ then $\sem{M} \equidyn \sem{n}$ or $\sem{M} \equidyn \sem{\mho}$
   \end{itemize}
 \end{enumerate}
-The first two ensure that our notions of distinct result of a program
-are all preserved by the semantics. The last one intuitively states
-that if $M$ has a non-erroring behavior, then $M'$ exhibits the same
-behavior.
-\max{Eric, see if this notion of adequacy is correct/lines up with what you prove later. If it's not just go ahead and change it to match what you are proving}
+The first two conditions ensure that our notions of distinct result of
+a program are all preserved by the semantics. The last intuitively
+states that if $M$ has a non-erroring behavior, then $M'$ exhibits the
+same behavior.
 
 %% Here we describe the syntax and typing for the gradually-typed lambda calculus.
 %% We also give the rules for syntactic type and term precision.
