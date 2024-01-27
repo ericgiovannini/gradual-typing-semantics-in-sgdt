@@ -6,7 +6,43 @@ desired notion of type-based reasoning and graduality. The main
 departure from prior work is our explicit treatment of type precision
 derivations and an equational theory of those derivations.
 
-\max{TODO: ordinary cbv syntax}
+We give the basic syntax and select typing rules in
+Figure~\ref{fig:gtlc-syntax}. We include a dynamic type, a type of
+numbers, the call-by-value function type $A \ra A'$ and products.
+%
+We include a syntax for \emph{type precision} derivations $c : A
+\ltdyn A'$, the typing is given in Figure~\ref{fig:typrec}.
+%
+Any type precision derivation $c : A \ltdyn A'$ induces a pair of
+casts, the upcast $\up c : A \ra A'$ and the downcast $\dn c : A' \ra
+A$.
+%
+The syntactic intuition is that $c$ is a proof that $A$ is ``less
+dynamic'' than $A'$. Semantically, this gives us coercions back and
+forth where the upcast is (to a first-order) a pure function whereas
+the downcast can fail.
+%
+These casts are inserted automatically in an elaboration from a
+surface language. In this work, we are focused on semantic aspects and
+so elide these standard details.
+%
+The syntax of precision derivations includes reflexivity $r(A)$ and
+transitivity $cc'$ as well as monotonicity $c \ra c'$ and $c \times
+c'$ that are \emph{covariant} in all arguments and finally generators
+$\inat,\iarr,\itimes$ that correspond to the type tags of our dynamic
+type.
+%
+We additionally impose an equational theory $c \equiv c'$ on the
+derivations that implies that the corresponding casts are weakly
+bisimilar in the semantics.
+%
+We impose category axioms for the reflexivity and
+transitivity and functoriality for the monotonicity rules.
+%
+We note the following two admissible principles: any two derivations
+$c,c' : A \ltdyn A'$ of the same fact are equivalent $c \equiv c'$ and
+for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn
+\dyn$. That is, $\dyn$ is the ``most dynamic'' type.
 
 \begin{figure}
   \begin{mathpar}
@@ -31,15 +67,9 @@ derivations and an equational theory of those derivations.
   \inferrule{}{\Gamma \vdash \mho : A}
   \end{mathpar}
   \caption{GTLC Cast Calculus Syntax}
+  \label{fig:gtlc-syntax}
 \end{figure}
 
-The graduality theorem is formulated in terms of \emph{type} and
-\emph{term precision}, usually presented as binary relations on types
-and terms. Here we will, like \citet{who?} use an explicit term
-assignment for type precision.
-
-\max{TODO: prose about type precision derivations and equivalence
-  of type precision derivations}
 \begin{figure}
   \begin{mathpar}
     \inferrule{}{r(A) : A \ltdyn A}\and
@@ -58,10 +88,52 @@ assignment for type precision.
      (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
   \end{mathpar}
   \caption{Type Precision Derivations and equational theory}
+  \label{fig:typrec}
 \end{figure}
 
-In addition to congruence rules and CBV $\beta\eta$ equality, we have
-the following rules.\max{TODO: more about beta-eta}
+Next, we consider the axiomatic (in)equational reasoning principles
+for terms: $\beta\eta$ equality and term precision in
+Figure~\ref{fig:term-prec}.
+%
+We include standard CBV $\beta\eta$ rules for function and product
+types, as well as equations stating that casts are given functorially.
+%
+Next, we have \emph{term} precision, an extension of
+type precision to terms.
+%
+The form of the term precision rule is $\Delta \vdash M \ltdyn M' : c$
+where $\Delta$ is a context where variables are assigned to type
+precision derivations.
+%
+The judgment is only well formed when every use of $x : c'$ for $c : A
+\ltdyn A'$ is used with type $A$ in $M$ and $A'$ in $M'$ and similarly
+the output types match $c$.
+%
+We elide the congruence rules for every type constructor, e.g., that
+$M \ltdyn M'$ and $N \ltdyn N'$ that $M\,N \ltdyn M'\,N'$.
+%
+With such congruence rules, reflexivity $M \ltdyn M$ is
+admissible. Transitivity, on the other hand, is intentionally not
+taken as a primitive rule, matching the original formulation of the
+dynamic gradual guarantee.
+%
+We include a rule that says that equivalent type precision derivations
+$c \equiv c'$ are equivalent for the purposes of term precision.
+%
+The next rule is the \emph{retraction} principle, which states that a
+downcast after an upcast is equivalent to doing nothing at all, since
+intuitively the upcasted value should already satisfy the type. Here
+$\equidyn$ means we require each is $\ltdyn$ the other, with
+reflexivity precision derivations.
+%
+Finally, we include 4 rules for reasoning about casts. Intuitively
+these say that the upcast is a kind of \emph{least upper bound} and
+dually that the downcast is a \emph{greatest lower bound}.
+%
+These principles have been shown in prior work to imply that the
+behavior of functorial lifts such as $c \ra c'$ and $c \times c'$ are
+given by functorial actions \cite{newlicata,newlicataahmed}.
+
 \begin{figure}
   \begin{mathpar}
   (\lambda x. M)(V) = M[V/x] \and (V : A \ra A') = \lambda x. V\,x\\
@@ -77,6 +149,10 @@ the following rules.\max{TODO: more about beta-eta}
   \inferrule
   {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
   {\Delta\vdash M \ltdyn M' : c'}
+
+  \inferrule
+  {}
+  {\Delta \vdash \mho \ltdyn M : c}
 
   \inferrule
   {}
@@ -99,7 +175,29 @@ the following rules.\max{TODO: more about beta-eta}
   {M \ltdyn \dnc {c} M' : c_l}
   \end{mathpar}
   \caption{Equality and Term Precision Rules (Selected)}
+  \label{fig:term-prec}
 \end{figure}
+
+In the remainder of this article, we seek to develop a compositional
+semantics of this calculus that is \emph{adequate} for
+graduality. This means we should have a semantic relation $\ltdyn$
+such that if $M \ltdyn M'$ then $\sem{M} \ltdyn \sem{M'}$ satisfying
+the following properties for closed terms of type $\nat$:
+\begin{enumerate}
+\item $\sem{n} \equidyn \sem{n'}$ if and only if $n = n'$ for natural numbers
+  $n,n'$.
+\item $\sem{n}, \sem{\mho}, \sem{\Omega}$ are all different (not
+  $\equidyn$), where $\Omega$ is a diverging term.
+\item If $\sem{M}\ltdyn \sem{M'}$ then
+  \begin{itemize}
+  \item If $\sem{M} \equidyn \sem{n}$ then $\sem{M'} \equidyn \sem{n}$
+  \item If $\sem{M}\equidyn \sem{\Omega}$ then $\sem{M'} \equidyn \sem{\Omega}$
+  \end{itemize}
+\end{enumerate}
+The first two ensure that our notions of distinct result of a program
+are all preserved by the semantics. The last one intuitively states
+that if $M$ has a non-erroring behavior, then $M'$ exhibits the same
+behavior.
 
 %% Here we describe the syntax and typing for the gradually-typed lambda calculus.
 %% We also give the rules for syntactic type and term precision.
