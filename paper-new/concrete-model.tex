@@ -1,4 +1,4 @@
-\section{Constructing a Concrete Model}
+\section{Constructing a Concrete Model}\label{sec:concrete-model}
 
 In this section, we build a concrete extensional model of gradual typing.
 We begin by defining a step-1 intensional model, and then
@@ -184,14 +184,14 @@ so we have that $\li$ is left-adjoint to $U$.
 %\subsubsection{Lock-Step Error Ordering}\label{sec:lock-step}
 
 The partial order $\le_{\li A}$ is the lock-step error ordering defined by guarded recursion as follows:
-
+%
 \begin{itemize}
-    \item 	$\eta\, x \ltls \eta\, y$ if $x \le_A y$.
-    \item 	$\mho \ltls l$ for all $l$ 
-    \item   $\theta\, \tilde{r} \ltls \theta\, \tilde{r'}$ if
-            $\later_t (\tilde{r}_t \ltls \tilde{r'}_t)$
+    \item 	$\eta\, x \le_{\li A} \eta\, y$ if $x \le_A y$.
+    \item 	$\mho \le_{\li A} l$ for all $l$ 
+    \item   $\theta\, \tilde{r} \le_{\li A} \theta\, \tilde{r'}$ if
+            $\later_t (\tilde{r}_t \le_{\li A} \tilde{r'}_t)$
   \end{itemize}
-
+%
 The idea is that two computations $l$ and $l'$ are related if they are in
 lock-step with regard to their intensional behavior, up to $l$ erroring.
 
@@ -207,7 +207,7 @@ version of the lock-step error ordering between $\li R : \li A \rel \li A'$.
 For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
 written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delay''.
 The weak bisimilarity relation is defined by guarded recursion as follows:
-
+%
 \begin{align*}
   &\mho \bisim \mho \\
 %
@@ -231,7 +231,7 @@ The weak bisimilarity relation is defined by guarded recursion as follows:
     (\theta\, \tilde{y} = \delta^n (\eta\, y))
   \text { for some $n$ and $y : \ty{A}$ such that $x \bisim_A y$ }
 \end{align*}
-
+%
 When both sides are $\eta$, then we ensure that the underlying values are related
 by the bisimilarity relation on $A$.
 When one side is a $\theta$ and the other is $\eta x$ (i.e., one side steps),
@@ -338,19 +338,20 @@ $(f, d) \in \iarr$ iff $e_\to(f) \le_D d$.
 Now we define the perturbations for $D$.
 Recall from our construction of a model with perturbations
 (Section \ref{sec:constructing-perturbations}) that for each value
-type $A$ we associate a commutative monoid $P_A$ of perturbations
-and a homomorphism into the monoid of endomorphisms bisimilar to the identity.
+type $A$ we associate a monoid $P_A$ of perturbations
+and a homomorphism into the monoid of endomorphisms bisimilar to the identity,
+and likewise for computation types.
 
-We define the perturbations for $D$ via least-fixpoint in the category of
-commutative monoids as
+We define the perturbations for $D$ via least-fixpoint in the category of monoids as
 
-\[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
+\[ P_D \cong (P_{D \times D}) \times P_{U(D \to FD)}. \]
 
-where $\oplus$ is the product (also the coproduct) of commutative monoids.
+Unfolding these definitions explicitly, this is
+
+\[ P_D \cong (P_D \times P_D) \times (\mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D). \]
 
 We now explain how to interpret these perturbations as endomorphisms.
-We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ as in the below.
-Note the use of the functorial action of $\arr$ on morphisms.
+We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
 % via the universal property of the coproduct of monoids, giving a case for each of the generators.
 % In the below, note the use of the functorial action of $\arr$ on morphisms.
 
@@ -358,35 +359,12 @@ Note the use of the functorial action of $\arr$ on morphisms.
 % \[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
 %
 
-$\ptb_D(p_1, p_2, p_3, n, p_4) = \lambda d.\text{case $d$ of}$
+$\ptb_D((p_{\text{times}}), p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
 \begin{align*}
     &\alt \tnat(m) \mapsto \tnat(m) \\
-    &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_D(p_1)(d_1), \ptb_D(p_2)(d_2))} \\
-    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. (\ptb_D(p_3) \arr (\delta^n \circ F(\ptb_D(p_4))))(\tilde{f}_t))} \\
+    &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_{D \times D}(p_\text{times})(d_1, d_2))} \\
+    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. \ptb_{U(D \to FD)}()(\tilde{f}_t))} \\
 \end{align*}
-
-One can verify that this forms a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
-For this it is easiest to use the fact that the product coindices with the coproduct
-in the category of commutative monoids, and thus it suffices to check the condition for each summand separately.
-
-We claim that the three relations $\inat$, $\itimes$, and $\iarr$
-%and their lifted versions 
-satisfy the push-pull property.
-As an illustrative case, we establish the pull property for the relation $\iarr$.
-
-We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by cases as
-
-\[ \pull_{\iarr}(p_1, p_2, p_3, n, p_4) = (0, p_3, n, p_4) \]
-
-(recall that $P_{UB} = \mathbb{N} \times P_B$, and $P_{A \arr B} = P_A \times P_B$,
-so $P_{U(D \arr FD)}) = \mathbb{N} \times P_D \times \mathbb{N} \times P_D$.
-
-Now let $(f, d) \in \iarr$. This means that $d$ must be of the form $\tfun{\tilde{f}}$ where
-Then we have $\ptb_{U(D \arr FD)}(0, p_3, n, p_4) = $
-
-\eric{Details}
-
-\eric{Quasi-representability}
 
     % \item $\ptb_D(1)$
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has
@@ -399,6 +377,57 @@ Then we have $\ptb_{U(D \arr FD)}(0, p_3, n, p_4) = $
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has 
     % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
 
+One can verify that this forms a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
+
+We claim that the three relations $\inat$, $\itimes$, and $\iarr$
+%and their lifted versions 
+satisfy the push-pull property.
+As an illustrative case, we establish the push-pull property for the relation $\iarr$.
+
+We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by
+
+\[ \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \]
+% (recall that $P_{U(D \arr FD)} = \mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D$).
+
+i.e., we simply forget the other perturbation.
+
+We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by
+
+\[ \push{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}), \]
+
+Showing that the relevant squares commute is straightforward.
+
+% To do so, consider an arbitrary perturbation $p$ on $D$. 
+% Let $(f, d) \in \iarr$. This means that $d$ must be of the form $\tfun{\tilde{f}}$. 
+% When we interpret the perturbation on $D$, obtaining and endomorphism to which we then apply $d$,
+% we will be perform the action that was performed by the perturbation on the other side and thus
+% we will be done by our assumption that $f$ is related to $d$.
+
+
+We next claim that the relations $\inat$, $\itimes$, and $\iarr$ are quasi-left-representable,
+and that their lifts are quasi-right-representable.
+Indeed, since the relations are functional, it is easy to see that they are quasi-left-representable
+where the perturbations are taken to be the identity.
+
+For quasi-right-representability, the most interesting case is $\li(\iarr)$.
+Defining the projection $p_{\iarr} : FD \to FU(D \to FD)$ is equivalent to defining
+$p' : D \to UFU(D \to FD)$. We define
+
+$p' = \lambda d.\text{case $d$ of}$
+\begin{align*}
+    &\alt \tnat(m) \mapsto \mho \\
+    &\alt \ttimes(d_1, d_2) \mapsto \mho \\
+    &\alt \tfun(\tilde{f}) \mapsto \theta (\lambda t. \eta(\tilde{f}_t)).
+\end{align*}
+
+We define $\dellp_D = \delrp_D = \theta \circ \nxt$.
+Then it is easy to show that the squares for $\dnl$ and $\dnr$ commute.
+% Then for $\dnr$, we need to show that if $(f, d) \in \iarr$ then
+
+% TODO retraction property
+It is also straightforward to establish the retraction property for
+each of these three relations. In the case of $\iarr$, we will
+have that the property holds up-to a delay $\theta \circ \nxt$.
 
 
 \begin{comment}
@@ -517,9 +546,157 @@ And for the perturbations, we take
 
 % \subsection{Obtaining an Extensional Model}
 
-Now that we have defined an intensional model with an interpetation for the dynamic type, we can apply
-the abstract construction introduced in Section \ref{sec:extensional-model-construction}.
+Now that we have defined an intensional model with an interpretation for the dynamic type, we can apply
+the abstract constructions introduced in Section \ref{sec:extensional-model-construction}.
 Doing so, we obtain an extensional model of gradual typing, where the squares are given by the
 ``bisimilarity closure'' of the intensional error ordering.
 
- 
+\subsection{Adequacy}\label{sec:adequacy}
+
+In this section, we prove an adequacy result for the concrete extensional model of GTT we obtained in the previous section.
+applying the abstract constructions introduced in Section
+\ref{sec:extensional-model-construction} to the concrete model built in the previous section.
+%\ref{sec:concrete-model}.
+
+First we establish some notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong \li \mathbb{N}$.
+We write that $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
+and $f \da \mho$ to mean that there exists $m$ such that $f = \delta^m(\mho)$.
+
+Recall that $\ltls$ denotes the relation on value morphisms defined as the bisimilarity-closure
+of the intensional error-ordering on morphisms.
+That is, we have $f \ltls g$ iff there exists $f'$ and $g'$ with
+%
+\[ f \bisim f' \le g' \bisim g. \]
+%
+The result we would like to show is as follows:
+\begin{lemma}
+If $f \ltls g : \li \mathbb{N}$, then:
+\begin{itemize}
+  \item If $f \da n$ then $g \da n$.
+  \item If $g \da \mho$ then $f \da \mho$.
+  \item If $g \da n$ then $f \da n$.
+\end{itemize}
+\end{lemma}
+%
+Unfortunately, this is actually not provable!
+Roughly speaking, the issue is that this is a ``global'' result, and it is not possible
+to prove such results inside of the guarded setting. 
+In particular, if we tried to prove the above result in the guarded
+setting, we would run into a problem where we would have a natural number
+``stuck'' under a $\later$, with no way to get out the underlying number.
+
+Thus, to prove our adequacy result, we need to leave the guarded setting and pass back
+to the more familiar, set-theoretic world with no internal notion of step-indexing.
+As mentioned in the Technical Background section (Section \ref{sec:sgdt}), we can do this
+using \emph{clock quantification}.
+
+Recall that all of the constructions we have made in SGDT take place in the context of a clock $k$.
+All of our uses of the later modality and guarded recursion have taken place with respect to this clock.
+For example, recall the definition of the lift monad by guarded recursion.
+% We define the lift monad $\li^k X$ as the guarded fixpoint of $\lambda \tilde{T}. X + 1 + \later^k_t (\tilde{T}_t)$.
+We can view this definition as being parameterized by a clock $k$: $\li^k : \type \to \type$.
+Then for $X$ satisfying a certain technical requirement known as \emph{clock-irrelevance},
+\footnote{A type $X$ is clock-irrelevant if there is an isomorphism $\forall k.X \cong X$.}
+we can define the ``global lift'' monad as $\li^{gl} X := \forall k. \li^k X$.
+
+It can be shown that there is an isomorphism between the global lift monad and the
+delay monad of Capretta \cite{lmcs:2265}.
+Recall that, given a type $X$, the delay monad $\text{Delay}(X)$ is defined as the coinductive
+type generated by 
+$\tnow : X \to \delay(X)$ and $\tlater : \delay(X) \to \delay(X)$.
+
+% solution to the equation
+
+% \[ \text{Delay}(X) \cong X + \text{Delay}(X). \]
+
+It can be shown that for a clock-irrelevant type $X$, $\li^{gl} X$ is a final
+coalgebra of the functor $F(Y) = X + 1 + Y$ (For example, this follows from Theorem 4.3 in
+\cite{kristensen-mogelberg-vezzosi2022}.) 
+\footnote{The proof relies on the existence of an operation  
+$\mathsf{force} : \forall k. \later^k A \to \forall k. X$ that
+allows us to eliminate the later operator under a clock quantifier.
+This must be added as an axiom in guarded type theory.}
+Since $\delay(X + 1)$ is also a final coalgebra
+of this functor, then we have $\li^{gl} X \cong \delay(X + 1)$.
+
+Given a predomain $X$ on a clock-irrelevant type, we can define a
+``global'' version of the lock-step error ordering and the
+weak bisimilarity relation on elements of the global lift; the former is defined by
+%
+\[ x \le^{gl}_X y := \forall k. x[k] \le y[k], \]
+%
+and the latter is defined by
+%
+\[ x \bisim^{gl}_X y := \forall k. x[k] \bisim y[k]. \]
+%
+On the other hand, we can define coinductively a ``lock-step error ordering"
+relation on $\delay(X + 1)$:
+%
+\begin{mathpar}
+  \inferrule*[]
+  { }
+  {\tnow (\inr\, 1) \ledelay d}
+
+  \inferrule*[]
+  {x_1 \le_X x_2}
+  {\tnow (\inl\, x_1) \ledelay \tnow (\inl\, x_2)}
+
+  \inferrule*[]
+  {d_1 \ledelay d_2}
+  {\tlater\, d_1 \ledelay \tlater\, d_2}
+\end{mathpar}
+%
+And we similarly define by coinduction a ``weak bisimilarity'' relation on $\delay(X + 1)$, which uses
+a relation $d \Da x_?$ between $\delay(X+1)$ and $X+1$ that is defined as 
+$d \Da x_? := \Sigma_{m \in \mathbb{N}} x = \tlater^m(\tnow\, x_?)$.
+Then weak bisimilarity is defined by the rules
+%
+\begin{mathpar}
+  \inferrule*[]
+  {x_? \bisim_{X + 1} y_?}
+  {\tnow\, x_? \bisimdelay \tnow\, y_? }
+
+  \inferrule*[]
+  {d_1 \Da x_? \and x_? \bisim_{X + 1} y'_?}
+  {\tlater\, d_1 \bisimdelay \tnow\, y'_? }
+
+  \inferrule*[]
+  {d_2 \Da y_? \and x_? \bisim_{X + 1} y'_?}
+  {\tnow\, x_? \bisimdelay \tlater\, d_2}
+
+  \inferrule*[]
+  {d_1 \bisimdelay d_2}
+  {\tlater\, d_1 \bisimdelay \tlater\, d_2 }
+
+  % \inferrule*[]
+  % {d_1 \Da x_? \and d_2 \Da y_? \and x_? \bisim_{X + 1} y_?}
+  % {d_1 \bisimdelay d_2}
+
+  % \inferrule*[]
+  % {d_1 \bisimdelay d_2}
+  % {\tlater d_1 \bisimdelay \tlater d_2 }
+
+\end{mathpar}
+%
+Note the similarity of these definitions to the corresponding guarded definitions.
+By adapting the aforementioned theorem to the setting of inductively-defined relations,
+we can show that both the global lock-step error ordering and the global weak bisimilarity
+admit coinductive definitions. In particular, modulo the above isomorphism
+between $\li^{gl} X$ and $\delay(X+1)$, the global version of the lock-step
+error ordering is equivalent to the lock-step error ordering on $\delay(X + 1)$,
+and likewise, the global version of the weak bisimilarity relation is equivalent to the
+weak bisimilarity relation on $\delay(X + 1)$.
+
+This implies that the global version of the extensional term precision semantics for
+$\li^{gl} X$ agrees with the corresponding notion for $\delay(X + 1)$.
+Then adequacy follows by proving the corresponding
+result for $\delay(X + 1)$ which in turn follows from the definitions of the relations.
+
+
+% We have been writing the type as $\li X$, but it is perhaps more accurate to write it as $\li^k X$ to
+% emphasize that the construction is parameterized by a clock $k$.
+
+% Need : nat is clock irrelevant, as well as the inputs and outputs of effects
+% Axioms about forcing clock
+% Adapt prior argument to get that the defining of the global bisim
+% and global lock-step error ordering are coinductive
