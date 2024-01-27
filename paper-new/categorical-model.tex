@@ -63,7 +63,7 @@ In summary, an extensional model consists of:
 \end{enumerate}
 
 This mathematical structure is sufficient to interpret the theory of
-gradual typing in Section~\ref{sec:gtlc}.
+gradual typing in Section~\ref{sec:GTLC}.
 \begin{definition}
   Given any extensional gradual typing model, we interpret
   \begin{enumerate}
@@ -285,7 +285,7 @@ compose \emph{relations} horizontally, not squares.
 What this means is that we can define a functor for composition of value relations
 and squares, and a functor for composition of computation relations and squares.
 
-We can specify this elegantly as a category internal to the category of CBPV models
+We can specify this compactly as a category internal to the category of CBPV models
 and lax morphisms, where we require that the reflexivity, source, and target morphisms
 are strict.
 In particular, as in the extensional case, there is a CBPV model of ``objects''
@@ -314,7 +314,7 @@ and a distinguished value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ an
 % composition of computation relations/squares.
 
 For the sake of ease of reference, we recap the definition of a step-0 model:
-
+%
 \begin{definition}
   A \emph{step-0} model of intensional gradual typing consists of:
   \begin{itemize}
@@ -364,7 +364,6 @@ and $\tvsim \circ \text{sym}_{\mathcal{V}}^\bisim = \svsim$,
 and $\text{sym}_{\mathcal{V}}^\bisim \circ \text{sym}_{\mathcal{V}}^\bisim$ is the identity.
 Likewise there is a symmetry endofunctor $\text{sym}_{\mathcal{E}}^\bisim : \esim \to \esim$.
 
-% TODO explain what this means in terms of bisimilarity "squares"?
 In this setting, we write $\refl_A : A \bisim A$ to mean that $\refl_A \in \ob(\vsim)$,
 such that $\svsim(\refl_A) = A = \tvsim(\refl_A)$.
 Let $f, f' \in \vf(A_i, A_o)$.
@@ -390,7 +389,7 @@ Moreover, we require that these morphisms are related in that for any
 $d : B \rel B'$, we have a square $\delta_{UB}^* \ltdyn_{Ud}^{Ud} \delta_{UB'}^*$.
 We also require that these morphisms commute with computation morphisms, in the sense
 that for any $\phi \in \ef(B, B')$ we have $U\phi \circ \delta_{UB_1}^* = \delta_{UB_2} \circ U\phi$.
-
+%
 Given the existence of the morphisms $\delta_{UB}^*$, we can define a computation morphism
 $\delta_{FA}^* \in \ef(FA, FA)$ for all $A$ by composing the unit $\eta_A \in \vf(A, UFA)$ with
 the morphism $\delta_{UFA}^* \in \vf(UFA, UFA)$, and then by the adjunction
@@ -439,10 +438,10 @@ capturing the notion that they have no effect other than to delay.
 % forms a monoid under composition.
 
 We will slightly abuse notation and refer to an endomorphism $f \in \vf(A, A)$ as being ``in''
-the monoid of perturbations, but which we actually mean there is an element $p \in P_A$
+the monoid of perturbations, by which we actually mean there is an element $p \in P_A$
 that is mapped to $f$ under the homomorphism.
 
-We require that $\delta_{UB}^* \in P_{UB}$ for all $A$, where $\delta_{UB}^*$ is the distinguished
+We require that $\delta_{UB}^* \in P_{UB}$ for all $B$, where $\delta_{UB}^*$ is the distinguished
 morphism that is required to be present in every hom-set $\vf(UB, UB)$ per the definition
 of a step-1 model.
 
@@ -805,8 +804,22 @@ Moreover, the push-pull property must hold for all
 value relations $c$ and all computation relations $d$.
 
 We claim that from a step-1 model, we can construct a step-2 model. 
-\eric{TODO give overview}
-For the proof, see Lemma \ref{lem:step-1-model-to-step-2-model} in the Appendix.
+The value objects of the model are defined to be triples $(A, P_A, \ptb_A)$ where $A$ is a
+value object in $\mathcal{M}$, $P_A$ is a monoid and $\ptb_A$ is a homomorphism of monoids
+from $P_A$ to the endomorphisms on $A$ that are bisimilar to the identity.
+Likewise, computation objects are triples $(B, P_B, \ptb_B)$.
+The morphisms are the same as the morphisms of $\mathcal{M}$.
+A value relation between $(A, P_A, \ptb_A)$ and $(A', P_{A'}, \ptb_{A'})$ is given by
+a pair of a relation in $c$ and a \emph{push-pull structure} $\Pi_c$ specifying that
+that $c$ satisfies the push-pull property. Computation relations are defined analogously.
+The squares are the same as those of $\mathcal{M}$.
+We define the action of the functor $F$ on objects as $F(A, P_A, \ptb_A) = 
+(FA, \mathbb{N} \times P_A, \ptb_{FA})$ where $\ptb_{FA}(n, a) = (\delta_{FA}^*)^n \circ F(\ptb_A(a))$
+(i.e., we use the distinguished delay morphism $\delta_{FA}^*$).
+The action of $U$ on objects is defined similarly, where the perturbations
+are defined to be $\mathbb{N} \times P_B$.
+
+For the full details of the construction, see Lemma \ref{lem:step-1-model-to-step-2-model} in the Appendix.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -814,10 +827,19 @@ For the proof, see Lemma \ref{lem:step-1-model-to-step-2-model} in the Appendix.
 
 Now suppose we have a step-2 intensional model $\mathcal{M}$.
 We claim that we can construct a \hyperref[def:step-3-model]{step-3 intensional model} $\mathcal{M'}$.
+In the construction, the objects and morphisms are the same as those of $\mathcal M$,
+and a value relation between $A$ and $A'$ consists of a triple $(c, \rho^L_c, \rho^R_{Fc})$
+where $c : A \rel A'$ is a relation in $\mathcal{M}$,
+$\rho^L_c$ is a quasi-\emph{left}-representation for $c$ 
+(i.e., an embedding $e_c$, perturbations $\delre_c \in P_{A'}$ and $\delle_c \in P_A$, 
+and the two relevant squares), and similarly $\rho^R_{Fc}$ is
+a quasi-\emph{right}-representation for $Fc$.
+Computation relations are triples $(d, \rho^R_d, \rho^L_{Ud})$ where $d : B \rel B'$,
+$\rho^R_d$ is a quasi-right-representation for $d$ and $\rho^L{Ud}$ is a quasi-left-representation for $Ud$.
+The value and computation squares are the same as those of $\mathcal{M}$.
+We then define composition of relations and the action of the functors $F$, $U$, $\times$, and $\arr$.
 
-\eric{TODO give overview}
-
-For the proof, see Lemma \ref{lem:step-2-model-to-step-3-model} in the Appendix.
+For the full details of the construction, see Lemma \ref{lem:step-2-model-to-step-3-model} in the Appendix.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

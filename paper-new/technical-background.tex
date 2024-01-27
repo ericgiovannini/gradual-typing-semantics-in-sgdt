@@ -118,7 +118,7 @@ This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
 In particular, this axiom applies to propositions $P : \texttt{Prop}$; proving
 a statement in this manner is known as $\lob$-induction.
 
-The operators $\later$, $\next$, and $\fix$ described above can be indexed by objects
+The operators $\later$, $\nxt$, and $\fix$ described above can be indexed by objects
 called \emph{clocks}. A clock serves as a reference relative to which steps are counted.
 For instance, given a clock $k$ and type $T$, the type $\later^k T$ represents a value of type
 $T$ one unit of time in the future according to clock $k$.
@@ -127,7 +127,7 @@ However, the notion of \emph{clock quantification} is crucial for encoding coind
 recursion, an idea first introduced by Atkey and McBride \cite{atkey-mcbride2013}.
 
 Most of the developments in this paper will take place in the context of a single clock $k$,
-but in Section \ref{TODO}, we will need to make use of clock quantification.
+but later on, we will need to make use of clock quantification.
 
 % Clocked Cubical Type Theory
 \subsection{Ticked Cubical Type Theory}

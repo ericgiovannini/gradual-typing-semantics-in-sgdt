@@ -4,9 +4,7 @@ In this section, we build a concrete extensional model of gradual typing.
 We begin by defining a step-1 intensional model, and then
 apply the abstract constructions outlined in the previous section
 to obtain an extensional model.
-
 We begin with some definitions:
-
 \begin{definition}
 A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 \begin{itemize}
@@ -20,10 +18,10 @@ Given a predomain $A$, we can form the predomain $\later A$.
 The underlying set is $\later |A|$ and the relation is defined in the obvious way,
 i.e., $\tilde{x} \le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
 Likewise for bisimilarity.
-
+%
 We also give a predomain structure to the natural numbers $\mathbb{N}$, where both the
 ordering and the bisimiarity relation are equality.
-
+%
 Morphisms of predomains are functions between the underlying sets that preserve the ordering
 and the bisimilarity relation. More formally:
 %
@@ -32,7 +30,7 @@ Let $A$ and $A'$ be predomains.
 A morphism $f : A \to A'$ is a function between the underlying sets such that for all $x, x'$,
 if $x \le_A x'$, then $f(x) \le f(x')$, and if $x \bisim_A x'$, then $f(x) \bisim_{A'} f(x')$.
 \end{definition}
-
+%
 \begin{definition}
 An \textbf{error domain} $B$ consists of a predomain $B$ along with the following data:
 \begin{itemize}
@@ -40,8 +38,9 @@ An \textbf{error domain} $B$ consists of a predomain $B$ along with the followin
     \item A morphism of predomains $\theta_B \colon \later B \to B$
 \end{itemize}
 \end{definition}
-
-
+%
+For an error domain $B$, we define the predomain morphism $\delta_B := \theta_B \circ \nxt$.
+%
 Morphisms of error domains are morphisms of the underlying predomains that preserve the
 algebraic structure. More formally:
 %
@@ -53,12 +52,11 @@ A morphism $\phi : B \wand B'$ is a morphism between the underlying predomains s
     \item $\phi(\theta_B(\tilde{x})) = \theta_{B'}(\lambda t. \phi(\tilde{x}_t))$
 \end{enumerate}
 \end{definition}
-
-
+%
 We define a (monotone) relation on predomains $A$ and $A'$ to be a relation on the
 underlying sets that is downward-closed under $\le_A$ and upward-closed under $\le_{A'}$.
 More formally:
-
+%
 \begin{definition}
 Let $A$ and $A'$ be predomains. A \emph{predomain relation} between $A$ and $A'$
 is a relation $R$ between the underlying sets such that:
@@ -69,9 +67,8 @@ is a relation $R$ between the underlying sets such that:
     if $x \mathbin{R} y_1$ and $y_1 \le_{A'} y_2$, then $x \mathbin{R} y_2$.
 \end{enumerate}
 \end{definition}
-
+%
 Composition of relations on predomains is the usual relational composition.
-
 Similarly, we define a (monotone) relation on error domains to be a relation on the
 underlying predomains that respects error and preserves $\theta$.
 %
@@ -81,19 +78,16 @@ underlying predomains that respects error and preserves $\theta$.
     \begin{enumerate}
        \item (Respects error): For all $y \in B'$, we have $\mho_B \mathbin{R} y$.
        \item (Preserves $\theta$): For all $\tilde{x}$ in $\later B$ and $\tilde{y} \in \later B'$,
-       if 
-       \[ \later_t( \tilde{x}_t \mathbin{R} \tilde{y}_t ), \]
-       then
-       \[ \theta_B(\tilde{x}) \mathbin{R} \theta_{B'}(\tilde{y}). \]
+       if $\later_t( \tilde{x}_t \mathbin{R} \tilde{y}_t )$ then
+       $\theta_B(\tilde{x}) \mathbin{R} \theta_{B'}(\tilde{y})$.
     \end{enumerate}
 \end{definition}
-
-
+%
 We define composition of error domain relations $R$ on $B_1$ and $B_2$ and $S$
 on $B_2$ and $B_3$ to be the least relation containing $R$ and $S$ that respects
 error and preserves $\theta$.
 Specifically, it is defined inductively by the following rules:
-
+%
 \begin{mathpar}
     \inferrule*[right = Comp]
     {b_1 \mathbin{R} b_2 \and b_2 \mathbin{S} b_3}
@@ -107,55 +101,36 @@ Specifically, it is defined inductively by the following rules:
     {\later_t( \tilde{b_1} \mathbin{R \relcomp S} \tilde{b_3} ) }
     {\theta_{B_1}(\tilde{b_1}) \mathbin{R \relcomp S} \theta_{B_3}(\tilde{b_3}) }
 \end{mathpar}
-
+%
 % We note that this composition has the following universal property.
-
-
+%
 We now describe the ``commuting squares".
 Suppose we are given predomains $A_i, A_o, A_i'$, and $A_o'$,
-relations $R_i$ and $R_o$, and morphisms $f, f'$ as shown below.
-
-% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMSwwLCJBX2knIl0sWzAsMSwiQV9vIl0sWzEsMSwiQV9vJyJdLFswLDIsImYiLDJdLFsxLDMsImYnIl0sWzAsMSwiUl9pIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiwzLCJSX28iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsIlxcbHRkeW4iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{A_i} \& {A_i'} \\
-	{A_o} \& {A_o'}
-	\arrow[""{name=0, anchor=center, inner sep=0}, "f"', from=1-1, to=2-1]
-	\arrow[""{name=1, anchor=center, inner sep=0}, "{f'}", from=1-2, to=2-2]
-	\arrow["{R_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-	\arrow["{R_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-	\arrow["\ltdyn"{description}, draw=none, from=0, to=1]
-\end{tikzcd}\]
-
-We say that the above square commutes, written $f \le f'$, if for all
+relations $R_i : A_i \rel A_i'$ and $R_o : A_o \rel A_o'$, and morphisms $f : A_i \to A_o, f' : A_i' \to A_o'$
+Given a square with these morphisms and relations, we say that the square commutes, written $f \le f'$, if for all
 $x \in A_i$ and $x' \in A_i'$ with $x \mathbin{R_i} x'$, we have
 $f(x) \mathbin{R_o} f'(x')$.
-
 We make the analogous definition for error domains.
-
-
 
 \subsection{Guarded Lift Monad}\label{sec:guarded-lift-monad}
 
 % Lift monad
 The guarded error-lift monad $\li$ takes a predomain $A$ to the error domain $\li A$.
-It is defined as follows:
-
+It is defined \footnote{Formally, the lift monad $\li A$ is defined as the solution to
+the guarded recursive type equation $\li A \cong A + 1 + \later \li A$.} as follows :
+%
 \begin{align*}
-  \li A &:= \\
-  &\eta \colon A \to \li A \\
-  &\mho \colon \li A \\
-  &\theta \colon \later (\li A) \to \li A
+  \li A :=
+  \alt \eta \colon A \to \li A
+  \alt \mho \colon \li A
+  \alt \theta \colon \later (\li A) \to \li A
 \end{align*}
-
-Formally, the lift monad $\li A$ is defined as the solution to the guarded recursive type equation
-
-\[ \li A \cong A + 1 + \later \li A. \]
+%
 
 This captures the intuition that a program may either return a value,
 fail at run-time, or take one or more observable steps of computation.
 Previous work has studied such a similar construct, called the guarded lift
 monad \cite{mogelberg-paviotti2016}; our version here our version augments it with the notion of error.
-
 Since we claimed that $\li A$ is a monad, we need to define the monadic operations
 and show that they respect the monadic laws. The return is just $\eta$, and the monadic extend
 is defined via guarded recursion by cases on the input.
@@ -168,12 +143,8 @@ Verifying that the monadic laws hold uses \lob-induction and is straightforward.
 
 There is a functor $U$ from error domains to predomains that on objects simply returns the
 underlying predomain, and on morphisms returns the underlying morphism of predomains.
-%
-% TODO check this
-
 It is easily verified that $\li A$ is the free error- and later-algebra on the predomain $A$,
 so we have that $\li$ is left-adjoint to $U$.
-
 % i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
 % predomain morphisms from $A$ to $UB$.
 
@@ -194,7 +165,6 @@ The partial order $\le_{\li A}$ is the lock-step error ordering defined by guard
 %
 The idea is that two computations $l$ and $l'$ are related if they are in
 lock-step with regard to their intensional behavior, up to $l$ erroring.
-
 Given a relation $R : A \rel A'$, we define in an analogous manner a heterogeneous
 version of the lock-step error ordering between $\li R : \li A \rel \li A'$.
 % We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
@@ -203,7 +173,7 @@ version of the lock-step error ordering between $\li R : \li A \rel \li A'$.
 % TODO action of \li on commuting squares
 
 %\subsubsection{Weak Bisimilarity}\label{sec:weak-bisimilarity}
-
+%
 For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
 written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delay''.
 The weak bisimilarity relation is defined by guarded recursion as follows:
@@ -222,14 +192,14 @@ The weak bisimilarity relation is defined by guarded recursion as follows:
 %	
   &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
     (\theta\, \tilde{x} = \delta^n(\eta\, x))
-  \text { for some $n$ and $x : \ty{A}$ such that $x \bisim_A y$ } \\
+  \text { for some $n$ and $x \in A$ such that $x \bisim_A y$ } \\
 %
   &\mho \bisim \theta\, \tilde{y} \text { if } 
     \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
 %	
   &\eta\, x \bisim \theta\, \tilde{y} \text { if }
     (\theta\, \tilde{y} = \delta^n (\eta\, y))
-  \text { for some $n$ and $y : \ty{A}$ such that $x \bisim_A y$ }
+  \text { for some $n$ and $y \in A$ such that $x \bisim_A y$ }
 \end{align*}
 %
 When both sides are $\eta$, then we ensure that the underlying values are related
@@ -241,12 +211,12 @@ If both sides step, then we allow one time step to pass and compare the resultin
 In this way, the definition captures the intuition of terms being equivalent up to
 delays.
 
-It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
-However, it can also be shown that this relation is \emph{not} transitive:
-The argument is the same as that used to show that the step-insensitive error
-ordering $\semltbad$ described above is not transitive. Namely, we show that
-if it were transitive, then it would have to be trivial in that $l \bisim l'$ for all $l, l'$.
-that if this relation were transitive, then it would relate all values of type $\li A$.
+% It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
+% However, it can also be shown that this relation is \emph{not} transitive:
+% The argument is the same as that used to show that the step-insensitive error
+% ordering $\semltbad$ described above is not transitive. Namely, we show that
+% if it were transitive, then it would have to be trivial in that $l \bisim l'$ for all $l, l'$.
+% that if this relation were transitive, then it would relate all values of type $\li A$.
 
 
 % internal hom for predomains and error domains
@@ -259,7 +229,7 @@ predomain morphisms from $A$ to $A'$, denoted $A \To A'$.
     \item The bisimilarity relation is defined by $f \bisim_{A \To A'} f'$ iff
     for all $x, x' \in A$ with $x \bisim_{A} x'$, we have $f(x) \bisim_{A'} f'(x')$. 
 \end{itemize}
-
+%
 Given $f : A_1' \to A_1$ and $g : A_2 \to A_2'$ we define the predomain morphism
 $f \To g : (A_1 \To A_2) \to (A_1' \To A_2')$ by $\lambda h. \lambda x'. g(h(f(x')))$.
 
@@ -283,7 +253,7 @@ $A \arr B$ to be the error domain such that $U(A \arr B) = A \To UB$,
 and whose error and $\theta$ operations are as defined above.
 We can define the functorial action of $\arr$ on morphisms
 $f \arr \phi$ in the obvious way.
-
+%
 It is easily verified that $A \arr B$ is an exponential of $UB$ by $A$
 in the category of predomains and their morphisms.
 
@@ -300,25 +270,25 @@ With all of the above data, we can form a step-1 intensional model of gradual ty
 (See Definition \ref{def:step-1-model}).
 
 \subsection{The Dynamic Type}
-
 The predomain representing the dynamic type will be defined using guarded recursion
 as the solution to the equation
-
+\footnote{In this section, we write $F$ instead of $\li$ so that the notation follows that of the abstract model section.}
+%
 \[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr FD). \]
-
+%
 % Note that the operators in the above equation are all combinators for predomains, so
 % this also defines the ordering and the bisimilarity relation for $D$.
 
 For the sake of clarity, we name the ``constructors" $\text{nat}$, $\text{times}$,
 and $\text{fun}$, respectively.
-
+%
 We define $e_\mathbb{N} : \mathbb{N} \to D$ to be the injection into the first
 component of the sum, and $e_\times : D \times D \to D$ to be the injection into
 the second component of the sum, and $e_\to : U(D \arr F D)$ to be the morphism
 $\nxt$ followed by the injection into the third component of the sum.
 
 Explicitly, the ordering on $D$ is given by:
-
+%
 \begin{align*}
     \tnat(n) \le \tnat(n') 
         &\iff n = n' \\
@@ -327,7 +297,7 @@ Explicitly, the ordering on $D$ is given by:
     \tfun(\tilde{f}) \le \tfun(\tilde{f'}) 
         &\iff \later_t(\tilde{f}_t \le \tilde{f'}_t)
 \end{align*}
-
+%
 We define a relation $\inat : \mathbb{N} \rel D$ by
 $(n, d) \in \inat$ iff $e_\mathbb{N} \le_D d$.
 We similarly define $\itimes : D \times D \rel D$ by
@@ -341,15 +311,14 @@ Recall from our construction of a model with perturbations
 type $A$ we associate a monoid $P_A$ of perturbations
 and a homomorphism into the monoid of endomorphisms bisimilar to the identity,
 and likewise for computation types.
-
 We define the perturbations for $D$ via least-fixpoint in the category of monoids as
-
+%
 \[ P_D \cong (P_{D \times D}) \times P_{U(D \to FD)}. \]
-
-Unfolding these definitions explicitly, this is
-
+%
+Unfolding the above, the above equation is the same as
+%
 \[ P_D \cong (P_D \times P_D) \times (\mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D). \]
-
+%
 We now explain how to interpret these perturbations as endomorphisms.
 We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
 % via the universal property of the coproduct of monoids, giving a case for each of the generators.
@@ -378,25 +347,23 @@ $\ptb_D((p_{\text{times}}), p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
     % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
 
 One can verify that this forms a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
-
 We claim that the three relations $\inat$, $\itimes$, and $\iarr$
 %and their lifted versions 
 satisfy the push-pull property.
 As an illustrative case, we establish the push-pull property for the relation $\iarr$.
-
 We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by
-
+%
 \[ \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \]
 % (recall that $P_{U(D \arr FD)} = \mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D$).
-
+%
 i.e., we simply forget the other perturbation.
-
+%
 We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by
-
+%
 \[ \push{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}), \]
-
+%
 Showing that the relevant squares commute is straightforward.
-
+%
 % To do so, consider an arbitrary perturbation $p$ on $D$. 
 % Let $(f, d) \in \iarr$. This means that $d$ must be of the form $\tfun{\tilde{f}}$. 
 % When we interpret the perturbation on $D$, obtaining and endomorphism to which we then apply $d$,
@@ -420,129 +387,13 @@ $p' = \lambda d.\text{case $d$ of}$
     &\alt \tfun(\tilde{f}) \mapsto \theta (\lambda t. \eta(\tilde{f}_t)).
 \end{align*}
 
-We define $\dellp_D = \delrp_D = \theta \circ \nxt$.
-Then it is easy to show that the squares for $\dnl$ and $\dnr$ commute.
+We define $\dellp_D = \delrp_D = \delta_{FD}$.
+Then it is easy to show using the definition of $\iarr$ that the squares for $\dnl$ and $\dnr$ commute.
 % Then for $\dnr$, we need to show that if $(f, d) \in \iarr$ then
 
-% TODO retraction property
 It is also straightforward to establish the retraction property for
-each of these three relations. In the case of $\iarr$, we will
-have that the property holds up-to a delay $\theta \circ \nxt$.
-
-
-\begin{comment}
-Before defining the perturbations, recall from our concrete construction
-(Section \ref{TODO}) that to each value type $A$ we associate a monoid $P_A$
-of pure perturbations and a monoid $P^K_{A}$ of Kleisli perturbations.
-
-We define simultaneously the pure and Kleisli perturbation monoids for $D$,
-denoted $P_D$ and $P^K_D$ respectively.
-We define $P_D$ to be the monoid such that
-
-\[ P_D \cong ((P^K_D)^{op} \times P_D) \oplus (P_D \times P_D), \]
-
-and we define $P^K_D$ to be the monoid such that
-
-\[ P^K_D \cong \mathbb{N} \oplus ((P_D)^{op} \oplus P^K_D) \oplus (P^K_D \oplus P^K_D), \]
-
-where we use $\mathbb{N}$ because it is the free monoid on one generator.
-
-Now we explain how to interpret these monoids as submonoids of endomorphisms.
-We define $i : P_D \to \{ f : D \to D \mid f \bisim \id \}$
-and $i^K : P^K_D \to \{ \phi : FD \to FD \mid \phi \bisim \id \}$ mutually
-via the universal property of the coproduct of monoids, giving a case for each of the generators.
-In the below, note the use of the functorial action of $\arr$ on morphisms.
-
-\begin{itemize}
-    \item $i(\delta^K_D, \delta_D) = \lambda d.\text{case $d$ of}$
-    \begin{align*}
-        &\alt \tfun(\tilde{f}) \mapsto 
-          \tfun(\lambda t. (i^K(\delta^K_D) \to i(\delta_D))(\tilde{f}_t)) \\
-        &\alt d' \to d'
-    \end{align*}
-
-    \item $i(\delta_D^1, \delta_D^2) = \lambda d.\text{case $d$ of}$ 
-    \begin{align*}
-        &\alt \ttimes(d_1, d_2) \mapsto
-           \ttimes(i(\delta_D^1)(d_1), i(\delta_D^2)(d_2)) \\
-        &\alt d' \to d'
-    \end{align*}
-\end{itemize}
-
-We define $i^K(\delta^D)$ by
-%
-%  P^K_D \cong \mathbb{N} \oplus ((P_D)^{op} \oplus P^K_D) \oplus (P^K_D \oplus P^K_D)
-%
-\begin{itemize}
-    \item $i^K(1) = \hat{\delta}$
-    \item $i^K(\delta_D) = F(\lambda d.\text{case $d$ of}$
-      \begin{align*} 
-        &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. (i(\delta_D) \arr \id)(\tilde{f}_t))} \\
-        &\alt d' \to d')
-      \end{align*}
-    \item $i^K(\delta^K_D)$ is defined similarly to the previous but has
-    \[ \id \arr i^K(\delta^K_D) \] instead.
-    \item $i^K(\delta^K_D) = F(\lambda d.\text{case $d$ of}$
-      \begin{align*} 
-        &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(i^K(\delta^K_D)(d_1), d_2)} \\
-        &\alt d' \to d')
-      \end{align*}
-    \item $i^K(\delta^K_D)$ is defined similarly to the previous but has 
-    \[ (d_1, i^K(\delta^K_D)(d_2)) \] instead.
-\end{itemize}
-
-
-% perturbations and quasi-representability
-We claim that the three relations $\inat$, $\itimes$, and $\iarr$ and their lifted
-versions satisfy the push-pull property.
-As an illustrative case, we establish the pull property for the $\li \iarr$.
-We define $\pull : P^K_D \to P^K_{U(D \arr FD)}$ by cases as
-
-\begin{align*}
- \pull(1) = \hat{\delta}
-\end{align*}
-
-We need to check that the relevant squares commute for all $\delta \in P^K_D$.
-It suffices by the universal property of the coproduct of monoids to ensure that
-this holds for the generators.
-
-We claim that the relations $\inat$, $\itimes$, and $\iarr$ are quasi-left-representable,
-and that their lifts are quasi-right-representable.
-Indeed, since the relations are functional, it is easy to see that they are left-representable
-where the perturbations are simply the identity.
-
-The most interesting case is the right-quasi-representability of $\li(\iarr)$.
-We define the projection as follows:
-
-\begin{align*}
-\end{align*}
-
-And for the perturbations, we take
-
-
-
-
-% The perturbation monoid for $D$ is defined inductively as the free monoid $M$ equipped
-% with an operation $\To : M \times M \to M$, i.e., we take the set defined inductively by
-
-% \begin{mathpar}
-%     \inferrule*[]
-%     {}
-%     {e \in M}
-
-%     \inferrule*[]
-%     {p \in M \and p' \in M}
-%     {p \odot p' \in M}
-
-%     \inferrule*[]
-%     {p \in M \and p' \in M}
-%     {p \To p' \in M}
-% \end{mathpar}
-
-% and quotient by the necessary monoid equations.
-
-\end{comment}
-
+each of these three relations. In the case of $\iarr$, we
+have that the property holds up to a delay.
 
 % \subsection{Obtaining an Extensional Model}
 
@@ -559,22 +410,26 @@ applying the abstract constructions introduced in Section
 %\ref{sec:concrete-model}.
 
 First we establish some notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong \li \mathbb{N}$.
-We write that $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
+We write $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
 and $f \da \mho$ to mean that there exists $m$ such that $f = \delta^m(\mho)$.
 
 Recall that $\ltls$ denotes the relation on value morphisms defined as the bisimilarity-closure
 of the intensional error-ordering on morphisms.
 That is, we have $f \ltls g$ iff there exists $f'$ and $g'$ with
 %
-\[ f \bisim f' \le g' \bisim g. \]
+\[ f \bisim_{\li \mathbb{N}} f' \le_{\li \mathbb{N}} g' \bisim_{\li \mathbb{N}} g. \]
 %
-The result we would like to show is as follows:
+Here $\le_{\li \mathbb{N}}$ is the lock-step error ordering, and
+$\bisim_{\li \mathbb{N}}$ is weak bisimilarity.
+First observe that in this ordering, the semantics of error is not equivalent to
+the semantics of the diverging term.
+The main result we would like to show is as follows:
 \begin{lemma}
 If $f \ltls g : \li \mathbb{N}$, then:
 \begin{itemize}
   \item If $f \da n$ then $g \da n$.
   \item If $g \da \mho$ then $f \da \mho$.
-  \item If $g \da n$ then $f \da n$.
+  \item If $g \da n$ then $f \da n$ or $f \da \mho$.
 \end{itemize}
 \end{lemma}
 %
@@ -584,12 +439,10 @@ to prove such results inside of the guarded setting.
 In particular, if we tried to prove the above result in the guarded
 setting, we would run into a problem where we would have a natural number
 ``stuck'' under a $\later$, with no way to get out the underlying number.
-
+%
 Thus, to prove our adequacy result, we need to leave the guarded setting and pass back
 to the more familiar, set-theoretic world with no internal notion of step-indexing.
-As mentioned in the Technical Background section (Section \ref{sec:sgdt}), we can do this
-using \emph{clock quantification}.
-
+We can do this using a process known as \emph{clock quantification}.
 Recall that all of the constructions we have made in SGDT take place in the context of a clock $k$.
 All of our uses of the later modality and guarded recursion have taken place with respect to this clock.
 For example, recall the definition of the lift monad by guarded recursion.
@@ -648,7 +501,7 @@ relation on $\delay(X + 1)$:
 %
 And we similarly define by coinduction a ``weak bisimilarity'' relation on $\delay(X + 1)$, which uses
 a relation $d \Da x_?$ between $\delay(X+1)$ and $X+1$ that is defined as 
-$d \Da x_? := \Sigma_{m \in \mathbb{N}} x = \tlater^m(\tnow\, x_?)$.
+$d \Da x_? := \Sigma_{m \in \mathbb{N}} d = \tlater^m(\tnow\, x_?)$.
 Then weak bisimilarity is defined by the rules
 %
 \begin{mathpar}

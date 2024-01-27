@@ -289,8 +289,8 @@ of the model.
     \arrow["{(\delta_{FA'}^*)^n \circ \ptb_{A'}(\push_c(a))}", from=1-2, to=2-2]
   \end{tikzcd}\]
 
-  This is obtained by composing the square $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$
-  with the square corresponding to the push property for $B$
+  This is obtained by pasting $n$ copies of the square $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$
+  on top of the square corresponding to the push property for $c$.
 
   % Given $n \in \mathbb{N}$ we define the push to be $n$.
   % Then the required square is $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$,
@@ -355,7 +355,7 @@ We now proceed with the construction of the model:
       \item Value objects are pairs consisting of:
       \begin{itemize}
         \item A value object $A$ in $\vf$.
-        \item A commutative monoid $P_A$ of perturbations
+        \item A monoid $P_A$ of perturbations
         and a monoid homomorphism $\ptb_A : P_A \to \{ f \in \vf(A, A) \mid f \bisim \id_A \}$.
        
       \end{itemize}  
@@ -363,7 +363,7 @@ We now proceed with the construction of the model:
       \item Computation objects are pairs consisting of:
       \begin{itemize}
         \item A computation object $B$ in $\ef$.
-        \item A commutative monoid $P_B$ of perturbations and a monoid homomorphism
+        \item A monoid $P_B$ of perturbations and a monoid homomorphism
         $\ptb_B : P_B \to \{ \phi \in \ef(B, B) \mid \phi \bisim \id_B \}$.
       \end{itemize}
 
@@ -373,21 +373,24 @@ We now proceed with the construction of the model:
       %
       % and likewise for computations.
 
-      \item The objects of $\vsq'$ (i.e., the value relations) are pairs consisting of:
+      \item Given objects $(A, P_A, \ptb_A)$ and $(A', P_{A'}, \ptb_{A'})$ a value relation
+      is a pair consisting of
       \begin{itemize}
         \item A value relation $c \in \vsq$.
         \item A push-pull structure $\piv_c$ for $c$ with respect to $P_A$ and $P_{A'}$.
         %\item A push-pull structure $\pie_{Fc}$ for $Fc$ with respect to $P^K_A$ and $P^K_{A'}$.
       \end{itemize}
 
-      The objects of $\esq'$ are defined analogously, i.e.,
+      \item Similarly, a computation relation between $(B, P_B, \ptb_B)$ and $(B', P_{B'}, \ptb_{B'})$
+      consists of
       \begin{itemize}
         \item A computation relation $d \in \esq$.
         \item A push-pull structure $\pie_d$ for $d$ with respect to $P_B$ and $P_{B'}$.
         %\item A push-pull structure $\piv_{Ud}$ for $Ud$ with respect to $P^K_B$ and $P^K_{B'}$.
       \end{itemize}
             
-      \item The morphisms of $\vsq'$ and $\esq'$ are given by the morphisms of $\vsq$ and $\esq$.
+      \item The squares are the same as the squares of the original model $\mathcal M$
+      %morphisms of $\vsq'$ and $\esq'$ are given by the morphisms of $\vsq$ and $\esq$.
       
       \item We define composition of relations $(c, \piv_c)$ and $(c', \piv_{c'})$
       as $(c \comp c', \piv_{c \comp c'})$ where $\piv_{c \comp c'}$ is as in Lemma
@@ -445,8 +448,8 @@ We now proceed with the construction of the model:
 
     \end{itemize}
 
-    We define a ``Kleisli arrow'' operation taking a perturbation in $P_{UB}$
-    to a perturbation in $P_{U(A \to B)}$, as follows:
+    We define a Kleisli arrow operation on perturbations that takes a perturbation
+    in $P_{UB}$ to a perturbation in $P_{U(A \to B)}$, as follows:
     Given a perturbation $u = (n, b) \in P_{UB}$ we define $\id \tok u$ to be 
     $(n, \id_{P_A}, b) \in P_{U(A \to B)}$.
     We need to show that
@@ -458,7 +461,8 @@ We now proceed with the construction of the model:
     \[ (\delta_{U(A \arr B)}^*)^n \circ U(\id_{A} \arr \ptb_B(b)) = 
         \id \tok (\delta_{UB}^*)^n \circ U(\ptb_B(b)) \]
 %
-    This follows from the fact that $\delta_{UB}^*$ commutes with computation morphisms.
+    This can be checked by unfolding the definition of $\tok$; the proof uses the fact that
+    $\delta_{UB}^*$ commutes with computation morphisms.
 %
 
     Given a perturbation $q = (n, a) \in P_{FA}$ we define
@@ -467,7 +471,8 @@ We now proceed with the construction of the model:
   %
     \[ \ptb_{U(A \arr B)}((n, a) \tok \id) = \ptb_{FA}(n, a) \tok \id. \]
   %
-    By similar reasoning to the above, this holds because $\delta_{FA}^*$ commutes with all computation morphisms.
+    By similar reasoning to the above, this holds because $\delta_{FA}^*$
+    commutes with computation morphisms.
 
     We can similarly construct a Kleisli product operation on perturbations.
     Given a perturbation $(n, a_1, a_2) \in P_{F(A_1 \times A_2)}$ we define
@@ -492,12 +497,12 @@ The goal of this section is to prove the following lemma:
 
 Before proceeding with the proof, we begin with a definition.
 
-\begin{definition}[representation structure]
+\begin{definition}[representation structure]\label{def:representation-structure}
   Let $c : A \rel A'$ be a value relation. A \emph{left-representation structure}
   $\rho^L_c$ for $c$ consists of a value morphism $e_c \in \vf(A, A')$ such that
   $c$ is quasi-left-representable by $e_c$ (see Definition \ref{def:quasi-left-representable}).
   We similarly define a {right-representation structure} $\rho^R_c$ for $c$ to consist of a morphism
-  $p_c \in \vf{A', A}$ such that $c$ is quasi-right-representable by $p_c$ (see Definition \ref{def:quasi-right-representable}).
+  $p_c \in \vf(A', A)$ such that $c$ is quasi-right-representable by $p_c$ (see Definition \ref{def:quasi-right-representable}).
   % (Notice that the direction of the morphism is opposite in the definition of
   % right-representation structure.)
 
@@ -654,7 +659,7 @@ The following lemma will be useful in showing that two relations are quasi-order
     For $\dnl$, we paste the identity square $\delta^r \ltdyn \delta^r$ on top of
     the $\dnl$ square for the composition $Fc \comp Fc'$, and below that we paste
     the square $\id \ltdyn_{F(c \comp c')}^{Fc \comp Fc'} \id$ which we get from
-    the lax property of $F$.
+    the fact that $F$ is lax.
 
     % https://q.uiver.app/#q=WzAsOSxbMCwwLCJGQScnIl0sWzIsMCwiRkEnJyJdLFswLDEsIkZBJyciXSxbMiwxLCJGQScnIl0sWzAsMiwiRkEiXSxbMiwyLCJGQScnIl0sWzAsMywiRkEiXSxbMiwzLCJGQScnIl0sWzEsMiwiRkEnIl0sWzAsMSwicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzYsNywiRihjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsIlxcZGVsdGFeciIsMl0sWzIsNCwicF97RmMgXFxjb21wIEZjJ30iLDJdLFs0LDYsIlxcaWQiLDJdLFsxLDMsIlxcZGVsdGFeciJdLFszLDUsIlxcZGVscnBfe0ZjIFxcY29tcCBGYyd9Il0sWzUsNywiXFxpZCJdLFs0LDgsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbOCw1LCJGYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNSwicihcXGRlbHRhXnIpIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEzLDE2LCJcXGRubF97RmMgXFxjb21wIEZjJ30iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
     \[\begin{tikzcd}[ampersand replacement=\&]
@@ -729,7 +734,7 @@ The following lemma will be useful in showing that two relations are quasi-order
 
   Likewise, let $\rho^R_{Fc_1}$ and $\rho^R_{Fc_2}$ be right-representation
   structures for $Fc_1$ and $Fc_2$ respectively.
-  Then we can deinfe a right-representation structure for $F(c_1 \times c_2)$.
+  Then we can define a right-representation structure for $F(c_1 \times c_2)$.
 \end{lemma}
 \begin{proof}
   We define $\rho^L_{c_1 \times c_2}$ as follows:
@@ -844,23 +849,33 @@ Now we can give the proof of the main lemma:
     relations in $\vsq(c, c')$. Likewise for computations.
   \end{itemize}
 
-We define the functor $m$ which composes relations and squares horizontally as follows:
-Let $c : A \rel A'$ and $c' : A' \rel A''$. We let
-
+We define horizontal composition of relations and squares as follows:
+Let $c : A \rel A'$ and $c' : A' \rel A''$. We define
+%
 \begin{align*} 
-  m ((c, \rho^L_c, \rho^R_{Fc}), (c', \rho^L_{c'}, \rho^R_{Fc'})) = \\
-  (c \comp c', \rho^L_{c \comp c'}, \rho^R_{F(c \comp c')}). 
+  ((c, \rho^L_c, &\rho^R_{Fc}) \comp (c', \rho^L_{c'}, \rho^R_{Fc'})) =
+  (c \comp c', \rho^L_{c \comp c'}, \rho^R_{F(c \comp c')}), 
 \end{align*}
+%
+and
+%
+\begin{align*}
+  ((d, \rho^R_d, &\rho^L_{Ud}) \comp (d', \rho^R_{d'}, \rho^L_{Ud'})) =
+  (d \comp d', \rho^R_{d \comp d'}, \rho^L_{U(d \comp d')}),
+\end{align*}
+%
+where $\rho^L_{c \comp c'}, \rho^R_{F(c \comp c')}, \rho^R_{d \comp d'},$
+and $\rho^L_{U(d \comp d')}$ are as defined in Lemma \ref{lem:representation-comp}.
 
 Now we define the functors $F$, $U$, $\times$, and $\arr$.
 On objects, the behavior is the same as the respective functors in $\mathcal M$.
 For relations, we define
 
-\[ \Fsq^{\mathcal M'} (c, \rho^L_c, \rho^R_{Fc}) = 
-  (\Fsq^M c, \rho^R_{Fc}, \rho^L_{UF(c)}), \]
+\[ F(c, \rho^L_c, \rho^R_{Fc}) = 
+  (F c, \rho^R_{Fc}, \rho^L_{UF(c)}), \]
 and
-\[ \Usq^{\mathcal M'} (d, \rho^R_d, \rho^L_{Ud}) = 
-  (\Usq^M d, \rho^L_{Ud}, \rho^R_{FU(d)}), \]
+\[ U(d, \rho^R_d, \rho^L_{Ud}) = 
+  (U d, \rho^L_{Ud}, \rho^R_{FU(d)}), \]
 
 where $\rho^L_{UF(c)}$ and $\rho^R_{FU(d)}$ are as defined in the proof of Lemma
 \ref{lem:representation-UF-FU}.
@@ -881,6 +896,15 @@ of Lemma \ref{lem:representation-arrow}.
 
 % We define $(c, \rho^L_c) \arr (d, \rho^R_d) = (c \arr d, \rho^R_{c \arr d})$.
 
+
+We now establish the quasi-order-equivalence for the functors.
+We already showed that $U(d \comp d') \qordeq U(d)U(d')$ and $F(c \comp c'') \qordeq F(c)F(c')$
+in the proof of Lemma \ref{lem:representation-comp}.
+The other two properties
+$(cc') \to (dd') \qordeq (c \to d)(c' \to d')$ and
+$(c_1c_1') \times (c_2c_2') \qordeq (c_1 \times c_2)(c_1'\times c_2')$
+are proved similarly, noting in both cases that the both relations are
+quasi-represented by the same morphism.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
