@@ -13,11 +13,11 @@ as mutable state and I/O.
 To model this cleanly categorically, we follow New, Licata and Ahmed's
 GTT calculus and base our models off of Levy's Call-by-push-value
 (CBPV) calculus which is a standard model of effectful programming
-\cite{levycbpv}.
+\cite{levy99}.
 %
 There are several notions of model of CBPV from the literature with
 varying requirements of which connectives are present
-\cite{levy,fioremm,eec}, we will use a variant which models precisely
+\cite{levy99,cfm2016,eec}, we will use a variant which models precisely
 the connectives we require and no more
 ($1,\times,F,U,\to$)\footnote{It is essential in this case that we do
 not require a cartesian closed category of values as there is no way
@@ -106,7 +106,7 @@ categories where there is at most one square for any $f,c,g,d$. In
 this case we use the notation $f \leq_{c,d} g$ to mean that a square
 like the above exists.
 
-New, Licata and Ahmed \cite{newlicataahmed} extended the axiomatic
+New, Licata and Ahmed \cite{new-licata-ahmed2019} extended the axiomatic
 syntax to call-by-push-value but did not analyze the structure
 categorically. We fill in this missing analysis now: a model of the
 congruence rules of their system can be given by a locally thin
@@ -171,7 +171,7 @@ arbitrary relations $\nat \rel D$ and $D \ra D \rel D$ and $D \times D
 \rel D$ (or whatever basic type cases are required).
 
 \begin{example}
-  (Adapted from \cite{new-licata}): Define a double CBPV model where
+  (Adapted from \cite{new-licata18}): Define a double CBPV model where
   $\mathcal V$ is the category of predomain preorders: sets with an
   $\omega$-CPO structure $\leq$ as well as a poset structure
   $\ltdyn$. Functional morphisms are given by $\leq$-continuous and

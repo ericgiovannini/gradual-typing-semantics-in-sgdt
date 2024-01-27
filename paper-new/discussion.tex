@@ -16,7 +16,7 @@ how to prove the gradual guarantee in this setting.
 The work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
 % Discuss Jeremy Siek's work on graduality in Agda
-Siek and Chen \cite{siekchen2021} give a proof in Agda of graduality
+Siek and Chen \cite{siek-chen2021} give a proof in Agda of graduality
 for an operational semantics. While they do not use the Guarded
 Cubical extension, they do use a guarded logic of propositions
 shallowly embedded in Agda. Our denotational approach requires full
@@ -128,7 +128,7 @@ some theorems on clock globalization.
 Working internally to guarded type theory reduces the overhead of
 needing to carry around the step-indices in the proofs as is required
 when using explicit step-indexing. Additionally, the logical relations
-constructed to prove graduality in prior work \cite{newahmed,gtt,greff} suffer
+constructed to prove graduality in prior work \cite{new-ahmed2018,new-licata-ahmed2019,new-giovannini-licata-2022} suffer
 from technical complications of requiring two separate expression
 relations, one that counts steps on the left and the other on the
 right, and there is no analogue of this in our approach. However,
@@ -154,15 +154,15 @@ automatically preserve them.
 %
 A synthetic approach to ordering is common in (non-guarded) synthetic
 domain theory and has also been used for synthetic reasoning for cost
-models \cite{synthetic-domain-theory,decalf}.
+models \cite{fiore_1997,GrodinNSH24}.
 
 \subsection{Future Work}
 
 In the future, we plan to apply our approach to give a denotational
 semantics for languages that feature higher-order state or
-runtime-extensible dynamic typing \cite{guarded-higherorderstate} as
-well as richer type disciplines such as gradual dependent types and
-effect systems.
+runtime-extensible dynamic typing
+\cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
+disciplines such as gradual dependent types and effect systems.
 
 %% to gradually-typed
 %% languages with algebraic effects, building on prior work on gradual typing for effect handlers
