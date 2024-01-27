@@ -24,22 +24,16 @@ not require a cartesian closed category of values as there is no way
 to implement casts for an exponential in general.}.
 
 \begin{enumerate}
-\item A cartesian category $\mathcal V$
-\item A category $\mathcal E$
+\item A cartesian category $\mathcal V$ and a category $\mathcal E$.
 \item An action of $\mathcal V^{op}$ (with the $\mathcal V$ cartesian
   product as monoidal structure) on $\mathcal E$. We write this with
   an arrow $A \arr B$.
-
-  This means we have 
-  \[ \alpha : {A_1 \times A_2} \arr B \cong A_2 \arr (A_1 \arr B) \]
-  and
-  \[ i : 1 \arr B \cong B \]
-  satisfying coherence isomorphisms.
-\item A functor $U : \mathcal E \to \mathcal V$ that ``preserves
+  This means we have natural isomorphisms
+  $\alpha : {A_1 \times A_2} \arr B \cong A_2 \arr (A_1 \arr B)$ and $i : 1 \arr B \cong B$ satisfying pentagon and triangle identities\cite{action}.
+\item $F \dashv U$ where $U : \mathcal E \to \mathcal V$ such that $U$ ``preserves
   powering'' in that every $U(A \arr B)$ is an exponential of $UB$ by $A$
   and that $U\alpha$ and $Ui$ are mapped to the canonical isomorphisms
   for exponentials.
-\item A left adjoint $F \dashv U$
 \end{enumerate}
 
 \begin{example}
