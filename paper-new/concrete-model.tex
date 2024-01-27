@@ -328,7 +328,7 @@ We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
 % \[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
 %
 
-$\ptb_D((p_{\text{times}}), p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
+$\ptb_D(p_{\text{times}}, p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
 \begin{align*}
     &\alt \tnat(m) \mapsto \tnat(m) \\
     &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_{D \times D}(p_\text{times})(d_1, d_2))} \\
@@ -346,7 +346,7 @@ $\ptb_D((p_{\text{times}}), p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has 
     % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
 
-One can verify that this forms a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
+One can verify that this defines a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
 We claim that the three relations $\inat$, $\itimes$, and $\iarr$
 %and their lifted versions 
 satisfy the push-pull property.
@@ -375,7 +375,7 @@ We next claim that the relations $\inat$, $\itimes$, and $\iarr$ are quasi-left-
 and that their lifts are quasi-right-representable.
 Indeed, since the relations are functional, it is easy to see that they are quasi-left-representable
 where the perturbations are taken to be the identity.
-
+%
 For quasi-right-representability, the most interesting case is $\li(\iarr)$.
 Defining the projection $p_{\iarr} : FD \to FU(D \to FD)$ is equivalent to defining
 $p' : D \to UFU(D \to FD)$. We define
@@ -386,11 +386,11 @@ $p' = \lambda d.\text{case $d$ of}$
     &\alt \ttimes(d_1, d_2) \mapsto \mho \\
     &\alt \tfun(\tilde{f}) \mapsto \theta (\lambda t. \eta(\tilde{f}_t)).
 \end{align*}
-
+%
 We define $\dellp_D = \delrp_D = \delta_{FD}$.
 Then it is easy to show using the definition of $\iarr$ that the squares for $\dnl$ and $\dnr$ commute.
 % Then for $\dnr$, we need to show that if $(f, d) \in \iarr$ then
-
+%
 It is also straightforward to establish the retraction property for
 each of these three relations. In the case of $\iarr$, we
 have that the property holds up to a delay.

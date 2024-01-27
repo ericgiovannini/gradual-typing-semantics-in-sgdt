@@ -273,23 +273,19 @@ gradual typing in Section~\ref{sec:GTLC}.
 An intensional model of gradual typing is defined similarly to an extensional model,
 with a few key differences that will be discussed below.
 %
-The starting point is similar to that of the extensional model: an intensional model
-will be given by a diagram in the category of CBPV objects, satisfying
-additional properties.
-%
+The starting point is similar to that of the extensional model.
 This time, however, since we are working intensionally, the semantic denotation of
 term precision \emph{is} transitive, so we \emph{do} have a horizontal composition
 operation on squares. Compare this to the extensional case, where we could only
 compose \emph{relations} horizontally, not squares.
-What this means is that we can define a functor for composition of value relations
-and squares, and a functor for composition of computation relations and squares.
-
+% What this means is that we can define a functor for composition of value relations
+% and squares, and a functor for composition of computation relations and squares.
 We can specify this compactly as a category internal to the category of CBPV models
 and lax morphisms, where we require that the reflexivity, source, and target morphisms
 are strict.
 In particular, as in the extensional case, there is a CBPV model of ``objects''
 $\mathcal M_f$ and a CBPV model of ``arrows'' $\mathcal M_{sq}$. 
-There are CBPV morphisms
+There are strict CBPV morphisms
 $r : \mathcal M_f \to \mathcal M_{sq}$ and $s, t : \mathcal M_{sq} \to \mathcal M_f$,
 just as before.
 %
@@ -312,18 +308,18 @@ and a distinguished value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ an
 % composition of value relations/squares and a functor $m_{\mathcal{E}}$ for
 % composition of computation relations/squares.
 
-For the sake of ease of reference, we recap the definition of a step-0 model:
-%
-\begin{definition}
-  A \emph{step-0} model of intensional gradual typing consists of:
-  \begin{itemize}
-    \item A category internal to the category of CBPV models and lax morphisms,
-    where we require that the morphisms $r$, $s$, and $t$ are strict.
-    \item A natural transformation $\mho : 1 \Rightarrow U$ such that $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$.
-    \item A value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
-  \end{itemize}
+% For the sake of ease of reference, we recap the definition of a step-0 model:
+% %
+% \begin{definition}
+%   A \emph{step-0} model of intensional gradual typing consists of:
+%   \begin{itemize}
+%     \item A category internal to the category of CBPV models and lax morphisms,
+%     where we require that the morphisms $r$, $s$, and $t$ are strict.
+%     \item A natural transformation $\mho : 1 \Rightarrow U$ such that $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$.
+%     \item A value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+%   \end{itemize}
 
-\end{definition}
+% \end{definition}
 
 % In particular, as before, we have cartesian categories $\mathcal V_f$,
 % $\mathcal V_e$, and $\mathcal V_{sq}$, in addition to $\mathcal E_f$,
@@ -349,30 +345,30 @@ Additionally, the weak bisimilarity relation should respect composition:
 if $f \bisim_{A,A'} f'$ and $g \bisim_{A',A''} g'$, then
 $g \circ f \bisim_{A,A''} g' \circ f'$, and likewise for computations.
 
-We can specify all of this abstractly via categories $\vsim$ and $\esim$ along with
-functors $\rvsim : \vf \to \vsim$ and $\svsim, \tvsim : \vsim \to \vf$,
-and likewise for computations.
-Since bisimilarity of morphisms $f$ and $f'$ requires that they share source and target,
-we require that $\svsim$ and $\tvsim$ agree on objects and likewise for $\sesim$ and $\tesim$.
-Thus, the objects of $\vsim$ are identified with $\ob(\vf)$.
-The morphisms of $\vsim$ are ``bisimilarity proofs'', analogous to the commuting squares of $\vsq$.
+% We can specify all of this abstractly via categories $\vsim$ and $\esim$ along with
+% functors $\rvsim : \vf \to \vsim$ and $\svsim, \tvsim : \vsim \to \vf$,
+% and likewise for computations.
+% Since bisimilarity of morphisms $f$ and $f'$ requires that they share source and target,
+% we require that $\svsim$ and $\tvsim$ agree on objects and likewise for $\sesim$ and $\tesim$.
+% Thus, the objects of $\vsim$ are identified with $\ob(\vf)$.
+% The morphisms of $\vsim$ are ``bisimilarity proofs'', analogous to the commuting squares of $\vsq$.
 
-There is also a ``symmetry'' endofunctor $\text{sym}_{\mathcal{V}}^\bisim : \vsim \to \vsim$
-such that $\svsim \circ \text{sym}_{\mathcal{V}}^\bisim = \tvsim$
-and $\tvsim \circ \text{sym}_{\mathcal{V}}^\bisim = \svsim$,
-and $\text{sym}_{\mathcal{V}}^\bisim \circ \text{sym}_{\mathcal{V}}^\bisim$ is the identity.
-Likewise there is a symmetry endofunctor $\text{sym}_{\mathcal{E}}^\bisim : \esim \to \esim$.
+% There is also a ``symmetry'' endofunctor $\text{sym}_{\mathcal{V}}^\bisim : \vsim \to \vsim$
+% such that $\svsim \circ \text{sym}_{\mathcal{V}}^\bisim = \tvsim$
+% and $\tvsim \circ \text{sym}_{\mathcal{V}}^\bisim = \svsim$,
+% and $\text{sym}_{\mathcal{V}}^\bisim \circ \text{sym}_{\mathcal{V}}^\bisim$ is the identity.
+% Likewise there is a symmetry endofunctor $\text{sym}_{\mathcal{E}}^\bisim : \esim \to \esim$.
 
-In this setting, we write $\refl_A : A \bisim A$ to mean that $\refl_A \in \ob(\vsim)$,
-such that $\svsim(\refl_A) = A = \tvsim(\refl_A)$.
-Let $f, f' \in \vf(A_i, A_o)$.
-The judgment $\gamma : f \bisim_{A_i, A_o} f'$ is defined to mean:
+% In this setting, we write $\refl_A : A \bisim A$ to mean that $\refl_A \in \ob(\vsim)$,
+% such that $\svsim(\refl_A) = A = \tvsim(\refl_A)$.
+% Let $f, f' \in \vf(A_i, A_o)$.
+% The judgment $\gamma : f \bisim_{A_i, A_o} f'$ is defined to mean:
 
-\begin{enumerate}
-  \item $\gamma \in \vsim(\refl_{A_i}, \refl_{A_o})$
-  \item $\svsim(\gamma) = f$
-  \item $\tvsim(\gamma) = f'$
-\end{enumerate}
+% \begin{enumerate}
+%   \item $\gamma \in \vsim(\refl_{A_i}, \refl_{A_o})$
+%   \item $\svsim(\gamma) = f$
+%   \item $\tvsim(\gamma) = f'$
+% \end{enumerate}
 
 % Spelling this all out concretely, for any pair...
 
@@ -400,7 +396,8 @@ $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$ for all $c : A \rel A$.
 A \emph{step-1 intensional model} consists of all the data of a step-0 intensional model along
 with:
 \begin{itemize}
-  \item The categories and functors for bisimiarity described above.
+  \item The existence of a reflexive, symmetric relation $\bisim$ on the hom-sets $\vf(A,A')$ and $\ef(B,B')$
+  such that $\bisim$ preserves composition.
   \item The existence of a distinguished value morphism $\delta_{UB}^* \bisim \id_{UB}$ for each $B$.
   \item A square $\delta_{UB}^* \ltdyn_{Ud}^{Ud} \delta_{UB'}^*$ for all $d : B \rel B'$.
   \item The commutativity condition $U\phi \circ \delta_{UB_1}^* = \delta_{UB_2} \circ U\phi$ for any $\phi \in \ef(B, B')$.
@@ -445,7 +442,7 @@ morphism that is required to be present in every hom-set $\vf(UB, UB)$ per the d
 of a step-1 model.
 
 The perturbations must be preserved by $\times$ $\timesk$, $\arr$, $\tok$, $U$, $\Uk$, $F$, and $\Fk$.
-
+%
 Perturbations must also satisfy a property that we call the ``push-pull'' property,
 which is formulated as follows. Let $c : A \rel A'$.
 Given a perturbation $\delta \in P_A$, there is a corresponding perturbation
@@ -453,35 +450,36 @@ $\push_c(\delta) \in P_{A'}$. % making the following square commute:
 %
 Likewise, given $\delta' \in P_{A'}$ there is a perturbation $\pull_c(\delta') \in P_A$.
 % making the following square commute:
+%
+Moreover, push-pull states that there are squares 
+$\delta \ltsq{c}{c} \push_c(\delta)$ and
+$\pull_c(\delta') \ltsq{c}{c} \delta'$.
 
-Moreover, push-pull states that the following squares must commute:
-
-\begin{center}
-  \begin{tabular}{ m{9em} m{9em} } 
-    \begin{tikzcd}[ampersand replacement=\&]
-      A \& {A'} \\
-      A \& {A'}
-      \arrow["\delta"', from=1-1, to=2-1]
-      \arrow["{\push_c(\delta)}", from=1-2, to=2-2]
-      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-    \end{tikzcd}
-    &
-    \begin{tikzcd}[ampersand replacement=\&]
-      A \& {A'} \\
-      A \& {A'}
-      \arrow["{\pull_c(\delta')}"', from=1-1, to=2-1]
-      \arrow["{\delta'}", from=1-2, to=2-2]
-      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-    \end{tikzcd}
-  \end{tabular}
-\end{center}
+% \begin{center}
+%   \begin{tabular}{ m{9em} m{9em} } 
+%     \begin{tikzcd}[ampersand replacement=\&]
+%       A \& {A'} \\
+%       A \& {A'}
+%       \arrow["\delta"', from=1-1, to=2-1]
+%       \arrow["{\push_c(\delta)}", from=1-2, to=2-2]
+%       \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%       \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%     \end{tikzcd}
+%     &
+%     \begin{tikzcd}[ampersand replacement=\&]
+%       A \& {A'} \\
+%       A \& {A'}
+%       \arrow["{\pull_c(\delta')}"', from=1-1, to=2-1]
+%       \arrow["{\delta'}", from=1-2, to=2-2]
+%       \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%       \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%     \end{tikzcd}
+%   \end{tabular}
+% \end{center}
 
 The analogous property should also hold for computation relations and perturbations.
-
-This is summarized below:
-
+The requirements are summarized below:
+%
 \begin{definition}\label{def:step-2-model}
   A \emph{step-2} model of intensional gradual typing consists of all the data of a step-1 model plus:
   \begin{enumerate}
@@ -519,75 +517,78 @@ The precise definitions are as follows.
 First, let $\mathcal M$ be any double category with a notion of perturbations,
 i.e., for any object $X$ in $\mathcal M$ there is a monoid $P_X$ with a monoid
 homomorphism into the endomorphisms on $X$.
-
+%
 \begin{definition}\label{def:quasi-left-representable}
   Let $R$ be a horizontal morphism in $\mathcal M$ between objects $X$ and $Y$.
   We say that $R$ is quasi-left-representable by a vertical morphism $f$ in
   $\mathcal M(X, Y)$ if there are perturbations $\delle_R \in P_X$ and
-  $\delre_R \in P_Y$ such that the following squares commute:
-
-  \begin{center}
-    \begin{tabular}{ m{7em} m{7em} } 
-      % UpL
-      \begin{tikzcd}[ampersand replacement=\&]
-        X \& {Y} \\
-        {Y} \& {Y}
-        \arrow["f"', from=1-1, to=2-1]
-        \arrow["\delta_R^{r,e}", from=1-2, to=2-2]
-        \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-        \arrow[from=2-1, to=2-2, Rightarrow, no head]
-      \end{tikzcd}
-      &
-      % UpR
-      \begin{tikzcd}[ampersand replacement=\&]
-        X \& {X} \\
-        {X} \& {Y}
-        \arrow["\delta_R^{l,e}"', from=1-1, to=2-1]
-        \arrow["f", from=1-2, to=2-2]
-        \arrow[from=1-1, to=1-2, Rightarrow, no head]
-        \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \end{tikzcd}
-    \end{tabular}
-  \end{center}
-
-  We call the first square $\upl$ and the second square $\upr$. 
-
+  $\delre_R \in P_Y$ such that there is a square
+  $\upl : f \ltsq{R}{r(Y)} \delre_R$ and a square 
+  $\upr : \delle_R \ltsq{r(X)}{R}$
+%
+%   \begin{center}
+%     \begin{tabular}{ m{7em} m{7em} } 
+%       % UpL
+%       \begin{tikzcd}[ampersand replacement=\&]
+%         X \& {Y} \\
+%         {Y} \& {Y}
+%         \arrow["f"', from=1-1, to=2-1]
+%         \arrow["\delta_R^{r,e}", from=1-2, to=2-2]
+%         \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%         \arrow[from=2-1, to=2-2, Rightarrow, no head]
+%       \end{tikzcd}
+%       &
+%       % UpR
+%       \begin{tikzcd}[ampersand replacement=\&]
+%         X \& {X} \\
+%         {X} \& {Y}
+%         \arrow["\delta_R^{l,e}"', from=1-1, to=2-1]
+%         \arrow["f", from=1-2, to=2-2]
+%         \arrow[from=1-1, to=1-2, Rightarrow, no head]
+%         \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%       \end{tikzcd}
+%     \end{tabular}
+%   \end{center}
+% %
+%   We call the first square $\upl$ and the second square $\upr$. 
+%
 \end{definition}
-
+%
 \begin{definition}\label{def:quasi-right-representable}
   Let $R$ be a horizontal morphism between $X$ and $Y$. We say that $R$ is
   \emph{quasi-right-representable by} $f \in \mathcal M(Y, X)$
   if there exist perturbations $\dellp_R \in P_X$ and
-  $\delrp_R \in P_Y$ such that the following squares commute:
-  
-  \begin{center}
-    \begin{tabular}{ m{7em} m{7em} } 
-      % DnR
-      \begin{tikzcd}[ampersand replacement=\&]
-        {X} \& {Y} \\
-        {X} \& {X}
-        \arrow["\delta_R^{l,p}"', from=1-1, to=2-1]
-        \arrow["f", from=1-2, to=2-2]
-        \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-        \arrow[from=2-1, to=2-2, Rightarrow, no head]
-      \end{tikzcd}
-      &
-      % DnL
-      \begin{tikzcd}[ampersand replacement=\&]
-        {Y} \& {Y} \\
-        {X} \& {Y}
-        \arrow["f"', from=1-1, to=2-1]
-        \arrow["\delta_R^{r,p}", from=1-2, to=2-2]
-        \arrow[from=1-1, to=1-2, Rightarrow, no head]
-        \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \end{tikzcd}
-    \end{tabular}
-  \end{center}
-  
-  We call the first square $\dnr$ and the second square $\dnl$.
-  
+  $\delrp_R \in P_Y$ such that we have a square 
+  $\dnr : \dellp_R \ltsq{R}{r(X)} f$
+  and a square $\dnl : f \ltsq{r(Y)}{R} \delrp_R$.
+  %
+  % \begin{center}
+  %   \begin{tabular}{ m{7em} m{7em} } 
+  %     % DnR
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       {X} \& {Y} \\
+  %       {X} \& {X}
+  %       \arrow["\delta_R^{l,p}"', from=1-1, to=2-1]
+  %       \arrow["f", from=1-2, to=2-2]
+  %       \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  %       \arrow[from=2-1, to=2-2, Rightarrow, no head]
+  %     \end{tikzcd}
+  %     &
+  %     % DnL
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       {Y} \& {Y} \\
+  %       {X} \& {Y}
+  %       \arrow["f"', from=1-1, to=2-1]
+  %       \arrow["\delta_R^{r,p}", from=1-2, to=2-2]
+  %       \arrow[from=1-1, to=1-2, Rightarrow, no head]
+  %       \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+  %     \end{tikzcd}
+  %   \end{tabular}
+  % \end{center}
+  % %
+  % We call the first square $\dnr$ and the second square $\dnl$.
+  %
   \end{definition}
-
 
 % TODO: Give these squares names
 % \begin{definition}\label{def:quasi-left-representable}
@@ -677,38 +678,38 @@ involving composition.
 Lastly, we require that the model satisfy a weak version of functoriality for 
 the CBPV connectives $U,F,\times,\to$. 
 First, we will need a definition:
-
+%
 \begin{definition}[quasi-order-equivalence]\label{def:quasi-order-equivalent}
   Let $c, c' : A \rel A'$. We say that $c$ and $c'$ are \emph{quasi-order-equivalent},
   written $c \qordeq c'$, if there exist perturbations $\delta^l_1, \delta^l_2 \in \pv_A$ and 
-  $\delta^r_1, \delta^r_2 \in \pv_{A'}$ such that the following two squares exist:
-
-  \begin{center}
-    \begin{tabular}{ m{9em} m{9em} } 
-      \begin{tikzcd}[ampersand replacement=\&]
-        A \& {A'} \\
-        A \& {A'}
-        \arrow["\delta^l_1"', from=1-1, to=2-1]
-        \arrow["\delta^r_1", from=1-2, to=2-2]
-        \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-        \arrow["c'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \end{tikzcd}
-      &
-      \begin{tikzcd}[ampersand replacement=\&]
-        A \& {A'} \\
-        A \& {A'}
-        \arrow["\delta^l_2"', from=1-1, to=2-1]
-        \arrow["\delta^r_2", from=1-2, to=2-2]
-        \arrow["c'", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-        \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \end{tikzcd}
-    \end{tabular}
-  \end{center}
-
+  $\delta^r_1, \delta^r_2 \in \pv_{A'}$ such that there is a square
+  $\delta^l_1 \ltsq{c}{c'} \delta^r_1$ and a square $\delta^l_2 \ltsq{c'}{c} \delta^r_2$.
+%
+  % \begin{center}
+  %   \begin{tabular}{ m{9em} m{9em} } 
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       A \& {A'} \\
+  %       A \& {A'}
+  %       \arrow["\delta^l_1"', from=1-1, to=2-1]
+  %       \arrow["\delta^r_1", from=1-2, to=2-2]
+  %       \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  %       \arrow["c'"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+  %     \end{tikzcd}
+  %     &
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       A \& {A'} \\
+  %       A \& {A'}
+  %       \arrow["\delta^l_2"', from=1-1, to=2-1]
+  %       \arrow["\delta^r_2", from=1-2, to=2-2]
+  %       \arrow["c'", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  %       \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+  %     \end{tikzcd}
+  %   \end{tabular}
+  % \end{center}
+%
   We make the analogous definition for computation relations $d, d' : B \rel B'$.
 \end{definition}
-
-
+%
 We require that the CBPV connectives $U,F,\times,\to$ are \emph{quasi-functorial} on relations,
 which we specify as follows:
 \begin{itemize}
@@ -718,9 +719,8 @@ which we specify as follows:
   \item $(c_1c_1') \times (c_2c_2') \qordeq (c_1 \times c_2)(c_1'\times c_2')$
 \end{itemize}
 
-
 We summarize the requirements of a step-3 model below:
-
+%
 \begin{definition}\label{def:step-3-model}
   A \emph{step-3 intensional model} consists
   of all the data of a step-2 intensional model, such that additionally:
