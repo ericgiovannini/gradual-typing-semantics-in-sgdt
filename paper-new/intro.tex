@@ -76,7 +76,7 @@ is safe and exhaustive.
 
 Our goal in this work is to provide a reusable semantic framework for
 gradually typed languages that can be used to prove the aforementioned
-properties: graduality and type-based reasoning. \max{TODO: say more here}
+properties: graduality and type-based reasoning.
 
 \subsection{Limitations of Prior Work}
 
@@ -166,8 +166,7 @@ new denotational framework that can model these type system features.
 
 The standard alternative to domain theory that scales to essentially
 arbitrary self-referential definitions is \emph{step-indexing} or its
-synthetic form of \emph{guarded recursion}.  \max{todo: adapt the next
-  paragraph to fit in with this one} A series of works
+synthetic form of \emph{guarded recursion}. A series of works
 \cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
 developed step-indexed logical relations models of gradually typed
 languages based on operational semantics. Unlike classical domain
@@ -236,24 +235,27 @@ corresponding technical reports having 50+ pages of proofs.
 % is tracked.
 \end{comment}
 
-\max{the stuff below is out of date}
-An alternative approach, which we investigate in this paper, is provided by
-\emph{synthetic guarded domain theory}\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
-The techniques of synthetic guarded domain theory allow us to internalize the
-step-indexed reasoning normally required in logical relations proofs of graduality,
-ultimately allowing us to specify the logical relation in a manner that looks nearly
-identical to a typical, non-step-indexed logical relation.
+An alternative approach, which we
+investigate in this paper, is provided by \emph{synthetic guarded
+domain theory}\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
+The techniques of synthetic guarded domain theory allow us to
+internalize the step-indexed reasoning normally required in logical
+relations proofs of graduality, ultimately allowing us to specify the
+logical relation in a manner that looks nearly identical to a typical,
+non-step-indexed logical relation. In fact, guarded domain theory goes
+further, allowing us to define step-indexed \emph{denotational
+semantics} not just step-indexed relations, just as easily as
+constructing an ordinary set-theoretic semantics.
 
-In this paper, we report on work we have done towards mechanizing proofs of graduality
-and soundness of the equational theory of cast calculi using the techniques of SGDT.
-We take a step toward mechanization in the Agda proof assistant by describing a compositional
-denotational semantics for gradual typing in a setting where the steps taken by terms are tracked.
-
-Our longer-term goal is to mechanize these proofs in a reusable way, thereby providing a framework
-to use to more easily and conveniently prove that existing languages satisfy graduality and have
-sound equational theories. Moreover, the aim is for designers of new languages to utilize the
-framework to facilitate the design of new provably-correct gradually-typed languages with more
-complex features.
+In this paper, we develop an adequate denotational semantics that
+satisfies graduality and soundness of the equational theory of cast
+calculi using the techniques of SGDT.  Our longer-term goal is to
+mechanize these proofs in a reusable way in the Guarded Cubical Agda
+proof assistant, thereby providing a framework to use to more easily
+and conveniently prove that existing languages satisfy graduality and
+have sound equational theories. Moreover, the aim is for designers of
+new languages to utilize the framework to facilitate the design of new
+provably-correct gradually-typed languages with more complex features.
 
 \subsection{Contributions}
 
@@ -266,181 +268,169 @@ language but the graduality property as well.
   double categorical models that abstract over the details of
   step-indexed models, and provide a method for constructing such models.
 \item We instantiate the abstract construction to provide a concrete
-  semantics in informal guarded type theory which supports the
-  addition of arbitrary algebraic effects.
+  semantics in informal guarded type theory.
 \item We prove that the resulting denotational model is
   \emph{adequate} for the graduality property: a closed term precision
   $M \ltdyn N : \nat$ has the expected semantics, that $M$ errors or
   $M$ and $N$ have the same extensional behavior.
 \end{enumerate}
 
-Our main contribution is a compositional denotational semantics for step-aware gradual typing,
+%% \subsection{Outline of Remainder of Paper}
 
-analogous to Gradual Type Theory but now in the ``intensional" setting.
-In parallel, we are developing a reusable framework in
-Guarded Cubical Agda for developing machine-checked proofs of graduality of a cast calculus.
-To demonstrate the feasibility and utility of our approach, we are applying the framework
-to prove graduality for the simply-typed gradual lambda calculus.
-% Along the way, we have developed an ``intensional" theory of graduality that is of
-% independent interest.
+%% \max{this is entirely out of date, update later}
 
+%% % In Section \ref{sec:overview}, we give an overview of the gradually-typed lambda
+%% % calculus and the graduality theorem.
+%% %
+%% In Section \ref{sec:technical-background}, we provide technical background on synthetic guarded domain theory.
+%% % 
+%% In Section \ref{sec:gtlc-terms}, we formally introduce the gradually-typed cast calculus
+%% for which we will prove graduality. We give a semantics to the terms using
+%% synthetic guarded domain theory.
+%% % Important here are the notions of syntactic
+%% % type precision and term precision. For reasons we describe below, we
+%% % introduce two related calculi, one in which the stepping behavior of terms is
+%% % implicit (an \emph{extensional} calculus, $\extlc$), and another where this behavior
+%% % is made explicit (an \emph{intensional} calculus, $\intlc$).
+%% %
 
-\subsection{Outline of Remainder of Paper}
-
-\max{this is entirely out of date, update later}
-
-% In Section \ref{sec:overview}, we give an overview of the gradually-typed lambda
-% calculus and the graduality theorem.
-%
-In Section \ref{sec:technical-background}, we provide technical background on synthetic guarded domain theory.
-% 
-In Section \ref{sec:gtlc-terms}, we formally introduce the gradually-typed cast calculus
-for which we will prove graduality. We give a semantics to the terms using
-synthetic guarded domain theory.
-% Important here are the notions of syntactic
-% type precision and term precision. For reasons we describe below, we
-% introduce two related calculi, one in which the stepping behavior of terms is
-% implicit (an \emph{extensional} calculus, $\extlc$), and another where this behavior
-% is made explicit (an \emph{intensional} calculus, $\intlc$).
-%
-
-In Section \ref{sec:gtlc-precision}, we define the term precision ordering for
-the gradually-typed lambda calculus and describe our approach to assigning a
-denotational semantics to this ordering.
-This approach builds on the semantics constructed in the previous section,
-but extending it to the term ordering presents new challenges.
+%% In Section \ref{sec:gtlc-precision}, we define the term precision ordering for
+%% the gradually-typed lambda calculus and describe our approach to assigning a
+%% denotational semantics to this ordering.
+%% This approach builds on the semantics constructed in the previous section,
+%% but extending it to the term ordering presents new challenges.
 
 
-% In Section \ref{sec:domain-theory}, we define several fundamental constructions
-% internal to SGDT that will be needed when we give a denotational semantics to
-% the gradual lambda calculus.
-%This includes the Lift monad, predomains and error domains.
-%
-% In Section \ref{sec:semantics}, we define the denotational semantics for the
-% intensional gradually-typed lambda calculus using the domain theoretic
-% constructions defined in the previous section.
-%
-In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
-gradual lambda calculus.
-%
-In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
-to the traditional step-indexing approach, as well as possibilities for future work.
+%% % In Section \ref{sec:domain-theory}, we define several fundamental constructions
+%% % internal to SGDT that will be needed when we give a denotational semantics to
+%% % the gradual lambda calculus.
+%% %This includes the Lift monad, predomains and error domains.
+%% %
+%% % In Section \ref{sec:semantics}, we define the denotational semantics for the
+%% % intensional gradually-typed lambda calculus using the domain theoretic
+%% % constructions defined in the previous section.
+%% %
+%% In Section \ref{sec:graduality}, we outline in more detail the proof of graduality for the
+%% gradual lambda calculus.
+%% %
+%% In Section \ref{sec:discussion}, we discuss the benefits and drawbacks to our approach in comparison
+%% to the traditional step-indexing approach, as well as possibilities for future work.
 
-\subsection{Overview of Results}\label{sec:overview}
+%% \subsection{Overview of Results}\label{sec:overview}
 
-% This section used to be part of the intro.
-% \subsection{Proving Graduality in SGDT}
-% TODO This section should probably be moved to after the relevant background has been introduced?
+%% % This section used to be part of the intro.
+%% % \subsection{Proving Graduality in SGDT}
+%% % TODO This section should probably be moved to after the relevant background has been introduced?
 
-% TODO introduce the idea of cast calculus and explicit casts?
+%% % TODO introduce the idea of cast calculus and explicit casts?
 
-In this paper, we will utilize SGDT techniques to prove graduality for a particularly
-simple gradually-typed cast calculus, the gradually-typed lambda calculus.
-Before stating the graduality theorem, we introduce some definitions related to gradual typing.
+%% In this paper, we will utilize SGDT techniques to prove graduality for a particularly
+%% simple gradually-typed cast calculus, the gradually-typed lambda calculus.
+%% Before stating the graduality theorem, we introduce some definitions related to gradual typing.
 
-% Cast calculi
-% TODO move this to earlier?
-Gradually typed languages are generally elaborated to a \emph{cast calculus}, in which run-time type checking
-that is made explicit. Elaboration inserts \emph{type casts} at the boundaries between static and dynamic code.
-In particular, cast insertion happens at the elimination forms of the language (e.g., pattern matching, field reference, etc.).
-The original gradually typed language that is elaborated to a cast calculus is called the \emph{surface language}.
+%% % Cast calculi
+%% % TODO move this to earlier?
+%% Gradually typed languages are generally elaborated to a \emph{cast calculus}, in which run-time type checking
+%% that is made explicit. Elaboration inserts \emph{type casts} at the boundaries between static and dynamic code.
+%% In particular, cast insertion happens at the elimination forms of the language (e.g., pattern matching, field reference, etc.).
+%% The original gradually typed language that is elaborated to a cast calculus is called the \emph{surface language}.
 
-% Up and down casts
-In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
-$A$ is a \emph{more precise} type than $B$.
-There a distinguished type $\dyn$, the \emph{dynamic type}, with the property that $A \ltdyn\, \dyn$ for all $A$.
-The parts of the code that are dynamically typed will be given type $\dyn$ in the cast calculus.
-%
-If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
-and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
-Upcasts always succeed, while downcasts may fail at runtime, resulting in a type error.
-Cast calculi have a term $\mho$ representing a run-time type error for any type $A$.
+%% % Up and down casts
+%% In a cast calculus, there is a relation $\ltdyn$ on types such that $A \ltdyn B$ means that
+%% $A$ is a \emph{more precise} type than $B$.
+%% There a distinguished type $\dyn$, the \emph{dynamic type}, with the property that $A \ltdyn\, \dyn$ for all $A$.
+%% The parts of the code that are dynamically typed will be given type $\dyn$ in the cast calculus.
+%% %
+%% If $A \ltdyn B$, a term $M$ of type $A$ may be \emph{up}casted to $B$, written $\up A B M$,
+%% and a term $N$ of type $B$ may be \emph{down}casted to $A$, written $\dn A B N$.
+%% Upcasts always succeed, while downcasts may fail at runtime, resulting in a type error.
+%% Cast calculi have a term $\mho$ representing a run-time type error for any type $A$.
 
-% Syntactic term precision
-We also have a notion of \emph{syntactic term precision}.
-If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
-$M \ltdyn N : A \ltdyn B$ to mean that
-$M$ is ``syntactically more precise'' than $N$, or equivalently, $N$ is 
-``more dynamic'' than $M$. Intuitively, this models the situation where $M$ and $N$
-behave the same except that $M$ may error more.
-Term precision is defined by a set of axioms that capture this intuitive notion.
-The specific rules for term precision depend on the specifics of the language, but
-many of the rules can be derived from the typing rules in a straightforward way.
-% Cast calculi also have a term $\mho$ representing a run-time type error for any type $A$,
-% and since
-Since $\mho$ always errors, there is a term precision rule stating that $\mho \ltdyn M$ for all $M$.
+%% % Syntactic term precision
+%% We also have a notion of \emph{syntactic term precision}.
+%% If $A \ltdyn B$, and $M$ and $N$ are terms of type $A$ and $B$ respectively, we write
+%% $M \ltdyn N : A \ltdyn B$ to mean that
+%% $M$ is ``syntactically more precise'' than $N$, or equivalently, $N$ is 
+%% ``more dynamic'' than $M$. Intuitively, this models the situation where $M$ and $N$
+%% behave the same except that $M$ may error more.
+%% Term precision is defined by a set of axioms that capture this intuitive notion.
+%% The specific rules for term precision depend on the specifics of the language, but
+%% many of the rules can be derived from the typing rules in a straightforward way.
+%% % Cast calculi also have a term $\mho$ representing a run-time type error for any type $A$,
+%% % and since
+%% Since $\mho$ always errors, there is a term precision rule stating that $\mho \ltdyn M$ for all $M$.
 
-% GTLC
-The gradually-typed lambda calculus is the usual simply-typed lambda calculus with a dynamic
-type $\dyn$ such that $A \ltdyn\, \dyn$ for all types $A$, as well as upcasts and downcasts
-between any types $A$ and $B$ such that $A \ltdyn B$. The complete definition will be provided in
-Section \ref{sec:gtlc-precision}.
+%% % GTLC
+%% The gradually-typed lambda calculus is the usual simply-typed lambda calculus with a dynamic
+%% type $\dyn$ such that $A \ltdyn\, \dyn$ for all types $A$, as well as upcasts and downcasts
+%% between any types $A$ and $B$ such that $A \ltdyn B$. The complete definition will be provided in
+%% Section \ref{sec:gtlc-precision}.
 
-With these definitions, we can state the graduality theorem for the gradually-typed lambda calculus.
+%% With these definitions, we can state the graduality theorem for the gradually-typed lambda calculus.
 
-% \begin{theorem}[Graduality]
-%   If $M \ltdyn N : \nat$, then either:
-%   \begin{enumerate}
-%     \item $M = \mho$
-%     \item $M = N = \zro$
-%     \item $M = N = \suc n$ for some $n$
-%     \item $M$ and $N$ diverge
-%   \end{enumerate}
-% \end{theorem}
+%% % \begin{theorem}[Graduality]
+%% %   If $M \ltdyn N : \nat$, then either:
+%% %   \begin{enumerate}
+%% %     \item $M = \mho$
+%% %     \item $M = N = \zro$
+%% %     \item $M = N = \suc n$ for some $n$
+%% %     \item $M$ and $N$ diverge
+%% %   \end{enumerate}
+%% % \end{theorem}
 
-\begin{theorem}[Graduality]
-  Let $\cdot \vdash M \ltdyn N : \nat$. 
-  If $M \Downarrow v_?$ and $N \Downarrow v'_?$, then either $v_? = \mho$, or $v_? = v'_?$.
-\end{theorem}
+%% \begin{theorem}[Graduality]
+%%   Let $\cdot \vdash M \ltdyn N : \nat$. 
+%%   If $M \Downarrow v_?$ and $N \Downarrow v'_?$, then either $v_? = \mho$, or $v_? = v'_?$.
+%% \end{theorem}
 
-Note:
-\begin{itemize}
+%% Note:
+%% \begin{itemize}
 
-  \item $\cdot \Downarrow$ is a relation between terms that is defined such that $M \Downarrow$ means
-  that $M$ terminates, either with a run-time error or a value $n$ of type $\nat$.
+%%   \item $\cdot \Downarrow$ is a relation between terms that is defined such that $M \Downarrow$ means
+%%   that $M$ terminates, either with a run-time error or a value $n$ of type $\nat$.
 
-  \item $v_?$ is shorthand for the syntactic representation of a term that is either equal to
-  $\mho$, or equal to the syntactic representation of a value $n$ of type $\nat$.
-\end{itemize}
+%%   \item $v_?$ is shorthand for the syntactic representation of a term that is either equal to
+%%   $\mho$, or equal to the syntactic representation of a value $n$ of type $\nat$.
+%% \end{itemize}
 
-% We also should be able to show that $\mho$, $\zro$, and $\suc\, N$ are not equal.
+%% % We also should be able to show that $\mho$, $\zro$, and $\suc\, N$ are not equal.
 
-To prove graduality and validate the equational theory, we construct a model of the types
-and terms and show that all of the axioms for term precision and for equality of terms
-hold in this model. Modeling the dynamic type presents a challenge in the presence of a
-language with functions: we want the dynamic type to represent a sum of all possible types
-in the language, so we write down an recursive equation that the semantic object modeling
-dynamic type should satisfy. When the language includes function types, this equation involves a
-negative occurrence of the variable for which we are solving, and so the equation 
-does not have inductive or coinductive solutions.
-%
-To model the dynamic type, we therefore use guarded recursion to define a suitable
-semantic object that satisfies the unfolding isomorphism expected of the dynamic type.
-The key is that we do not actually get an exact solution to the equation in the style
-of traditional domain theory; rather, we get a ``guarded'' solution that holds ``up to a time step''.
-%
-That is, we introduce a notion of ``time'' and in the equation for the dynamic type,
-we guard the negative occurrences of the variable by a special operator that
-specifies that its argument is available ``later''.
-%This can be seen as a logic that internalizes the notion of step-indexing.
-See Section \ref{sec:technical-background} for more details on guarded type theory.
+%% To prove graduality and validate the equational theory, we construct a model of the types
+%% and terms and show that all of the axioms for term precision and for equality of terms
+%% hold in this model. Modeling the dynamic type presents a challenge in the presence of a
+%% language with functions: we want the dynamic type to represent a sum of all possible types
+%% in the language, so we write down an recursive equation that the semantic object modeling
+%% dynamic type should satisfy. When the language includes function types, this equation involves a
+%% negative occurrence of the variable for which we are solving, and so the equation 
+%% does not have inductive or coinductive solutions.
+%% %
+%% To model the dynamic type, we therefore use guarded recursion to define a suitable
+%% semantic object that satisfies the unfolding isomorphism expected of the dynamic type.
+%% The key is that we do not actually get an exact solution to the equation in the style
+%% of traditional domain theory; rather, we get a ``guarded'' solution that holds ``up to a time step''.
+%% %
+%% That is, we introduce a notion of ``time'' and in the equation for the dynamic type,
+%% we guard the negative occurrences of the variable by a special operator that
+%% specifies that its argument is available ``later''.
+%% %This can be seen as a logic that internalizes the notion of step-indexing.
+%% See Section \ref{sec:technical-background} for more details on guarded type theory.
 
-At a high level, the key parts of our proof are as follows:
+%% At a high level, the key parts of our proof are as follows:
 
-% TODO revise this
-\begin{itemize}
-  \item Our first step toward proving graduality is to formulate a \emph{step-sensitive},
-  or \emph{intensional}, gradual lambda calculus, which we call $\intlc$, in which the
-  computation steps taken by a term are made explicit.
-  The ``normal'' gradual lambda calculus for which we want to prove graduality will be called the
-  \emph{surface}, \emph{step-insensitive}, or \emph{extensional}, gradual lambda calculus,
-  denoted $\extlc$.
+%% % TODO revise this
+%% \begin{itemize}
+%%   \item Our first step toward proving graduality is to formulate a \emph{step-sensitive},
+%%   or \emph{intensional}, gradual lambda calculus, which we call $\intlc$, in which the
+%%   computation steps taken by a term are made explicit.
+%%   The ``normal'' gradual lambda calculus for which we want to prove graduality will be called the
+%%   \emph{surface}, \emph{step-insensitive}, or \emph{extensional}, gradual lambda calculus,
+%%   denoted $\extlc$.
 
-  \item We define a translation from the surface syntax to the intensional syntax, and
-  prove a theorem relating the term precision in the surface to term precision in the
-  intensional syntax.
+%%   \item We define a translation from the surface syntax to the intensional syntax, and
+%%   prove a theorem relating the term precision in the surface to term precision in the
+%%   intensional syntax.
   
-  \item We define a semantics for the intensional syntax in guarded type theory, for both the
-  terms and for the term precision ordering $\ltdyn$.
+%%   \item We define a semantics for the intensional syntax in guarded type theory, for both the
+%%   terms and for the term precision ordering $\ltdyn$.
 
-\end{itemize}
+%% \end{itemize}

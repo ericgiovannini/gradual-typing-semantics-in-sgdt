@@ -1,91 +1,91 @@
-\section{Technical Background}\label{sec:technical-background}
+\section{Background on Guarded Domain Theory}\label{sec:technical-background}
 
 % Modeling the dynamic type as a recursive sum type?
 % Observational equivalence and approximation?
 
 % synthetic guarded domain theory, denotational semantics therein
 
-\subsection{Difficulties in Prior Semantics}
-  % Difficulties in prior semantics
+%% \subsection{Difficulties in Prior Semantics}
+%%   % Difficulties in prior semantics
 
-  In this work, we compare our approach to proving graduality to the approach
-  introduced by New and Ahmed \cite{new-ahmed2018} which constructs a step-indexed
-  logical relations model and shows that this model is sound with respect to their
-  notion of contextual error approximation.
+%%   In this work, we compare our approach to proving graduality to the approach
+%%   introduced by New and Ahmed \cite{new-ahmed2018} which constructs a step-indexed
+%%   logical relations model and shows that this model is sound with respect to their
+%%   notion of contextual error approximation.
 
-  Because the dynamic type is modeled as a non-well-founded
-  recursive type, their logical relation needs to be paramterized by natural numbers
-  to restore well-foundedness. This technique is known as a \emph{step-indexed logical relation}.
-  Intuitively, step-indexing makes the steps taken by terms observable.
-  %
-  Reasoning about step-indexed logical relations
-  can be tedious and error-prone, and there are some very subtle aspects that must
-  be taken into account in the proofs.
-  %
-  In particular, the prior approach of New and Ahmed requires two separate logical
-  relations for terms, one in which the steps of the left-hand term are counted,
-  and another in which the steps of the right-hand term are counted.
-  Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
-  related in both of the one-sided logical relations. Having two separate logical relations
-  complicates the statement of the lemmas used to prove graduality, because any statement that
-  involves a term stepping needs to take into account whether we are counting steps on the left
-  or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
-  as fundamental and seemingly straightforward as transitivity.
+%%   Because the dynamic type is modeled as a non-well-founded
+%%   recursive type, their logical relation needs to be paramterized by natural numbers
+%%   to restore well-foundedness. This technique is known as a \emph{step-indexed logical relation}.
+%%   Intuitively, step-indexing makes the steps taken by terms observable.
+%%   %
+%%   Reasoning about step-indexed logical relations
+%%   can be tedious and error-prone, and there are some very subtle aspects that must
+%%   be taken into account in the proofs.
+%%   %
+%%   In particular, the prior approach of New and Ahmed requires two separate logical
+%%   relations for terms, one in which the steps of the left-hand term are counted,
+%%   and another in which the steps of the right-hand term are counted.
+%%   Then two terms $M$ and $N$ are related in the ``combined'' logical relation if they are
+%%   related in both of the one-sided logical relations. Having two separate logical relations
+%%   complicates the statement of the lemmas used to prove graduality, because any statement that
+%%   involves a term stepping needs to take into account whether we are counting steps on the left
+%%   or the right. Some of the differences can be abstracted over, but difficulties arise for properties %/results
+%%   as fundamental and seemingly straightforward as transitivity.
 
-  Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
-  index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
-  But this does not actually hold: we require that one of the two pairs of terms
-  be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
-  Which pair is required to satisfy this depends on which logical relation we are considering,
-  (i.e., is it counting steps on the left or on the right),
-  and so any argument that uses transitivity needs to consider two cases, one
-  where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
-  be related for all $i$. % This may not even be possible to show in some scenarios!
+%%   Specifically, for transitivity, we would like to say that if $M$ is related to $N$ at
+%%   index $i$ and $N$ is related to $P$ at index $i$, then $M$ is related to $P$ at $i$.
+%%   But this does not actually hold: we require that one of the two pairs of terms
+%%   be related ``at infinity'', i.e., that they are related at $i$ for all $i \in \mathbb{N}$.
+%%   Which pair is required to satisfy this depends on which logical relation we are considering,
+%%   (i.e., is it counting steps on the left or on the right),
+%%   and so any argument that uses transitivity needs to consider two cases, one
+%%   where $M$ and $N$ must be shown to be related for all $i$, and another where $N$ and $P$ must
+%%   be related for all $i$. % This may not even be possible to show in some scenarios!
 
-  \begin{comment}
-  As another example, the axioms that specify the behavior of casts do not hold in the
-  step-indexed setting. Consider, for example, the ``lower bound'' rule for downcasting:
+%%   \begin{comment}
+%%   As another example, the axioms that specify the behavior of casts do not hold in the
+%%   step-indexed setting. Consider, for example, the ``lower bound'' rule for downcasting:
 
-  \begin{mathpar}
-    \inferrule*
-    {\gamlt \vdash M \ltdyn N : dyn}
-    {\gamlt \vdash \dn{\dyn \ra \dyn}{\dyn} M \ltdyn N}
-  \end{mathpar}
+%%   \begin{mathpar}
+%%     \inferrule*
+%%     {\gamlt \vdash M \ltdyn N : dyn}
+%%     {\gamlt \vdash \dn{\dyn \ra \dyn}{\dyn} M \ltdyn N}
+%%   \end{mathpar}
 
-  In the language of the step-indexed logical relation used in prior work, this would
-  take the form
+%%   In the language of the step-indexed logical relation used in prior work, this would
+%%   take the form
   
-  \begin{mathpar}
-    \inferrule*
-    {(M, N) \in \mathcal{E}^{\sim}_{i}\sem{\dyn}}
-    {(\dn{\dyn \ra \dyn}{\dyn} M, N) \in \mathcal{E}^{\sim}_{i}\sem{\injarr{}}}
-  \end{mathpar}
+%%   \begin{mathpar}
+%%     \inferrule*
+%%     {(M, N) \in \mathcal{E}^{\sim}_{i}\sem{\dyn}}
+%%     {(\dn{\dyn \ra \dyn}{\dyn} M, N) \in \mathcal{E}^{\sim}_{i}\sem{\injarr{}}}
+%%   \end{mathpar}
 
-  where $\sim$ stands for $\mathrel{\preceq}$ or $\mathrel{\succeq}$, i.e.,
-  counting steps on the left or right respectively.
-  %
-  To show this, we would use the fact that the left-hand side steps and
-  apply an anti-reduction lemma, showing that the term to which the LHS steps
-  is related to the RHS where our fuel is now
+%%   where $\sim$ stands for $\mathrel{\preceq}$ or $\mathrel{\succeq}$, i.e.,
+%%   counting steps on the left or right respectively.
+%%   %
+%%   To show this, we would use the fact that the left-hand side steps and
+%%   apply an anti-reduction lemma, showing that the term to which the LHS steps
+%%   is related to the RHS where our fuel is now
   
-  The left-hand side steps to a case inspection on $M$,
-  where we unfold the recursive $\dyn$ type into a sum type and see whether the result
-  is a function type.
+%%   The left-hand side steps to a case inspection on $M$,
+%%   where we unfold the recursive $\dyn$ type into a sum type and see whether the result
+%%   is a function type.
 
-  One way around these difficulties is to demand that the rules only hold
-  ``extensionally'', i.e., we quantify universally over the step-index and
-  reason about the ``global'' behavior of terms for all possible step indices.
-  This is the approach taken in prior work.
-\end{comment}
+%%   One way around these difficulties is to demand that the rules only hold
+%%   ``extensionally'', i.e., we quantify universally over the step-index and
+%%   reason about the ``global'' behavior of terms for all possible step indices.
+%%   This is the approach taken in prior work.
+%% \end{comment}
 
-  % These complications introduced by step-indexing lead one to wonder whether there is a
-  % way of proving graduality without relying on tedious arguments involving natural numbers.
-  % An alternative approach, which we investigate in this paper, is provided by
-  % \emph{synthetic guarded domain theory}, as discussed below.
-  % Synthetic guarded domain theory allows the resulting logical relation to look almost
-  % identical to a typical, non-step-indexed logical relation.
+%%   % These complications introduced by step-indexing lead one to wonder whether there is a
+%%   % way of proving graduality without relying on tedious arguments involving natural numbers.
+%%   % An alternative approach, which we investigate in this paper, is provided by
+%%   % \emph{synthetic guarded domain theory}, as discussed below.
+%%   % Synthetic guarded domain theory allows the resulting logical relation to look almost
+%%   % identical to a typical, non-step-indexed logical relation.
 
-\subsection{Synthetic Guarded Domain Theory}\label{sec:sgdt}
+%% \subsection{Synthetic Guarded Domain Theory}\label{sec:sgdt}
 One way to avoid the tedious reasoning associated with step-indexing is to work
 axiomatically inside of a logical system that can reason about non-well-founded recursive
 constructions while abstracting away the specific details of step-indexing required
@@ -130,7 +130,7 @@ Most of the developments in this paper will take place in the context of a singl
 but in Section \ref{TODO}, we will need to make use of clock quantification.
 
 % Clocked Cubical Type Theory
-\subsubsection{Ticked Cubical Type Theory}
+\subsection{Ticked Cubical Type Theory}
 % TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions?
 
 Ticked Cubical Type Theory \cite{mogelberg-veltri2019} is an extension of Cubical
