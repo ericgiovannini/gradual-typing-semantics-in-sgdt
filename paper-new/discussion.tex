@@ -1,6 +1,7 @@
 \section{Discussion}
 
 \subsection{Related Work}
+\max{review what I wrote, and discuss Jeremy's work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
 define a syntactic model for a gradually-typed source
@@ -26,20 +27,44 @@ reasoning, not just graduality, and it is completely independent of
 any particular syntax of gradual typing.
 
 \subsection{Mechanization}
+\max{review}
 % Discuss Guarded Cubical Agda and mechanization efforts
-We will use Guarded Cubical Agda to prove graduality in the syntax of 
-GTLC, which involves the construction of the abstract model described in 
-\ref{sec:concrete-model} and the extensional model with external dynamic 
-type. We also plan to formalize the adequacy result in \ref{sec:appendix-adequacy}.
+In parallel with developing the theory discussed in this paper,
+we are mechanizing our results and developing a reusable framework
+for proving graduality in Guarded Cubical Agda \cite{veltri-vezzosi2020}.
 
-% step-1
-Currently, we have defined the step-1 intensional model in Cubical 
-Agda. For value types, we constructed predomain which holds ordering and 
-bisimilarity, and morphisms between predmains. For computation types, we 
-constructed error domain which contains its underlying predomain, 
-elements of $\mho$ and $\theta$ and morphisms between error domains. We 
-also defined two functors $U$ and $F$ which support conversions between 
-predomains and error domains.
+As of this writing, the work is in progress, but we have
+constructed most parts of the concrete model discussed in
+Section \ref{sec:concrete-model}. For instance, we have defined
+types for predomains, error domains, and their morphisms and relations,
+and we used the guarded features to define the guarded lift + error monad
+and the dynamic type.
+
+We plan to formalize the construction of perturbations and 
+quasi-representable relations, but we have yet to decide
+whether to follow the approach we take in this work and define
+the abstract notion of intensional model and formalize the constructions in that setting,
+and then apply those abstract constructions to the concrete model.
+Alternatively, it may be better from a mechanization standpoint
+to carry out those abstract constructions explicitly in the concrete model,
+i.e., our representation of objects in the concrete model of predomains
+would include a field for the perturbations and our notion of relations
+would include fields for the push-pull property and quasi-representability.
+We leave this investigation to future work.
+
+Lastly, we would like to formalize the adequacy result discussed in
+Section \ref{sec:adequacy}. This will involve adding axioms about
+clock quantification as well as about the clock-irrelevance of
+booleans and natural numbers, since as of this writing these
+axioms are not built-in to Guarded Cubical Agda. As an experiment, we have 
+formalized some basic results involving clocks as part of our development.
+
+
+\begin{comment}
+% prove graduality in the syntax of 
+% GTLC, which involves the construction of the abstract model described in 
+% \ref{sec:concrete-model} and the extensional model with external dynamic 
+% type. We also plan to formalize the adequacy result in \ref{sec:appendix-adequacy}.
 
 % step-2 
 Then we plan to construct the step-2 intensional model. Besides all the 
@@ -99,11 +124,23 @@ in Delay(1 + X) and equivalence between the global weak bisimilarity
 relation and the weak bisimilarity relation on Delay(1 + X). We have 
 finished some prerequisite proofs on clock quantification and postulated 
 some theorems on clock globalization.
+\end{comment}
 
 \subsection{Comparison to Explicit Step-Indexing}
+\max{check/revise/delete if it's not important}
+Working internally to guarded type theory reduces the overhead of needing to
+carry around the step-indices in the proofs as is required when using explicit
+step-indexing. Additionally, the logical relations constructed to prove
+graduality suffer from technical complications of requiring two separate
+expression relations, one that counts steps on the left and the other on the right.
+There is no analogue of this in our approach.
+However, the price we pay for this simplicity is that it is unclear
+whether using our approach one can obtain an extensional model that models transitivity
+of term precision, which is attainable using the traditional step-indexing approach.
+
 
 \subsection{Synthetic Ordering}
-
+\max{revise (fix citations) or remove if it's no longer relevant}
 A key to managing the complexity of our concrete construction is in
 using a \emph{synthetic} approach to step-indexing rather than working
 analytically with presheaves. This has helped immensely in our ongoing
@@ -124,5 +161,15 @@ domain theory and has also been used for synthetic reasoning for cost
 models \cite{synthetic-domain-theory,decalf}.
 
 \subsection{Future Work}
+\max{review and change if needed}
+We would like to apply our approach to give a denotational semantics to gradually-typed
+languages with algebraic effects, building on prior work on gradual typing for effect handlers
+\cite{greff}. In particular, that work proves graduality via a complicated step-indexed logical relation,
+and we hope to prove their results by building a denotational model for GrEff.
+This would serve as a step towards applying our techniques to prove graduality for languages
+with other advanced features.
 
-% Cite GrEff paper
+The extensional model we construct differs from the usual notion of extensional
+model considered in prior work on gradual typing in that it lacks horizontal composition of squares.
+We would like to clarify the relationship between our notion of model and prior extensional models,
+with the aim of determining whether our approach could allow for the construction of such a model.
