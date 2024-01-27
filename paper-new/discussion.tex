@@ -1,7 +1,6 @@
 \section{Discussion}
 
 \subsection{Related Work}
-\max{review what I wrote, and discuss Jeremy's work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
 define a syntactic model for a gradually-typed source
@@ -27,12 +26,11 @@ reasoning, not just graduality, and it is completely independent of
 any particular syntax of gradual typing.
 
 \subsection{Mechanization}
-\max{review}
 % Discuss Guarded Cubical Agda and mechanization efforts
 In parallel with developing the theory discussed in this paper,
 we are mechanizing our results and developing a reusable framework
 for proving graduality in Guarded Cubical Agda \cite{veltri-vezzosi2020}.
-
+%
 As of this writing, the work is in progress, but we have
 constructed most parts of the concrete model discussed in
 Section \ref{sec:concrete-model}. For instance, we have defined
@@ -52,13 +50,12 @@ would include a field for the perturbations and our notion of relations
 would include fields for the push-pull property and quasi-representability.
 We leave this investigation to future work.
 
-Lastly, we would like to formalize the adequacy result discussed in
+Lastly, we plan to formalize the adequacy result discussed in
 Section \ref{sec:adequacy}. This will involve adding axioms about
 clock quantification as well as about the clock-irrelevance of
 booleans and natural numbers, since as of this writing these
 axioms are not built-in to Guarded Cubical Agda. As an experiment, we have 
 formalized some basic results involving clocks as part of our development.
-
 
 \begin{comment}
 % prove graduality in the syntax of 
@@ -127,20 +124,19 @@ some theorems on clock globalization.
 \end{comment}
 
 \subsection{Comparison to Explicit Step-Indexing}
-\max{check/revise/delete if it's not important}
-Working internally to guarded type theory reduces the overhead of needing to
-carry around the step-indices in the proofs as is required when using explicit
-step-indexing. Additionally, the logical relations constructed to prove
-graduality suffer from technical complications of requiring two separate
-expression relations, one that counts steps on the left and the other on the right.
-There is no analogue of this in our approach.
-However, the price we pay for this simplicity is that it is unclear
-whether using our approach one can obtain an extensional model that models transitivity
-of term precision, which is attainable using the traditional step-indexing approach.
 
+Working internally to guarded type theory reduces the overhead of
+needing to carry around the step-indices in the proofs as is required
+when using explicit step-indexing. Additionally, the logical relations
+constructed to prove graduality in prior work \cite{newahmed,gtt,greff} suffer
+from technical complications of requiring two separate expression
+relations, one that counts steps on the left and the other on the
+right, and there is no analogue of this in our approach. However,
+using two expression relations allows some but not all transitivite
+reasoning of term precision to be recovered. In the future we aim to
+explore if this approach is feasible in guarded semantics.
 
 \subsection{Synthetic Ordering}
-\max{revise (fix citations) or remove if it's no longer relevant}
 A key to managing the complexity of our concrete construction is in
 using a \emph{synthetic} approach to step-indexing rather than working
 analytically with presheaves. This has helped immensely in our ongoing
@@ -161,15 +157,21 @@ domain theory and has also been used for synthetic reasoning for cost
 models \cite{synthetic-domain-theory,decalf}.
 
 \subsection{Future Work}
-\max{review and change if needed}
-We would like to apply our approach to give a denotational semantics to gradually-typed
-languages with algebraic effects, building on prior work on gradual typing for effect handlers
-\cite{greff}. In particular, that work proves graduality via a complicated step-indexed logical relation,
-and we hope to prove their results by building a denotational model for GrEff.
-This would serve as a step towards applying our techniques to prove graduality for languages
-with other advanced features.
 
-The extensional model we construct differs from the usual notion of extensional
-model considered in prior work on gradual typing in that it lacks horizontal composition of squares.
-We would like to clarify the relationship between our notion of model and prior extensional models,
-with the aim of determining whether our approach could allow for the construction of such a model.
+In the future, we plan to apply our approach to give a denotational
+semantics for languages that feature higher-order state or
+runtime-extensible dynamic typing \cite{guarded-higherorderstate} as
+well as richer type disciplines such as gradual dependent types and
+effect systems.
+
+%% to gradually-typed
+%% languages with algebraic effects, building on prior work on gradual typing for effect handlers
+%% \cite{greff}. In particular, that work proves graduality via a complicated step-indexed logical relation,
+%% and we hope to prove their results by building a denotational model for GrEff.
+%% This would serve as a step towards applying our techniques to prove graduality for languages
+%% with other advanced features.
+
+%% The extensional model we construct differs from the usual notion of extensional
+%% model considered in prior work on gradual typing in that it lacks horizontal composition of squares.
+%% We would like to clarify the relationship between our notion of model and prior extensional models,
+%% with the aim of determining whether our approach could allow for the construction of such a model.
