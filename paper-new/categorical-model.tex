@@ -285,7 +285,9 @@ compose \emph{relations} horizontally, not squares.
 What this means is that we can define a functor for composition of value relations
 and squares, and a functor for composition of computation relations and squares.
 
-We can specify this elegantly as a category internal to the category of CBPV models.
+We can specify this elegantly as a category internal to the category of CBPV models
+and lax morphisms, where we require that the reflexivity, source, and target morphisms
+are strict.
 In particular, as in the extensional case, there is a CBPV model of ``objects''
 $\mathcal M_f$ and a CBPV model of ``arrows'' $\mathcal M_{sq}$. 
 There are CBPV morphisms
@@ -300,6 +302,12 @@ relations/squares, and a functor $m_{\mathcal{E}} : \esq \times_{\se = \te} \esq
 for composition of computation relations/squares.
 Furthermore, $s \circ m = s \circ \pi_1$ and $t \circ m = t \circ \pi_2$.
 
+As in the extensional model, we also require the existence of a natural transformation
+$\mho : 1 \Rightarrow U$ such that $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$,
+and a distinguished value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+% Lastly, we require the existence of a morphism $\mho_B \in \vf(\Gamma, UB)$ for all $B$
+% satisfying the same ordering and commutativity properties required in the extensional model.
+
 % If we spell this all out explicitly, we end up with a definition similar to the
 % one for the extensional case, but now with the addition of a functor $m_{\mathcal{V}}$ for
 % composition of value relations/squares and a functor $m_{\mathcal{E}}$ for
@@ -308,8 +316,14 @@ Furthermore, $s \circ m = s \circ \pi_1$ and $t \circ m = t \circ \pi_2$.
 For the sake of ease of reference, we recap the definition of a step-0 model:
 
 \begin{definition}
-  A \emph{step-0} model of intensional gradual typing consists of a category internal to the
-  category of CBPV models.
+  A \emph{step-0} model of intensional gradual typing consists of:
+  \begin{itemize}
+    \item A category internal to the category of CBPV models and lax morphisms,
+    where we require that the morphisms $r$, $s$, and $t$ are strict.
+    \item A natural transformation $\mho : 1 \Rightarrow U$ such that $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$.
+    \item A value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+  \end{itemize}
+
 \end{definition}
 
 % In particular, as before, we have cartesian categories $\mathcal V_f$,
@@ -377,8 +391,12 @@ $d : B \rel B'$, we have a square $\delta_{UB}^* \ltdyn_{Ud}^{Ud} \delta_{UB'}^*
 We also require that these morphisms commute with computation morphisms, in the sense
 that for any $\phi \in \ef(B, B')$ we have $U\phi \circ \delta_{UB_1}^* = \delta_{UB_2} \circ U\phi$.
 
-Given the existence of the morphisms $\delta_{UB}^*$, we can define computation morphisms
-$\delta_{FA}^* \in \ef(FA, FA)$ for all $A$ using the 
+Given the existence of the morphisms $\delta_{UB}^*$, we can define a computation morphism
+$\delta_{FA}^* \in \ef(FA, FA)$ for all $A$ by composing the unit $\eta_A \in \vf(A, UFA)$ with
+the morphism $\delta_{UFA}^* \in \vf(UFA, UFA)$, and then by the adjunction
+we get a computation morphism $\delta_{FA}^ \in \ef(FA, FA)$. Moreover, we get a square
+$\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$ for all $c : A \rel A$.
+
 
 \begin{definition}\label{def:step-1-model}
 A \emph{step-1 intensional model} consists of all the data of a step-0 intensional model along
@@ -403,11 +421,11 @@ keep the function morphisms on each side in lock-step. Intuitively, the perturba
 have no effect other than to cause the function to which they are applied to ``wait''
 in a specific manner.
 We formalize this notion by requiring that for each object $A$ in $\vf$,
-there is a monoid of \emph{value perturbations} $\pv_A$ that is a submonoid of
-$\{ f \in \vf(A,A) \mid f \bisim \id \}$.
+there is a monoid of \emph{value perturbations} $P_A$ and a homomorphism of monoids
+$\ptb_A : P_A \to \{ f \in \vf(A,A) \mid f \bisim \id \}$.
 Similarly, for each $B : \ef$ there is a monoid $\pe_B$ of
-\emph{computation perturbations} that is a submonoid of 
-$\{ g \in \ef(B,B) \mid g \bisim \id \}$.
+\emph{computation perturbations} and a homomorphism of monoids 
+$\ptb_B : P_B \to \{ g \in \ef(B,B) \mid g \bisim \id \}$.
 
 % If $\delta \in P^V_A$, we will sometimes omit the homomorphism $\ptbv_A$ and simply write
 % $\delta$ to refer to the morphism $\ptbv_A(\delta) \in \vf(A,A)$, and likewise
@@ -420,19 +438,22 @@ capturing the notion that they have no effect other than to delay.
 % the set of endomorphisms $f$ such that $f$ is weakly bisimilar to the identity
 % forms a monoid under composition.
 
-We require that $\delta_{FA}^* \in \pe_{FA}$ for all $A$, where $\delta_{FA}^*$ is the distinguished
-morphism that is required to be present in every hom-set $\ef(FA, FA)$ per the definition
+We will slightly abuse notation and refer to an endomorphism $f \in \vf(A, A)$ as being ``in''
+the monoid of perturbations, but which we actually mean there is an element $p \in P_A$
+that is mapped to $f$ under the homomorphism.
+
+We require that $\delta_{UB}^* \in P_{UB}$ for all $A$, where $\delta_{UB}^*$ is the distinguished
+morphism that is required to be present in every hom-set $\vf(UB, UB)$ per the definition
 of a step-1 model.
 
 The perturbations must be preserved by $\times$ $\timesk$, $\arr$, $\tok$, $U$, $\Uk$, $F$, and $\Fk$.
 
-For reasons that will be made clear in the next section, perturbations must also satisfy
-a property that we call the ``push-pull'' property,
+Perturbations must also satisfy a property that we call the ``push-pull'' property,
 which is formulated as follows. Let $c : A \rel A'$.
-Given a perturbation $\delta \in \pv_A$, there is a corresponding perturbation
-$\push_c(\delta) \in \pv_{A'}$. % making the following square commute:
+Given a perturbation $\delta \in P_A$, there is a corresponding perturbation
+$\push_c(\delta) \in P_{A'}$. % making the following square commute:
 %
-Likewise, given $\delta' \in \pv_{A'}$ there is a perturbation $\pull_c(\delta') \in \pv_A$.
+Likewise, given $\delta' \in P_{A'}$ there is a perturbation $\pull_c(\delta') \in P_A$.
 % making the following square commute:
 
 Moreover, push-pull states that the following squares must commute:
@@ -466,11 +487,11 @@ This is summarized below:
 \begin{definition}\label{def:step-2-model}
   A \emph{step-2} model of intensional gradual typing consists of all the data of a step-1 model plus:
   \begin{enumerate}
-    \item For each value type $A$, there is a monoid $\pv_A$ that is a submonoid of
-    $\{ f \in \vf(A,A) \mid f \bisim \id \}$.
-    \item For each computation type $B$, there is a monoid $\pe_B$ that is a submonoid of
-    $\{ g \in \ef(B,B) \mid g \bisim \id \}$.
-    \item For all $A$, the distinguished endomorphism $\delta_{FA}^*$ is in $\pe_{FA}$.
+    \item For each value type $A$, there is a monoid $P_A$ and a homomorphism of monoids
+    $\ptb_A : P_A \to \{ f \in \vf(A,A) \mid f \bisim \id \}$.
+    \item For each computation type $B$, there is a monoid $\pe_B$ and a homomorphism of monoids
+    $\ptb_B : P_B \to \{ g \in \ef(B,B) \mid g \bisim \id \}$.
+    \item For all $B$, the distinguished endomorphism $\delta_{UB}^*$ is in $P_{UB}$.
     % \item $\pv_A$ and a monoid homomorphism 
     %   \[ \ptbv_A : \pv_A \to \{ f \in \vf(A,A) \mid f \bisim \id \} \]
     % \item $\pe_B$ and a monoid homomorphism
@@ -498,8 +519,8 @@ and provide the additional conditions that axiomatize the behavior of casts.
 The precise definitions are as follows.
 
 First, let $\mathcal M$ be any double category with a notion of perturbations,
-i.e., for any object $X$ in $\mathcal M$ there is a monoid $P_X$ which is a
-submonoid of the endomorphisms on $X$.
+i.e., for any object $X$ in $\mathcal M$ there is a monoid $P_X$ with a monoid
+homomorphism into the endomorphisms on $X$.
 
 \begin{definition}\label{def:quasi-left-representable}
   Let $R$ be a horizontal morphism in $\mathcal M$ between objects $X$ and $Y$.
@@ -655,12 +676,11 @@ In the intensional setting, we do have horizontal composition of squares,
 so we can take the simpler versions as primitive and derive the ones
 involving composition.
 
-\begin{comment}
 Lastly, we require that the model satisfy a weak version of functoriality for 
 the CBPV connectives $U,F,\times,\to$. 
 First, we will need a definition:
 
-\begin{definition}
+\begin{definition}[quasi-order-equivalence]\label{def:quasi-order-equivalent}
   Let $c, c' : A \rel A'$. We say that $c$ and $c'$ are \emph{quasi-order-equivalent},
   written $c \qordeq c'$, if there exist perturbations $\delta^l_1, \delta^l_2 \in \pv_A$ and 
   $\delta^r_1, \delta^r_2 \in \pv_{A'}$ such that the following two squares exist:
@@ -699,7 +719,7 @@ which we specify as follows:
   \item $(cc') \to (dd') \qordeq (c \to d)(c' \to d')$
   \item $(c_1c_1') \times (c_2c_2') \qordeq (c_1 \times c_2)(c_1'\times c_2')$
 \end{itemize}
-\end{comment}
+
 
 We summarize the requirements of a step-3 model below:
 
@@ -710,8 +730,7 @@ We summarize the requirements of a step-3 model below:
     \item There are functors $\upf : \ve \to \vf$ and $\dnf : \ee^{op} \to \ef$ % TODO: image is thin?
     \item Every value edge $c : A \rel A'$ is quasi-left-representable by $\upf(c)$ and
     every computation edge $d : B \rel B'$ is quasi-right-representable by $\dnf(d)$.
-    \item \eric{Do we need the quasi-functoriality of CBPV connectives on relations?}
-    % \item The CBPV connectives $U,F,\times,\to$ are quasi-functorial on relations.
+    \item The CBPV connectives $U,F,\times,\to$ are quasi-functorial on relations.
   \end{enumerate}
 \end{definition}
 
@@ -734,8 +753,12 @@ Now we can discuss what it means for an intensional model to model the dynamic t
   %
   \begin{enumerate}
     \item There is a distinguished value object $D \in \ob(\vf)$.
+    \item There are distinguished value relations 
+    $\iarr{}: U(D \to F D) \rel D$ and $\inat : \nat \rel D$ and $\itimes : D \times D \rel D$
+    each satisfying the retraction property up to bisimilarity.
+    %  $\dnc {\injarr{}}F(\upc{\injarr{}}) \equidyn \id$.
    
-    \item For each value type $A$, there is a value relation $\text{inj}_A : A \rel D$.
+    %\item For each value type $A$, there is a value relation $\text{inj}_A : A \rel D$.
     
     %\item \eric{Do we need this?} If $c : A \rel A'$, then $\text{inj}_{A} = c \comp \text{inj}_{A'}$.
   \end{enumerate}
@@ -799,7 +822,7 @@ For the proof, see Lemma \ref{lem:step-2-model-to-step-3-model} in the Appendix.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{Defining an Extensional Model}\label{sec:extensional-model-definition}
+\subsubsection{Constructing an Extensional Model}\label{sec:extensional-model-definition}
 
 Finally, suppose $\mathcal M$ is a \hyperref[def:step-4-model]{step-4 intensional model}
 (i.e., a step-3 model with an interpretation of the dynamic type).
