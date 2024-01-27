@@ -657,11 +657,11 @@ Then weak bisimilarity is defined by the rules
   {\tnow\, x_? \bisimdelay \tnow\, y_? }
 
   \inferrule*[]
-  {d_1 \Da x_? \and x_? \bisim_{X + 1} y'_?}
-  {\tlater\, d_1 \bisimdelay \tnow\, y'_? }
+  {d_1 \Da x_? \and x_? \bisim_{X + 1} y_?}
+  {\tlater\, d_1 \bisimdelay \tnow\, y_? }
 
   \inferrule*[]
-  {d_2 \Da y_? \and x_? \bisim_{X + 1} y'_?}
+  {d_2 \Da y_? \and x_? \bisim_{X + 1} y_?}
   {\tnow\, x_? \bisimdelay \tlater\, d_2}
 
   \inferrule*[]
