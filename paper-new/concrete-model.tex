@@ -313,28 +313,25 @@ and a homomorphism into the monoid of endomorphisms bisimilar to the identity,
 and likewise for computation types.
 We define the perturbations for $D$ via least-fixpoint in the category of monoids as
 %
-\[ P_D \cong (P_{D \times D}) \times P_{U(D \to FD)}. \]
+\( P_D \cong (P_{D \times D}) \times P_{U(D \to FD)}. \)
 %
-Unfolding the above, the above equation is the same as
+Unfolding the definitions, this is the same as
 %
-\[ P_D \cong (P_D \times P_D) \times (\mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D). \]
+\( P_D \cong (P_D \times P_D) \times (\mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D). \)
 %
 We now explain how to interpret these perturbations as endomorphisms.
 We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
 % via the universal property of the coproduct of monoids, giving a case for each of the generators.
 % In the below, note the use of the functorial action of $\arr$ on morphisms.
-
 %
 % \[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
 %
-
-$\ptb_D(p_{\text{times}}, p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
 \begin{align*}
-    &\alt \tnat(m) \mapsto \tnat(m) \\
+ \ptb_D(p_{\text{times}}, p_{\text{fun}}) &= \lambda d.\text{case $d$ of}  \\
+ &\alt \tnat(m) \mapsto \tnat(m) \\
     &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_{D \times D}(p_\text{times})(d_1, d_2))} \\
     &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. \ptb_{U(D \to FD)}()(\tilde{f}_t))} \\
 \end{align*}
-
     % \item $\ptb_D(1)$
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has
     % \[ \id \arr i^K(\delta^K_D) \] instead.
@@ -345,22 +342,17 @@ $\ptb_D(p_{\text{times}}, p_{\text{fun}}) = \lambda d.\text{case $d$ of}$
     %   \end{align*}
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has 
     % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
-
 One can verify that this defines a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
 We claim that the three relations $\inat$, $\itimes$, and $\iarr$
 %and their lifted versions 
 satisfy the push-pull property.
 As an illustrative case, we establish the push-pull property for the relation $\iarr$.
-We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by
-%
-\[ \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \]
+We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by\( \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \)
 % (recall that $P_{U(D \arr FD)} = \mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D$).
 %
 i.e., we simply forget the other perturbation.
 %
-We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by
-%
-\[ \push{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}), \]
+We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by \( \push{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}) \).
 %
 Showing that the relevant squares commute is straightforward.
 %
@@ -379,10 +371,8 @@ where the perturbations are taken to be the identity.
 For quasi-right-representability, the most interesting case is $\li(\iarr)$.
 Defining the projection $p_{\iarr} : FD \to FU(D \to FD)$ is equivalent to defining
 $p' : D \to UFU(D \to FD)$. We define
-
-$p' = \lambda d.\text{case $d$ of}$
 \begin{align*}
-    &\alt \tnat(m) \mapsto \mho \\
+ p' = \lambda d.\text{case $d$ of}   &\alt \tnat(m) \mapsto \mho \\
     &\alt \ttimes(d_1, d_2) \mapsto \mho \\
     &\alt \tfun(\tilde{f}) \mapsto \theta (\lambda t. \eta(\tilde{f}_t)).
 \end{align*}
@@ -476,11 +466,11 @@ Given a predomain $X$ on a clock-irrelevant type, we can define a
 ``global'' version of the lock-step error ordering and the
 weak bisimilarity relation on elements of the global lift; the former is defined by
 %
-\[ x \le^{gl}_X y := \forall k. x[k] \le y[k], \]
+\( x \le^{gl}_X y := \forall k. x[k] \le y[k], \)
 %
 and the latter is defined by
 %
-\[ x \bisim^{gl}_X y := \forall k. x[k] \bisim y[k]. \]
+\( x \bisim^{gl}_X y := \forall k. x[k] \bisim y[k]. \)
 %
 On the other hand, we can define coinductively a ``lock-step error ordering"
 relation on $\delay(X + 1)$:
