@@ -142,6 +142,12 @@ next-injective-later : {k : Clock} -> {ℓ : Level} -> {A : Type ℓ} ->
 next-injective-later x y eq = λ t i → eq i t
 
 
+▹≡→next≡ : {k : Clock} → {ℓ : Level} → {A : Type ℓ} →
+  (x y : A) →
+  ▹ k , (x ≡ y) →
+  next {k = k} x ≡ next y
+▹≡→next≡ x y H = later-ext (λ t → H t)
+
 
 -- Clock-related postulates and results.
 
@@ -200,24 +206,64 @@ clock-irrel A =
   M k ≡ M k'
   
 
-
-∀kA->A : {ℓ : Level} -> (A : Type ℓ) ->
+∀kA→A : {ℓ : Level} -> (A : Type ℓ) ->
   (∀ (k : Clock) -> A) -> A
-∀kA->A A f = f k0
+∀kA→A A f = f k0
 
--- If A is clock irrelevant, then the above map is inverse
--- to the map A -> ∀ k . A.
-Iso-∀kA-A : {ℓ : Level} -> {A : Type ℓ} -> clock-irrel A -> Iso (∀ (k : Clock) -> A) A
+
+-- If A is clock irrelevant, then ∀ k . A is isomorphic to A.
+Iso-∀kA-A : {ℓ : Level} -> {A : Type ℓ} ->
+  clock-irrel A -> Iso (∀ (k : Clock) -> A) A
 Iso-∀kA-A {A = A} H-irrel-A = iso
-  (∀kA->A A)
+  (∀kA→A A)
   (λ a k -> a)
   (λ a → refl)
   (λ f → clock-ext (λ k → H-irrel-A f k0 k))
 
-∀kA≡A : {ℓ : Level} {A : Type ℓ} -> clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
+∀kA≡A : {ℓ : Level} {A : Type ℓ} ->
+  clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
 ∀kA≡A H = isoToPath (Iso-∀kA-A H)
 
+-- More specifically, if A is clock irrelevant, then the canonical map is an isomorphism.
+clock-irrel→canonical-map-iso : {ℓ : Level} → {A : Type ℓ} →
+  clock-irrel A → isIso (λ a k → a)
+clock-irrel→canonical-map-iso {A = A} H =
+    ∀kA→A A
+  , (λ f → clock-ext λ k → H f k0 k)
+  , (λ a → refl)
 
+
+
+-- If the canonical map is an isomorphism, then A is clock irrelevant.
+
+
+-- See also:  composesToId→Iso in Cubical.Foundations.Isomorphism
+-- Cubical.Foundations.Equiv.BiInvertible
+iso-∀kA-A→clk-irrel : {ℓ : Level} {A : Type ℓ} ->
+  isIso (λ (a : A) (k : Clock) → a) ->
+  clock-irrel A
+iso-∀kA-A→clk-irrel {A = A} (fInv , sec , retr) M k k' = funExt⁻ (sym lem2) k ∙ funExt⁻ lem2 k'
+  where
+
+    inverse-unique : ∀ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} →
+      (f : A → B) (g g' : B → A) →
+      section f g →  -- f ∘ g ≡ id
+      retract f g →  -- g  ∘ f ≡ id, i.e. f is a split mono
+      retract f g' → -- g' ∘ f ≡ id
+      g ≡ g'
+    inverse-unique {A = A} {B = B} f g g' sec retr retr' = funExt aux
+      where
+        aux : (b : B) → g b ≡ g' b
+        aux b = cong g (sym (sec b)) ∙ sym (cong g' (sym (sec b)) ∙ retr' (g b) ∙ sym (retr (g b)))
+   
+    lem1 : fInv ≡ ∀kA→A A
+    lem1 = inverse-unique (λ a k → a) fInv (∀kA→A A) sec retr (λ _ → refl)
+
+    sec' : section (λ a k → a) (∀kA→A A) -- (M : Clock → A) → (λ k₁ → M k0) ≡ M
+    sec' = transport (λ i → section (λ a k → a) (lem1 i)) sec
+
+    lem2 : (λ k'' → M k0) ≡ M
+    lem2 = sec' M
 
 
 
@@ -230,6 +276,7 @@ postulate
   nat-clock-irrel : clock-irrel ℕ
   bool-clock-irrel : clock-irrel Bool
 
+{-
   -- Clock irrelevance over a constant family Clock -> A is equivalent to reflexivity in A
   -- TODO: Is this sound?
   clock-irrel-beta-const : {ℓ : Level} {A : Type ℓ} -> (H : clock-irrel A) ->
@@ -238,6 +285,6 @@ postulate
   -- Clock irrelevance where we provide the same clock k0 is equivalent to reflexivity in M k0
   clock-irrel-beta-k0 : {ℓ : Level} {A : Type ℓ} -> (H : clock-irrel A) ->
     (M : Clock -> A) -> H M k0 k0 ≣ refl
-
+-}
 
 

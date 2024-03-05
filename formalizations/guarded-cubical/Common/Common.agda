@@ -7,6 +7,7 @@
 module Common.Common where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Data.Nat hiding (_^_) renaming (ℕ to Nat)
@@ -47,6 +48,20 @@ inl≠inr {_} {_} {A} {B} a b eq = transport (cong (diagonal ⊤ ⊥) eq) tt
     diagonal Left Right (inr b) = Right
 
 
+{- From Cubical.Data.Sigma.Properties:
+Σ-cong-iso-fst : {A A' : Type ℓ} {B : (a : A') → Type ℓ}
+  (isom : Iso A A') → Iso (Σ A (B ∘ Iso.fun isom)) (Σ A' B)
+-}
+
+-- This is analogous to the above, but allows us to use the *inverse*
+-- function instead.
+-- A  = ∀ k. ▹ k , L k X
+-- A' = ∀ k.       L k X
+Σ-cong-iso-fst' : {A A' : Type ℓ} {B : (a : A) → Type ℓ'}
+  (isom : Iso A A') → Iso (Σ A B) (Σ A' (B ∘ Iso.inv isom))
+Σ-cong-iso-fst' isom = invIso (Σ-cong-iso-fst (invIso isom))
+
+
 
 -- Definitions about relations and two-cells
 
@@ -81,6 +96,19 @@ isPropTwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD} 
   isProp (TwoCell R S f g)
 isPropTwoCell isPropValuedS =
   isPropΠ3 (λ a b aRb -> isPropValuedS _ _)
+
+
+TwoCell→TwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type ℓD}
+  {R R' : A -> B -> Type ℓR}
+  {S S' : C -> D -> Type ℓS} ->
+  (R'→R : ∀ a b -> R' a b -> R a b) ->
+  (S→S' : ∀ c d -> S c d -> S' c d) ->
+  {f : A -> C} ->
+  {g : B -> D} ->
+  TwoCell R S f g ->
+  TwoCell R' S' f g
+TwoCell→TwoCell R'→R S→S' {f = f} {g = g} f≤g =
+  λ a b aR'b → S→S' (f a) (g b) (f≤g a b (R'→R a b aR'b))
 
 
 

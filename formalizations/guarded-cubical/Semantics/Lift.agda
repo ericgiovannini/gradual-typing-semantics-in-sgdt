@@ -96,6 +96,7 @@ isSetL℧ {X = X} isSetX = fix isSetL℧'
 
 
 
+
 Iso-L : {X : Type ℓ} -> Iso (L X) (X ⊎ (▹ (L X)))
 Iso-L {X = X} = iso to inv sec retr
   where
@@ -114,6 +115,15 @@ Iso-L {X = X} = iso to inv sec retr
     retr : retract to inv
     retr (η x) = refl
     retr (θ l~) = refl
+
+-- isSet for Lift without error
+isSetL : {X : Type ℓ} → isSet X → isSet (L X)
+isSetL {X = X} isSetX = fix isSetL'
+  where
+    isSetL' : ▹ (isSet (L X)) → isSet (L X)
+    isSetL' IH = isSetRetract (Iso.fun Iso-L ) (Iso.inv Iso-L) (Iso.leftInv Iso-L)
+      (isSet⊎ isSetX (isSet▹ IH))
+
 
 L-unfold : {X : Type ℓ} -> L X ≡ X ⊎ (▹ (L X))
 L-unfold = isoToPath Iso-L
@@ -308,6 +318,7 @@ inj-θ lx~ ly~ H = let lx~≡ly~ = cong pred H in
   λ t i → lx~≡ly~ i t
 
 
+{-
 predL : {X : Type ℓ} -> (lx : L X) -> ▹ (L X)
 predL (η x) = next (η x)
 predL (θ lx~) = lx~
@@ -316,15 +327,35 @@ inj-θL : {X : Type ℓ} -> (lx~ ly~ : ▹ (L X)) ->
   θ lx~ ≡ θ ly~ ->
   ▸ (λ t -> lx~ t ≡ ly~ t)
 inj-θL lx~ ly~ H = let lx~≡ly~ = cong predL H in λ t i → lx~≡ly~ i t
+-}
 
--- Injectivity results for Lift
-η-inv : {X : Type ℓ} -> L X -> X -> X
-η-inv (η x) y = x
-η-inv (θ lx~) y = y
+-- Injectivity results for Lift without error
+ηL-inv : {X : Type ℓ} -> L X -> X -> X
+ηL-inv (η x) y = x
+ηL-inv (θ lx~) y = y
 
-inj-η : {X : Type ℓ} (x y : X) ->
+θL-inv : {X : Type ℓ} -> L X -> ▹ (L X)
+θL-inv (η x) = next (η x)
+θL-inv (θ lx~) = lx~
+
+
+inj-ηL : {X : Type ℓ} (x y : X) ->
   L.η x ≡ L.η y ->
   x ≡ y
+inj-ηL x y H = λ i -> ηL-inv (H i) x -- also works:  η-inv (H i) y
+
+inj-θL : {X : Type ℓ} (lx~ ly~ : ▹ (L X)) ->
+  L.θ lx~ ≡ L.θ ly~ ->
+  ▸ (λ t -> lx~ t ≡ ly~ t)
+inj-θL lx~ ly~ H = let lx~≡ly~ = cong θL-inv H in
+  λ t i -> lx~≡ly~ i t
+
+inj-θL' : {X : Type ℓ} (lx~ ly~ : ▹ (L X)) →
+  L.θ lx~ ≡ L.θ ly~ →
+  lx~ ≡ ly~
+inj-θL' lx~ ly~ H = later-ext (λ t → inj-θL lx~ ly~ H t)
+
+
 inj-η x y H = λ i -> η-inv (H i) x -- also works:  η-inv (H i) y
 
 

@@ -7,11 +7,13 @@ module Common.ClockProperties where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Path
 open import Cubical.Data.Sum
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool hiding (_≤_)
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Unit
+open import Cubical.Data.Empty
 
 open import Cubical.Foundations.Isomorphism
 
@@ -28,9 +30,10 @@ private
     ℓ ℓ' : Level
 
 
-{- remove -}
 
--- Rewriting axioms used in the proofs:
+--------------------------------------------------------------------------
+-- Rewrites used in the proofs.
+-- Note that only one of these actually involves an axiom: rewrite-force
 
 path-clock-irrel-bool-1 : {k k' : Clock} -> (b : Bool) ->
   bool-clock-irrel (λ _ -> b) k k' ≡ refl
@@ -40,7 +43,7 @@ rewrite-clock-irrel-bool-1 : {k k' : Clock} -> (b : Bool) ->
   bool-clock-irrel (λ _ -> b) k k' ≣ refl
 rewrite-clock-irrel-bool-1 {k = k} {k' = k'} b =
   pathToEq (path-clock-irrel-bool-1 b)
--- clock-irrel-beta-const bool-clock-irrel b k k'
+
 
 path-clock-irrel-bool-2 :
     (M : Clock -> Bool) -> bool-clock-irrel M k0 k0 ≡ refl
@@ -51,11 +54,12 @@ rewrite-clock-irrel-bool-2 :
     (M : Clock -> Bool) -> bool-clock-irrel M k0 k0 ≣ refl
 rewrite-clock-irrel-bool-2 M =
   pathToEq (path-clock-irrel-bool-2 M)
--- clock-irrel-beta-k0 bool-clock-irrel
+
 
 rewrite-force : ∀ {ℓ : Level} -> {A : Clock -> Type ℓ} (f : ∀ k -> A k) →
   force' (λ k -> next (f k)) ≣ f
 rewrite-force f = pathToEq (force'-beta f)
+
 
 rewrite-transp : ∀ {ℓ : Level} {X : Type ℓ} →
   transp (λ i → X) i0 ≣ id
@@ -68,9 +72,8 @@ rewrite-transp = pathToEq (funExt (λ x -> transportRefl x))
 {-# REWRITE rewrite-force #-}
 
 {-# REWRITE rewrite-transp #-}
+--------------------------------------------------------------------------
 
-
-{- end remove -}
 
 {- Iso definitions used in this file:
 
@@ -107,14 +110,53 @@ rewrite-transp = pathToEq (funExt (λ x -> transportRefl x))
 
 -}
 
+-- Turn an equality into an iso.
+Eq-Iso : {A B : Type ℓ} ->
+  A ≡ B -> Iso A B
+Eq-Iso {A = A} {B = B} H-eq = subst (Iso A) H-eq idIso
+-- same as: transport (cong (Iso A) H-eq) idIso
+
 
 -- The unit type is clock-irrelevant.
 Unit-clock-irrel : clock-irrel Unit
 Unit-clock-irrel M k k' with M k | M k'
 ...  | tt | tt = refl
 
+-- The empty type is clock-irrelevant.
+⊥-clock-irrel : clock-irrel ⊥
+⊥-clock-irrel M k k' = isProp⊥ (M k) (M k')
+
+⊥*-clock-irrel : clock-irrel {ℓ = ℓ} ⊥*
+⊥*-clock-irrel M k k' = isProp⊥* (M k) (M k')
 
 
+Π-Path : ∀ {A : Type ℓ} {B : Type ℓ'} {x y : B} →
+  Iso (A → Path B x y) (Path (A → B) (λ a → x) (λ a → y))
+Π-Path = iso
+  (λ f → funExt (λ a → f a))
+  (λ eq a → funExt⁻ eq a)
+  (λ _ → refl)
+  (λ _ → refl)
+
+
+∀k-path : ∀ {A : Type ℓ} {x y : A} →
+  clock-irrel A →
+  Iso (∀ (k : Clock) → Path A x y) (Path A x y)
+∀k-path {A = A} {x = x} {y = y}  H =
+  ((k : Clock) → Path A x y)
+    Iso⟨ Π-Path ⟩
+  Path (∀ (k : Clock) → A) (λ k → x) (λ k → y)
+    Iso⟨ congPathIso {!!} ⟩
+  Path A x y
+  ∎Iso
+
+path-clock-irrel : ∀ {A : Type ℓ} {x y : A} →
+  clock-irrel A → clock-irrel (Path A x y)
+path-clock-irrel {A = A} {x = x} {y = y} H =
+  iso-∀kA-A→clk-irrel (∀kA→A (Path A x y) , {!!} , (λ _ → refl))
+
+
+-- Auxiliary deifnition used for the iso between ⊎ and Σ Bool.
 bool2ty : Type ℓ -> Type ℓ -> Bool -> Type ℓ
 bool2ty A B true = A
 bool2ty A B false = B
@@ -151,7 +193,6 @@ Iso-⊎-ΣBool {A = A} {B = B} = iso to inv sec retr
     retr (inr b) = refl
 
 
-
 ∀clock-Σ : {A : Type} -> {B : A -> Clock -> Type} ->
     clock-irrel A ->
     (∀ (k : Clock) -> Σ A (λ a -> B a k)) ->
@@ -173,15 +214,10 @@ Dist-Pi-Sigma : {S : Type} -> {A : S -> Type} -> {B : (s : S) -> A s -> Type} ->
       (Σ[ x ∈ (∀ s -> A s) ] ( ∀ s -> B s (x s) ))
 Dist-Pi-Sigma = Σ-Π-Iso
 
--- Turn an equality into an iso.
-Eq-Iso : {A B : Type ℓ} ->
-  A ≡ B -> Iso A B
-Eq-Iso {A = A} {B = B} H-eq = subst (Iso A) H-eq idIso
--- same as: transport (cong (Iso A) H-eq) idIso
 
 
 -- Clock quantification distributes over products.
-Iso-∀clock-× : {A B : Clock → Type ℓ} →
+Iso-∀clock-× : {A : Clock → Type ℓ} {B : Clock → Type ℓ'} →
   Iso (∀ k → A k × B k) ((∀ k → A k) × (∀ k → B k))
 Iso.fun Iso-∀clock-× f = (λ k → f k .fst) , (λ k → f k .snd)
 Iso.inv Iso-∀clock-× (f , g) = λ k → f k , g k

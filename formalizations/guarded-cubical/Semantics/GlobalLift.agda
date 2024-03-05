@@ -10,16 +10,21 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.HLevels
 
-open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_·_ ; _^_)
+open import Cubical.Functions.Embedding
+open import Cubical.Relation.Nullary
+
+open import Cubical.Data.Nat hiding (_·_ ; _^_)
 open import Cubical.Data.Empty.Base renaming (rec to exFalso)
 open import Cubical.Data.Sum
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool hiding (_≤_)
 open import Cubical.Data.Unit renaming (Unit to ⊤)
-open import Cubical.Data.Nat
+-- open import Cubical.Data.Nat
 open import Cubical.Data.List using (List ; [] ; _∷_)
 import Cubical.Data.List as List
+open import Cubical.Data.Empty as ⊥
 
 open import Agda.Builtin.Equality renaming (_≡_ to _≣_) hiding (refl)
 open import Agda.Builtin.Equality.Rewrite
@@ -51,6 +56,17 @@ L^gl X = ∀ (k : Clock) -> L k X
 delay-n : {X : Type ℓ} → L^gl X → ℕ → L^gl X
 delay-n l zero = l
 delay-n l (suc n) = δL^gl (delay-n l n)
+
+-- If X is a Set, then global lift is a Set
+isSetL^gl : {X : Type ℓ} → isSet X → isSet (L^gl X)
+isSetL^gl isSetX = isSetΠ (λ k → isSetL k isSetX)
+
+-- ηL^gl is not equal to δL^gl
+ηL^gl≠δL^gl : ∀ {X : Type ℓ} (x : X) l → ¬ (ηL^gl x ≡ δL^gl l)
+ηL^gl≠δL^gl x l eq = Iso.fun isom (λ k → Lη≠Lθ k (funExt⁻ eq k))
+  where
+    isom : Iso (Clock → ⊥) ⊥
+    isom = Iso-∀kA-A ⊥-clock-irrel
 
 
 -- Global Lift satisfies an "unfolding" equation.
@@ -250,6 +266,77 @@ module _ {X : Type ℓ} (H : clock-irrel X) where
       ≡ δL^gl l' k
 
 -}
+
+
+module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
+
+  -- These proofs are easy because we have the rewrites!
+  -- If we didn't we would need to use the lemmas iso-fun-η and iso-fun-θ.
+  bigStep-η-zero : ∀ l (x : X) → (l ≡ ηL^gl x) → toFun H l 0 ≡ inl x
+  bigStep-η-zero l x eq = (λ i → toFun H (eq i) 0) ∙ refl
+
+  bigStep-δ-suc : ∀ l l' n → (l ≡ δL^gl l') → toFun H l (suc n) ≡ toFun H l' n
+  bigStep-δ-suc l l' n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
+
+  bigStep-δ-zero : ∀ l l' → (l ≡ δL^gl l') → toFun H l 0 ≡ inr tt
+  bigStep-δ-zero l l' eq = (λ i → toFun H (eq i) 0) ∙ refl
+  
+  
+  bigStep-δ^n : ∀ l l' n m → (l ≡ (δL^gl ^ n) l') → toFun H l (n + m) ≡ toFun H l' m
+  bigStep-δ^n l l' zero m eq = λ i → toFun H (eq i) m
+  bigStep-δ^n l l' (suc n) m eq = {!!}
+
+  bigStep-δ^n∘η : ∀ l x n → (l ≡ (δL^gl ^ n) (ηL^gl x)) → toFun H l n ≡ inl x
+  bigStep-δ^n∘η l x zero eq = bigStep-η-zero l x eq
+  bigStep-δ^n∘η l x (suc n) eq = aux ∙ IH
+    where
+      aux : toFun H l (suc n) ≡ toFun H ((δL^gl ^ n) (ηL^gl x)) n
+      aux = bigStep-δ-suc l (((δL^gl ^ n) (ηL^gl x))) n eq
+
+      IH : toFun H ((δL^gl ^ n) (ηL^gl x)) n ≡ inl x
+      IH = (bigStep-δ^n∘η ((δL^gl ^ n) (ηL^gl x)) x n refl)
+
+
+  -- The following theorems are only true under the stricter definition of toFun
+  -- where the resulting function is defined *at most once*.
+  bigStep-η-suc : ∀ l x n → (l ≡ ηL^gl x) → toFun H l (suc n) ≡ inr tt
+  bigStep-η-suc l x n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
+
+  bigStep-unique : ∀ l x x' n m →
+    (l ≡ (δL^gl ^ n) (ηL^gl x)) →
+    toFun H l m ≡ inl x' →
+    (n ≡ m) × (x ≡ x')
+  bigStep-unique l x x' zero zero eq1 eq2 = {!!}
+  bigStep-unique l x x' zero (suc m) eq1 eq2 = {!!}
+    where
+      aux : toFun H l zero ≡ {!!}
+      aux = {!!}
+  bigStep-unique l x x' (suc n) zero eq1 eq2 = {!!}
+  bigStep-unique l x x' (suc n) (suc m) eq1 eq2 = {!!}
+
+
+  -- The function given by the big-step semantics is defined at most once.
+  bigStep-unique' : ∀ l x x' n m →
+   toFun H l n ≡ inl x →
+   toFun H l m ≡ inl x' →
+   (n ≡ m) × (x ≡ x')
+  bigStep-unique' l x x' n m eq1 eq2 with Iso.fun (L^gl-iso H) l
+  bigStep-unique' l x x' zero zero eq1 eq2       | inl x'' = refl , (isEmbedding→Inj isEmbedding-inl x x' (sym eq1 ∙ eq2))
+  bigStep-unique' l x x' zero (suc m) eq1 eq2    | inl x'' = ⊥.rec (inl≠inr _ _ (sym eq2))
+  bigStep-unique' l x x' (suc n) zero eq1 eq2    | inl x'' = ⊥.rec (inl≠inr _ _ (sym eq1))
+  bigStep-unique' l x x' (suc n) (suc m) eq1 eq2 | inl x'' = ⊥.rec (inl≠inr _ _ (sym eq1)) -- could also use eq2
+  
+  bigStep-unique' l x x' zero zero eq1 eq2       | inr l' = ⊥.rec (inl≠inr _ _ (sym eq1)) -- could also use eq2
+  bigStep-unique' l x x' zero (suc m) eq1 eq2    | inr l' = ⊥.rec (inl≠inr _ _ (sym eq1))
+  bigStep-unique' l x x' (suc n) zero eq1 eq2    | inr l' = ⊥.rec (inl≠inr _ _ (sym eq2))
+  bigStep-unique' l x x' (suc n) (suc m) eq1 eq2 | inr l' = (cong suc (IH .fst)) , IH .snd
+    where
+      IH : (n ≡ m) × (x ≡ x')
+      IH = bigStep-unique' l' x x' n m eq1 eq2
+
+
+
+  
 
 
 module Test where
