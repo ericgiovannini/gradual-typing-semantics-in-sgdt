@@ -5,7 +5,7 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Semantics.DelayCoalgebra where
+module Semantics.Adequacy.Coinductive.DelayCoalgebra where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -19,7 +19,8 @@ open import Cubical.Foundations.Isomorphism
 
 import Cubical.Data.Equality as Eq
 
-open import Semantics.Delay
+open import Common.Common
+open import Semantics.Adequacy.Coinductive.Delay
 
 private
   variable
@@ -38,14 +39,7 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
   liftSum f (inr a) = inr (f a)
 
   open Coalg
-
-  {-
-  record CoalgMorphism {ℓ1 ℓ2 : Level} (c : Coalg ℓ1) (d : Coalg ℓ2) :
-    Type (ℓ-max ℓ (ℓ-max ℓ1 ℓ2)) where
-    field
-      f : c .V -> d .V
-      com : d .un ∘ f ≡ liftSum f ∘ c .un
-  -}
+  
 
   CoalgMorphism : {ℓ1 ℓ2 : Level} (c : Coalg ℓ1) (d : Coalg ℓ2) ->
     Type (ℓ-max (ℓ-max ℓ ℓ1) ℓ2)
@@ -56,18 +50,6 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
   final-coalgebra : ∀ {ℓd : Level} -> Coalg ℓd ->
     Type (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓd))
   final-coalgebra {ℓd} d = ∀ (c : Coalg ℓd) -> isContr (CoalgMorphism c d)
-  -- Doesn't work: {ℓc : Level} -> (c : Coalg ℓc) -> isContr (CoalgMorphism c d)
-
- 
-
-
-  inl≠inr : ∀ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} ->
-    (a : A) (b : B) -> inl a ≡ inr b -> ⊥
-  inl≠inr {_} {_} {A} {B} a b eq = transport (cong (diagonal ⊤ ⊥) eq) tt
-    where
-      diagonal : (Left Right : Type) -> (A ⊎ B) -> Type
-      diagonal Left Right (inl a) = Left
-      diagonal Left Right (inr b) = Right
 
 
   unfold-delay : Delay X -> X ⊎ Delay X
@@ -105,7 +87,8 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
 
   unfold-inv2 : (d : Delay X) -> (d' : Delay X) ->
     unfold-delay d ≡ inr d' -> d .view ≡ running d'
-  unfold-inv2 d d' H = cong view (isoFunInjective delay-iso-sum d (stepD d') H)
+  unfold-inv2 d d' H =
+    cong view (isoFunInjective delay-iso-sum d (stepD d') H)
 
 
 
@@ -114,10 +97,11 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
     V = Delay X ;
     un = unfold-delay }
 
-  DelayCoalgFinal : {ℓc : Level} -> (c : Coalg ℓ) ->
-    isContr (Σ[ h ∈ (c .V -> Delay X) ] unfold-delay ∘ h ≡ liftSum h ∘ c. un) -- isContr (CoalgMorphism c DelayCoalg)
+  DelayCoalgFinal : {ℓc : Level} ->
+    (c : Coalg ℓ) ->
+    isContr (CoalgMorphism c DelayCoalg) -- i.e. isContr (Σ[ h ∈ (c .V -> Delay X) ] unfold-delay ∘ h ≡ liftSum h ∘ c. un)
   DelayCoalgFinal c =
-    (fun , (funExt commute)) , unique' (fun , (funExt commute))
+    (fun , (funExt commute)) , unique' (fun , funExt commute)
     where
       
       fun : c .V -> Delay X
@@ -139,6 +123,7 @@ module _ (X : Type ℓ) (isSetX : isSet X)  where
         where
           eq-fun : (v : c .V) -> h v ≡ h' v
           view (eq-fun v i) with c .un v in eq
+          
           ... | inl x = view (unfold-delay-inj (h v) (h' v) (com-v ∙ sym com'-v) i)
             where
               com-v : (unfold-delay (h v)) ≡ inl x
