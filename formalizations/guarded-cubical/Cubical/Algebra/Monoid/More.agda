@@ -86,7 +86,7 @@ M1 ×CM M2 = makeCommMonoid
   {M = ⟨ M1 ⟩ × ⟨ M2 ⟩}
   (commMonoidId M1 , commMonoidId M2)
   (λ { (m1 , m2) (m1' , m2') -> (m1 ·M1 m1') , (m2 ·M2 m2')})
-  (isSet× (isSetCommMonoid M1) (isSetCommMonoid M2))
+  (isSet× M1.is-set M2.is-set)
   (λ { (m1 , m2) (m1' , m2') (m1'' , m2'') ->
     ≡-× (M1 .snd .isMonoid .isSemigroup .·Assoc m1 m1' m1'')
         (M2 .snd .isMonoid .isSemigroup .·Assoc m2 m2' m2'') })
@@ -95,6 +95,8 @@ M1 ×CM M2 = makeCommMonoid
   λ { (m1 , m2) (m1' , m2') -> ≡-×
     (M1 .snd .·Comm m1 m1') (M2 .snd .·Comm m2 m2') }
     where
+      module M1 = CommMonoidStr (M1 .snd)
+      module M2 = CommMonoidStr (M2 .snd)
       open CommMonoidStr
       open IsMonoid
       open IsSemigroup
