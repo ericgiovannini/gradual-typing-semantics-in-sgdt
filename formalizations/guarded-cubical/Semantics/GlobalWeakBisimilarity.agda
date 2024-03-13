@@ -45,7 +45,6 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
          (R-prop-valued : ∀ x y → isProp (R x y))
          (R-clk-irrel : ∀ x y → clock-irrel (R x y)) where
 
-  -- open BisimSum
 
   -- Some convenience definitions and syntax.
   ≈S : (k : Clock) → L k X → L k X → Type (ℓ-max ℓ ℓR)
@@ -131,20 +130,6 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
   module Prop where
     open GlobalCases
 
-
-    δL^gl-inj : ∀ (lg lg' : L^gl X) → (δL^gl lg) ≡ (δL^gl lg') → lg ≡ lg'
-    δL^gl-inj lg lg' eq = clock-ext (force' goal)
-    -- clock-ext (λ k → inj-θL k (next (lg k)) (next (lg' k)) (funExt⁻ eq k) {!!})
-    -- inj-θL k (funExt⁻ eq k)
-      where
-        goal : ∀ k → ▹ k , (lg k ≡ lg' k)
-        goal k t = inj-θL k (next (lg k)) (next (lg' k)) (funExt⁻ eq k) t
-
-
-    ηL^gl-inj : ∀ (x y : X) → ηL^gl x ≡ ηL^gl y → ∀ (k : Clock) → x ≡ y
-    ηL^gl-inj x y eq k = inj-ηL k x y (funExt⁻ eq k)
-
-
     δL^gl-inj-cor : ∀ n m (x y : X) ->
       (δL^gl ^ n) (ηL^gl x) ≡ (δL^gl ^ m) (ηL^gl y) ->
       (n ≡ m) × (x ≡ y)
@@ -188,12 +173,25 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
     _ Iso⟨ Σ-cong-iso-snd (λ x → Σ-cong-iso-snd (λ y → prodIso funExtIso (prodIso funExtIso (Iso-∀kA-A (R-clk-irrel x y))))) ⟩
     ret-ret-g lg1 lg2 ∎Iso
 
+  lem1' : ∀ lg1 lg2 →
+    (∀ (k : Clock) → ret-ret (lg1 k) (lg2 k)) → (ret-ret-g lg1 lg2)
+  lem1' lg1 lg2 f =
+    (f k0 .fst) ,
+    (f k0 .snd .fst) ,
+    funExt (λ k → f k .snd .snd .fst ∙ congS η (X-clk-irrel (λ k' → f k' .fst) k k0)) ,
+    -- (funExt (λ k → transport {!!} (f k0 .snd .snd .fst))) ,
+    funExt (λ k → f k .snd .snd .snd .fst ∙ congS η (X-clk-irrel (λ k' → f k' .snd .fst) k k0)) ,
+    f k0 .snd .snd .snd .snd
+    
+
 
   lem2 : ∀ lg1 lg2 →
     Iso (∀ (k : Clock) → ret-theta (lg1 k) (lg2 k)) (ret-theta-g lg1 lg2)
   lem2 lg1 lg2 =
     _ Iso⟨ Iso-∀clock-Σ X-clk-irrel ⟩
-    {!!}
+    _ Iso⟨ Σ-cong-iso-snd (λ x → Iso-∀clock-×) ⟩
+    _ Iso⟨ Σ-cong-iso-snd (λ x → {!!}) ⟩
+    _ ∎Iso
 
 
   lem3 : ∀ lg1 lg2 →
@@ -276,49 +274,34 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
   module Adequacy where
 
    open BigStepLemmas X-clk-irrel
-
-   -- Type alias for the codomain of the big-step term semantics.
-   Fun : Type ℓ
-   Fun = ℕ → X ⊎ ⊤
+   open PartialFunctions
 
    -- The big-step term semantics.
    ⟦_⟧ : L^gl X → Fun
    ⟦ lg ⟧ = toFun X-clk-irrel lg
-
-   -- "Intensional" termination predicate for big-step terms.
-   _↓fun[_]_ : Fun → ℕ → X → Type ℓ
-   f ↓fun[ n ] x = f n ≡ inl x
-
-   -- "Extensional" termination predicate.
-   _↓fun_ : Fun → X → Type ℓ
-   f ↓fun x = Σ[ m ∈ ℕ ] f ↓fun[ m ] x
-
-   ↓n-unique : (f : Fun) → (n : ℕ) → (x y : X) →
-     f ↓fun[ n ] x → f ↓fun[ n ] y → x ≡ y
-   ↓n-unique f n x y f↓nx f↓ny =
-     isEmbedding→Inj isEmbedding-inl x y (sym f↓nx ∙ f↓ny)
-   
-   -- Failure to terminate in n or fewer steps
-   _↑fun[_] : Fun → ℕ → Type ℓ
-   f ↑fun[ n ] = ∀ m → m ≤ n → (f n ≡ inr tt)
-
 
 
    -- (Step-indexed) weak bisimilarity for the Fun type.
    bisimFun : Fun → Fun → ℕ → Type (ℓ-max ℓ ℓR)
    syntax bisimFun f g n = n ⊨ f ≈ g
 
-   def : _ → _ → _
-   def f g =
-      (Σ[ x ∈ X ] Σ[ y ∈ X ] (f ↓fun[ 0 ] x) × (g ↓fun[ 0 ] y) × R x y)
-    + (Σ[ x ∈ X ] Σ[ y ∈ X ] Σ[ m ∈ ℕ ] (f ↓fun[ 0 ] x) × (g ↓fun[ m ] y) × R x y)
-    + (Σ[ x ∈ X ] Σ[ y ∈ X ] Σ[ m ∈ ℕ ] (f ↓fun[ m ] x) × (g ↓fun[ 0 ] y) × R x y)
+   one-terminates-at-n : _ → _ → _ → _
+   one-terminates-at-n n f g =
+      -- (Σ[ x ∈ X ] Σ[ y ∈ X ] (f ↓fun[ 0 ] x) × (g ↓fun[ 0 ] y) × R x y)
+      (Σ[ x ∈ X ] Σ[ y ∈ X ] Σ[ m ∈ ℕ ] (f ↓fun[ n ] x) × (g ↓fun[ m ] y) × R x y)
+    + (Σ[ x ∈ X ] Σ[ y ∈ X ] Σ[ m ∈ ℕ ] (f ↓fun[ m ] x) × (g ↓fun[ n ] y) × R x y)
 
-   zero  ⊨ f ≈ g = def f g + (f ↑fun[ 0 ] × g ↑fun[ 0 ])
-   suc n ⊨ f ≈ g = def f g + (f ↑fun[ n ] × g ↑fun[ n ] × (n ⊨ f ≈ g))
+   zero  ⊨ f ≈ g = one-terminates-at-n zero f g + (f ↑fun[ 0 ] × g ↑fun[ 0 ])
+   suc n ⊨ f ≈ g = one-terminates-at-n zero f g + (f ↑fun[ 0 ] × g ↑fun[ 0 ] × (n ⊨ (f ∘ suc) ≈ (g ∘ suc)))
 
    -- n ⊨ f ≈ g = def f g + ((n ≡ zero) + (n ≡ suc n' × n' ⊨ f ≈ g))
-   
+
+   bisimFun-downward : (f g : Fun) (n : ℕ) →
+     suc n ⊨ f ≈ g →
+     n ⊨ (f ∘ suc) ≈ (g ∘ suc)
+   bisimFun-downward f g n (inl (inl (x , y , m , f↓x , g↓y))) = {!!}
+   bisimFun-downward f g n (inl (inr (x , y , m , f↓x , g↓y))) = {!!}
+   bisimFun-downward f g n (inr both-div) = {!!}
 
    -- A more intuitive definition, but harder to establish.
    _≈fun[_]_ : Fun → ℕ → Fun → Type (ℓ-max ℓ ℓR)
@@ -327,17 +310,92 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
      (∀ (y : X) → g m ≡ inl y → Σ[ j ∈ ℕ ] Σ[ x ∈ X ] (f j ≡ inl x) × R x y)
 
 
-   -- The first definition implies the second.
-   adequacy-pt2 : (f g : Fun) (n : ℕ) → n ⊨ f ≈ g → f ≈fun[ n ] g
-   adequacy-pt2 f g zero (inl (inl (x , y , f↓x , g↓y , xRy))) m m≤zero =
-     (λ x' eq → 0 , y , g↓y , {!!}) , {!!}
-   adequacy-pt2 f g zero (in1 (in2 (x , y , f↓x , g↓y , xRy))) m m≤zero = {!!}
-   adequacy-pt2 f g zero (inl (inr (inr x))) = {!!}
-   adequacy-pt2 f g zero (inr (f↑ , g↑)) m m≤zero =
-     (λ x eq → ⊥.rec (inl≠inr {!!} {!!} {!!})) ,
+   -- The first definition implies the second, provided that the
+   -- functions satisfy the above (strong) uniqueness property.
+   adequacy-pt2 : (f g : Fun) (Hf : ↓-unique f) (Hg : ↓-unique g) →
+     (n : ℕ) → n ⊨ f ≈ g → f ≈fun[ n ] g
+
+   -- case n = 0, f terminates in 0 steps, and g terminates in m steps
+   adequacy-pt2 f g Hf Hg zero (inl (inl (x , y , m , f↓x , g↓y , xRy))) l l≤zero = aux
+     where
+       aux : _ × _
+       aux .fst x' f↓x' = m , y , g↓y , transport (cong₂ R x≡x' refl) xRy
+         where
+           x≡x' : x ≡ x'
+           x≡x' = isEmbedding→Inj isEmbedding-inl x x'
+             (sym f↓x ∙ (subst (f ↓fun[_] x') (≤0→≡0 l≤zero) f↓x'))  -- (subst (λ j → f ↓fun[ j ] x') l≡zero f↓x')
+             
+       aux .snd y' g↓y' = 0 , x , f↓x , transport (cong₂ R refl y≡y') xRy
+         where
+           y≡y' : y ≡ y'
+           y≡y' = Hg m l y y' g↓y g↓y'
+
+   -- case n = 0, f terminates in m steps, and g terminates in 0 steps
+   adequacy-pt2 f g Hf Hg zero (inl (inr (x , y , m , f↓x , g↓y , xRy))) l l≤zero =
      {!!}
-   adequacy-pt2 f g (suc n) (in1 x) = {!!}
-   adequacy-pt2 f g (suc n) (inr x) = {!!}
+
+   -- case n = 0, f and g appear to diverge at 0 steps
+   adequacy-pt2 f g Hf Hg zero (inr (f↑ , g↑)) l l≤zero = aux
+     where
+       aux : _ × _
+       aux .fst x' f↓x' =
+         ⊥.rec (coherence f 0 x' (subst (f ↓fun[_] x') (≤0→≡0 l≤zero) f↓x') f↑)
+
+       aux .snd y' g↓y' =
+         ⊥.rec (coherence g 0 y' (subst (g ↓fun[_] y') (≤0→≡0 l≤zero) g↓y') g↑)
+
+   -- case n = suc n, f terminates in 0 steps, and g terminates in m steps
+   adequacy-pt2 f g Hf Hg (suc n) (inl (inl (x , y , m , f↓x , g↓y , xRy))) l l≤zero = {!!}
+
+   -- case n = suc n, f terminates in m steps, and g terminates in 0 steps
+   adequacy-pt2 f g Hf Hg (suc n) (inl (inr (x , y , m , f↓x , g↓y , xRy))) l l≤zero = {!!}
+
+   -- case n = suc n, f and g appear to diverge at 0 steps
+   adequacy-pt2 f g Hf Hg (suc n) (inr (f↑ , g↑ , bisim-f-g-n)) l l≤suc-n = aux (≤-suc-n l n l≤suc-n)
+     where
+       ≤-suc-n : ∀ m n → m ≤ suc n → (m ≤ n) ⊎ (m ≡ suc n)
+       ≤-suc-n m n H = {!!}
+       
+       aux : _ → _ × _
+       
+       -- If l ≤ n, then the result follows by the IH (i.e. the theorem at n).
+       aux (inl l≤n) .fst x' f↓x' = {!!}
+       -- adequacy-pt2 f g Hf Hg n bisim-f-g-n l l≤n
+         where
+           IH : _
+           IH = adequacy-pt2 (f ∘ suc) (g ∘ suc) {!!} {!!} n bisim-f-g-n l l≤n
+
+           m : ℕ
+           m = IH .fst x' {!!} .fst
+
+       aux (inr l≡suc-n) .fst x' f↓x' = suc m , y , eq , Rx'y
+         where
+           IH : _
+           IH = adequacy-pt2 (f ∘ suc) (g ∘ suc) {!!} {!!} n bisim-f-g-n n ≤-refl
+
+           m : ℕ
+           m = IH .fst x' ((cong f (sym l≡suc-n)) ∙ f↓x') .fst
+
+           y : X
+           y = IH .fst x' ((cong f (sym l≡suc-n)) ∙ f↓x') .snd .fst
+
+           eq : g (suc m) ≡ inl y
+           eq = IH .fst x' ((cong f (sym l≡suc-n)) ∙ f↓x') .snd .snd .fst
+
+           Rx'y : R x' y
+           Rx'y = IH .fst x' ((cong f (sym l≡suc-n)) ∙ f↓x') .snd .snd .snd
+
+       aux (inr l≡suc-n) .snd y' g↓y' = {!!}
+       -- Otherwise, if l ≡ suc n, we proceed by contradiction.
+       -- aux (inr l≡suc-n) .fst x' f↓x' =
+       --   ⊥.rec (coherence f (suc n) x' (subst (f ↓fun[_] x') l≡suc-n f↓x') f↑)
+       -- aux (inr l≡suc-n) .snd y' g↓y' =
+       --   ⊥.rec (coherence g (suc n) y' (subst (g ↓fun[_] y') l≡suc-n g↓y') g↑)
+
+       -- aux (inr l≡suc-n) = ⊥.rec (coherence f (suc n) {!!} {!!} {!!})
+         where
+           pf : _
+           pf = adequacy-pt2 (f ∘ suc) (g ∘ suc) {!!} {!!} n (bisimFun-downward f g n {!bisim-f-g-n!}) n ≤-refl
 
 
    -- Global bisimilarity implies the first definition.
@@ -345,11 +403,32 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
      (lg1 ≈g lg2) → (n : ℕ) → (n ⊨ ⟦ lg1 ⟧ ≈ ⟦ lg2 ⟧)
    adequacy-pt1 lg1 lg2 bisim zero with unfold-≈g bisim
    ... | in1 (x , y , eq1 , eq2 , xRy) =
-     inl (in1 (x , y , bigStep-η-zero lg1 x eq1 , bigStep-η-zero lg2 y eq2 , xRy))
+     inl (inl (x , y , 0 , bigStep-η-zero lg1 x eq1 , bigStep-η-zero lg2 y eq2 , xRy))
+
+   ... | in2 (x , m , y , eq1 , eq2 , xRy) =
+     inl (inl (x , y , m , bigStep-η-zero lg1 x eq1 , bigStep-δ^n∘η lg2 y m eq2 , xRy)) 
+
+   ... | in3 (y , m , x , eq2 , eq1 , xRy) =
+     in1 (inr (x , y , m , bigStep-δ^n∘η lg1 x m eq1 , bigStep-η-zero lg2 y eq2 , xRy))
+
+   ... | in4 (lg1' , lg2' , eq1 , eq2 , bisim') =
+     inr
+       ((λ m m≤zero → (λ i → toFun X-clk-irrel lg1 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg1 lg1' eq1)) ,
+        (λ m m≤zero → (λ i → toFun X-clk-irrel lg2 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg2 lg2' eq2)))
+
+   adequacy-pt1 lg1 lg2 bisim (suc n) with unfold-≈g bisim
+   ... | in1 x = {!!}
    ... | in2 x = {!!}
    ... | in3 x = {!!}
-   ... | in4 (lg1' , lg2' , eq1 , eq2 , bisim') = inr ((λ m m≤zero → {!!}) , {!!})
-   adequacy-pt1 lg1 lg2 bisim (suc n) = {!!}
+   ... | in4 (lg1' , lg2' , eq1 , eq2 , bisim') = inr pf
+     where
+       pf : _ × _
+       pf .fst      m m≤zero = (λ i → toFun X-clk-irrel lg1 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg1 lg1' eq1)
+       pf .snd .fst m m≤zero = (λ i → toFun X-clk-irrel lg2 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg2 lg2' eq2)
+       -- pf .fst      m m≤suc-n = {!!}
+       -- pf .snd .fst m m≤suc-n = {!!}
+       pf .snd .snd = let IH = adequacy-pt1 lg1' lg2' bisim' n in {!!} -- Know: lg1 = δ^gl (lg1'), so ⟦ lg1 ⟧ ∘ suc ≡ ⟦ lg1' ⟧
+       -- pf .snd .snd = adequacy-pt1 lg1 lg2 bisim n
 
 
 {-

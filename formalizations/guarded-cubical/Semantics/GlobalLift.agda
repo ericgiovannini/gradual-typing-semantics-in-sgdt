@@ -16,11 +16,12 @@ open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 
 open import Cubical.Data.Nat hiding (_·_ ; _^_)
+open import Cubical.Data.Nat.Order hiding (eq)
 open import Cubical.Data.Empty.Base renaming (rec to exFalso)
 open import Cubical.Data.Sum
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool hiding (_≤_)
-open import Cubical.Data.Unit renaming (Unit to ⊤)
+open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
 -- open import Cubical.Data.Nat
 open import Cubical.Data.List using (List ; [] ; _∷_)
 import Cubical.Data.List as List
@@ -69,6 +70,19 @@ isSetL^gl isSetX = isSetΠ (λ k → isSetL k isSetX)
     isom = Iso-∀kA-A ⊥-clock-irrel
 
 
+δL^gl-inj : ∀ {X : Type ℓ} → (lg lg' : L^gl X) → (δL^gl lg) ≡ (δL^gl lg') → lg ≡ lg'
+δL^gl-inj lg lg' eq = clock-ext (force' goal)
+-- clock-ext (λ k → inj-θL k (next (lg k)) (next (lg' k)) (funExt⁻ eq k) {!!})
+-- inj-θL k (funExt⁻ eq k)
+  where
+    goal : ∀ k → ▹ k , (lg k ≡ lg' k)
+    goal k t = inj-θL k (next (lg k)) (next (lg' k)) (funExt⁻ eq k) t
+
+
+ηL^gl-inj : ∀ {X : Type ℓ} → (x y : X) → ηL^gl x ≡ ηL^gl y → ∀ (k : Clock) → x ≡ y
+ηL^gl-inj x y eq k = inj-ηL k x y (funExt⁻ eq k)
+
+
 -- Global Lift satisfies an "unfolding" equation.
 L^gl-iso : {X : Type ℓ} ->
   clock-irrel X ->
@@ -82,18 +96,12 @@ L^gl-iso {X = X} H-irrel =
     Iso⟨ ⊎Iso ((Iso-∀kA-A H-irrel)) force-iso ⟩
   X ⊎ L^gl X ∎Iso
 
-
 -- Describing the behavior of the above isomorphism:
-
-
 
 -- Rewriting axioms used in the proofs:
 
 
 {-# REWRITE rewrite-transp #-}
-
-
-
 
 iso-inv-inl : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.inv (L^gl-iso H) (inl x) ≡ λ k -> η x
@@ -284,7 +292,13 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   
   bigStep-δ^n : ∀ l l' n m → (l ≡ (δL^gl ^ n) l') → toFun H l (n + m) ≡ toFun H l' m
   bigStep-δ^n l l' zero m eq = λ i → toFun H (eq i) m
-  bigStep-δ^n l l' (suc n) m eq = {!!}
+  bigStep-δ^n l l' (suc n) m eq = aux ∙ IH 
+    where
+      aux : toFun H l (suc (n + m)) ≡ toFun H ((δL^gl ^ n) l') (n + m)
+      aux = bigStep-δ-suc l ((δL^gl ^ n) l') (n + m) eq
+
+      IH : toFun H ((δL^gl ^ n) l') (n + m) ≡ toFun H l' m
+      IH = bigStep-δ^n ((δL^gl ^ n) l') l' n m refl
 
   bigStep-δ^n∘η : ∀ l x n → (l ≡ (δL^gl ^ n) (ηL^gl x)) → toFun H l n ≡ inl x
   bigStep-δ^n∘η l x zero eq = bigStep-η-zero l x eq
@@ -294,7 +308,7 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
       aux = bigStep-δ-suc l (((δL^gl ^ n) (ηL^gl x))) n eq
 
       IH : toFun H ((δL^gl ^ n) (ηL^gl x)) n ≡ inl x
-      IH = (bigStep-δ^n∘η ((δL^gl ^ n) (ηL^gl x)) x n refl)
+      IH = bigStep-δ^n∘η ((δL^gl ^ n) (ηL^gl x)) x n refl
 
 
   -- The following theorems are only true under the stricter definition of toFun
@@ -336,7 +350,82 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
 
 
 
-  
+-- Notation and properties of functions from ℕ to (X + 1)
+module PartialFunctions {X : Type ℓ} where
+
+  -- Type alias for the codomain of the big-step term semantics.
+  Fun : Type ℓ
+  Fun = ℕ → X ⊎ ⊤
+
+  -- "Intensional" termination predicate for big-step terms.
+  _↓fun[_]_ : Fun → ℕ → X → Type ℓ
+  f ↓fun[ n ] x = f n ≡ inl x
+
+  -- Termination in n steps to some (unspecified) value.
+  _↓fun[_] : Fun → ℕ → Type ℓ
+  f ↓fun[ n ] = Σ[ x ∈ X ] (f ↓fun[ n ] x)
+  -- equivalently: fiber inl (f n) (except this reverses the equality
+  -- above, i.e. inl x ≡ f n)
+
+  -- Alternative definition of the above.
+  _↓fun'[_] : Fun → ℕ → Type ℓ
+  f ↓fun'[ n ] = aux (f n)
+    where
+      aux : _ → _
+      aux (inl x) = ⊤*
+      aux (inr tt) = ⊥*
+
+  ↓fun→↓fun' : (f : Fun) (n : ℕ) →
+    f ↓fun[ n ] → f ↓fun'[ n ]
+  ↓fun→↓fun' f n (x , eq) with (f n)
+  ... | inl x' = tt*
+  ... | inr tt = ⊥.rec (inl≠inr _ _ (sym eq))
+
+
+  ↓fun'→↓fun : (f : Fun) (n : ℕ) →
+    f ↓fun'[ n ] → f ↓fun[ n ]
+  ↓fun'→↓fun f n H with (f n)
+  ... | inl x = x , refl
+
+
+  -- "Extensional" termination predicate.
+  _↓fun_ : Fun → X → Type ℓ
+  f ↓fun x = Σ[ m ∈ ℕ ] f ↓fun[ m ] x
+
+  -- If a function terminates at n with x and with y, then x ≡ y.
+  ↓n-unique : (f : Fun) → (n : ℕ) → (x y : X) →
+    f ↓fun[ n ] x → f ↓fun[ n ] y → x ≡ y
+  ↓n-unique f n x y f↓nx f↓ny =
+    isEmbedding→Inj isEmbedding-inl x y (sym f↓nx ∙ f↓ny)
+
+  -- Divergence at n
+  _↑fun[_] : Fun → ℕ → Type ℓ
+  f ↑fun[ n ] = ∀ m → m ≤ n → (f m ≡ inr tt)
+
+
+  -- A function cannot both terminate at n and diverge at n
+  coherence : (f : Fun) (n : ℕ) (x : X) →
+    f ↓fun[ n ] x → f ↑fun[ n ] → ⊥
+  coherence f n x f↓n f↑ = inl≠inr x tt (sym f↓n ∙ (f↑ n ≤-refl))
+
+  -- Stronger uniqueness property stating that a function can
+  -- terminate with at most one value. This isn't true for the Fun
+  -- type in general, but it *is* true of the functions in the image
+  -- of the big-step semantics.
+  --
+  -- TODO: is this a good definition?
+  ↓-unique : Fun → Type ℓ
+  ↓-unique f = (n m : ℕ) (x y : X) →
+    f ↓fun[ n ] x → f ↓fun[ m ] y → x ≡ y
+
+  -- This definition seems stronger (equivalence seems to require that X is a set)
+  ↓-unique' : Fun → Type ℓ
+  ↓-unique' f = isProp (Σ[ n ∈ ℕ ] Σ[ x ∈ X ] (f ↓fun[ n ] x))
+
+  ↓-unique'→↓-unique : (f : Fun) → ↓-unique' f → ↓-unique f
+  ↓-unique'→↓-unique f H n m x y f↓x f↓y =
+    λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst
+
 
 
 module Test where
