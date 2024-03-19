@@ -1,0 +1,337 @@
+* Reviewer 1
+2: (accept)
+
+The object of study in this paper is gradually-typed programming languages, which support both static and dynamic programming style. The idea of gradual typing can be implemented in various ways. The current paper follows the presentation of New and Licata, employing a relation of type dynamism, for asserting when a type is more dynamic than another, and casts. Previous work, again by New and Licata, has developed double categorical models of gradual type theories with concrete instances in certain double categories of domains. The current work extends previous work in two directions: (i) the double categorical semantics is extended to double call-by-push-value (CBPV) models; (ii) the categorical models are weakened for taking into account observable steps of computation, and subsequently identifying computations differing only in a finite number of steps. These weakened notions are introduced for the purpose of implementing the denotational semantics of gradual typing in synthetic guarded domain theory, and potentially formalizing the development in Guarded Cubical Agda (or its potential extension with clocks and clock quantification).
+
+I believe there is a nice amount of novelty in this paper. In my opinion, the main contribution lays in the notion of intensional model, whose ingredients (weak bisimilarity, delays, perturbations) are important if one wants to develop the denotational semantics in a guarded recursive metatheory, as shown in the concrete instance in Section 6. More generally, I am very much in favor of efforts to making this kind of program analysis "mechanizable". Especially when it comes to denotational semantics, which is known to be quite hard to faithfully implement in existing proof assistants based on type theory, and languages involving complex features such as gradual typing.
+
+Nevertheless, I have a few complaint with the paper.
+
+- I spotted quite a number of typos in the math and inconsistencies in the notation. This made reading the article quite challenging for me, especially since the denotational models are full of different ingredients and it is not easy to keep track on which data is in context in a certain part of the paper.
+See a list of typos and comments about notation below.
+
+- I don't quite understand the reason for introducing the notion of extensional model in the paper. Especially its comparison with the "idealized" categorical semantics of Section 4 and why the latter is unsuitable when working in synthetic domain theory. The explanation for this seems to appear in Section 4.2, but I am not able to follow the reasoning here. It is clear that one needs to reason up to weak bisimilarity when attempting to prove graduality. But I don't understand why this is deemed impossible in the idealized model, due to weak bisimilarity "not allowing transitive reasoning". What do you mean by that? Can you give more intuition behind this statement, or some references to related work where this is explained? This problem with weak bisimilarity is only mentioned briefly without explanation. Is the weak bisimilarity relation of the guarded lifting monad not transitive? And even if it isn't, to prove graduality in the concrete model you'd have to use weak bisimilarity for Capretta's delay monad, which is known to be transitive. Are you saying that the extensional closure of the concrete CBPV model is only a reflexive graph category but *not* a double category?
+
+- One of the advantages of guarded type theory, when compared to classical domain theory, is the ability of working directly with types, treating them as if they were domains, without ever mentioning the underlying ordering (as done e.g. in the work of Paviotti and Møgelberg). This is in analogy with the way types play the role of geometric spaces in homotopy type theory. But in the model of Section 6, objects are taken to be types with a partial order (plus a weak bisimilarity relation). Do you really need the partial order structure in your concrete model? If so, where is this crucially used? Why can't you simply use types (potentially together with a weak bisimilarity relation) instead?
+Talking about weak bisimilarity: the fact that objects in the concrete model come equipped with a notion of weak bisimilarity is another difference with previous work on denotational semantics in guarded type theory. Usually, program denotations are compared only in the lifting monad, not in a general object. Which, again, is due to the fact that types, with no additional structure, play the role of domains in guarded type theory. Can you comment on your design decision, to package each semantic objects with a weak bisimilarity relation? I know that this makes it fit well with your notion of step-2 intensonal model, but maybe if you have guarded type theory in mind as metatheoretic framework, the categorical models should reflect more closely the way types act as synthetic domains.
+
+In conclusion, I believe this to be a good paper, which includes good mathematics and makes meaningful contributions. Nevertheless, I would like to properly understand the author(s) argument behind some of the definitions (in particular, the one of extensional model) and design decisions (why not using types as semantic objects in the concrete model, as is usually the case in guarded type theory?). I would also like to add that the presence of an associated formalization in Guarded Cubical Agda would have made the submission much stronger. So I encourage the author(s) to complete their mechanization and submit it together with an extended version of their paper in the future!
+
+Here are the typos I found, together with some smaller questions:
+
+- line 71, remove "the"
+- line 175, maybe properly cite the work of Lennon-Bertrand et al.
+- line 214, remove "use to"
+- line 226, I guess GTT stands for Gradual Type Theory, but in the literature it appears also as an acronym for Guarded Type Theory. Please carefully introduce the acronyms you employ.
+- Figure 1:
+  + Where are variables?
+  + Transitivity is missing in type precision.
+  + There is a colon `:` missing in the conclusion of the downcast rule.
+- line 311, ▷ should be ▷^k
+- line 325, what is this notation for upcast and downcast here? It doesn't appear elsewhere in your paper.
+- line 373, what is c'?
+- line 411, there is no V in the right hand side.
+- line 476, ⊢ should be a comma.
+- In line 509 you introduce the notation f ≤_{c,d} g, but in the rest of the section you use different notation for it, e.g. in line 539 where ⊑_{c,UFc} should be ≤_{c,UFc}, or in line 552, where ⊑^{c}_{r(B)} should be ≤_{c,r(B)}. And the various notations are all employed multiple times. Please be more consistent.
+- As discussed already above, I find section 4.2 to be the weakest in the paper. Many statements are claimed without reference nor supporting (counter)examples.
+- In Section 5.1 you start working with reflexive graph categories, but you only use the ones where relations can be composed. I missed this detail in line 651 the first time I went through the paper, and I was so confused about your definition of left- and right-representability and extensional model. Please make it more visible that you always require the presence of a category of relations. By the way, is this a variation of double category that appeared before in the literature?
+- lines 655-656, ϕ should be g.
+- line 664, "are functorial in the...". In the?
+- line 672, universally "right-"represents d
+- line 684, I can't parse the retraction property.
+- lines 701-702, `u` and `d` are called `up` and `dn`.
+- line 721, there is an `M` with the wrong font.
+- lines 720-727, you do not really say what changes in an intensional model when we give up horizontal composition being a strict CBPV morphism. You only say that now m_V and m_E are CBPV morphisms, while before they where strict. So what changes concretely?
+- line 760, what is a step-0 intensional model? You explain it first in line 904, but it should be moved earlier.
+- line 792, notation ×^k, →^k and U^k is never mentioned in the main part of the paper, only in the appendix. If you show it here, you should at least briefly say what it means, and maybe refer the reader to the appendix for more details.
+- line 806, the monoid is called P^{E}_{B} but in the next line (and in other places) becomes simply P_B. While P^{V}_A seems to always be called P_A. Please be consistent with your annotations.
+- line 832, `f` is missing in the end of the line.
+- line 866-867, is • notation for composition of relations? If so, please say it.
+- line 875, what are V_e and E_e? Should they be V_r and E_r?
+- line 896, what is dyn?
+- Section 5.3.1, when extending F with perturbations, you have `ℕ × P_A` instead of simply `P_A`. Can you comment on why you have the cartesian product with natural numbers here? What breaks if you do not add it and simply take P_A? It is not immediately clear to me by quickly reading through Appendix C.1.
+- line 939, `ρ^{L}Ud` should be `ρ^{L}_{Ud}`.
+- line 984, "bisimiarity"
+- line 1034-1040, this definition seems to indicate that your relations are proof-relevant in the model. Is this the case?
+- line 1058, remove "our version"
+- line 1152, `e_{ℕ}` should be `e_{ℕ}(n)`
+- line 1280, you should remark that weak bisimilarity is defined coinductively by the rules.
+- line 1366, "transitivite"
+- line 1728, missing application of F on vertical arrows
+
+* Reviewer 2
+-1: (weak reject)
+** Summary of the paper
+
+This paper combines to strains of work in an interesting way: the quest
+for reasonable denotational semantics of gradual typing (casts, type
+precision, etc.) in terms of domain theory, and the use of *guarded
+domain theory* to approximate the semantics of languages with very
+difficult combinations of features, like higher-order dynamic state,
+etc. The motivation of combining these ideas seems to be to facilitate
+the construction of models of *realistic* (non-toy) languages with
+gradual typing for which classical domain-theoretic semantics is out of
+reach. Another interesting aspect of this work is the use of a synthetic
+approach to the domain theoretic aspects, which greatly simplifies the
+description of models.
+
+My understanding of the starting point (morally, at least) is that a
+model of gradual typing should be some kind of locally thin double
+categorical call-by-push-value model: the idea is that the “loose”
+arrows represent type precision derivations, and that casts are tight
+arrows that somehow represent them. Recursion would clasically be
+incorporated by some kind of predomain-enrichment, but an alternative
+approach is to work entirely internal to some kind of synthetic domain
+theory. Presumably that could be carried out with traditional synthetic
+domain theory, but in order to support extensions like polymorphic
+dynamic allocation, etc., the author has chosen to work in synthetic
+*guarded* domain theory.
+
+However, passing from domain theory to guarded domain theory introduces
+a lot of new problems that must be solved. First of all, the unrolling
+of domain equations in the guarded setting leaves behind “tracks” that
+cannot be removed even up to isomorphism: in the small, this means that
+unrolling term-level fixed points also leaves behind traces of their
+expended fuel, and so one must reason up to some kind of weak
+bisimulation that ignores these traces.
+
+Unfortunately, transitivity of type precision seems to fail when working
+up to weak bisimilarity. Some interesting ideas are proposed to deal
+with these problems. Including variations on double categories based on
+reflexive grpahs, as well as the idea of a monoid of perturbations
+corresponding precisely to the traces left behind by unrolling guarded
+recursive fixed points. Although I was not able to grasp all the
+details, this did seem like a promising idea to me for at least getting
+some mathematical control over the (very fine-grained) equational theory
+of guarded recursion.
+
+** Assessment of the paper
+
+As a (guarded and non-guarded) domain theorist, what is most interesting
+to me about this paper is the lengths to which the author goes to
+develop abstractions that address limitations of guarded semantics
+— e.g. that it impedes transitive reasoning, etc. Many of these ideas
+presented here seem very promising and deserving of further study.
+
+On the bright side, the work seems to be of high quality from the
+mathematical point of view, although this is hard for me to evaluate
+entirely as there are many things that I could not understand in the
+space provided. My main critique of the paper is that it reads like a 60
+page paper that has been compressed to 15 pages, and in the process a
+lot has been lost — including key definitions and notations, leaving the
+result in some places barely readable. A more focused version of this
+paper that explains certain key ideas more clearly would have been
+welcome, although I sympathise with the natural difficulty of writing a
+paper that simultaneously is short enough, easy enough to read, and
+actually gets strong enough results. I really struggled to read this
+paper as-written, and I feel that I am precisely the kind of person who
+should be able to read a paper like this.
+
+For all these reasons, I don’t feel I can advocate for the paper to be
+published in this form, but I nonetheless am very favorably disposed to
+the work on display here.
+
+** Detailed comments for authors
+
+- l190: “unlike classical domain theory, such step-idnexed techniques
+are capable of modeling higher-order store and runtime-extensible
+dynamic types”; maybe “capable” is too strong in regard to classical
+domain theory as classical domain theory probably does provide
+models of such things (that sadly fail to satisfy other desiderata).
+Maybe one could say “capable of smoothly modeling”?
+- l272: it is said that clock quantification is crucial for encoding
+coinductive types using guarded recursion, but I would not agree
+with this (although clock quantification is one way to do it). I
+know this may be controversial, but I would suggest that the main
+reason clocks are playing a role today is that they are (at least
+partly) available in Agda. If it were not for implementation
+inertia, many people would probably be using box modalities instead,
+which allow a much simpler semantics of guarded recursion in terms
+of the global sections adjunction between the topos of trees and
+SET.
+- l289: The use of the tick calculus is great in Agda but it is really
+impossible to work with on paper because the structural rules for
+when one can apply a tick are far too subtle to check by hand — as
+anyone who has ever been surprised by a Guarded Cubical Agda error
+message can attest. I think that it would be important here to
+mention some of the constraints on tick variables, lest the reader
+get the impression that they can just apply them freely.
+- l341: Is this admissibility claim proved somewhere?
+- l378: Can the benefit of transitivity being admissible instead of
+derivable be explained? When a choice like this is made, in my
+experience it usually means one of two things: either it is
+important to consider models in which transitivity is false, or you
+want to arrange the syntax in such a way that it admits a nice
+decision procedure. Of course, the first goal is the really
+compelling one, as the second goal is really an implementation
+detail. Is the choice here based on one of these goals, or something
+else?
+- l388: The point about upcasts and downcasts being some kinds of
+least upper bounds and greatest lower bounds is interesting, but I
+was left a little confused by it. Can we have some more detail on
+the analogy? Is it just that these are basically adjoints or some
+kind?
+- l470: When you write “1 -> U”, does it mean Delta(1) or
+something?
+- l476: the timesGamma notation is not explained. I think I get
+the idea, but is htere a way to avoid bringing this up?
+- l515: Categories internal to the category of CBPV models are
+invoked, but to make sense of this, don’t we need there to be
+pullbacks of CBPV models? I believe the idea must be “CBPV is an
+essentially algebraic theory, so the category of CBPV models and
+strict morphisms is locally presentable and thus complete”. Perhaps
+this could be remarked on.
+- l551: Is Definition 4.2 a universal property for ‘f’, or can there
+be more than one representative?
+- l603: It occurred to me that maybe virtual double categories could
+be a useful intermediate abstraction here? I am curious if you
+thought about that.
+- l639: It is said that ordering in the guarded setting fails, and I
+believe it — but I need some explanation for why this is the case.
+Sorry if it is mentioned earlier and I just missed it.
+- l650: The concept “reflexive graph category” is invoked without
+definition; I assume this means “category internal to RxGph”.
+Assuming this definition, I still can’t interpret at this point in
+the paper the phrase “reflexive graph category with composition of
+relations” — as the latter is a notion that has been hinted at but
+not defined. I understand that one needs to talk about something
+before defining it in many cases, but one should distinguish between
+mathematical phrases (like “Let X be a ….”, in which one naturally
+expects all the concepts to have precise definitions already) and
+intuitive discussion (like “If we had some notion of reflexive graph
+category in which relations could be composed, we could …”).
+- l665: continuing from my comment on l650, I read “In summary, an
+extensional model consists of…” — but what is this a summary of?
+This is the first place some formal definitions have occurred. I
+would put this in a Definition block.
+- l715: it could help to refer to the appendix or extended version
+here, as I see that these lax morphisms have been defined her. (Note
+that I have not had time to review the appendix.)
+- l715: in order to speak of categories internal to CBPV with lax
+morphisms, we need that category to have pullbacks. Is that
+obviously deducible from the completeness of the category of CBPV
+models with strict morphisms?
+- l760: “step-0 intensional model”: I don’t think this has been
+defined. I don’t know what step-0 means.
+- l761: “the existence of”: I am sure that these things are intended
+to be structure rather than property.
+- l1070, l1081: here is something that is extremely sensitive to the
+chosen model of guarded recursion, which needs to be discussed. In
+the topos of trees (or the (∞,1)-topos of trees if you prefer), a
+*relation* defined this way is actually trivial: in the internal
+*logic* (subobject doctrine), it appears that every element of the
+guarded lifting monad terminates. To avoid this and remain
+compatible with a topos-of-trees model, one needs to use structure
+instead of property (as Paviotti did), but this is of course not
+compatible with the viewpoint of partial orders; another option that
+lets you have mere propositions may be to consider step-indexing
+over a bigger ordinal. It so happens that this problem does not
+arise at all (if I recall correctly) in the nonstandard models of
+guarded cubical type theory obtained from presheaves on the product
+of the cube category with the natural numbers (which is, indeed, the
+intended semantics of guarded cubical agda); in that case, you can
+get a non-trivial mere predicate that refers to convergence. But
+this model is not the (∞,1)-topos of trees, which instead seems to
+arise as some kind of localisation thereof; roughly what is
+happening is that there is a difference between taking strict
+presheaves and taking (∞,1)-presheaves — and the former, naturally,
+has no known universal property in the world of (∞,1)-categories.
+Anyway, all this is very important and it would be good to be
+explicit about what which models of Higher SGDT do and don’t
+trivialise the notions employed in the present work.
+
+** Minor and typographical errors
+
+- l200: need nonbreaking space before citep
+- l206: “not just” => “rather than just”
+- l259: too much space above the display (try replacing the empty line
+with a TeX comment)
+- l289: perhaps remove comma before “and we have”
+- l325: I think that there is some issue with the macros here and the
+colon.
+- l341: When using the question mark as a symbol rather than an
+operator, you need to surround it in braces or use mathord or
+something. Otherwise, you get weird spacing. Same thing with the
+exclamation mark on l561.
+- l452: a little difficult to parse the left and right hand sides of
+these isomorphisms; would appreciate some additional parentheses.
+- l502: this is the middle of a sentence so it shouldn’t be
+capitalised
+- l526: there seem to be some notational snafus here: I’m getting
+confused by V_f vs V_o, etc.
+- l792: putting a nearly full-sized ‘k’ above these letters is not my
+favorite notation.
+
+* Reviewer 3
+0: (borderline)
+
+** SUMMARY
+Gradual type systems are typing systems that combine features of
+static and of dynamic type system by allowing the types of different
+parts in a code base to be in different places on the spectrum from
+dynamic to static. The meta-theory of gradual type systems has been
+quite challenging, because a large number of features that are present
+in real life programming language. This paper gives denotational
+semantics for a gradually typed language.
+
+The key idea is to use synthetic guarded domain theory, because this
+allows one to synthetically reason about step-indexing relations. As a
+consequence, the paper does not use double categorical semantics for
+gradual type theory (as in "Call-by-name gradual type theory" by New
+and Licata), but reflexive graph categories instead, because
+transitive reasoning is not possible. Finally, the paper presents a
+concrete model of gradual type theory.
+
+** JUDGMENT
+The material in the paper is interesting and the main idea is a nice
+application of guarded theory. However, in my opinion, the writing in
+this paper is insufficient. There is a large number of typos, type
+setting mistakes, and some them lead to confusing due to inconsistent
+notation. I also think that several explanations should be
+improved. For this reason, I rate this paper as 'borderline'.
+
+** TECHNICAL COMMENTS
+
+The paper makes use of Ticked Cubical Type Theory (TCTT). Several
+features of TCTT are already present in Clocked Type Theory (as
+presented in "The Clocks Are Ticking: No More Delays!" by Bahr,
+Grathwohl, and Møgelberg). How much of the paper could one
+reconstructed in Clocked Type Theory, and what advantages does TCTT
+offer over Clocked Type Theory in this work?
+
+** COMMENTS
+
+- Line 120: "For instance, while dynamically typed lambda-calculi only satisfy beta-equality for their type formers". I think that removing 'for their type formers' would make this sentence clearer
+- Line 139: 'since the process is entirely' (in -> is)
+- Lines 150-152: add a citation for double categories (e.g., "Catégories structurées" by Ehresmann and "Higher Dimensional Categories" by Grandis).
+- Lines 152-156: mention the squares explicitly in this explanation, because they are essential for double categories (and they are mentioned in line 157).
+- Line 200: add a space before the reference
+- Line 222: I don't think that "a semantics" is correct English
+- List of contributions: it would be good to add forward references to the relevant theorems/definitions
+- Line 270: it would be good to cite "The Clocks Are Ticking: No More Delays!" by Bahr, Grathwohl, and Møgelberg as well
+- Lines 321-322: the order in which the types are mentioned differs from Figure 1. It would be nicer to make these two consistent
+- Lines 325: here different notation is used for upcast and downcast compared to Figure 1
+- Line 341: the spacing in 'A⊑?.' is not ideal: there should be some space between `⊑` and `?`.
+- In the explanation of Figure 1 (beginning of Section 3), ℧ is not explained, and it would be good to explain it in the beginning of Section 3.
+- The notation for the dynamic type is not consistent throughout the paper: in Figure 2, D is used whereas in Figure 1, ? is used. This should be made consistent.
+- Line 386: the phrasing "each is ⊑ the other" is not very nice
+- Line 400: this is the only place in the paper where Ω is mentioned. It might be good to recall this in Section 6.3 where adequacy is proved.
+- Lines 441-444: here [28] should be cited explicitly
+- Line 450: "as the monoidal structure"
+- Lines 475-476: what does the notation `×Γ` mean?
+- Lines 484-485: add a reference to 27
+- Line 485: a citation for double categories would be fine here as well
+- Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that the double categorical semantics of gradual type theory has not been given before. However, this is already in Section 5 of "Call-by-name gradual type theory" by New and Licata so it would be good to add a citation to that work.
+- Definition 4.2: I think it might be good to mention companion pairs and conjoints here.
+- Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset structure by ⊑? In domain theory, it is common to use ⊑ for the CPO structure instead of ≤, so I think that switching this notation would be clearer.
+- Line 672: `upc` and `dnd` are type set incorrectly
+- Line 684: the parentheses here are incorrect
+- In Definition 5.2 (lines 759-768), step-0 intensional models are mentioned for the first time. However, only in line 903-904, step-0 models are explained: "i.e., a category internal to the category of CBPV models". It would be good to mention before Definition 5.2 what step-0 intensional models are.
+- The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional model", "step-3 intensional model", and "step-4 intensional model" are not very informative. In this context, they might even be misleading: in intensional model, computational steps are observable (lines 634-635). It would be better to rename these notions, and to instead use terminology like 'a CBPV model with ...-structure". It would also be good to add a final Definition of an intensional model, and be explicit what an intensional model ultimately entails to in this paper: is step-4 intensional model the main notion in this paper and is the role of step-n intensional models with n≤3 to help formulate that notion? Or is each notion interesting in its own right?
+- Definition 6.3: it would be good to explain what the morphism theta represents.
+- Definition 6.5: I think it would be clearer to explicitly relate this notion to profunctors or to preorder profunctors (Section 3.4.6 in "Higher Dimensional Categories" by Grandis
+- Line 1057-1057: "our version here our version"
+- Lines 1141-1145: this can be phrased more compactly.
+- Line 1210: "Applying" instead of "applying"
+- Lemma 6.7: since this lemma is not provable, please do not state it as a lemma. Calling it a lemma, suggests that you proved it. Since you do not refer to it anymore, it is better to not put it into a numbered environment and to just include it in the text.
+- Line 1247: the reference to footnote 6 has an awkward place in the sentence
