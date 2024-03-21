@@ -4,8 +4,8 @@ We will first address some of the major criticisms and questions and
 then we address some smaller points.
 
 Reviewer 1, Reviewer 2, and Reviewer 3 mention typos, notational inconsistencies,
-and issues related to naming. We plan to correct these and make the
-technical portions clearer.
+and issues related to naming. We plan to correct these and make the technical
+portions clearer.
 
 
 Reviewer 1 asks why we introduce the notion of extensional model of gradual typing
@@ -15,16 +15,15 @@ structure needed to interpret the terms and inequational theory of gradual typin
 However, the specific concrete extensional model we construct in the paper suffers
 from the complication that the relation on vertical morphisms is not transitive
 (i.e., we cannot compose commuting squares horizontally).
-This is a consequence of the fact that, as Reviewer 1 speculates, the weak
-bisimilarity relation on the guarded lift monad is not transitive (this is provable
-internally), and thus our concrete extensional model, which we obtain by closing
+This is related to (but distinct from) the fact that the weak bisimilarity relation
+on the guarded lift monad is not transitive (this is provable internally).
+Similar reasoning shows that our concrete extensional model, which we obtain by closing
 the lock-step error ordering in the intensional concrete model under weak bisimilarity,
 does not allow horizontal composition of squares. It is with this concrete result
 in mind that we formulated the definition of an arbitrary extensional model.
 Admittedly, this was more for the purpose of organization and managing complexity,
 as the only concrete instantiation of the definition of extensional model is the
-concrete one above. (And in fact, from a pedagocial standpoint, it may make *more*
-sense to describe the concrete extensional model first.)
+concrete one above.
 
 We believe, however, that based on our experience working with our concrete
 extensional model, it is not possible to define an idealized extensional
@@ -39,26 +38,23 @@ model to change slightly, in that we must require as primitive certain variation
 the usual cast rules that normally, in the presence of transitivity, are admissible.
 This explains why our notion of extensional model may seem overly complicated.
 
-As Reviewer 1 remarks, however, we can consider what happens when we leave the
+As Reviewer 1 remarks, however, we can also consider what happens when we leave the
 guarded world by globalizing, i.e., when we perform clock-quantification to remove
 the implicit clock variable indexing all of our guarded definitions.
 If we start with our guarded concrete extensional model and globalize,
 the global version of the lift monad will be isomorphic to Capretta's coinductive
 delay monad, for which, as Reviewer 1 points out, weak bisimilarity is transitive.
 Will this give us an idealized extensional model? One issue that arises immediately
-is the fact that the above isomorphism between the globalized lift monad and Capretta's
-delay monad only holds for certain types. That is, for an arbitrary type X, it is not
-necessarily the case that ∀k.L℧^k X is isomorphic to Delay(X + 1). In the setting of
-Ticked Cubical Type Theory, this requires that X satisfy a technical condition called
-/clock-irrelevance/. But this poses a problem for the type Dyn (defined by guarded
-recursion as described in the paper). We do not believe that the type ∀k.Dyn^k is
-clock-irrelevant. This would mean that we do not have the nice characterization
-of the global lift of ∀k.Dyn^k, and hence we would not be able to show that the
-bisimilarity relation on this type is transitive.
-
-We are in the process of exploring these issues and trying to futher elucidate the
-relationship between the notion of idealized extensional model and the notion of
-extensional model that we have formulated in this work.
+is the fact that the process of globalization does not get us a "global" solution to
+the domain equation defining the dynamic type, i.e., a solution to the (non-guarded)
+equation D ≅ ℕ + (D × D) + (D → D).
+On the other hand, for a certain class of well-behaved types, those that, roughly
+speaking, behave well with respect to the process of globalization, we /can/ define
+an idealized extensional model having those types as objects. We plan to describe
+this construction in more detail in the revision.
+We are also in the process of futher elucidating the relationship between the
+notion of idealized extensional model and the notion of (guarded) extensional model
+that we have formulated in this work.
 
 
 
@@ -116,40 +112,52 @@ setting, which we later generalized and packaged up in the abstract setting
 for inclusion in the paper.
 
 
-Reviewer 2 mentions that the paper is difficult to follow and feels
-heavily compressed. We sympathize with this viewpoint and would like to
-propose a few changes that we hope will improve the exposition.
-Upon further review, we feel that one the main sources of confusion is the
-material related to the notion of extensional model and why we need a
-notion of extensional model that differs from the "idealized" extensional
-model. This is discussed briefly in Section 4.2, but as Reviewer 1 points
-out, this section can use improvement. More specifically, in that section
-we state that transitive reasoning is not possible when reasoning up to
-weak bisimilarity, and that this means that our notion of extensional model
-cannot support horizontal composition of squares. We agree that this statement
-is not well-motivated; to better appreciate the issue, it would help if we
-had previously introduced the /concrete/ extensional model with the guarded
-lift monad and demonstrated there that the closure of the lock-step error
-ordering under weak bisimilarity is not transitive. Likewise, we state in
-Section 4.2 that the representability property breaks down in the presence
-of observable steps. This would be easier to appreciate if we presented
-(simplified version of) the concrete intensional model and showed that one
-of the simple representability properties does not hold. This would also
-help to motivate the need for perturbations.
+Reviewer 2 mentions that the paper is difficult to follow and feels heavily
+compressed. We sympathize with this viewpoint and would like to propose a few
+changes that we hope will improve the exposition. We feel that one of the main
+sources of confusion in the paper as it stands now is that the abstract notions
+of extensional and intensional model as introduced in Section 4.2 and defined
+in Section 5 are introduced without first motivating them via concrete
+constructions in guarded type theory. This leads to questions about our notion
+of model, e.g., why do we need a separate notion of intensional model?
+Why is it that our extensional model definition must differ from
+the "idealized" definition? These issues are discussed briefly in Section 4.2, but as
+Reviewer 1 points out, this section can use improvement. More specifically, in
+that section we state that transitive reasoning is not possible when working
+up to weak bisimilarity, and that this means that our notion of extensional model
+cannot support horizontal composition of squares. We agree that this statement is
+not currently justified in the paper, as pointed out by Reviewer 2 in regard to a
+similar statement in Section 5.1. In particular, it would be illuminating to first
+show what goes wrong if one begins with a concrete term model and tries to define
+an extensional ordering relation on the guarded lift monad, i.e., an ordering "up
+to delays" on either side. Such a relation is provably *not* transitive, and this
+leads to the idea of decomposing the relation into two relations, weak bisimilarity
+relating terms that are the same up to delay, and a /lock-step/ error ordering where
+both sides must take the same number of steps (up to the left-hand side being an error).
+
+Likewise, we state in Section 4.2 that the representability property breaks down in
+the presence of observable steps. This would be easier to appreciate if we presented
+(a simplified version of) the concrete intensional model and showed that one of the
+simple representability properties does not hold. This would also help to motivate
+the need for perturbations. In the revision, we plan to explain this as part of a
+narrative that leads the reader to a more intuitive understanding of our design
+choices for the abstract model.
+
+
 
 
 To summarize, the key changes we plan to make in the revision are as follows:
 
 - Better motivate our notion of extensional model and the failure of the
   representability property in the intensional model by grounding the
-  discussion in the specific concrete model
+  discussion in our specific concrete model
 - Provide more explanation for the abstract model constructions in the
   body of the paper, particularly for the construction that adds perturbations
 - Clarify the key steps in the construction of an extensional model
 - Provide more background on the axioms for gradual typing, as they are
   helpful for understanding the definitions of model
-- Discuss the limitations of globalization as a means to defining an
-  idealized extensional model
+- Discuss the use of globalization as a means to defining an
+  idealized extensional "sub-model" of GTT
 - Clean up the definitions and notation
 - Address the reviewers' questions below as appropriate
 
@@ -269,7 +277,10 @@ From Reviewer 2:
 > mention some of the constraints on tick variables, lest the reader
 > get the impression that they can just apply them freely.
 
-  TODO
+  TODO - check
+  
+  This is a good point. We will mention the constraints on tick application
+  in the technical background section in the revision.
 
 > l341: Is this admissibility claim proved somewhere?
 
@@ -340,9 +351,10 @@ From Reviewer 2:
 
   TODO - check
   
-  This is essentially because weak bisimilarity on the guarded lift
-  monad is not transitive, and so the ordering up-to weak bisimilarity
-  is not transitive.
+  As mentioned above, the paper does not currently explain why
+  transitivity fails for an extensional ordering defined on the guarded
+  lift monad. This was an unfortunate omission, and we plan to add it
+  in the revision.
 
 
 > l715: in order to speak of categories internal to CBPV with lax
@@ -379,7 +391,12 @@ From Reviewer 2:
 > trivialise the notions employed in the present work.
 
 
-  TODO
+  We agree that there are subtleties with the model, but we do not
+  think they impact the definition of the lock-step error ordering
+  as that is already propositional. Instead, the issue lies with
+  our weak bisimilarity relation, in which saying that there merely
+  exists an n and x such that θ l is the n-times iterated delay of η x
+  would trivialize the relation.
 
 
 From Reviewer 3:
@@ -390,7 +407,19 @@ From Reviewer 3:
 > reconstructed in Clocked Type Theory, and what advantages does TCTT offer over Clocked
 > Type Theory in this work?
 
-  TODO
+  TODO - check
+
+  The main difference between TCTT and Clocked Type Theory appears to be the
+  presence of the path equality of cubical type theory in the former.
+  In Clocked Type Theory, the unfolding of guarded fixpoints is a definitional
+  equality, whereas in the setting of TCTT this unfolding is only true up to a
+  path. However, the constructions carried out in this paper work in either case,
+  so everything we do in this paper should be possible in Clocked Type Theory.
+
+  The main benefit of working in TCTT is that we have access to the nice features
+  of cubical type theory, e.g., function extensionality is provable, and this
+  implies extensionality results for the later type and for clocks since
+  these are just Pi types.
 
 
 > Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that
@@ -398,7 +427,11 @@ From Reviewer 3:
 > However, this is already in Section 5 of "Call-by-name gradual type theory" by New
 > and Licata so it would be good to add a citation to that work.
 
-  TODO
+  TODO - check
+
+  We do not claim that the double categorical semantics of gradual type theory is novel;
+  rather, what is novel over the above-cited work is the double-categorical semantics
+  in the more general setting of call-by-push-value.
 
   
 > Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset
