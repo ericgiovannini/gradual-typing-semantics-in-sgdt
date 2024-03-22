@@ -27,3 +27,11 @@ Yes; we will fix this.
 
 dyn here means an object modeling the dynamic type, i.e., D in Definition 5.8.
   
+
+  
+> Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset
+> structure by ⊑? In domain theory, it is common to use ⊑ for the CPO structure
+> instead of ≤, so I think that switching this notation would be clearer.
+
+I know but ⊑ is also used in gradual typing so New-Licata went with
+the notation that would be clearer to gradual typing experts.

@@ -317,7 +317,7 @@ Yes, this is proven in Appendix A.
 > strict morphisms is locally presentable and thus complete”. Perhaps
 > this could be remarked on.
 
-  TODO
+Yes, this argument is exactly what we had in mind.
 
 > l551: Is Definition 4.2 a universal property for ‘f’, or can there
 > be more than one representative?
@@ -333,8 +333,8 @@ Yes, this is proven in Appendix A.
 > be a useful intermediate abstraction here? I am curious if you
 > thought about that.
 
-  TODO
-
+We had considered this but stuck with reflexive graph categories to
+simplify the description of the model. 
 
 > l639: It is said that ordering in the guarded setting fails, and I
 > believe it — but I need some explanation for why this is the case.
@@ -347,14 +347,15 @@ Yes, this is proven in Appendix A.
   lift monad. This was an unfortunate omission, and we plan to add it
   in the revision.
 
+*MAX:* just incorporate this with the comment above, no need to repeat yourself.
 
 > l715: in order to speak of categories internal to CBPV with lax
 > morphisms, we need that category to have pullbacks. Is that
 > obviously deducible from the completeness of the category of CBPV
 > models with strict morphisms?
 
-  TODO
-
+*MAX:* I'll look into this tomorrow
+TODO
 
 > l1070, l1081: here is something that is extremely sensitive to the
 > chosen model of guarded recursion, which needs to be discussed. In
@@ -389,6 +390,7 @@ Yes, this is proven in Appendix A.
   exists an n and x such that θ l is the n-times iterated delay of η x
   would trivialize the relation.
 
+*MAX:* this is unclear what you mean by "is already propositional"
 
 From Reviewer 3:
 
@@ -423,13 +425,6 @@ From Reviewer 3:
   We do not claim that the double categorical semantics of gradual type theory is novel;
   rather, what is novel over the above-cited work is the double-categorical semantics
   in the more general setting of call-by-push-value.
-
-  
-> Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset
-> structure by ⊑? In domain theory, it is common to use ⊑ for the CPO structure
-> instead of ≤, so I think that switching this notation would be clearer.
-
-  TODO
 
   
 > The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional
