@@ -1,0 +1,29 @@
+> Figure 1:
+> * Where are variables?
+> * Transitivity is missing in type precision.
+> * There is a colon `:` missing in the conclusion of the downcast rule.
+
+We will fix these in the revision.
+ 
+> line 325, what is this notation for upcast and downcast here? It doesn't
+  appear elsewhere in your paper.
+
+This appears to be a macro-related typo, which we will fix.
+  
+> line 373, what is c'?
+
+It should be c.
+  
+> line 866-867, is • notation for composition of relations? If so, please say it.
+
+Yes, this is notation for composition of relations, and we will make this clear
+in the revision.
+
+> line 875, what are V_e and E_e? Should they be V_r and E_r?
+
+Yes; we will fix this.
+  
+> line 896, what is dyn?
+
+dyn here means an object modeling the dynamic type, i.e., D in Definition 5.8.
+  

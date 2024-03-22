@@ -7,7 +7,6 @@ Reviewer 1, Reviewer 2, and Reviewer 3 mention typos, notational inconsistencies
 and issues related to naming. We plan to correct these and make the technical
 portions clearer.
 
-
 Reviewer 1 asks why we introduce the notion of extensional model of gradual typing
 and why the idealized model is unsuitable in the setting of SGDT.
 At a high level, the purpose of an extensional model is to provide the categorical
@@ -15,6 +14,9 @@ structure needed to interpret the terms and inequational theory of gradual typin
 However, the specific concrete extensional model we construct in the paper suffers
 from the complication that the relation on vertical morphisms is not transitive
 (i.e., we cannot compose commuting squares horizontally).
+
+> MAX: What is "the relation"? in the sentence above?
+
 This is related to (but distinct from) the fact that the weak bisimilarity relation
 on the guarded lift monad is not transitive (this is provable internally).
 Similar reasoning shows that our concrete extensional model, which we obtain by closing
@@ -31,12 +33,19 @@ model of gradual typing where we use the guarded lift monad, as the result about
 the non-transitivity of weak bisimilarity for lift in the guarded setting would
 seem to imply that no such model can exist.
 
+> MAX: why "we belive" and "seem" ? I thought we settled this Q in our meeting
+
 This lack of horizontal composition is not actually a problem as far as interpreting
 the rules needed for establishing graduality. This is because transitivity isn't
 actually necessary to prove graduality. This does require our notion of extensional
 model to change slightly, in that we must require as primitive certain variations of
 the usual cast rules that normally, in the presence of transitivity, are admissible.
 This explains why our notion of extensional model may seem overly complicated.
+
+> We should state that transitivity was never required in the original
+> formulations of the dynamic gradual guarantee by Boyland/Siek/etc,
+> it was actually added by New and Licata because it held in the
+> domain theoretic model so was natural to include.
 
 As Reviewer 1 remarks, however, we can also consider what happens when we leave the
 guarded world by globalizing, i.e., when we perform clock-quantification to remove
@@ -45,6 +54,10 @@ If we start with our guarded concrete extensional model and globalize,
 the global version of the lift monad will be isomorphic to Capretta's coinductive
 delay monad, for which, as Reviewer 1 points out, weak bisimilarity is transitive.
 Will this give us an idealized extensional model? One issue that arises immediately
+
+> Do not ask a question in the response. State clearly that it does
+> not give an idealized extensional model.
+
 is the fact that the process of globalization does not get us a "global" solution to
 the domain equation defining the dynamic type, i.e., a solution to the (non-guarded)
 equation D ≅ ℕ + (D × D) + (D → D).
@@ -55,7 +68,6 @@ this construction in more detail in the revision.
 We are also in the process of futher elucidating the relationship between the
 notion of idealized extensional model and the notion of (guarded) extensional model
 that we have formulated in this work.
-
 
 
 Reviewer 1 asks why the objects in our concrete model have a notion of ordering,
@@ -99,6 +111,12 @@ of the intensional model by the weak bisimilarity relation of the vertical
 hom-sets on both sides. This construction must work for *any* type, and hence
 all vertical hom-sets must be equipped with a bisimilarity relation.
 
+> I don't think this is the correct explanation. We could define a
+> bisimilarity relation on hom sets even if we only had a bisimilarity
+> relation on the lift monad. The reason we need it for all types is
+> because we need to reason about weak bisimilarity for *higher-order*
+> types, e.g., when we cast a function to another function, at a first
+> order no steps are taken, we need the relation lifted to functions.
 
 Reviewer 1 also mentions the importance of an associated formalization of
 our results in Guarded Cubical Agda. We remark that work on this continues,
@@ -111,6 +129,9 @@ could develop and refine the complicated model constructions in the concrete
 setting, which we later generalized and packaged up in the abstract setting
 for inclusion in the paper.
 
+> Don't say it's unclear, you're just arguing against yourself. Just
+> say we're working on it but obviously we're not promising anything
+> because it is out of scope for this paper.
 
 Reviewer 2 mentions that the paper is difficult to follow and feels heavily
 compressed. We sympathize with this viewpoint and would like to propose a few
@@ -143,8 +164,9 @@ the need for perturbations. In the revision, we plan to explain this as part of 
 narrative that leads the reader to a more intuitive understanding of our design
 choices for the abstract model.
 
-
-
+> The above paragraphs should be the *first* thing in the response as
+> it is the main point of contention IMO. I also think it's a bit
+> rambling and could be made more concise.
 
 To summarize, the key changes we plan to make in the revision are as follows:
 
@@ -162,7 +184,6 @@ To summarize, the key changes we plan to make in the revision are as follows:
 - Address the reviewers' questions below as appropriate
 
 
-
 *Other Questions/Clarifications*
 
 From Reviewer 1:
@@ -171,25 +192,9 @@ From Reviewer 1:
 >  it appears also as an acronym for Guarded Type Theory. Please carefully
 >  introduce the acronyms you employ.
 
-Yes, GTT for us stands for Gradual Type Theory, and we will make this clear
-in the revision.
+Yes, on line 226 this stands for Gradual Type Theory, we will avoid
+this collision between acronyms in revisions.
 
-> Figure 1:
-> * Where are variables?
-> * Transitivity is missing in type precision.
-> * There is a colon `:` missing in the conclusion of the downcast rule.
-
-We will fix these in the revision.
- 
-> line 325, what is this notation for upcast and downcast here? It doesn't
-  appear elsewhere in your paper.
-
-This appears to be a macro-related typo, which we will fix.
-  
-> line 373, what is c'?
-
-It should be c.
-  
 > In Section 5.1 you start working with reflexive graph categories, but you only
 > use the ones where relations can be composed. I missed this detail in line 651
 > the first time I went through the paper, and I was so confused about your definition
@@ -209,12 +214,13 @@ We are not aware of a name for this variation from an existing source.
 > horizontal composition being a strict CBPV morphism. You only say that now m_V and m_E are
 > CBPV morphisms, while before they where strict. So what changes concretely?
 
-TODO - check
+Composition is only a lax morphism because relation constructors
+generally do not commute strongly strongly with relation
+composition. Specifically, U and -> only laxly commute with our notion
+of relation composition. This is already true of the action of the
+function arrow on ordinary relations.
 
-The main consequence of making horizontal composition a lax morphism is that rather than
-requiring F(cc') = F(c)F(c'), we only require a square with F(c)F(c') on top and F(cc') on
-the bottom and identities on the left and right. Likewise for the functor U.
-
+*MAX: does F(cc') = F(c)F(c') in the concrete model?
 
 > line 760, what is a step-0 intensional model? You explain it first in line 904,
 > but it should be moved earlier.
@@ -223,24 +229,10 @@ A step-0 model is a category internal to the category of CBPV models.
 We will make this clearer in the revision, possibly giving each of the
 step-i models more informative names. 
   
-> line 866-867, is • notation for composition of relations? If so, please say it.
-
-Yes, this is notation for composition of relations, and we will make this clear
-in the revision.
-
-> line 875, what are V_e and E_e? Should they be V_r and E_r?
-
-Yes; we will fix this.
-  
-> line 896, what is dyn?
-
-dyn here means an object modeling the dynamic type, i.e., D in Definition 5.8.
-  
 > Section 5.3.1, when extending F with perturbations, you have `ℕ × P_A` instead of
 > simply `P_A`. Can you comment on why you have the cartesian product with natural
 > numbers here? What breaks if you do not add it and simply take P_A? It is not
 > immediately clear to me by quickly reading through Appendix C.1.
-
 
 TODO - check
 
@@ -264,8 +256,7 @@ In the model our relations are Prop-valued, and in fact this is actually the
 reason why we cannot take composition of error domain relations to be the
 usual relational composition.
 
-
-
+*MAX*: I don't understand this answer
 
 From Reviewer 2:
 
@@ -284,7 +275,7 @@ From Reviewer 2:
 
 > l341: Is this admissibility claim proved somewhere?
 
-  TODO
+Yes, this is proven in Appendix A.
   
 > l378: Can the benefit of transitivity being admissible instead of
 > derivable be explained? When a choice like this is made, in my
