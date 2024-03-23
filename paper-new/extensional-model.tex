@@ -45,17 +45,17 @@ to implement casts for an exponential in general.}.
 \end{example}
 
 To additionally model the error terms, we add a requirement that there
-is a natural transformation $\mho : 1 \to U$. The naturality
+is a natural transformation $\mho : 1 \to U B$. The naturality
 requirement encodes that strict morphisms (e.g., the denotations of
 evaluation contexts) preserve errors.
 
 We can then model CBV terms and types in a straightforward adaptation
-of Levy's interpretation of CBV in CBPV. We interpret types $A$ as
-objects $A \in \mathcal V$ and CBV terms $\Gamma \vdash M : A$ as
-morphism of any of the equivalent forms $\mathcal E(F(\times\Gamma),
-F(A)) \cong \mathcal V(\times\Gamma \vdash UF(A)) \cong \mathcal
-E(F(1), \Gamma \to F(A))$. The most interesting type translation is
-the CBV function type: $A \ra A' = U(A \to F A')$.
+of Levy's interpretation of CBV in CBPV. We interpret types $A$ and
+contexts $\Gamma$ as objects $A,\Gamma \in \mathcal V$ and CBV terms
+$\Gamma \vdash M : A$ as morphisms of any of the equivalent forms
+$\mathcal E(F\Gamma, FA) \cong \mathcal V(\Gamma \vdash UFA) \cong
+\mathcal E(F(1), \Gamma \to F(A))$. The most interesting type
+translation is the CBV function type: $A \ra A' = U(A \to F A')$.
 %
 Such a model validates all type-based equational reasoning, i.e.,
 $\beta\eta$ equality, and models the introduction and elimination
