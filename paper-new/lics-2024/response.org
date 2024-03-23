@@ -16,7 +16,8 @@ revisions are:
 3. Provide more background on the axioms for gradual typing
 4. Clarify the key steps in the construction of the intensional and
    extensional model.
-5. Fix the typos, and address the smaller points included below
+5. Explicitly mention the restrictions on the use of ticks in TCTT
+6. Fix the typos, and address the smaller points included below.
 
 * Reviewer 2 re-writing
 *MAX:* Eric please make this more organized into distinct points.
@@ -70,23 +71,26 @@ transitive reasoning.
 
 
 * R1 why posets?
-Reviewer 1 asks why the objects in our concrete model have a notion of ordering,
-as opposed to just being types along with a weak bisimilarity relation. There
-are two potential interpretations of this question. The first is that the reviewer
-is asking why an ordering relation is needed on objects, to which our response
-is that we are trying to model the term precision ordering of gradual typing.
-In particular, the abstract models include a notion of commutative squares
-between morphisms, and the way we instantiate in the concrete setting is by
-equipping the objects with a partial order which then extends to the morphisms,
-i.e., we define a commuting square f ⊑ g as "if x ≤ y then f x ≤ g y".
+Reviewer 1 asks why the objects in our concrete model have a notion of
+ordering, as opposed to just being types along with a weak
+bisimilarity relation. There are two potential interpretations of this
+question. The first is that the reviewer is asking why an ordering
+relation is needed on objects, to which our response is that we are
+trying to model the term precision ordering of gradual typing.  In
+particular, the abstract models include a notion of commutative
+squares between morphisms, and the way we instantiate in the concrete
+setting is by equipping the objects with a partial order which then
+extends to the morphisms, i.e., we define a commuting square f ⊑ g as
+"if x ≤ y then f x ≤ g y".
 
-The second interpretation of the question about the ordering is that the reviewer
-is asking why we cannot treat the ordering "synthetically" in the same way that
-we treat the step-indexing synthetically via SGDT. That is, our objects would be
-treated as sets when working internally, but from an "external viewpoint" they
-would be sets equipped with a partial order. This is an interesting possibility
-which, as we mention in the Discussion section of the paper, we plan to explore
-as future work.
+The second interpretation of the question about the ordering is that
+the reviewer is asking why we cannot treat the ordering
+"synthetically" in the same way that we treat the step-indexing
+synthetically via SGDT. That is, our objects would be treated as sets
+when working internally, but from an "external viewpoint" they would
+be sets equipped with a partial order. This is an interesting
+possibility which, as we mention in the Discussion section of the
+paper, we plan to explore as future work.
 
 * R1 why weak bisimilarity?
 Reviewer 1 also asks why all of the objects in our concrete model need to come
@@ -111,8 +115,8 @@ to functions.
 
 * R1 loves Agda
 
-Reviewer 1 mentions that they would prefer if the Agda formalization
-was complete.
+Reviewer 1 mentions that the submission would be stronger if the Agda
+formalization was complete.
 
 We are planning to complete at least some portions of the results here
 in guarded cubical Agda, especially the adequacy
@@ -132,16 +136,18 @@ domain theory, even without a complete mechanization.
 
 We are not aware of a name for this variation from an existing source.
 
-  
 > lines 720-727, you do not really say what changes in an intensional model when we give up
 > horizontal composition being a strict CBPV morphism. You only say that now m_V and m_E are
 > CBPV morphisms, while before they where strict. So what changes concretely?
 
 Composition is only a lax morphism because relation constructors
 generally do not commute strongly strongly with relation
-composition. Specifically, ->, U and F only laxly commute with our
-notion of relation composition. This is already true of the action of
-the function arrow on ordinary relations.
+composition. Specifically, ->, U and F only laxly commute with
+relation composition. This is already true of the action of the
+function arrow on ordinary relations, and for U and F it is because
+value type relations are composed by the ordinary relation composition
+whereas the computation type relations are composed by the free
+comoposition defined inductively at 1034.
 
 * ℕ in Perturbations
 
@@ -164,21 +170,6 @@ a delay n-times.
 
 * Minor Qs
 
-From Reviewer 2:
-
-> l289: The use of the tick calculus is great in Agda but it is really
-> impossible to work with on paper because the structural rules for
-> when one can apply a tick are far too subtle to check by hand — as
-> anyone who has ever been surprised by a Guarded Cubical Agda error
-> message can attest. I think that it would be important here to
-> mention some of the constraints on tick variables, lest the reader
-> get the impression that they can just apply them freely.
-
-  TODO - check
-  
-  This is a good point. We will mention the constraints on tick application
-  in the technical background section in the revision.
-
 > l341: Is this admissibility claim proved somewhere?
 
 Yes, this is proven in Appendix A.
@@ -199,20 +190,27 @@ Yes, the technical content of this intuition is that they are Galois
 connections, which can be formulated as saying they are given
 pointwise by a certain join/meet.
 
-> l515: Categories internal to the category of CBPV models are
-> invoked, but to make sense of this, don’t we need there to be
-> pullbacks of CBPV models? I believe the idea must be “CBPV is an
-> essentially algebraic theory, so the category of CBPV models and
-> strict morphisms is locally presentable and thus complete”. Perhaps
-> this could be remarked on.
+Reviewer 2 asks about the details of categories internal to CBPV with
+strict/lax morphisms.
 
-Yes, this argument is exactly what we had in mind.
+For models using strict morphisms, we know of two ways to answer:
+1. Abstractly, CBPV can be defined as an EAT or a GAT and so the
+   category of models with strict morphisms is complete.
+2. Concretely, the pullback of two CBPV models is given by taking the
+   pullback of the component categories.
 
+For the lax morphisms, we interpret this definition using the concrete
+construction of pullbacks by taking the pullbacks of the component
+categories and simply weakening the morphisms to have lax preservation
+of connectives rather than strong. This might be abstractly
+characterized by consider CBPV as a 2-monad on the 2-category of pairs
+of categories and considering strict and lax morphisms, but we have
+not pursued this in detail.
+   
 > l551: Is Definition 4.2 a universal property for ‘f’, or can there
 > be more than one representative?
 
-Yes, in the sense that Definition 4.2 characterizes f up to order
-equivalence.
+Definition 4.2 characterizes f up to order equivalence.
 
 > l603: It occurred to me that maybe virtual double categories could
 > be a useful intermediate abstraction here? I am curious if you
@@ -222,92 +220,44 @@ We had considered this but didn't have any use for the more general
 2-cells in modeling graduality so we used the simpler reflexive graph
 categories.
 
-> l715: in order to speak of categories internal to CBPV with lax
-> morphisms, we need that category to have pullbacks. Is that
-> obviously deducible from the completeness of the category of CBPV
-> models with strict morphisms?
-
-*MAX:* I'll look into this tomorrow
-TODO
-
 * 1-Topos of Trees
-> l1070, l1081: here is something that is extremely sensitive to the
-> chosen model of guarded recursion, which needs to be discussed. In
-> the topos of trees (or the (∞,1)-topos of trees if you prefer), a
-> *relation* defined this way is actually trivial: in the internal
-> *logic* (subobject doctrine), it appears that every element of the
-> guarded lifting monad terminates. To avoid this and remain
-> compatible with a topos-of-trees model, one needs to use structure
-> instead of property (as Paviotti did), but this is of course not
-> compatible with the viewpoint of partial orders; another option that
-> lets you have mere propositions may be to consider step-indexing
-> over a bigger ordinal. It so happens that this problem does not
-> arise at all (if I recall correctly) in the nonstandard models of
-> guarded cubical type theory obtained from presheaves on the product
-> of the cube category with the natural numbers (which is, indeed, the
-> intended semantics of guarded cubical agda); in that case, you can
-> get a non-trivial mere predicate that refers to convergence. But
-> this model is not the (∞,1)-topos of trees, which instead seems to
-> arise as some kind of localisation thereof; roughly what is
-> happening is that there is a difference between taking strict
-> presheaves and taking (∞,1)-presheaves — and the former, naturally,
-> has no known universal property in the world of (∞,1)-categories.
-> Anyway, all this is very important and it would be good to be
-> explicit about what which models of Higher SGDT do and don’t
-> trivialise the notions employed in the present work.
+
+Reviewer 2 points out that our weak bisimilarity notion is trivial in
+the topos of trees model, but not the (∞, 1)-topos of trees model.
+Reviewer 3 asks a related question of the difference between using
+TCTT and CTT.
 
 This is a fair point of discussion that we hadn't previously
-considered and we appreciate the reviewer for pointing it out. This is
-a subtle issue so here is a concise overview of the situation:
+considered and we appreciate the reviewer pointing it out. Here is an
+overview of our understanding of this point:
 
-1. Our treatment was based on the Greatest HITs paper which uses the
-   (∞,1)-topos of trees as a model where this is not an issue, the
-   question is if the development could be modified to be more
-   portable to other guarded type theories/models.
+1. Our treatment was based on the Greatest HITs paper/TCTT which uses
+   the (∞,1)-topos of trees as a model where our definitions are
+   non-trivial, but proving this relies on induction under clocks,
+   which is not available in other guarded type theories such as
+   CTT. The question then is if our development could be modified to
+   be more portable to other guarded type theories/models such as CTT.
+
 2. In the 1-topos of trees model our definition of weak bisimilarity
    and our closure of lock-step error ordering under weak bisimilarity
-   are trivial due to the combination of
-   relating terms with differing numbers of steps and using propositional
-   truncation.
-   However the lock-step error ordering doesn't allow differing
-   numbers of steps or require an existential quantifier, and has a
-   non-trivial semantics even in the 1-topos model. So there is no
-   issue with using posets for strong ordering, only in forcing
-   notions using weak bisimilarity to be propositions.
+   are trivial due to the combination of relating terms with differing
+   numbers of steps and using propositional truncation. Note that this
+   is a distinct issue from the one mentioned earlier in the response
+   about transitivity being incompatible with weak bisimilarity.
+
+   However, the lock-step error ordering and the free composition of
+   computation relations don't allow differing numbers of steps so the
+   argument fails and indeed these have non-trivial semantics even in
+   the 1-topos model. So there is no issue with using posets for
+   strong ordering, only in forcing notions using weak bisimilarity to
+   be propositions.
+
 3. We have studied this issue since the reviews and we are confident
    that allowing weak bisimilarity to be a Set rather than a Prop
-   would not impact any of the results of the paper, as we only use
-   them as inputs to the adequacy theorem, whose output is a
-   Prop. This change would allow us to remove dependence on induction
-   under clocks from Greatest HITs in the paper and corresponding
-   axioms in our ongoing Agda formalization.
-
-> line 1034-1040, this definition seems to indicate that your relations are
-proof-relevant in the model. Is this the case?
-
-We did not mean to imply that this relation was Set-valued, this was
-intended to be an inductively defined proposition.
-
-*MAX:* squash previous two answers
-
-> The paper makes use of Ticked Cubical Type Theory (TCTT). Several features of TCTT
-> are already present in Clocked Type Theory (as presented in "The Clocks Are Ticking:
-> No More Delays!" by Bahr, Grathwohl, and Møgelberg). How much of the paper could one
-> reconstructed in Clocked Type Theory, and what advantages does TCTT offer over Clocked
-> Type Theory in this work?
-
-  TODO - check
-
-  The main difference between TCTT and Clocked Type Theory appears to be the
-  presence of the path equality of cubical type theory in the former.
-  In Clocked Type Theory, the unfolding of guarded fixpoints is a definitional
-  equality, whereas in the setting of TCTT this unfolding is only true up to a
-  path. However, the constructions carried out in this paper work in either case,
-  so everything we do in this paper should be possible in Clocked Type Theory.
-
-  The main benefit of working in TCTT is that we have access to the nice features
-  of cubical type theory, e.g., function extensionality is provable, and this
-  implies extensionality results for the later type and for clocks since
-  these are just Pi types.
-
-*MAX:* squash with previous as well?
+   would not impact any of the main results of the paper, as we only
+   use (guarded) weak bisimilarity as an input to the adequacy
+   theorem, whose output is a Prop and so no result can depend on the
+   details of which bisimilarity proof is constructed. This change
+   would allow us to remove dependence on induction under clocks from
+   Greatest HITs in the paper and corresponding axioms in our ongoing
+   Agda formalization.
