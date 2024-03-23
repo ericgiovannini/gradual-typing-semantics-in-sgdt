@@ -262,11 +262,13 @@ proof-relevant in the model. Is this the case?
 
 TODO - check
 
-In the model our relations are Prop-valued, and in fact this is actually the
-reason why we cannot take composition of error domain relations to be the
-usual relational composition.
+In the model our horizontal morphisms are prop-valued.
 
 *MAX*: I don't understand this answer
+*ERIC*: What I'm trying to say is that our error domain relations are
+prop-valued which I thought means that they aren't proof relevant.
+
+
 
 From Reviewer 2:
 
@@ -346,18 +348,6 @@ Yes, this argument is exactly what we had in mind.
 We had considered this but stuck with reflexive graph categories to
 simplify the description of the model. 
 
-> l639: It is said that ordering in the guarded setting fails, and I
-> believe it — but I need some explanation for why this is the case.
-> Sorry if it is mentioned earlier and I just missed it.
-
-  TODO - check
-  
-  As mentioned above, the paper does not currently explain why
-  transitivity fails for an extensional ordering defined on the guarded
-  lift monad. This was an unfortunate omission, and we plan to add it
-  in the revision.
-
-*MAX:* just incorporate this with the comment above, no need to repeat yourself.
 
 > l715: in order to speak of categories internal to CBPV with lax
 > morphisms, we need that category to have pullbacks. Is that
@@ -399,15 +389,17 @@ TODO
   /lock-step error ordering/, as that is already proposition-valued and no
   truncation is involved. On the other hand, this discussion does apply to our
   /weak bisimilarity/ relation, whose definition mentions termination of elements
-  of the lift monad. If we truncated here, the relation would be trivial in the
-  topos of trees. Additionally, the closure of the lock-step error ordering under weak
-  bisimilarity has a similar issue if we use existentials instead of sigmas to quantify
-  over the intermediate terms. That is, this relation is also trivial in the topos of trees.
-  In order for our constructions to be portable to other models of guarded type theory,
-  we therefore avoid the use of truncation unless we require that the definition be
-  a proposition for other reasons.
+  of the lift monad and requires truncation to be proposition-valued.
+  If we used existentials in the places that mention termination, the relation would
+  be trivial in the topos of trees. Additionally, the closure of the lock-step error
+  ordering under weak bisimilarity has a similar issue if we use existentials instead
+  of sigmas to quantify over the intermediate terms. That is, this relation is also trivial
+  in the topos of trees. In order for our constructions to be portable to other models of
+  guarded type theory, we therefore avoid the use of truncation unless we require that
+  the definition be a proposition for other reasons.
 
 *MAX:* this is unclear what you mean by "is already propositional"
+*ERIC* Is this fixed?
 
 From Reviewer 3:
 
