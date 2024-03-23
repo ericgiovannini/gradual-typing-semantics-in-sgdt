@@ -1,28 +1,36 @@
 We thank the reviewers for their insightful feedback which will help
 us improve the paper independent of the final decision here. We
-perceive that the main criticisms of the paper are in the writing and
-are confident we can address these in revisisions.
+perceive from the reviews that the main criticisms of the paper are in
+the writing and are confident we can address these in revisions. We
+first address the most pertinent technical and writing questions, and
+then more minor ones. If we don't address a question below it is
+because we believe the fix to it to be relatively simple.
 
+To summarize, the most significant changes we plan to make in the
+revisions are:
+1. Expand on section 4.2 to more thoroughly motivate the need for our
+   extensional and intensional models, e.g., lack of transitive
+   reasoning and the need to reason about perturbations
+2. Introduce the concrete model earlier to help motivate the abstract
+   models and constructions.
+3. Provide more background on the axioms for gradual typing
+4. Clarify the key steps in the construction of the intensional and
+   extensional model.
+5. Fix the typos, and address the smaller points included below
 
-
-To summarize, the key changes we plan to make in the revision are as follows:
-- Better motivate our notion of extensional model and the failure of the
-  representability property in the intensional model by grounding the
-  discussion in our specific concrete model
-- Provide more explanation for the abstract model constructions in the
-  body of the paper, particularly the construction that adds perturbations
-- Clarify the key steps in the construction of an extensional model
-- Provide more background on the axioms for gradual typing
-- Discuss the use of globalization as a means to defining an
-  idealized extensional "sub-model" of GTT
+* Reviewer 2 re-writing
+*MAX:* Eric please make this more organized into distinct points.
 
 Reviewer 2 says that the paper is difficult to follow and feels heavily
 compressed. We sympathize with this viewpoint and would like to propose a few
-changes that we hope will improve the exposition. We feel that one of the main
-sources of confusion in the paper as it stands now is that the abstract notions
-of extensional and intensional model as introduced in Section 4.2 and defined
-in Section 5 are introduced without first motivating them via concrete
-constructions in guarded type theory. This leads to questions about our notion
+changes that we hope will improve the exposition.
+
+1. The main sources of confusion in the paper as it stands now is that the abstract notions
+of extensional and intensional model as introduced in Section 4.2 and
+defined in Section 5 are introduced without first motivating them via
+concrete constructions in guarded type theory.
+
+This leads to questions about our notion
 of model, e.g., why do we need a separate notion of intensional model?
 Why is it that our extensional model definition must differ from
 the "idealized" definition? These issues are discussed briefly in Section 4.2, but as
@@ -47,75 +55,52 @@ the need for perturbations. In the revision, we plan to explain this as part of 
 narrative that leads the reader to a more intuitive understanding of our design
 choices for the abstract model.
 
+* blah
+
 Reviewer 1 asks why we introduce the notion of extensional model of
 gradual typing and why the idealized model is unsuitable in the
-setting of SGDT. The purpose of the extensional model is to provide
-the categorical structure needed to interpret the terms and
-inequational theory of gradual typing. 
+setting of SGDT. Further they question why our non-transitivite
+notions are necessary since weak bisimilarity for Capretta's delay
+monad is transitive.
 
-However, the concrete
-extensional model we construct in the paper suffers from the
-complication that the relation that interprets term precision is not
-transitive (i.e., we cannot compose commuting squares horizontally).
+The purpose of the extensional model is to provide the categorical
+structure needed to interpret the terms and inequational theory of
+gradual typing. In editing we unintentionally removed some explanation
+of this point.
 
-FIXED
-> MAX: What is "the relation"? in the sentence above?
+The idealized model is unsuitable for our graduality semantics because
+the semantic model of term precision that we use (≾) is provably *not
+transitive*, and neither is the *guarded definition* of weak
+bisimilarity (≈). The argument is as follows: if a relation ~ on L A
+is
 
-This is related to (but distinct from) the fact that the weak bisimilarity relation
-on the guarded lift monad is not transitive (this is provable internally).
-Similar reasoning shows that our concrete extensional model, which we obtain by closing
-the lock-step error ordering in the intensional concrete model under weak bisimilarity,
-does not allow horizontal composition of squares.
-Specifically, we can prove that the relation ≾ defined by
+1. A congruence wrt θ: ▶_t (x t ~ y t) ⇒ θx ~ θy
+2. Right-closed under delay: x ~ y ⇒ x ~ δ y
+3. Transitive
 
-  lx ≾ ly = Σ (lx' : L℧ X). Σ (ly' : L℧ Y). lx ≈ lx' ⊑ ly' ≈ ly
+Then by Löb induction you can show every element x satisfies x ~ fix
+θ.  If the relation is also left-closed then this implies for any x,y
+that x ~ fix θ and fix θ ~ y and so by transitivity x ~ y and the
+relation is trivial. But these relations (≾, ≈) satisfy (1) and (2)
+but are non-trivial so they are not transitive.
 
-is not transitive (where ≈ is weak bisimilarity and ⊑ is the lock-step error ordering).
-It is with this concrete result in mind that we formulated the definition of an
-arbitrary extensional model. Admittedly, this was more for the purpose of organization
-and managing complexity, as the only concrete instantiation of the definition of
-extensional model is the concrete one above.
+This does not contradict that Capretta's delay monad has a transitive
+notion of weak bisimilarity. Capretta's weak bisimilarity should be
+equivalent to the global (i.e., ∀k) version of our guarded weak
+bisimilarity. This global relation therefore should be transitive. So
+we almost get out an idealized model this way, but only for
+"clock-irrelevant" types, which are essentially the ones that do not
+use Dyn. However we need the weaker formulation of an extensional
+model in order to get a compositional construction that models Dyn,
+which is obviously central to gradual typing.
 
-This lack of horizontal composition is not actually a problem as far as interpreting
-the rules needed for establishing graduality. This is because transitivity
-was never required in the original formulations of the dynamic gradual guarantee
-of Siek et al. Transitivity was added to the inequational theory in the work of
-New and Licata because it holds in their domain-theoretic model.
-The lack of transitivity does require our notion of extensional
-model to change slightly, in that we must require as primitive certain variations of
-the usual cast rules that normally, in the presence of transitivity, are admissible.
-This explains why our notion of extensional model may seem overly complicated.
+Finally, as briefly mentioned (378-381) transitive reasoning is not an
+essential component of graduality, for instance it was not in the
+original SNAPL 2015 formulation of the gradual guarantee. It was only
+added in New and Licata's work which used models that supported
+transitive reasoning.
 
-FIXED
-> We should state that transitivity was never required in the original
-> formulations of the dynamic gradual guarantee by Boyland/Siek/etc,
-> it was actually added by New and Licata because it held in the
-> domain theoretic model so was natural to include.
-
-As Reviewer 1 remarks, however, we can also consider what happens when we leave the
-guarded world by globalizing, i.e., when we perform clock-quantification to remove
-the implicit clock variable indexing all of our guarded definitions.
-If we start with our guarded concrete extensional model and globalize,
-the global version of the lift monad will be isomorphic to Capretta's coinductive
-delay monad, for which, as Reviewer 1 points out, weak bisimilarity is transitive.
-Howeverm this process does not give us an idealized extensional model.
-
-FIXED
-> Do not ask a question in the response. State clearly that it does
-> not give an idealized extensional model.
-
-In short, the process of globalization does not get us a "global" solution to
-the domain equation defining the dynamic type, i.e., a solution to the (non-guarded)
-equation D ≅ ℕ + (D × D) + (D → D).
-On the other hand, for a certain class of well-behaved types, those that, roughly
-speaking, behave well with respect to the process of globalization, we /can/ define
-an idealized extensional model having those types as objects. We plan to describe
-this construction in more detail in the revision.
-We are also in the process of futher elucidating the relationship between the
-notion of idealized extensional model and the notion of (guarded) extensional model
-that we have formulated in this work.
-
-
+* R1 why posets?
 Reviewer 1 asks why the objects in our concrete model have a notion of ordering,
 as opposed to just being types along with a weak bisimilarity relation. There
 are two potential interpretations of this question. The first is that the reviewer
@@ -126,7 +111,6 @@ between morphisms, and the way we instantiate in the concrete setting is by
 equipping the objects with a partial order which then extends to the morphisms,
 i.e., we define a commuting square f ⊑ g as "if x ≤ y then f x ≤ g y".
 
-
 The second interpretation of the question about the ordering is that the reviewer
 is asking why we cannot treat the ordering "synthetically" in the same way that
 we treat the step-indexing synthetically via SGDT. That is, our objects would be
@@ -135,7 +119,7 @@ would be sets equipped with a partial order. This is an interesting possibility
 which, as we mention in the Discussion section of the paper, we plan to explore
 as future work.
 
-
+* R1 why weak bisimilarity?
 Reviewer 1 also asks why all of the objects in our concrete model need to come
 equipped with a notion of weak bisimilarity. That is, why can't weak
 bisimilarity be limited to the guarded lift monad? Tracing things back one step,
@@ -156,53 +140,26 @@ no steps are taken at a first-order. But when the function is applied,
 steps may be taken. So we need a way to lift the bisimilarity relation
 to functions.
 
-FIXED
-> I don't think this is the correct explanation. We could define a
-> bisimilarity relation on hom sets even if we only had a bisimilarity
-> relation on the lift monad. The reason we need it for all types is
-> because we need to reason about weak bisimilarity for *higher-order*
-> types, e.g., when we cast a function to another function, at a first
-> order no steps are taken, we need the relation lifted to functions.
+* R1 loves Agda
 
-Reviewer 1 also mentions the importance of an associated formalization of
-our results in Guarded Cubical Agda. We remark that work on this formalization
-is ongoing. We would also like to emphasize, both here
-and in the revisions to the paper, that the process of formalizing (much of)
-the concrete model in Agda was immensely helpful for understanding how
-guarded type theory works and also providing a useful template from which we
-could develop and refine the complicated model constructions in the concrete
-setting, which we later generalized and packaged up in the abstract setting
-for inclusion in the paper.
+Reviewer 1 mentions that they would prefer if the Agda formalization
+was complete.
 
-FIXED
-> Don't say it's unclear, you're just arguing against yourself. Just
-> say we're working on it but obviously we're not promising anything
-> because it is out of scope for this paper.
+We are planning to complete at least some portions of the results here
+in guarded cubical Agda, especially the adequacy
+results. Unfortunately, there is still significant effort to finish
+the mechanization as a faithful rendering of the constructions in our
+paper would rely on formalizations of double categories and CBPV
+models, which are not readily available.
 
+On the other hand, we would like to emphasize that we co-designed the
+concrete model with the formalization in Agda and this was immensely
+helpful for the authors to better understand guarded type theory and
+domain theory, even without a complete mechanization.
 
+* Other
 
-*Other Questions/Clarifications*
-
-From Reviewer 1:
-
->  line 226, I guess GTT stands for Gradual Type Theory, but in the literature
->  it appears also as an acronym for Guarded Type Theory. Please carefully
->  introduce the acronyms you employ.
-
-Yes, on line 226 this stands for Gradual Type Theory, we will avoid
-this collision between acronyms in revisions.
-
-> In Section 5.1 you start working with reflexive graph categories, but you only
-> use the ones where relations can be composed. I missed this detail in line 651
-> the first time I went through the paper, and I was so confused about your definition
-> of left- and right-representability and extensional model. Please make it more visible
-> that you always require the presence of a category of relations.
 > By the way, is this a variation of double category that appeared before in the literature?
-
-We will improve the explanation in this section, in particular we will emphasize that we
-need relations to compose, i.e., we have a category whose objects are the same as the
-objects of V_f / E_f and whose morphisms are the value / computation relations respectively.
-We will also clarify the discussion of universally left/right-representable relations.
 
 We are not aware of a name for this variation from an existing source.
 
@@ -213,28 +170,21 @@ We are not aware of a name for this variation from an existing source.
 
 Composition is only a lax morphism because relation constructors
 generally do not commute strongly strongly with relation
-composition. Specifically, U and -> only laxly commute with our notion
-of relation composition. This is already true of the action of the
-function arrow on ordinary relations.
+composition. Specifically, ->, U and F only laxly commute with our
+notion of relation composition. This is already true of the action of
+the function arrow on ordinary relations.
 
-*MAX: does F(cc') = F(c)F(c') in the concrete model?
-*ERIC: Yes, I believe this holds for the lock-step error ordering.
+* ℕ in Perturbations
 
-> line 760, what is a step-0 intensional model? You explain it first in line 904,
-> but it should be moved earlier.
-
-A step-0 model is a category internal to the category of CBPV models.
-We will make this clearer in the revision, possibly giving each of the
-step-i models more informative names. 
-  
 > Section 5.3.1, when extending F with perturbations, you have `ℕ × P_A` instead of
 > simply `P_A`. Can you comment on why you have the cartesian product with natural
 > numbers here? What breaks if you do not add it and simply take P_A? It is not
 > immediately clear to me by quickly reading through Appendix C.1.
 
+*MAX:* point to line 1191 for an explanation
+
 TODO - check
 
-We agree that this should be better motivated in the body of the paper.
 The ℕ comes from the fact that in the concrete model, a projection morphism
 may "wait", i.e., introduce a θ to construct an element of type L℧ A.
 So a perturbation on FA also needs a way to "delay" in order to mimic this
@@ -244,19 +194,7 @@ of this perturbation as an endomorphism on FA is to perform the perturbation
 on A (under the functorial action of F) and then perform a delay n-times
 (where the existence of a delay operation is part of the data of the model).
 
-  
-> line 1034-1040, this definition seems to indicate that your relations are
-proof-relevant in the model. Is this the case?
-
-TODO - check
-
-In the model our horizontal morphisms are prop-valued.
-
-*MAX*: I don't understand this answer
-*ERIC*: What I'm trying to say is that our error domain relations are
-prop-valued which I thought means that they aren't proof relevant.
-
-
+* Minor Qs
 
 From Reviewer 2:
 
@@ -278,33 +216,20 @@ From Reviewer 2:
 Yes, this is proven in Appendix A.
   
 > l378: Can the benefit of transitivity being admissible instead of
-> derivable be explained? When a choice like this is made, in my
-> experience it usually means one of two things: either it is
-> important to consider models in which transitivity is false, or you
-> want to arrange the syntax in such a way that it admits a nice
-> decision procedure. Of course, the first goal is the really
-> compelling one, as the second goal is really an implementation
-> detail. Is the choice here based on one of these goals, or something
-> else?
+> derivable be explained? ...
 
-  TODO
-
+This was a bit unclearly worded: reflexivity is admissible from
+congruence so we don't bother adding it as a primitive. Transitivity
+is *not* admissible, and this is desired as our extensional models
+(Section 5.1) do not model transitivity.
 
 > l388: The point about upcasts and downcasts being some kinds of
-> least upper bounds and greatest lower bounds is interesting, but I
-> was left a little confused by it. Can we have some more detail on
-> the analogy? Is it just that these are basically adjoints or some
-> kind?
+> least upper bounds and greatest lower bounds is interesting ... Is
+> it just that these are basically adjoints or some kind?
 
 Yes, the technical content of this intuition is that they are Galois
 connections, which can be formulated as saying they are given
 pointwise by a certain join/meet.
-
-> l470: When you write “1 -> U”, does it mean Delta(1) or
-> something?
-
-This is the term representing a runtime type error. There is a typo
-and it should be $1 -> UB$.
 
 > l515: Categories internal to the category of CBPV models are
 > invoked, but to make sense of this, don’t we need there to be
@@ -325,8 +250,9 @@ equivalence.
 > be a useful intermediate abstraction here? I am curious if you
 > thought about that.
 
-We had considered this but stuck with reflexive graph categories to
-simplify the description of the model. 
+We had considered this but didn't have any use for the more general
+2-cells in modeling graduality so we used the simpler reflexive graph
+categories.
 
 > l715: in order to speak of categories internal to CBPV with lax
 > morphisms, we need that category to have pullbacks. Is that
@@ -336,6 +262,7 @@ simplify the description of the model.
 *MAX:* I'll look into this tomorrow
 TODO
 
+* 1-Topos of Trees
 > l1070, l1081: here is something that is extremely sensitive to the
 > chosen model of guarded recursion, which needs to be discussed. In
 > the topos of trees (or the (∞,1)-topos of trees if you prefer), a
@@ -366,27 +293,34 @@ considered and we appreciate the reviewer for pointing it out. This is
 a subtle issue so here is a concise overview of the situation:
 
 1. Our treatment was based on the Greatest HITs paper which uses the
-   (∞,1)-topos of trees where this is not an issue, the question is of
-   if the development could be made more "agnostic" which would make
-   it more portable to other guarded type theories.
-2. In the 1-topos of trees model, the existential quantifier is
-   tricky: our definition of weak bisimilarity and our closure of
-   lock-step error ordering under weak bisimilarity are trivial in the
-   1-topos of trees. However the lock-step error ordering doesn't use
-   an existential quantifier or propositional truncation, and so has a
+   (∞,1)-topos of trees as a model where this is not an issue, the
+   question is if the development could be modified to be more
+   portable to other guarded type theories/models.
+2. In the 1-topos of trees model our definition of weak bisimilarity
+   and our closure of lock-step error ordering under weak bisimilarity
+   are trivial due to the combination of
+   relating terms with differing numbers of steps and using propositional
+   truncation.
+   However the lock-step error ordering doesn't allow differing
+   numbers of steps or require an existential quantifier, and has a
    non-trivial semantics even in the 1-topos model. So there is no
    issue with using posets for strong ordering, only in forcing
    notions using weak bisimilarity to be propositions.
 3. We have studied this issue since the reviews and we are confident
    that allowing weak bisimilarity to be a Set rather than a Prop
-   would not impact any of the results of the paper. The
-   *globalizations* of weak bisimilarity and the closure of error
-   ordering under weak bisimilarity are provably propositions even if
-   the original notions are Sets. This allows us to remove dependence
-   on some axioms used in Greatest HITs in the paper and our ongoing
-   Agda formalization.
+   would not impact any of the results of the paper, as we only use
+   them as inputs to the adequacy theorem, whose output is a
+   Prop. This change would allow us to remove dependence on induction
+   under clocks from Greatest HITs in the paper and corresponding
+   axioms in our ongoing Agda formalization.
 
-From Reviewer 3:
+> line 1034-1040, this definition seems to indicate that your relations are
+proof-relevant in the model. Is this the case?
+
+We did not mean to imply that this relation was Set-valued, this was
+intended to be an inductively defined proposition.
+
+*MAX:* squash previous two answers
 
 > The paper makes use of Ticked Cubical Type Theory (TCTT). Several features of TCTT
 > are already present in Clocked Type Theory (as presented in "The Clocks Are Ticking:
@@ -408,30 +342,4 @@ From Reviewer 3:
   implies extensionality results for the later type and for clocks since
   these are just Pi types.
 
-
-> Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that
-> the double categorical semantics of gradual type theory has not been given before.
-> However, this is already in Section 5 of "Call-by-name gradual type theory" by New
-> and Licata so it would be good to add a citation to that work.
-
-We will re-word this to clarify our meaning: using double categorical
-semantics for gradual type theory is not novel, what was missing from
-the prior work was an extension of the double categorical semantics
-from cartesian closed categories to CBPV models.
-
-> The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional
-> model", "step-3 intensional model", and "step-4 intensional model" are not very informative.
-> In this context, they might even be misleading: in intensional model, computational steps are
-> observable (lines 634-635). It would be better to rename these notions, and to instead
-> use terminology like 'a CBPV model with ...-structure". It would also be good to add a
-> final Definition of an intensional model, and be explicit what an intensional model
-> ultimately entails to in this paper: is step-4 intensional model the main notion in
-> this paper and is the role of step-n intensional models with n≤3 to help formulate
-> that notion? Or is each notion interesting in its own right?
-
-This is a good point, and we are considering renaming the step-i models to be more informative.
-You are right that the main purpose of the step-n models with n≤3 is to build up in a modular
-way the final definition of an intensional model (i.e., a step-4 model), and also to allow
-for us to *construct* such a model as a sequence of smaller constructions from step-i to
-step-(i+1).
-
+*MAX:* squash with previous as well?

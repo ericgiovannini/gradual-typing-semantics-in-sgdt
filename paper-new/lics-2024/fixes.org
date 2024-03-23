@@ -35,3 +35,64 @@ dyn here means an object modeling the dynamic type, i.e., D in Definition 5.8.
 
 I know but ⊑ is also used in gradual typing so New-Licata went with
 the notation that would be clearer to gradual typing experts.
+
+> l470: When you write “1 -> U”, does it mean Delta(1) or
+> something?
+
+This is the term representing a runtime type error. There is a typo
+and it should be $1 -> UB$.
+
+
+> line 760, what is a step-0 intensional model? You explain it first in line 904,
+> but it should be moved earlier.
+
+A step-0 model is a category internal to the category of CBPV models.
+We will make this clearer in the revision, possibly giving each of the
+step-i models more informative names. 
+  
+> The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional
+> model", "step-3 intensional model", and "step-4 intensional model" are not very informative.
+> In this context, they might even be misleading: in intensional model, computational steps are
+> observable (lines 634-635). It would be better to rename these notions, and to instead
+> use terminology like 'a CBPV model with ...-structure". It would also be good to add a
+> final Definition of an intensional model, and be explicit what an intensional model
+> ultimately entails to in this paper: is step-4 intensional model the main notion in
+> this paper and is the role of step-n intensional models with n≤3 to help formulate
+> that notion? Or is each notion interesting in its own right?
+
+This is a good point, and we are considering renaming the step-i models to be more informative.
+You are right that the main purpose of the step-n models with n≤3 is to build up in a modular
+way the final definition of an intensional model (i.e., a step-4 model), and also to allow
+for us to *construct* such a model as a sequence of smaller constructions from step-i to
+step-(i+1).
+
+> Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that
+> the double categorical semantics of gradual type theory has not been given before.
+> However, this is already in Section 5 of "Call-by-name gradual type theory" by New
+> and Licata so it would be good to add a citation to that work.
+
+We will re-word this to clarify our meaning: using double categorical
+semantics for gradual type theory is not novel, what was missing from
+the prior work was an extension of the double categorical semantics
+from cartesian closed categories to CBPV models.
+
+
+From Reviewer 1:
+
+>  line 226, I guess GTT stands for Gradual Type Theory, but in the literature
+>  it appears also as an acronym for Guarded Type Theory. Please carefully
+>  introduce the acronyms you employ.
+
+Yes, on line 226 this stands for Gradual Type Theory, we will avoid
+this collision between acronyms in revisions.
+
+> In Section 5.1 you start working with reflexive graph categories, but you only
+> use the ones where relations can be composed. I missed this detail in line 651
+> the first time I went through the paper, and I was so confused about your definition
+> of left- and right-representability and extensional model. Please make it more visible
+> that you always require the presence of a category of relations.
+
+We will improve the explanation in this section, in particular we will emphasize that we
+need relations to compose, i.e., we have a category whose objects are the same as the
+objects of V_f / E_f and whose morphisms are the value / computation relations respectively.
+We will also clarify the discussion of universally left/right-representable relations.
