@@ -3,6 +3,45 @@ We thank the reviewers for their insightful feedback.
 We will first address some of the major criticisms and questions and
 then we address some smaller points.
 
+
+Reviewer 2 mentions that the paper is difficult to follow and feels heavily
+compressed. We sympathize with this viewpoint and would like to propose a few
+changes that we hope will improve the exposition. We feel that one of the main
+sources of confusion in the paper as it stands now is that the abstract notions
+of extensional and intensional model as introduced in Section 4.2 and defined
+in Section 5 are introduced without first motivating them via concrete
+constructions in guarded type theory. This leads to questions about our notion
+of model, e.g., why do we need a separate notion of intensional model?
+Why is it that our extensional model definition must differ from
+the "idealized" definition? These issues are discussed briefly in Section 4.2, but as
+Reviewer 1 points out, this section can use improvement. More specifically, in
+that section we state that transitive reasoning is not possible when working
+up to weak bisimilarity, and that this means that our notion of extensional model
+cannot support horizontal composition of squares. We agree that this statement is
+not currently justified in the paper, as pointed out by Reviewer 2 in regard to a
+similar statement in Section 5.1. In particular, it would be illuminating to first
+show what goes wrong if one begins with a concrete term model and tries to define
+an extensional ordering relation on the guarded lift monad, i.e., an ordering "up
+to delays" on either side. Such a relation is provably *not* transitive, and this
+leads to the idea of decomposing the relation into two relations, weak bisimilarity
+relating terms that are the same up to delay, and a /lock-step/ error ordering where
+both sides must take the same number of steps (up to the left-hand side being an error).
+
+Likewise, we state in Section 4.2 that the representability property breaks down in
+the presence of observable steps. This would be easier to appreciate if we presented
+(a simplified version of) the concrete intensional model and showed that one of the
+simple representability properties does not hold. This would also help to motivate
+the need for perturbations. In the revision, we plan to explain this as part of a
+narrative that leads the reader to a more intuitive understanding of our design
+choices for the abstract model.
+
+FIXED
+> The above paragraphs should be the *first* thing in the response as
+> it is the main point of contention IMO.
+
+> I also think it's a bit rambling and could be made more concise.
+
+
 Reviewer 1, Reviewer 2, and Reviewer 3 mention typos, notational inconsistencies,
 and issues related to naming. We plan to correct these and make the technical
 portions clearer.
@@ -12,36 +51,38 @@ and why the idealized model is unsuitable in the setting of SGDT.
 At a high level, the purpose of an extensional model is to provide the categorical
 structure needed to interpret the terms and inequational theory of gradual typing.
 However, the specific concrete extensional model we construct in the paper suffers
-from the complication that the relation on vertical morphisms is not transitive
+from the complication that the relation that interprets term precision is not transitive
 (i.e., we cannot compose commuting squares horizontally).
 
+FIXED
 > MAX: What is "the relation"? in the sentence above?
 
 This is related to (but distinct from) the fact that the weak bisimilarity relation
 on the guarded lift monad is not transitive (this is provable internally).
 Similar reasoning shows that our concrete extensional model, which we obtain by closing
 the lock-step error ordering in the intensional concrete model under weak bisimilarity,
-does not allow horizontal composition of squares. It is with this concrete result
-in mind that we formulated the definition of an arbitrary extensional model.
-Admittedly, this was more for the purpose of organization and managing complexity,
-as the only concrete instantiation of the definition of extensional model is the
-concrete one above.
+does not allow horizontal composition of squares.
+Specifically, we can prove that the relation ≾ defined by
 
-We believe, however, that based on our experience working with our concrete
-extensional model, it is not possible to define an idealized extensional
-model of gradual typing where we use the guarded lift monad, as the result about
-the non-transitivity of weak bisimilarity for lift in the guarded setting would
-seem to imply that no such model can exist.
+  lx ≾ ly = Σ (lx' : L℧ X). Σ (ly' : L℧ Y). lx ≈ lx' ⊑ ly' ≈ ly
 
-> MAX: why "we belive" and "seem" ? I thought we settled this Q in our meeting
+is not transitive (where ≈ is weak bisimilarity and ⊑ is the lock-step error ordering).
+It is with this concrete result in mind that we formulated the definition of an
+arbitrary extensional model. Admittedly, this was more for the purpose of organization
+and managing complexity, as the only concrete instantiation of the definition of
+extensional model is the concrete one above.
 
 This lack of horizontal composition is not actually a problem as far as interpreting
-the rules needed for establishing graduality. This is because transitivity isn't
-actually necessary to prove graduality. This does require our notion of extensional
+the rules needed for establishing graduality. This is because transitivity
+was never required in the original formulations of the dynamic gradual guarantee
+of Siek et al. Transitivity was added to the inequational theory in the work of
+New and Licata because it holds in their domain-theoretic model.
+The lack of transitivity does require our notion of extensional
 model to change slightly, in that we must require as primitive certain variations of
 the usual cast rules that normally, in the presence of transitivity, are admissible.
 This explains why our notion of extensional model may seem overly complicated.
 
+FIXED
 > We should state that transitivity was never required in the original
 > formulations of the dynamic gradual guarantee by Boyland/Siek/etc,
 > it was actually added by New and Licata because it held in the
@@ -53,12 +94,13 @@ the implicit clock variable indexing all of our guarded definitions.
 If we start with our guarded concrete extensional model and globalize,
 the global version of the lift monad will be isomorphic to Capretta's coinductive
 delay monad, for which, as Reviewer 1 points out, weak bisimilarity is transitive.
-Will this give us an idealized extensional model? One issue that arises immediately
+Howeverm this process does not give us an idealized extensional model.
 
+FIXED
 > Do not ask a question in the response. State clearly that it does
 > not give an idealized extensional model.
 
-is the fact that the process of globalization does not get us a "global" solution to
+In short, the process of globalization does not get us a "global" solution to
 the domain equation defining the dynamic type, i.e., a solution to the (non-guarded)
 equation D ≅ ℕ + (D × D) + (D → D).
 On the other hand, for a certain class of well-behaved types, those that, roughly
@@ -101,16 +143,16 @@ concrete model, we need to satisfy this requirement. We do so by equipping the
 *objects* with a reflexive, symmetric relation, which then extends to a relation
 on the vertical hom-sets (morphisms between predomains) in the obvious way.
 
-Of course, one could now ask, as Reviewer 1 does, why is the definition of
-intensional model designed this way? That is, why does the definition of
-intensional model require a notion of weak bisimilarity for all vertical
-hom-sets? To see why, recall the construction of an extensional model from an
-intensional model discussed in Section 5.3.3, where to define the commuting
-squares of the extensional model, we take the closure of the commuting squares
-of the intensional model by the weak bisimilarity relation of the vertical
-hom-sets on both sides. This construction must work for *any* type, and hence
-all vertical hom-sets must be equipped with a bisimilarity relation.
+Of course, one could now ask, as Reviewer 1 does, why the definition of
+intensional model is designed this way. The reason the definition of
+intensional model requires a notion of weak bisimilarity for all vertical
+hom-sets is that we need to reason about weak bisimilarity for
+*higher-order* types, e.g., when we cast a function to another function,
+no steps are taken at a first-order. But when the function is applied,
+steps may be taken. So we need a way to lift the bisimilarity relation
+to functions.
 
+FIXED
 > I don't think this is the correct explanation. We could define a
 > bisimilarity relation on hom sets even if we only had a bisimilarity
 > relation on the lift monad. The reason we need it for all types is
@@ -119,9 +161,8 @@ all vertical hom-sets must be equipped with a bisimilarity relation.
 > order no steps are taken, we need the relation lifted to functions.
 
 Reviewer 1 also mentions the importance of an associated formalization of
-our results in Guarded Cubical Agda. We remark that work on this continues,
-though it is unclear to what extent we will formalize the abstract model
-and the constructions thereon. We would like to emphasize, both here
+our results in Guarded Cubical Agda. We remark that work on this formalization
+is ongoing. We would also like to emphasize, both here
 and in the revisions to the paper, that the process of formalizing (much of)
 the concrete model in Agda was immensely helpful for understanding how
 guarded type theory works and also providing a useful template from which we
@@ -129,44 +170,12 @@ could develop and refine the complicated model constructions in the concrete
 setting, which we later generalized and packaged up in the abstract setting
 for inclusion in the paper.
 
+FIXED
 > Don't say it's unclear, you're just arguing against yourself. Just
 > say we're working on it but obviously we're not promising anything
 > because it is out of scope for this paper.
 
-Reviewer 2 mentions that the paper is difficult to follow and feels heavily
-compressed. We sympathize with this viewpoint and would like to propose a few
-changes that we hope will improve the exposition. We feel that one of the main
-sources of confusion in the paper as it stands now is that the abstract notions
-of extensional and intensional model as introduced in Section 4.2 and defined
-in Section 5 are introduced without first motivating them via concrete
-constructions in guarded type theory. This leads to questions about our notion
-of model, e.g., why do we need a separate notion of intensional model?
-Why is it that our extensional model definition must differ from
-the "idealized" definition? These issues are discussed briefly in Section 4.2, but as
-Reviewer 1 points out, this section can use improvement. More specifically, in
-that section we state that transitive reasoning is not possible when working
-up to weak bisimilarity, and that this means that our notion of extensional model
-cannot support horizontal composition of squares. We agree that this statement is
-not currently justified in the paper, as pointed out by Reviewer 2 in regard to a
-similar statement in Section 5.1. In particular, it would be illuminating to first
-show what goes wrong if one begins with a concrete term model and tries to define
-an extensional ordering relation on the guarded lift monad, i.e., an ordering "up
-to delays" on either side. Such a relation is provably *not* transitive, and this
-leads to the idea of decomposing the relation into two relations, weak bisimilarity
-relating terms that are the same up to delay, and a /lock-step/ error ordering where
-both sides must take the same number of steps (up to the left-hand side being an error).
 
-Likewise, we state in Section 4.2 that the representability property breaks down in
-the presence of observable steps. This would be easier to appreciate if we presented
-(a simplified version of) the concrete intensional model and showed that one of the
-simple representability properties does not hold. This would also help to motivate
-the need for perturbations. In the revision, we plan to explain this as part of a
-narrative that leads the reader to a more intuitive understanding of our design
-choices for the abstract model.
-
-> The above paragraphs should be the *first* thing in the response as
-> it is the main point of contention IMO. I also think it's a bit
-> rambling and could be made more concise.
 
 To summarize, the key changes we plan to make in the revision are as follows:
 
@@ -221,6 +230,7 @@ of relation composition. This is already true of the action of the
 function arrow on ordinary relations.
 
 *MAX: does F(cc') = F(c)F(c') in the concrete model?
+*ERIC: Yes, I believe this holds for the lock-step error ordering.
 
 > line 760, what is a step-0 intensional model? You explain it first in line 904,
 > but it should be moved earlier.
@@ -383,12 +393,19 @@ TODO
 > trivialise the notions employed in the present work.
 
 
-  We agree that there are subtleties with the model, but we do not
-  think they impact the definition of the lock-step error ordering
-  as that is already propositional. Instead, the issue lies with
-  our weak bisimilarity relation, in which saying that there merely
-  exists an n and x such that θ l is the n-times iterated delay of η x
-  would trivialize the relation.
+  We agree that there are subtleties with the model, and we appreciate this
+  highly insightful comment for bringing this to our attention.
+  We do not agree that these issues impact the definition of the
+  /lock-step error ordering/, as that is already proposition-valued and no
+  truncation is involved. On the other hand, this discussion does apply to our
+  /weak bisimilarity/ relation, whose definition mentions termination of elements
+  of the lift monad. If we truncated here, the relation would be trivial in the
+  topos of trees. Additionally, the closure of the lock-step error ordering under weak
+  bisimilarity has a similar issue if we use existentials instead of sigmas to quantify
+  over the intermediate terms. That is, this relation is also trivial in the topos of trees.
+  In order for our constructions to be portable to other models of guarded type theory,
+  we therefore avoid the use of truncation unless we require that the definition be
+  a proposition for other reasons.
 
 *MAX:* this is unclear what you mean by "is already propositional"
 
