@@ -11,20 +11,20 @@ To summarize, the most significant changes we propose to make in the
 revisions are:
 1. Expand on section 4.2 to more thoroughly motivate the need for our
    extensional and intensional models, e.g., lack of transitive
-   reasoning and the need to reason about perturbations
+   reasoning and the need to reason about perturbations.
 2. Introduce the concrete model earlier to help motivate the abstract
    models and constructions.
-3. Provide more background on the axioms for gradual typing
+3. Provide more background on the axioms for gradual typing.
 4. Clarify the key steps in the construction of the intensional and
    extensional model.
-5. Explicitly mention the restrictions on the use of ticks in TCTT
+5. Explicitly mention the restrictions on the use of ticks in TCTT.
 6. Fix the typos, and address the smaller points included below.
 
 * Section 4.2
 
 Reviewer 2 says that the paper is difficult to follow and feels heavily
 compressed. Reviewer 1 points out that Section 4.2 is the weakest in the
-paper, and also asks important questions about our notion of extensional model
+paper, and also asks important questions about our notion of extensional model,
 namely:
 1.  Why is the idealized notion of extensional model not suitable for our semantics?
 2.  Why can't we require transitivity in our notion of extensional model?
@@ -37,20 +37,21 @@ the definition of an idealized model. We intended for the paper to
 include material explaining this but we removed it unintentionally
 while editing the paper, so we include a brief explanation below.
 
-In short, the justification for the lack of transitive reasoning is that
-the semantic model of term precision that we use (≾) is provably
-*not transitive*, and neither is the *guarded definition* of weak
-bisimilarity (≈). The argument is as follows: if a relation ~ on L A is
+In short, the justification for the lack of transitive reasoning is
+that in the *guarded setting*, the semantic model of term precision
+that we use (≾) is provably *not transitive*, and neither is weak
+bisimilarity (≈). The argument is as follows: if a relation ~ on the
+guarded error-lift monad is
 
 1. A congruence wrt θ: ▶_t (x t ~ y t) ⇒ θx ~ θy
 2. Right-closed under delay: x ~ y ⇒ x ~ δ y
 3. Transitive
 
-Then by Löb induction you can show every element x satisfies x ~ fix θ.
+Then by Löb induction, we can show every element x satisfies x ~ fix θ.
 If the relation is also left-closed then this implies for any x,y that
-x ~ fix θ and fix θ ~ y and so by transitivity x ~ y and the relation
+x ~ fix θ and fix θ ~ y, and so by transitivity x ~ y and the relation
 is trivial. But these relations (≾, ≈) satisfy (1) and (2) but are
-non-trivial so they are not transitive.
+non-trivial, so they are not transitive.
 
 This does not contradict that Capretta's delay monad has a transitive
 notion of weak bisimilarity. Capretta's weak bisimilarity should be
@@ -62,8 +63,8 @@ use Dyn. However we need the weaker formulation of an extensional
 model in order to get a compositional construction that models Dyn,
 which is obviously central to gradual typing.
 
-Finally, as briefly mentioned (378-381) transitive reasoning is not an
-essential component of graduality, for instance it was not in the
+Finally, as briefly mentioned (378-381), transitive reasoning is not an
+essential component of graduality; for instance it was not in the
 original SNAPL 2015 formulation of the gradual guarantee. It was only
 added in New and Licata's work which used models that supported
 transitive reasoning.
@@ -74,12 +75,12 @@ ordering, as opposed to just being types along with a weak
 bisimilarity relation. There are two potential interpretations of this
 question. The first is that the reviewer is asking why an ordering
 relation is needed on objects, to which our response is that we are
-trying to model the term precision ordering of gradual typing.  In
+trying to model the term precision ordering of gradual typing. In
 particular, the abstract models include a notion of commutative
-squares between morphisms, and the way we instantiate in the concrete
-setting is by equipping the objects with a partial order which then
-extends to the morphisms, i.e., we define a commuting square f ⊑ g as
-"if x ≤ y then f x ≤ g y".
+squares between morphisms, and the way we instantiate this in the
+concrete setting is by equipping the objects with a partial order
+which then extends to the morphisms, i.e., we define a commuting
+square f ⊑ g as "if x ≤ y then f x ≤ g y".
 
 The second interpretation of the question about the ordering is that
 the reviewer is asking why we cannot treat the ordering
@@ -91,25 +92,13 @@ possibility which, as we mention in the Discussion section of the
 paper, we plan to explore as future work.
 
 * Why weak bisimilarity?
-Reviewer 1 also asks why all of the objects in our concrete model need to come
-equipped with a notion of weak bisimilarity. That is, why can't weak
-bisimilarity be limited to the guarded lift monad? Tracing things back one step,
-we could say that this is because the intensional model requires the vertical
-hom-sets to have a notion of "weak bisimilarity", which in this abstract setting
-is specified as a reflexive, symmetric relation that is closed under composition.
-As was the case with the partial order discussed above, when we define the
-concrete model, we need to satisfy this requirement. We do so by equipping the
-*objects* with a reflexive, symmetric relation, which then extends to a relation
-on the vertical hom-sets (morphisms between predomains) in the obvious way.
-
-Of course, one could now ask, as Reviewer 1 does, why the definition of
-intensional model is designed this way. The reason the definition of
-intensional model requires a notion of weak bisimilarity for all vertical
-hom-sets is that we need to reason about weak bisimilarity for
-*higher-order* types, e.g., when we cast a function to another function,
-no steps are taken at a first-order. But when the function is applied,
-steps may be taken. So we need a way to lift the bisimilarity relation
-to functions.
+Reviewer 1 also asks why all of the objects in our concrete model need
+to come equipped with a notion of weak bisimilarity. The reason for
+this is that we need to reason about weak bisimilarity for
+*higher-order* types, e.g., when we cast a function to another
+function type, no steps are taken at a first-order. But when the
+function is applied, steps may be taken. So we need a way to lift the
+bisimilarity relation to function types.
 
 * Regarding Formalization
 
@@ -119,7 +108,7 @@ formalization was complete.
 We are planning to complete at least some portions of the results here
 in guarded cubical Agda, especially the adequacy
 results. Unfortunately, there is still significant effort to finish
-the mechanization as a faithful rendering of the constructions in our
+the mechanization, as a faithful rendering of the constructions in our
 paper would rely on formalizations of double categories and CBPV
 models, which are not readily available.
 
@@ -132,7 +121,7 @@ domain theory, even without a complete mechanization.
 
 Reviewer 2 points out that our weak bisimilarity notion is trivial in
 the topos of trees model, but not the (∞, 1)-topos of trees model.
-Reviewer 3 asks a related question of the difference between using
+Reviewer 3 asks a related question about the difference between using
 TCTT and CTT.
 
 This is a fair point of discussion that we hadn't previously
@@ -154,8 +143,8 @@ overview of our understanding of this point:
    about transitivity being incompatible with weak bisimilarity.
 
    However, the lock-step error ordering and the free composition of
-   computation relations don't allow differing numbers of steps so the
-   argument fails and indeed these have non-trivial semantics even in
+   computation relations don't allow differing numbers of steps, so the
+   argument fails, and indeed these have non-trivial semantics even in
    the 1-topos model. So there is no issue with using posets for
    strong ordering, only in forcing notions using weak bisimilarity to
    be propositions.
@@ -193,7 +182,7 @@ composition defined inductively at 1034.
 > numbers here? What breaks if you do not add it and simply take P_A? It is not
 > immediately clear to me by quickly reading through Appendix C.1.
 
-The need for natural numbers arises because when we downcast from the dynamic
+The need for the natural numbers arises because when we downcast from the dynamic
 type to the function type, we need to insert a θ because of the '▹' in the
 function case of the dynamic type (see line 1191 in the paper). Thus, in order
 for the representability properties to hold with for this downcast with respect
@@ -239,7 +228,7 @@ For the lax morphisms, we interpret this definition using the concrete
 construction of pullbacks by taking the pullbacks of the component
 categories and simply weakening the morphisms to have lax preservation
 of connectives rather than strong. This might be abstractly
-characterized by consider CBPV as a 2-monad on the 2-category of pairs
+characterized by considering CBPV as a 2-monad on the 2-category of pairs
 of categories and considering strict and lax morphisms, but we have
 not pursued this in detail.
    
