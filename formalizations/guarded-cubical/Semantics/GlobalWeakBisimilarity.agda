@@ -376,7 +376,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
    bisimFun-downward f g n (inr both-div) = {!!}
 
    ↓-unique-downward : (f : Fun {ℓ = ℓ} {X = X}) → ↓-unique f → ↓-unique (f ∘ suc)
-   ↓-unique-downward f Hf m n x y fs↓x fs↓y = Hf (suc m) (suc n) x y fs↓x fs↓y
+   ↓-unique-downward f Hf m n x y fs↓x fs↓y = cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
 
    -- A more intuitive definition, but harder to establish.
    _≈fun[_]_ : Fun → ℕ → Fun → Type (ℓ-max ℓ ℓR)
@@ -403,7 +403,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
        aux .snd y' g↓y' = 0 , x , f↓x , transport (cong₂ R refl y≡y') xRy
          where
            y≡y' : y ≡ y'
-           y≡y' = Hg m l y y' g↓y g↓y'
+           y≡y' = Hg m l y y' g↓y g↓y' .snd
 
    -- case n = 0, f terminates in m steps, and g terminates in 0 steps
    adequacy-pt2 f g Hf Hg zero (inl (inr (x , y , m , f↓x , g↓y , xRy))) l l≤zero = aux
@@ -412,7 +412,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
        aux .fst x' f↓x' = 0 , y , g↓y , transport (cong₂ R x≡x' refl) xRy
          where
            x≡x' : x ≡ x'
-           x≡x' = Hf m l x x' f↓x f↓x' --≤0→≡0 l≤zero
+           x≡x' = Hf m l x x' f↓x f↓x' .snd --≤0→≡0 l≤zero
        aux .snd y' g↓y' = m , x , f↓x , transport (cong₂ R refl y≡y') xRy
          where
            y≡y' : y ≡ y'
@@ -437,11 +437,11 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
        aux .fst x' f↓x' = m , y , g↓y , transport (cong₂ R x≡x' refl) xRy
          where
            x≡x' : x ≡ x'
-           x≡x' = Hf zero l x x' f↓x f↓x'
+           x≡x' = Hf zero l x x' f↓x f↓x' .snd
        aux .snd y' g↓y' = zero , x , f↓x , transport (cong₂ R refl y≡y') xRy
          where
            y≡y' : y ≡ y'
-           y≡y' = Hg m l y y' g↓y g↓y'
+           y≡y' = Hg m l y y' g↓y g↓y' .snd
 
    -- case n = suc n, f terminates in m steps, and g terminates in 0 steps
    adequacy-pt2 f g Hf Hg (suc n) (inl (inr (x , y , m , f↓x , g↓y , xRy))) l l≤sucn = aux
@@ -450,11 +450,11 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
        aux .fst x' f↓x' = zero , y , g↓y , transport (cong₂ R x≡x' refl) xRy
          where
            x≡x' : x ≡ x'
-           x≡x' = Hf m l x x' f↓x f↓x'
+           x≡x' = Hf m l x x' f↓x f↓x' .snd
        aux .snd y' g↓y' = m , x , f↓x , transport (cong₂ R refl y≡y') xRy
          where
            y≡y' : y ≡ y'
-           y≡y' = Hg zero l y y' g↓y g↓y'
+           y≡y' = Hg zero l y y' g↓y g↓y' .snd
 
    -- case n = suc n, f and g appear to diverge at 0 steps
    adequacy-pt2 f g Hf Hg (suc n) (inr (f↑ , g↑ , bisim-f-g-n)) zero l≤suc-n = aux

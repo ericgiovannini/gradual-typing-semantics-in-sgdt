@@ -416,15 +416,15 @@ module PartialFunctions {X : Type ℓ} where
   -- TODO: is this a good definition?
   ↓-unique : Fun → Type ℓ
   ↓-unique f = (n m : ℕ) (x y : X) →
-    f ↓fun[ n ] x → f ↓fun[ m ] y → x ≡ y
+    f ↓fun[ n ] x → f ↓fun[ m ] y → (n ≡ m) × (x ≡ y)
 
   -- This definition seems stronger (equivalence seems to require that X is a set)
   ↓-unique' : Fun → Type ℓ
   ↓-unique' f = isProp (Σ[ n ∈ ℕ ] Σ[ x ∈ X ] (f ↓fun[ n ] x))
 
   ↓-unique'→↓-unique : (f : Fun) → ↓-unique' f → ↓-unique f
-  ↓-unique'→↓-unique f H n m x y f↓x f↓y =
-    λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst
+  ↓-unique'→↓-unique f H n m x y f↓x f↓y = (λ i → H (n , x , f↓x) (m , y , f↓y) i .fst) , λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst
+    -- λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst , ?
 
 
 
