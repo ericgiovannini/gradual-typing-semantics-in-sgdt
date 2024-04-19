@@ -107,8 +107,8 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     ret-ret : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     ret-ret = Σ[ x ∈ X ] Σ[ y ∈ Y ] (l1 ≡ ret x) × (l2 ≡ ret y) × R x y
 
-    err-bot : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
-    err-bot = Lift {j = ℓ-max ℓ' ℓR} (l1 ≡ err)
+    err-bot : Type ℓ
+    err-bot = l1 ≡ err
 
     theta-theta : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     theta-theta = Σ[ l1~ ∈ ▹ k , L k X? ] Σ[ l2~ ∈ ▹ k , L k Y? ]
@@ -122,8 +122,8 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     ret-ret-g = Σ[ x ∈ X ] Σ[ y ∈ Y ]
           (lg1 ≡ ret^gl x) × (lg2 ≡ ret^gl y) × R x y
 
-    err-bot-g : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
-    err-bot-g = Lift {j = ℓ-max ℓ' ℓR} (lg1 ≡ err^gl)
+    err-bot-g : Type ℓ
+    err-bot-g = lg1 ≡ err^gl
 
     theta-theta-g : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     theta-theta-g = Σ[ lg1' ∈ L^gl X? ] Σ[ lg2' ∈ L^gl Y? ]
@@ -158,7 +158,7 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
 
   lem2 :  ∀ lg1 lg2 →
     Iso (∀ (k : Clock) → err-bot (lg1 k) (lg2 k)) (err-bot-g lg1 lg2)
-  lem2 lg1 lg2 = {!!} Iso⟨ {!!} ⟩ {!!} Iso⟨ {!!} ⟩ {!!} ∎Iso -- funExtIso
+  lem2 lg1 lg2 = funExtIso
 
   lem3 :  ∀ lg1 lg2 →
    Iso (∀ (k : Clock) → theta-theta (lg1 k) (lg2 k)) (theta-theta-g lg1 lg2)
@@ -194,9 +194,9 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     -- (∀ k → ret-ret (lg1 k) (lg2 k) + err-bot (lg1 k) (lg2 k) + theta-theta (lg1 k) (lg2 k))
     --   Iso⟨ compIso Iso-Π-⊎-clk (⊎Iso idIso {!Iso-Π-⊎-clk!}) ⟩
       --compIso Iso-Π-⊎-clk (⊎Iso idIso (compIso {!Iso-Π-⊎-clk!} idIso))
-    _ Iso⟨ compIso Iso-Π-⊎-clk (⊎Iso idIso {!Iso-Π-⊎-clk!}) ⟩
-    _ Iso⟨ {!!} ⟩
-    {!!} ∎Iso
+    _ Iso⟨ compIso Iso-Π-⊎-clk (⊎Iso idIso Iso-Π-⊎-clk) ⟩
+    _ Iso⟨ ⊎Iso (lem1 lg1 lg2) (⊎Iso (lem2 lg1 lg2) (lem3 lg1 lg2)) ⟩
+    _ ∎Iso
 
 
 
@@ -229,7 +229,7 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
         ... | inr y = inr y
 
         sec1 : section (λ a k → a) inv
-        sec1 f = {!!}
+        sec1 f = λ i k → {!f k!}
 
         retr1 : retract (λ a k → a) inv
         retr1 (inl x) = refl

@@ -27,7 +27,7 @@ open import Cubical.Data.Equality.Conversion hiding (Iso ; funExt)
 
 private
   variable
-    ℓ ℓ' : Level
+    ℓ ℓ' ℓ'' : Level
 
 
 
@@ -157,32 +157,32 @@ path-clock-irrel {A = A} {x = x} {y = y} H =
 
 
 -- Auxiliary deifnition used for the iso between ⊎ and Σ Bool.
-bool2ty : Type ℓ -> Type ℓ -> Bool -> Type ℓ
-bool2ty A B true = A
-bool2ty A B false = B
+bool2ty : {ℓ ℓ' : Level} -> Type ℓ -> Type ℓ' -> Bool -> Type (ℓ-max ℓ ℓ')
+bool2ty {ℓ' = ℓ'} A B true = Lift {j = ℓ'} A
+bool2ty {ℓ = ℓ} A B false = Lift {j = ℓ} B
 
-bool2ty-eq : {X : Type ℓ} {A B : X -> Type ℓ'} ->
+bool2ty-eq : {X : Type ℓ} {A : X -> Type ℓ'} {B : X -> Type ℓ''} ->
   (b : Bool) ->
   (∀ (x : X) -> bool2ty (A x) (B x) b) ≡
   bool2ty (∀ x -> A x) (∀ x -> B x) b
-bool2ty-eq {X} {A} {B} true = refl
-bool2ty-eq {X} {A} {B} false = refl
+bool2ty-eq {X} {A} {B} true = {!!}
+bool2ty-eq {X} {A} {B} false = {!!}
 
-bool2ty-A-A : (A : Type ℓ) (b : Bool) -> bool2ty A A b ≡ A
+bool2ty-A-A : (A : Type ℓ) (b : Bool) -> bool2ty A A b ≡ Lift {j = ℓ} A
 bool2ty-A-A A true = refl
 bool2ty-A-A A false = refl
 
 
-Iso-⊎-ΣBool : {A B : Type ℓ} -> Iso (A ⊎ B) (Σ Bool (λ b -> bool2ty A B b))
+Iso-⊎-ΣBool : {A : Type ℓ} {B : Type ℓ'} -> Iso (A ⊎ B) (Σ Bool (λ b -> bool2ty A B b))
 Iso-⊎-ΣBool {A = A} {B = B} = iso to inv sec retr
   where
     to : A ⊎ B → Σ Bool (λ b -> bool2ty A B b)
-    to (inl a) = true , a
-    to (inr b) = false , b
+    to (inl a) = true , lift a
+    to (inr b) = false , lift b
 
     inv : Σ Bool (bool2ty A B) → A ⊎ B
-    inv (true , a) = inl a
-    inv (false , b) = inr b
+    inv (true , a) = inl (lower a)
+    inv (false , b) = inr (lower b)
 
     sec : section to inv
     sec (true , a) = refl
@@ -278,7 +278,7 @@ Iso-∀clock-Σ-fun {A = A} {B = B} H f = ΣPathP (refl , (funExt (λ k -> {!!} 
 
 
 -- Clock quantification distributes over coproducts.
-Iso-Π-⊎-clk : {A B : Clock -> Type ℓ} ->
+Iso-Π-⊎-clk : {ℓ ℓ' : Level} {A : Clock -> Type ℓ} {B : Clock -> Type ℓ'} ->
   Iso
     ((k : Clock) -> (A k ⊎ B k))
     (((k : Clock) -> A k) ⊎ ((k : Clock) -> B k))

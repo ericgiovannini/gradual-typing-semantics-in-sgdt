@@ -84,14 +84,14 @@ isSetL^gl isSetX = isSetΠ (λ k → isSetL k isSetX)
 
 
 -- Global Lift satisfies an "unfolding" equation.
-L^gl-iso : {X : Type ℓ} ->
+L^gl-iso : {ℓ : Level} {X : Type ℓ} ->
   clock-irrel X ->
   Iso (L^gl X) ((X ⊎ (L^gl X)))
-L^gl-iso {X = X} H-irrel =
+L^gl-iso {ℓ = ℓ} {X = X} H-irrel =
   (∀ k -> L k X)
     Iso⟨ codomainIsoDep (λ k -> Iso-L k) ⟩
   (∀ k -> (X ⊎ (▹ k , L k X)))
-    Iso⟨ Iso-Π-⊎-clk ⟩
+    Iso⟨ Iso-Π-⊎-clk {ℓ = ℓ} {ℓ' = ℓ} ⟩
   ((∀ (k : Clock) -> X) ⊎ (∀ k -> ▹ k , L k X))
     Iso⟨ ⊎Iso ((Iso-∀kA-A H-irrel)) force-iso ⟩
   X ⊎ L^gl X ∎Iso
@@ -105,7 +105,7 @@ L^gl-iso {X = X} H-irrel =
 
 iso-inv-inl : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.inv (L^gl-iso H) (inl x) ≡ λ k -> η x
-iso-inv-inl H x = refl
+iso-inv-inl H x = {!refl!}
 
 
 -- The below statement, which is equivalent to the above one, is provable if
@@ -115,37 +115,38 @@ iso-inv-inl H x = refl
 iso-fun-η : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.fun (L^gl-iso H) (λ k -> η x) ≡ inl x
 iso-fun-η {X = X} H x =
-  congS inl (transportRefl _ ∙ transportRefl _ ∙ lem)
+  {!!} --congS inl (transportRefl _ ∙ transportRefl _ ∙ lem)
   where
     lem-transp : (transp (λ j → Clock) i0 (transp (λ j → Clock) i0 k0)) ≡ k0
     lem-transp = transportRefl _ ∙ transportRefl _
    
     lem : _
-    lem = (λ i -> transp (λ j -> bool2ty X (▹ lem-transp i , L (lem-transp i) X) (bool-clock-irrel (λ _ -> true) (lem-transp i) k0 j)) i0 (transportRefl x i)) ∙
-          transportRefl x
+    lem = {!!} {- (λ i -> transp (λ j -> bool2ty X (▹ lem-transp i , L (lem-transp i) X) (bool-clock-irrel (λ _ -> true) (lem-transp i) k0 j)) i0 ?) ∙
+          transportRefl x -}
 
 
 iso-fun-θ : {X : Type ℓ} (H : clock-irrel X) (l : L^gl X) ->
   Iso.fun (L^gl-iso H) (δL^gl l) ≡ inr l
-iso-fun-θ {X = X} H l = congS inr lem
+iso-fun-θ {X = X} H l = {!!} -- congS inr lem
   where
-    var : _
-    var = (λ k → transp
-            (λ j → bool2ty X (Tick k → L k X) (bool-clock-irrel (λ x → false) k k0 j))
-            i0
-            (transp (λ j → Tick k → L k X) i0 (λ _ → l k)))
+    var : (k : Clock) → Tick k → L k X
+    var k = transp {!!} i0 {!!} {- (λ k → transp
+            (λ j → bool2ty X (Tick k → L k X) (bool-clock-irrel (λ x → false) k k0 j)) i0
+            ?) -} --(transp (λ j → Tick k → L k X) i0 (λ _ → l k))
 
     transpVar : _
     transpVar = (transp (λ j → (k : Clock) → Tick k → L k X) i0 var)
-
+{-
     lem :
       force' (transp (λ i → (x : Clock) → Tick x → L x X) i0 transpVar) ≡ l
     lem = (λ i -> force' (transportRefl transpVar i)) ∙
           (λ i -> force' (transportRefl var i)) ∙
-          (λ i -> force' (λ k -> transp (λ j -> bool2ty X (▹ k , L k X) (path-clock-irrel-bool-1 {k = k} {k' = k0} false i j)) i0 (transportRefl (next (l k)) i))) ∙
+          (λ i -> force' λ k -> transp (λ j →  {!bool2ty ? ? ?!}) i0 {!!}) ∙
+          {!!} ∙
+          --(λ i -> force' (λ k -> transp (λ j -> bool2ty X (▹ k , L k X) (path-clock-irrel-bool-1 {k = k} {k' = k0} false i j)) i0 (transportRefl (next (l k)) i)))
           (λ i -> force' (λ k -> transportRefl (next (l k)) i)) ∙
           force'-beta l
-
+-}
 {-
     lem = (λ i -> force' (transportRefl transpVar i)) ∙
           (λ i -> force'
@@ -235,7 +236,7 @@ module _ {X : Type ℓ} (H : clock-irrel X) where
   lemma : (k : Clock) ->
     (▹ k , ((l : L^gl X) -> fromFun'' k (next (fromFun' k)) (toFun l) ≡ l k)) ->
             (l : L^gl X) -> fromFun'' k (next (fromFun' k)) (toFun l) ≡ l k
-  lemma k IH l with Iso.fun (L^gl-iso H) l in eq
+  lemma k IH l = {!!} {- with Iso.fun (L^gl-iso H) l in eq
   ... | inl x = sym (funExt⁻ lem k)
     where
       lem : l ≡ λ k -> η x
@@ -244,7 +245,7 @@ module _ {X : Type ℓ} (H : clock-irrel X) where
   ... | inr l' = (λ i -> θ (λ t -> ff''→ff' _ k (l' k) (IH t l') i)) ∙ sym (funExt⁻ lem k)     
     where
       lem : l ≡ δL^gl l'
-      lem = iso-fun-eq-inr H l l' (eqToPath eq)
+      lem = iso-fun-eq-inr H l l' (eqToPath eq) -}
    --
    -- Explanation of proof for the inr case:
    -- 
@@ -281,13 +282,13 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   -- These proofs are easy because we have the rewrites!
   -- If we didn't we would need to use the lemmas iso-fun-η and iso-fun-θ.
   bigStep-η-zero : ∀ l (x : X) → (l ≡ ηL^gl x) → toFun H l 0 ≡ inl x
-  bigStep-η-zero l x eq = (λ i → toFun H (eq i) 0) ∙ refl
+  bigStep-η-zero l x eq = {!!} -- (λ i → toFun H (eq i) 0) ∙ refl
 
   bigStep-δ-suc : ∀ l l' n → (l ≡ δL^gl l') → toFun H l (suc n) ≡ toFun H l' n
-  bigStep-δ-suc l l' n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
+  bigStep-δ-suc l l' n eq = {!!} -- (λ i → toFun H (eq i) (suc n)) ∙ refl
 
   bigStep-δ-zero : ∀ l l' → (l ≡ δL^gl l') → toFun H l 0 ≡ inr tt
-  bigStep-δ-zero l l' eq = (λ i → toFun H (eq i) 0) ∙ refl
+  bigStep-δ-zero l l' eq = {!!} -- (λ i → toFun H (eq i) 0) ∙ refl
   
   
   bigStep-δ^n : ∀ l l' n m → (l ≡ (δL^gl ^ n) l') → toFun H l (n + m) ≡ toFun H l' m
@@ -314,7 +315,7 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   -- The following theorems are only true under the stricter definition of toFun
   -- where the resulting function is defined *at most once*.
   bigStep-η-suc : ∀ l x n → (l ≡ ηL^gl x) → toFun H l (suc n) ≡ inr tt
-  bigStep-η-suc l x n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
+  bigStep-η-suc l x n eq = {!!} -- (λ i → toFun H (eq i) (suc n)) ∙ refl
 
   bigStep-unique : ∀ l x x' n m →
     (l ≡ (δL^gl ^ n) (ηL^gl x)) →
@@ -438,10 +439,10 @@ module Test where
   fun1 = toFun nat-clock-irrel lift1
 
   _ : fun1 0 ≡ inr tt
-  _ = refl
+  _ = {!!} -- refl
 
   _ : fun1 2 ≡ inl 50
-  _ = refl
+  _ = {!!} -- refl
 
   fun1-0 : ℕ ⊎ ⊤
   fun1-0 = fun1 0
