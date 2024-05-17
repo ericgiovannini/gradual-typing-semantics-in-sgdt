@@ -16,13 +16,14 @@ open import Cubical.Data.Unit
 open import Cubical.Data.Empty
 
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Transport
 
 open import Common.Common
 open import Common.Later
 
 open import Agda.Builtin.Equality renaming (_≡_ to _≣_) hiding (refl)
 open import Agda.Builtin.Equality.Rewrite
-open import Cubical.Data.Equality.Conversion hiding (Iso ; funExt)
+open import Cubical.Data.Equality.Conversion hiding (Iso ; funExt ; isoToEquiv)
 -- open import Cubical.Data.Prod
 
 private
@@ -54,6 +55,7 @@ rewrite-clock-irrel-bool-2 :
     (M : Clock -> Bool) -> bool-clock-irrel M k0 k0 ≣ refl
 rewrite-clock-irrel-bool-2 M =
   pathToEq (path-clock-irrel-bool-2 M)
+
 
 
 rewrite-force : ∀ {ℓ : Level} -> {A : Clock -> Type ℓ} (f : ∀ k -> A k) →
@@ -111,10 +113,14 @@ rewrite-transp = pathToEq (funExt (λ x -> transportRefl x))
 -}
 
 -- Turn an equality into an iso.
+-- Eq-Iso : {A B : Type ℓ} ->
+--   A ≡ B -> Iso A B
+-- Eq-Iso {A = A} {B = B} H-eq = subst (Iso A) H-eq idIso
+-- -- same as: transport (cong (Iso A) H-eq) idIso
+
 Eq-Iso : {A B : Type ℓ} ->
   A ≡ B -> Iso A B
-Eq-Iso {A = A} {B = B} H-eq = subst (Iso A) H-eq idIso
--- same as: transport (cong (Iso A) H-eq) idIso
+Eq-Iso {A = A} {B = B} = pathToIso
 
 
 -- The unit type is clock-irrelevant.
@@ -129,6 +135,8 @@ Unit-clock-irrel M k k' with M k | M k'
 ⊥*-clock-irrel : clock-irrel {ℓ = ℓ} ⊥*
 ⊥*-clock-irrel M k k' = isProp⊥* (M k) (M k')
 
+--------------------------------------------------------------------------------
+-- Showing that the type of paths in a clock-irrelevant type is clock-irrelevant.
 
 Π-Path : ∀ {A : Type ℓ} {B : Type ℓ'} {x y : B} →
   Iso (A → Path B x y) (Path (A → B) (λ a → x) (λ a → y))
@@ -138,7 +146,6 @@ Unit-clock-irrel M k k' with M k | M k'
   (λ _ → refl)
   (λ _ → refl)
 
-
 ∀k-path : ∀ {A : Type ℓ} {x y : A} →
   clock-irrel A →
   Iso (∀ (k : Clock) → Path A x y) (Path A x y)
@@ -146,9 +153,10 @@ Unit-clock-irrel M k k' with M k | M k'
   ((k : Clock) → Path A x y)
     Iso⟨ Π-Path ⟩
   Path (∀ (k : Clock) → A) (λ k → x) (λ k → y)
-    Iso⟨ congPathIso {!!} ⟩
+    Iso⟨ congPathIso (λ i → isoToEquiv (Iso-∀kA-A H)) ⟩
   Path A x y
   ∎Iso
+
 
 path-clock-irrel : ∀ {A : Type ℓ} {x y : A} →
   clock-irrel A → clock-irrel (Path A x y)
@@ -299,13 +307,32 @@ Iso-∀clock-Σ {A = A} {B = B} H-clk-irrel =
 
 -}
 
-
+{-
 -- Action of the above isomorphism
 Iso-∀clock-Σ-fun : {A : Type ℓ} {B : A -> Clock -> Type ℓ'} ->
   (H : clock-irrel A) ->
   (f : (k : Clock) -> Σ A (λ a -> B a k)) ->
   Iso.fun (Iso-∀clock-Σ {A = A} {B = B} H) f ≡ (fst (f k0) , λ k -> {!f k .snd!})
 Iso-∀clock-Σ-fun {A = A} {B = B} H f = ΣPathP (refl , (funExt (λ k -> {!!} ∙ {!!})))
+-}
+
+
+-- Alternative version that has better definitional behavior.
+Iso-∀clock-Σ' : {A : Type ℓ} -> {B : A -> Clock -> Type ℓ'} ->
+  clock-irrel A ->
+  Iso
+    (∀ (k : Clock) -> Σ A (λ a -> B a k))
+    (Σ A (λ a -> ∀ (k : Clock) -> B a k))
+Iso-∀clock-Σ' {A = A} {B = B} H-clk-irrel =
+  (∀ (k : Clock) -> Σ A (λ a -> B a k))
+     Iso⟨ Σ-Π-Iso {A = Clock} {B = λ k -> A} {C = λ k a -> B a k} ⟩
+     
+  (Σ ((k : Clock) → A) (λ f → (k : Clock) → B (f k) k))
+    Iso⟨ Σ-cong-iso-fst' (Iso-∀kA-A H-clk-irrel) ⟩
+     
+  (Σ A (λ a -> ∀ (k : Clock) -> B a k)) ∎Iso
+
+
 
 
 -- Clock quantification distributes over coproducts.
@@ -331,18 +358,86 @@ Iso-Π-⊎-clk-fun : {A B : Clock -> Type} -> {f : (k : Clock) -> (A k ⊎ B k) 
   Iso.fun Iso-Π-⊎-clk f ≡ inl λ k -> H k .fst
 Iso-Π-⊎-clk-fun {A} {B} {f} H = {!!}
 
+
+-- This doesn't seem to be provable. We are stuck with transp's that we cannot get
+-- rid of.
+{-
 Iso-Π-⊎-clk-inv-inl : {A B : Clock -> Type} ->
   {f : (k : Clock) → A k} ->
   Iso.inv (Iso-Π-⊎-clk {B = B}) (inl f) ≡ λ k -> inl (f k)
 Iso-Π-⊎-clk-inv-inl {A = A} {B = B} {f = f} = funExt (λ k → cong inl {!!})
--- (s : ((k : Clock) → A k) ⊎ ((k : Clock) → B k)) ->
+-}
 
--- transport p a = transp (λ i → p i) i0 a
---
--- transp (λ i → A (transp (λ j → Clock) i k)) i0 (transp (λ i → A (transp (λ j → Clock) i k)) i0 (f k))
+-- However, if we restrict attention to constant families, then we *can* describe
+-- the action of the isomorphism:
+Iso-Π-⊎-clk-fun-const : {A : Type ℓ} {B : Type ℓ'} -> {f : (k : Clock) -> (A ⊎ B) } ->
+  (H : ∀ k -> Σ[ a ∈ A ] f k ≡ inl a) ->
+  Iso.fun Iso-Π-⊎-clk f ≡ inl λ k -> H k .fst
+Iso-Π-⊎-clk-fun-const {A} {B} {f} H = {!!}
 
--- transport (λ i → A (transp (λ j → Clock) i k))
+Iso-Π-⊎-clk-inv-inl-const : {A : Type ℓ} {B : Type ℓ'} ->
+  {f : (k : Clock) → A} ->
+  Iso.inv (Iso-Π-⊎-clk {B = λ _ → B}) (inl f) ≡ λ k -> inl (f k)
+Iso-Π-⊎-clk-inv-inl-const {A = A} {B = B} {f = f} = funExt (λ k → cong inl refl)
 
+
+
+
+-- Alternative version that has better definitional behavior.
+Iso-Π-⊎-clk' : {ℓ ℓ' : Level} {A : Clock -> Type ℓ} {B : Clock -> Type ℓ'} ->
+  Iso
+    ((k : Clock) -> (A k ⊎ B k))
+    (((k : Clock) -> A k) ⊎ ((k : Clock) -> B k))
+Iso-Π-⊎-clk' {A = A} {B = B} =
+  (∀ (k : Clock) -> (A k ⊎ B k))
+    Iso⟨ codomainIsoDep (λ k -> Iso-⊎-ΣBool) ⟩
+  (∀ (k : Clock) -> Σ[ b ∈ Bool ] bool2ty (A k) (B k) b )
+    Iso⟨ Iso-∀clock-Σ' bool-clock-irrel ⟩
+  (Σ[ b ∈ Bool ] ∀ k -> bool2ty (A k) (B k) b)
+    Iso⟨ Σ-cong-iso-snd (λ b → Eq-Iso (bool2ty-eq b)) ⟩
+  (Σ[ b ∈ Bool ] bool2ty (∀ k -> A k) (∀ k -> B k) b)
+    Iso⟨ invIso Iso-⊎-ΣBool ⟩
+  (∀ k -> A k) ⊎ (∀ k -> B k) ∎Iso
+
+-- Now we can describe the action of the isomorphism.
+Iso-Π-⊎-clk-inv-inl' : {A B : Clock -> Type} ->
+  {f : (k : Clock) → A k} ->
+  Iso.inv (Iso-Π-⊎-clk' {B = B}) (inl f) ≡ λ k -> inl (f k)
+Iso-Π-⊎-clk-inv-inl' {A = A} {B = B} {f = f} = funExt (λ k → cong inl refl)
+
+
+-- The sum of two clock-irrelevant types is clock-irrelevant.
+⊎-clock-irrel : ∀ {A : Type ℓ} {B : Type ℓ'} →
+  clock-irrel A → clock-irrel B →
+  clock-irrel (A ⊎ B)
+⊎-clock-irrel {A = A} {B = B} HA HB =
+  iso-A→∀kA→clk-irrel is-iso
+  where
+    isom : Iso (∀ (k : Clock) → A ⊎ B) (A ⊎ B)
+    isom =
+      _ Iso⟨ Iso-Π-⊎-clk' {A = λ _ → A} {B = λ _ → B} ⟩ -- also works if we use Iso-Π-⊎-clk
+      _ Iso⟨ ⊎Iso (Iso-∀kA-A HA) (Iso-∀kA-A HB) ⟩
+      _ ∎Iso
+
+    isom-inv-eq : Iso.inv isom ≡ (λ (x : A ⊎ B) (k : Clock) → x)
+    isom-inv-eq = funExt aux
+      where
+        aux : _
+        aux (inl a) = refl
+        aux (inr b) = refl
+
+    is-iso : isIso (λ (x : A ⊎ B) (k : Clock) → x)
+    is-iso = (transport (cong isIso isom-inv-eq) (isoInv→isIso isom))
+
+    
+-- ⊎-clock-irrel HA HB M k k' with M k | M k'
+-- ... | inl a | inl a' = cong inl {!!}
+-- ... | inl a | inr b = {!!}
+-- ... | inr b | inl a = {!!}
+-- ... | inr b | inr b' = {!!}
+
+
+{-
 test :  {A B : Clock -> Type ℓ} → (((k : Clock) -> A k) ⊎ ((k : Clock) -> B k)) → ((k : Clock) -> (A k ⊎ B k))
 test (inl f) k = inl (f k)
 test (inr g) k = inr (g k)
@@ -351,5 +446,6 @@ test' :  {A B : Clock -> Type ℓ} → ((k : Clock) -> (A k ⊎ B k)) → (((k :
 test' {A = A} {B = B} f = aux (f k0)
   where
     aux : A k0 ⊎ B k0 → _
-    aux (inl a) = inl (λ k → {!!})
+    aux (inl a) = inl (λ k → {!a!})
     aux (inr b) = inr (λ k → {!!})
+-}

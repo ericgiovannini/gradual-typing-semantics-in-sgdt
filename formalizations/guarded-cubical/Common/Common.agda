@@ -62,6 +62,14 @@ inl≠inr {_} {_} {A} {B} a b eq = transport (cong (diagonal ⊤ ⊥) eq) tt
 Σ-cong-iso-fst' isom = invIso (Σ-cong-iso-fst (invIso isom))
 
 
+isoFun→isIso : {A : Type ℓ} {B : Type ℓ'} →
+  (isom : Iso A B) → isIso (Iso.fun isom)
+isoFun→isIso isom = (Iso.inv isom) , ((Iso.rightInv isom) , (Iso.leftInv isom))
+
+isoInv→isIso : {A : Type ℓ} {B : Type ℓ'} →
+  (isom : Iso A B) → isIso (Iso.inv isom)
+isoInv→isIso isom = (Iso.fun isom) , ((Iso.leftInv isom) , (Iso.rightInv isom))
+
 
 -- Definitions about relations and two-cells
 
