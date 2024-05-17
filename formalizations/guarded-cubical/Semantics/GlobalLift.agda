@@ -105,7 +105,7 @@ L^gl-iso {ℓ = ℓ} {X = X} H-irrel =
 
 iso-inv-inl : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.inv (L^gl-iso H) (inl x) ≡ λ k -> η x
-iso-inv-inl H x = {!refl!}
+iso-inv-inl H x = refl
 
 
 -- The below statement, which is equivalent to the above one, is provable if
@@ -115,24 +115,25 @@ iso-inv-inl H x = {!refl!}
 iso-fun-η : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.fun (L^gl-iso H) (λ k -> η x) ≡ inl x
 iso-fun-η {X = X} H x =
-  {!!} --congS inl (transportRefl _ ∙ transportRefl _ ∙ lem)
+  congS inl refl -- congS inl (transportRefl _ ∙ transportRefl _ ∙ lem)
   where
+
     lem-transp : (transp (λ j → Clock) i0 (transp (λ j → Clock) i0 k0)) ≡ k0
     lem-transp = transportRefl _ ∙ transportRefl _
    
     lem : _
-    lem = {!!} {- (λ i -> transp (λ j -> bool2ty X (▹ lem-transp i , L (lem-transp i) X) (bool-clock-irrel (λ _ -> true) (lem-transp i) k0 j)) i0 ?) ∙
-          transportRefl x -}
-
-
+    lem = (λ i -> transp (λ j -> bool2ty X (▹ lem-transp i , L (lem-transp i) X) (bool-clock-irrel (λ _ -> true) (lem-transp i) k0 j)) i0 (lift x)) ∙
+          transportRefl (lift x)
+         
+         
 iso-fun-θ : {X : Type ℓ} (H : clock-irrel X) (l : L^gl X) ->
   Iso.fun (L^gl-iso H) (δL^gl l) ≡ inr l
-iso-fun-θ {X = X} H l = {!!} -- congS inr lem
+iso-fun-θ {X = X} H l = refl -- congS inr lem
   where
     var : (k : Clock) → Tick k → L k X
-    var k = transp {!!} i0 {!!} {- (λ k → transp
+    var = (λ k → lower (transp
             (λ j → bool2ty X (Tick k → L k X) (bool-clock-irrel (λ x → false) k k0 j)) i0
-            ?) -} --(transp (λ j → Tick k → L k X) i0 (λ _ → l k))
+            (lift (transp (λ j → Tick k → L k X) i0 (λ _ → l k)))))
 
     transpVar : _
     transpVar = (transp (λ j → (k : Clock) → Tick k → L k X) i0 var)
@@ -282,13 +283,13 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   -- These proofs are easy because we have the rewrites!
   -- If we didn't we would need to use the lemmas iso-fun-η and iso-fun-θ.
   bigStep-η-zero : ∀ l (x : X) → (l ≡ ηL^gl x) → toFun H l 0 ≡ inl x
-  bigStep-η-zero l x eq = {!!} -- (λ i → toFun H (eq i) 0) ∙ refl
+  bigStep-η-zero l x eq = (λ i → toFun H (eq i) 0) ∙ refl
 
   bigStep-δ-suc : ∀ l l' n → (l ≡ δL^gl l') → toFun H l (suc n) ≡ toFun H l' n
-  bigStep-δ-suc l l' n eq = {!!} -- (λ i → toFun H (eq i) (suc n)) ∙ refl
+  bigStep-δ-suc l l' n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
 
   bigStep-δ-zero : ∀ l l' → (l ≡ δL^gl l') → toFun H l 0 ≡ inr tt
-  bigStep-δ-zero l l' eq = {!!} -- (λ i → toFun H (eq i) 0) ∙ refl
+  bigStep-δ-zero l l' eq = (λ i → toFun H (eq i) 0) ∙ refl
   
   
   bigStep-δ^n : ∀ l l' n m → (l ≡ (δL^gl ^ n) l') → toFun H l (n + m) ≡ toFun H l' m
@@ -315,7 +316,7 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   -- The following theorems are only true under the stricter definition of toFun
   -- where the resulting function is defined *at most once*.
   bigStep-η-suc : ∀ l x n → (l ≡ ηL^gl x) → toFun H l (suc n) ≡ inr tt
-  bigStep-η-suc l x n eq = {!!} -- (λ i → toFun H (eq i) (suc n)) ∙ refl
+  bigStep-η-suc l x n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
 
   bigStep-unique : ∀ l x x' n m →
     (l ≡ (δL^gl ^ n) (ηL^gl x)) →

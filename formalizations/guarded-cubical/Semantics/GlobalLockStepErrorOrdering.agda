@@ -153,7 +153,8 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
         Σ Y
         (λ a₁ →
            ((k : Clock) → lg1 k ≡ ret a) ×
-           ((k : Clock) → lg2 k ≡ ret a₁) × ((k : Clock) → R a a₁))) Iso⟨ Σ-cong-iso-snd (λ x → Σ-cong-iso-snd (λ y → prodIso funExtIso (prodIso funExtIso (Iso-∀kA-A (R-clk-irrel x y))))) ⟩
+           ((k : Clock) → lg2 k ≡ ret a₁) × ((k : Clock) → R a a₁)))
+      Iso⟨ Σ-cong-iso-snd (λ x → Σ-cong-iso-snd (λ y → prodIso funExtIso (prodIso funExtIso (Iso-∀kA-A (R-clk-irrel x y))))) ⟩
     ret-ret-g lg1 lg2 ∎Iso
 
   lem2 :  ∀ lg1 lg2 →
@@ -200,9 +201,6 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
 
 
 
-
-
-
   -- The unfolding function, given by the above isomorphism.
   unfold-⊑g : {lg1 : L^gl X?} {lg2 : L^gl Y?} →
     (lg1 ⊑g lg2) → (⊑g-unfolded lg1 lg2)
@@ -220,29 +218,16 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     Fun-X? = Fun {X = X?} -- the module PartialFunctions takes an implicit argument
     Fun-Y? = Fun {X = Y?}
     
-    clock-irrel-⊎ : {ℓ ℓ' : Level} {X : Type ℓ} {Y : Type ℓ'} → (H : clock-irrel X) → (H' : clock-irrel Y) → clock-irrel (X ⊎ Y)
-    clock-irrel-⊎ {X = X} {Y = Y} H H' = iso-∀kA-A→clk-irrel (inv , (sec1 , retr1)) --iso-∀kA-A→clk-irrel
-      where
-        inv : ((k : Clock) → X ⊎ Y) → X ⊎ Y
-        inv f with f k0
-        ... | inl x = inl x
-        ... | inr y = inr y
-
-        sec1 : section (λ a k → a) inv
-        sec1 f = λ i k → {!f k!}
-
-        retr1 : retract (λ a k → a) inv
-        retr1 (inl x) = refl
-        retr1 (inr y) = refl
-
     ⟦_⟧x : L^gl X? → Fun-X?
-    ⟦ lg? ⟧x = toFun (clock-irrel-⊎ X-clk-irrel Unit-clock-irrel) lg?
+    ⟦ lg? ⟧x = toFun (⊎-clock-irrel X-clk-irrel Unit-clock-irrel) lg?
 
     ⟦_⟧y : L^gl Y? → Fun-Y?
-    ⟦ lg? ⟧y = toFun (clock-irrel-⊎ Y-clk-irrel Unit-clock-irrel) lg?
+    ⟦ lg? ⟧y = toFun (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel) lg?
 
 
     -- First definition of step-indexed lock-step error ordering on functions.
+    -- This definition follows the structure of the globalization of the lock-step
+    -- error ordering on Lift.
     _⊑fun1[_]_ : (f : Fun-X?) (n : ℕ) → (g : Fun-Y?) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     f ⊑fun1[ zero ] g =
         (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f ↓fun[ 0 ] inl x) × (g ↓fun[ 0 ] inl y) × R x y)
@@ -264,23 +249,53 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
 
 -- 3. Adequacy pt2: show the first definition implies the second one
 
+
+    -- Ordering on results (values + error)
+    _≤res_ : X? × ℕ → Y? × ℕ → Type ℓR
+    (inl x , j) ≤res (inl y , i) = (i ≡ j) × R x y
+    (inr tt , j) ≤res (y? , i) = Lift {j = ℓR} (j ≤ i)
+    _ ≤res _ = ⊥*
+
+    -- Second, more intuitive, definition of step-indexed lock-step error ordering
+    -- on functions
     _⊑fun[_]_ : Fun-X? → ℕ → Fun-Y? → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     f ⊑fun[ n ] g = ∀ (m : ℕ) → (m ≤ n) →
       (∀ (x : X) → f m ≡ inl (inl x) → Σ[ y ∈ Y ] (g m ≡ inl (inl y)) × R x y) ×
       (∀ (y? : Y?) → g m ≡ inl y? → Σ[ x? ∈ X? ] Σ[ j ∈ ℕ ] (f j ≡ inl x?)
-        × ((x? , j) ≤fun2 (y? , m)))
-      where
-        _≤fun2_ : X? × ℕ → Y? × ℕ → Type ℓR
-        (inl x , j) ≤fun2 (inl y , i) = (i ≡ j) × R x y
-        (inr tt , j) ≤fun2 (y? , i) = Lift {j = ℓR} (j ≤ i)
-        _ ≤fun2 _ = ⊥*
+        × ((x? , j) ≤res (y? , m)))
+
+
+    -- Lemmas about the orderings.
+    
+    order-down : ∀ x1? n1 x2? n2 →
+      (x1? , suc n1) ≤res (x2? , suc n2) →
+      (x1? , n1) ≤res (x2? , n2)
+    -- Case 1: both are values.
+    order-down (inl x1) n1 (inl x2) n2 (eq , rel) = injSuc eq , rel
+    -- Case 2: LHS errors.
+    order-down (inr tt) n1 x2? n2 (lift leq) = lift (pred-≤-pred leq)
+
+
+    order-up : ∀ x1? n1 x2? n2 →
+      (x1? , n1) ≤res (x2? , n2) →
+      (x1? , suc n1) ≤res (x2? , suc n2)
+    -- Case 1: both are values.
+    order-up (inl x1) n1 (inl x2) n2 (eq , rel) = (cong suc eq) , rel
+    -- Case 2: LHS errors.
+    order-up (inr tt) n1 x2? n2 (lift leq) = lift (suc-≤-suc leq)
+       
 
     ↓-unique-downward-X : (f : Fun-X?) → ↓-unique f → ↓-unique (f ∘ suc)
-    ↓-unique-downward-X f Hf m n x y fs↓x fs↓y = cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
+    ↓-unique-downward-X f Hf m n x y fs↓x fs↓y =
+      cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
     
     ↓-unique-downward-Y : (f : Fun-Y?) → ↓-unique f → ↓-unique (f ∘ suc)
-    ↓-unique-downward-Y f Hf m n x y fs↓x fs↓y = cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
+    ↓-unique-downward-Y f Hf m n x y fs↓x fs↓y =
+      cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
+    
 
+    -- The first definition of step-indexed ordering on functions implies the second.
+    
     adequacy-pt2 : (f : Fun-X?) (g : Fun-Y?) (Hf : ↓-unique f) (Hg : ↓-unique g) →
       (n : ℕ) → f ⊑fun1[ n ] g → f ⊑fun[ n ] g
     adequacy-pt2 f g Hf Hg zero (inl (x , y , f↓x , g↓y , xRy)) l l≤zero = aux
@@ -356,7 +371,7 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
 
             Rx'y : R x' y
             Rx'y = IH .fst x' f↓x' .snd .snd
-        aux .snd y' g↓y' = x? , (suc m) , eq , {!order!}
+        aux .snd y' g↓y' = x? , (suc m) , eq , (order-up x? m y' l order)
           where
             IH : _
             IH = adequacy-pt2 (f ∘ suc) (g ∘ suc) (↓-unique-downward-X f Hf) (↓-unique-downward-Y g Hg) n order-f-g-n l (pred-≤-pred sucl≤sucn)
@@ -370,36 +385,71 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
             eq : _
             eq = IH .snd y' g↓y' .snd .snd .fst
 
-            order : _
+            order : (x? , m) ≤res (y' , l)
             order = IH .snd y' g↓y' .snd .snd .snd
 
             
 
-    module BigStepX? = BigStepLemmas {X = X?} (clock-irrel-⊎ X-clk-irrel Unit-clock-irrel)
-    module BigStepY? = BigStepLemmas {X = Y?} (clock-irrel-⊎ Y-clk-irrel Unit-clock-irrel)
-{-
-    adequacy-pt1 : (lg1 : L^gl X?) (lg2 : L^gl Y?) → lg1 ⊑g lg2 → (n : ℕ) →
-      ⟦ lg1 ⟧x ⊑fun1[ n ] ⟦ lg2 ⟧y
-    adequacy-pt1 lg1 lg2 order zero with unfold-⊑g order
-    ... | inl (x , y , eq1 , eq2 , xRy) =
-       inl (x , y , BigStepX?.bigStep-η-zero lg1 (inl x) eq1
-                 , BigStepY?.bigStep-η-zero lg2 (inl y) eq2 , xRy)
-    ... | inr (inl eq1) = inr (inl (BigStepX?.bigStep-η-zero lg1 (inr tt) (lower eq1)))
-    ... | inr (inr (lg1' , lg2' , eq1 , eq2 , order')) = inr (inr ((λ m m≤zero → (λ i → toFun (clock-irrel-⊎ X-clk-irrel unit-clock-irrel) lg1 (≤0→≡0 m≤zero i)) ∙ BigStepX?.bigStep-δ-zero lg1 lg1' eq1)
-              , λ m m≤zero → (λ i → toFun (clock-irrel-⊎ Y-clk-irrel unit-clock-irrel) lg2 (≤0→≡0 m≤zero i)) ∙ BigStepY?.bigStep-δ-zero lg2 lg2' eq2)) 
-    adequacy-pt1 lg1 lg2 order (suc n) with unfold-⊑g order
-    ... | inl (x , y , eq1 , eq2 , xRy) = (inl (x , y , BigStepX?.bigStep-η-zero lg1 (inl x) eq1 , BigStepY?.bigStep-η-zero lg2 (inl y) eq2 , xRy))
-    ... | inr (inl eq1) = (inr (inl (BigStepX?.bigStep-η-zero lg1 (inr tt) (lower eq1))))
-    ... | inr (inr (lg1' , lg2' , eq1 , eq2 , order')) = inr (inr ((pf1 , pf2) , pf3))
-      where
-        pf1 : _
-        pf1 m m≤zero = (λ i → toFun (clock-irrel-⊎ X-clk-irrel Unit-clock-irrel) lg1 (≤0→≡0 m≤zero i)) ∙ BigStepX?.bigStep-δ-zero lg1 lg1' eq1
+    module BigStepX? = BigStepLemmas {X = X?} (⊎-clock-irrel X-clk-irrel Unit-clock-irrel)
+    module BigStepY? = BigStepLemmas {X = Y?} (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel)
 
-        pf2 : _
-        pf2 m m≤zero = (λ i → toFun (clock-irrel-⊎ Y-clk-irrel Unit-clock-irrel) lg2 (≤0→≡0 m≤zero i)) ∙ BigStepY?.bigStep-δ-zero lg2 lg2' eq2
+    -- The global lock-step error ordering implies the first step-indexed ordering on the
+    -- big-step denotations.
+    adequacy-pt1 : (lg1 : L^gl X?) (lg2 : L^gl Y?) →
+      lg1 ⊑g lg2 → (n : ℕ) →
+      ⟦ lg1 ⟧x ⊑fun1[ n ] ⟦ lg2 ⟧y
+    adequacy-pt1 lg1 lg2 order = aux lg1 lg2 (unfold-⊑g order)
+      where
+        aux : ∀ lg1 lg2 → (⊑g-unfolded lg1 lg2) → (n : ℕ) → ⟦ lg1 ⟧x ⊑fun1[ n ] ⟦ lg2 ⟧y
+
+        -- Base cases (n = zero)
+        aux lg1 lg2 (inl (x , y , eq1 , eq2 , xRy)) zero =
+          inl (x , y
+                 , BigStepX?.bigStep-η-zero lg1 (inl x) eq1
+                 , BigStepY?.bigStep-η-zero lg2 (inl y) eq2
+                 , xRy)
+
+        aux lg1 lg2 (inr (inl eq)) zero =
+          inr (inl (BigStepX?.bigStep-η-zero lg1 (inr tt) eq))
+          
+        aux lg1 lg2 (inr (inr (lg1' , lg2' , eq1 , eq2 , order'))) zero =
+          inr (inr (div-lg1 , div-lg2))
+            where
+              div-lg1 = λ m m≤zero → (λ i → ⟦ lg1 ⟧x (≤0→≡0 m≤zero i)) ∙ BigStepX?.bigStep-δ-zero lg1 lg1' eq1
+              div-lg2 = λ m m≤zero → (λ i → ⟦ lg2 ⟧y (≤0→≡0 m≤zero i)) ∙ BigStepY?.bigStep-δ-zero lg2 lg2' eq2
+
+        -- Inductive cases (n = suc n')
+        aux lg1 lg2 (inl (x , y , eq1 , eq2 , xRy)) (suc _) =
+          inl (x , y
+                 , BigStepX?.bigStep-η-zero lg1 (inl x) eq1
+                 , BigStepY?.bigStep-η-zero lg2 (inl y) eq2
+                 , xRy)
+
+        aux lg1 lg2 (inr (inl eq)) (suc _) =
+          inr (inl (BigStepX?.bigStep-η-zero lg1 (inr tt) eq))
+
+        aux lg1 lg2 (inr (inr (lg1' , lg2' , eq1 , eq2 , order'))) (suc n') =
+          inr (inr ((div-lg1 , div-lg2) , f∘suc⊑g∘suc))
+          where
+            div-lg1 = λ m m≤zero → (λ i → ⟦ lg1 ⟧x (≤0→≡0 m≤zero i)) ∙ BigStepX?.bigStep-δ-zero lg1 lg1' eq1
+            div-lg2 = λ m m≤zero → (λ i → ⟦ lg2 ⟧y (≤0→≡0 m≤zero i)) ∙ BigStepY?.bigStep-δ-zero lg2 lg2' eq2
+
+            f∘suc⊑g∘suc : (⟦ lg1 ⟧x ∘ suc) ⊑fun1[ n' ] (⟦ lg2 ⟧y ∘ suc)
+            f∘suc⊑g∘suc =
+              let IH = aux lg1' lg2' (unfold-⊑g order') n' in
+              transport (sym (λ i →  aux1 i ⊑fun1[ n' ] aux2 i)) IH
+              where
+                 aux1 :  ⟦ lg1 ⟧x ∘ suc ≡ ⟦ lg1' ⟧x
+                 aux1 = funExt (λ n → BigStepX?.bigStep-δ-suc lg1 lg1' n eq1)
+
+                 aux2 :  ⟦ lg2 ⟧y ∘ suc ≡ ⟦ lg2' ⟧y
+                 aux2 = funExt (λ n → BigStepY?.bigStep-δ-suc lg2 lg2' n eq2)
+          
+                 -- Know: lg1 = δ^gl (lg1'), so ⟦ lg1 ⟧x ∘ suc ≡ ⟦ lg1' ⟧x
+                 --       lg2 = δ^gl (lg2'), so ⟦ lg2 ⟧y ∘ suc ≡ ⟦ lg2' ⟧y
+                 --       IH : ⟦ lg1' ⟧x ⊑fun1[ n' ] ⟦ lg2' ⟧y
+                 -- Goal : (⟦ lg1 ⟧x ∘ suc) ⊑fun1[ n' ] (⟦ lg2 ⟧y ∘ suc)
         
-        pf3 : _
-        pf3 = let IH = adequacy-pt1 lg1' lg2' order' n in {!!}-}
 
         
 

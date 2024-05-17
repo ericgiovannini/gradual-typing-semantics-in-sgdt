@@ -20,7 +20,7 @@ open import Cubical.Data.Sum
 open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
 open import Cubical.Data.Empty as ⊥
 
-open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.PropositionalTruncation renaming (map to PTmap)
 
 open import Cubical.Functions.FunExtEquiv
 open import Cubical.Functions.Embedding
@@ -210,23 +210,20 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
 
   iso-cong : ∀ {ℓ} → {A B : Type ℓ} → (f : Type ℓ → Type ℓ) →
     Iso A B → Iso (f A) (f B)
-  Iso.fun (iso-cong f isom) = {!Iso.fun isom!}
+  Iso.fun (iso-cong f isom) = {! (Iso.fun isom)!}
   Iso.inv (iso-cong f isom) = {!!}
   Iso.rightInv (iso-cong f isom) = {!!}
   Iso.leftInv (iso-cong f isom) = {!!}
 
-  foo : (n : ℕ) (x : X) → (δL^gl ^ n) (ηL^gl x) ≡ (λ k → (δL k ^ n) (η x))
-  foo zero x = refl
-  foo (suc n) x = {!!}
-  
-  {-
-  (λ k → θ (λ _ → ((λ l k₁ → θ (λ _ → l k₁)) ^ n) (λ k₁ → η x) k))
-      ≡ (λ k → θ (λ _ → ((λ x₁ → θ (λ _ → x₁)) ^ n) (η x)))
-  goal : δL^gl ((δL^gl ^ n) (ηL^gl x)) ≡  (λ k → δL k ((δL k ^ n) (η x)))
-  foo n x : (δL^gl ^ n) (ηL^gl x) ≡ (λ y → (δL y ^ n) (η x))
-  (λ k → θ (λ _ → ((λ l k₁ → θ (λ _ → l k₁)) ^ n) (λ k₁ → η x) k))
-      ≡ (λ k → θ (λ _ → ((λ x₁ → θ (λ _ → x₁)) ^ n) (η x)))
-  -}
+  propTruncIso : ∀ {ℓ ℓ' : Level} → {A : Type ℓ} {B : Type ℓ'} →
+    Iso A B → Iso ∥ A ∥₁ ∥ B ∥₁
+  propTruncIso isom =
+    isProp→Iso isPropPropTrunc isPropPropTrunc (PTmap (Iso.fun isom)) (PTmap (Iso.inv isom))
+
+  δ^gl-iterated-η^gl : (n : ℕ) (x : X) → (δL^gl ^ n) (ηL^gl x) ≡ (λ k → (δL k ^ n) (η x))
+  δ^gl-iterated-η^gl zero x = refl
+  δ^gl-iterated-η^gl (suc n) x = cong δL^gl (δ^gl-iterated-η^gl n x)
+ 
 
   lem2 : ∀ lg1 lg2 →
     Iso (∀ (k : Clock) → ret-theta (lg1 k) (lg2 k)) (ret-theta-g lg1 lg2)
@@ -238,12 +235,12 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
     _
       Iso⟨ Σ-cong-iso-snd (λ x → prodIso idIso squash-∀) ⟩
     _
-      Iso⟨ Σ-cong-iso-snd (λ x → prodIso funExtIso (iso-cong ∥_∥₁
+      Iso⟨ Σ-cong-iso-snd (λ x → prodIso funExtIso (propTruncIso
         (compIso (Iso-∀clock-Σ nat-clock-irrel)
           (compIso (Σ-cong-iso-snd (λ n → Iso-∀clock-Σ X-clk-irrel))
             (compIso (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ y → Iso-∀clock-×)))
               (compIso (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ y → prodIso funExtIso (Iso-∀kA-A (R-clk-irrel x y)))))
-                (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ y → prodIso (Eq-Iso (sym (cong (λ p → _ ≡ p) (foo n y)))) idIso))))))))) ⟩
+                (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ y → prodIso (Eq-Iso (sym (cong (λ p → _ ≡ p) (δ^gl-iterated-η^gl n y)))) idIso))))))))) ⟩
     _
       Iso⟨ Σ-cong-iso-snd (λ x → prodIso idIso (Eq-Iso (propTruncIdempotent (Prop.is-prop-y x x lg2)))) ⟩
     ret-theta-g lg1 lg2
@@ -264,7 +261,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
           (compIso (Σ-cong-iso-snd (λ n → Iso-∀clock-Σ X-clk-irrel))
             (compIso (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ x → Iso-∀clock-×)))
               (compIso (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ x → prodIso funExtIso (Iso-∀kA-A (R-clk-irrel x y)))))
-                (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ x → prodIso (Eq-Iso (sym (cong (λ p → _ ≡ p) (foo n x)))) idIso))))))))) ⟩
+                (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ x → prodIso (Eq-Iso (sym (cong (λ p → _ ≡ p) (δ^gl-iterated-η^gl n x)))) idIso))))))))) ⟩
     _
       Iso⟨ Σ-cong-iso-snd (λ y → prodIso idIso (Eq-Iso (propTruncIdempotent (Prop.is-prop-x y y lg1)))) ⟩
     _
@@ -368,12 +365,6 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
 
    -- n ⊨ f ≈ g = def f g + ((n ≡ zero) + (n ≡ suc n' × n' ⊨ f ≈ g))
 
-   bisimFun-downward : (f g : Fun) (n : ℕ) →
-     suc n ⊨ f ≈ g →
-     n ⊨ (f ∘ suc) ≈ (g ∘ suc)
-   bisimFun-downward f g n (inl (inl (x , y , m , f↓x , g↓y , xRy))) = {!!}
-   bisimFun-downward f g n (inl (inr (x , y , m , f↓x , g↓y , xRy))) = {!!}
-   bisimFun-downward f g n (inr both-div) = {!!}
 
    ↓-unique-downward : (f : Fun {ℓ = ℓ} {X = X}) → ↓-unique f → ↓-unique (f ∘ suc)
    ↓-unique-downward f Hf m n x y fs↓x fs↓y = cong predℕ (Hf (suc m) (suc n) x y fs↓x fs↓y .fst) , Hf (suc m) (suc n) x y fs↓x fs↓y .snd
@@ -386,7 +377,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
 
 
    -- The first definition implies the second, provided that the
-   -- functions satisfy the above (strong) uniqueness property.
+   -- functions satisfy the (strong) uniqueness property.
    adequacy-pt2 : (f g : Fun) (Hf : ↓-unique f) (Hg : ↓-unique g) →
      (n : ℕ) → n ⊨ f ≈ g → f ≈fun[ n ] g
 
@@ -472,8 +463,6 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
        ... | inl less = in1 (pred-≤-pred less)
        ... | inr eq = inr eq
 
-       
-       
        aux : _ × _
        
        -- If l ≤ n, then the result follows by the IH (i.e. the theorem at n).
@@ -513,6 +502,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
            Rxy' : R x y'
            Rxy' = IH .snd y' g↓y' .snd .snd .snd
 
+
    -- Global bisimilarity implies the first definition.
    adequacy-pt1 : (lg1 lg2 : L^gl X) →
      (lg1 ≈g lg2) → (n : ℕ) → (n ⊨ ⟦ lg1 ⟧ ≈ ⟦ lg2 ⟧)
@@ -532,19 +522,32 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
         (λ m m≤zero → (λ i → toFun X-clk-irrel lg2 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg2 lg2' eq2)))
 
    adequacy-pt1 lg1 lg2 bisim (suc n) with unfold-≈g bisim
-   ... | in1 x = {!!}
-   ... | in2 x = {!!}
-   ... | in3 x = {!!}
+   ... | in1 (x , y , eq1 , eq2 , xRy) =
+     inl (inl (x , y , 0 , bigStep-η-zero lg1 x eq1 , bigStep-η-zero lg2 y eq2 , xRy))
+
+   ... | in2 (x , eq1 , m , y , eq2 , xRy) = 
+     inl (inl (x , y , m , bigStep-η-zero lg1 x eq1 , bigStep-δ^n∘η lg2 y m eq2 , xRy)) 
+
+   ... | in3 (y , eq2 , m , x , eq1 , xRy) = 
+     in1 (inr (x , y , m , bigStep-δ^n∘η lg1 x m eq1 , bigStep-η-zero lg2 y eq2 , xRy))
    ... | in4 (lg1' , lg2' , eq1 , eq2 , bisim') = inr pf
      where
        pf : _ × _
        pf .fst      m m≤zero = (λ i → toFun X-clk-irrel lg1 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg1 lg1' eq1)
        pf .snd .fst m m≤zero = (λ i → toFun X-clk-irrel lg2 (≤0→≡0 m≤zero i)) ∙ (bigStep-δ-zero lg2 lg2' eq2)
-       -- pf .fst      m m≤suc-n = {!!}
-       -- pf .snd .fst m m≤suc-n = {!!}
-       pf .snd .snd = let IH = adequacy-pt1 lg1' lg2' bisim' n in {!!} -- Know: lg1 = δ^gl (lg1'), so ⟦ lg1 ⟧ ∘ suc ≡ ⟦ lg1' ⟧
-       -- pf .snd .snd = adequacy-pt1 lg1 lg2 bisim n
+       pf .snd .snd = let IH = adequacy-pt1 lg1' lg2' bisim' n in
+         transport (sym (λ i → n ⊨ aux1 i ≈ aux2 i)) IH
+         where
+           aux1 :  ⟦ lg1 ⟧ ∘ suc ≡ ⟦ lg1' ⟧
+           aux1 = funExt (λ n → bigStep-δ-suc lg1 lg1' n eq1)
 
+           aux2 :  ⟦ lg2 ⟧ ∘ suc ≡ ⟦ lg2' ⟧
+           aux2 = funExt (λ n → bigStep-δ-suc lg2 lg2' n eq2)
+          
+         -- Know: lg1 = δ^gl (lg1'), so ⟦ lg1 ⟧ ∘ suc ≡ ⟦ lg1' ⟧
+         --       lg2 = δ^gl (lg2'), so ⟦ lg2 ⟧ ∘ suc ≡ ⟦ lg2' ⟧
+         --       IH : n ⊨ ⟦ lg1' ⟧ ≈ ⟦ lg2' ⟧
+         --       Goal : n ⊨ (⟦ lg1 ⟧ ∘ suc) ≈ (⟦ lg2 ⟧ ∘ suc)
 
 {-
    --
