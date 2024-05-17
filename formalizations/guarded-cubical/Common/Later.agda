@@ -1,4 +1,6 @@
 {-# OPTIONS --cubical --rewriting --guarded #-}
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Common.Later where
 
 -- | This file is adapted from the supplementary material for the
@@ -16,6 +18,8 @@ open import Cubical.Foundations.Everything
 open import Cubical.Data.Nat
 open import Cubical.Data.Bool
 open import Cubical.Data.Sigma
+
+open import Cubical.HITs.PropositionalTruncation
 
 module Prims where
   primitive
@@ -220,6 +224,7 @@ Iso-∀kA-A {A = A} H-irrel-A = iso
   (λ a → refl)
   (λ f → clock-ext (λ k → H-irrel-A f k0 k))
 
+
 ∀kA≡A : {ℓ : Level} {A : Type ℓ} ->
   clock-irrel A -> (∀ (k : Clock) -> A) ≡ A
 ∀kA≡A H = isoToPath (Iso-∀kA-A H)
@@ -236,20 +241,19 @@ clock-irrel→canonical-map-iso {A = A} H =
 
 -- If the canonical map is an isomorphism, then A is clock irrelevant.
 
-
 -- See also:  composesToId→Iso in Cubical.Foundations.Isomorphism
 -- Cubical.Foundations.Equiv.BiInvertible
-iso-∀kA-A→clk-irrel : {ℓ : Level} {A : Type ℓ} ->
+iso-A→∀kA→clk-irrel : {ℓ : Level} {A : Type ℓ} ->
   isIso (λ (a : A) (k : Clock) → a) ->
   clock-irrel A
-iso-∀kA-A→clk-irrel {A = A} (fInv , sec , retr) M k k' = funExt⁻ (sym lem2) k ∙ funExt⁻ lem2 k'
+iso-A→∀kA→clk-irrel {A = A} (fInv , sec , retr) M k k' = funExt⁻ (sym lem2) k ∙ funExt⁻ lem2 k'
   where
 
     inverse-unique : ∀ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} →
       (f : A → B) (g g' : B → A) →
-      section f g →  -- f ∘ g ≡ id
-      retract f g →  -- g  ∘ f ≡ id, i.e. f is a split mono
-      retract f g' → -- g' ∘ f ≡ id
+      section f g →  -- g  is a section of f,    i.e. f  ∘ g ≡ id
+      retract f g →  -- g  is a retraction of f, i.e. g  ∘ f ≡ id, i.e. f is a split mono
+      retract f g' → -- g' is a retraction of f, i.e. g' ∘ f ≡ id
       g ≡ g'
     inverse-unique {A = A} {B = B} f g g' sec retr retr' = funExt aux
       where
@@ -265,6 +269,32 @@ iso-∀kA-A→clk-irrel {A = A} (fInv , sec , retr) M k k' = funExt⁻ (sym lem2
     lem2 : (λ k'' → M k0) ≡ M
     lem2 = sec' M
 
+-- If the "apply k0" map is an isomorphism, then A is clock irrelevant.
+iso-appk0→clk-irrel : {ℓ : Level} {A : Type ℓ} ->
+  isIso (∀kA→A A) ->
+  clock-irrel A
+iso-appk0→clk-irrel {A = A} (fInv , sec , retr) M k k' = funExt⁻ (sym lem2) k ∙ funExt⁻ lem2 k'
+  where
+    inverse-unique : ∀ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} →
+      (f : A → B) (g g' : B → A) →
+      section f g →  -- g  is a section of f,    i.e. f ∘ g  ≡ id
+      retract f g →  -- g  is a retraction of f, i.e. g ∘ f  ≡ id, i.e. f is a split mono
+      section f g' → -- g' is a section of f,    i.e. f ∘ g' ≡ id
+      g ≡ g'
+    inverse-unique {A = A} {B = B} f g g' sec retr sec' =
+      cong (_∘ g) (sym (funExt retr)) ∙ aux ∙ cong (_∘ g') (funExt retr)
+      where
+        aux : g ∘ f ∘ g ≡ g ∘ f ∘ g'
+        aux = cong (g ∘_) ((funExt sec ∙ sym (funExt sec')))
+
+    lem1 : fInv ≡ (λ a k → a)
+    lem1 = inverse-unique (∀kA→A A) fInv (λ a k → a) sec retr (λ _ → refl)
+
+    retr' : retract (∀kA→A A) (λ a k → a)
+    retr' = transport (λ i → retract (∀kA→A A) (lem1 i)) retr
+
+    lem2 : (λ k'' → M k0) ≡ M
+    lem2 = retr' M
 
 
 {-
@@ -288,3 +318,9 @@ postulate
 -}
 
 
+-- Clock quantification commutes with propositional truncation.
+-- This follows from "induction under clocks" in the "Greatest HITs" paper.
+postulate
+  ∀k-propTrunc : ∀ {ℓ : Level} → {A : Clock → Type ℓ} →
+    Iso (∀ k → ∥ A k ∥₁) (∥ (∀ (k : Clock) → A k) ∥₁)
+  
