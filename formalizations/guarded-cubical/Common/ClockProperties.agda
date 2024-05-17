@@ -153,20 +153,51 @@ Unit-clock-irrel M k k' with M k | M k'
 path-clock-irrel : ∀ {A : Type ℓ} {x y : A} →
   clock-irrel A → clock-irrel (Path A x y)
 path-clock-irrel {A = A} {x = x} {y = y} H =
-  iso-∀kA-A→clk-irrel (∀kA→A (Path A x y) , {!!} , (λ _ → refl))
+  iso-appk0→clk-irrel (isoFun→isIso (∀k-path {x = x} {y = y} H))
 
+
+
+
+--------------------------------------------------------------------------------
+
+
+-- Lifting inside a Π type is equal to lifting outside the Π
+--
+-- It's not enough to set j = ℓ3 in the RHS.
+-- This would typecheck, but is not sufficient for use in bool2ty-eq.
+-- There, it is crucial that j is ℓ-max ℓ1 ℓ3, not just ℓ3.
+lift-Π-eq : ∀ {ℓ1 ℓ2 ℓ3 : Level} → (X : Type ℓ1) {A : X → Type ℓ2} →
+  ((x : X) → Lift {i = ℓ2} {j = ℓ3} (A x)) ≡
+  Lift {i = ℓ-max ℓ1 ℓ2} {j = ℓ-max ℓ1 ℓ3} ((x : X) → A x)
+lift-Π-eq X = isoToPath
+  (_ Iso⟨ codomainIsoDep (λ x → invIso LiftIso) ⟩
+   _ Iso⟨ LiftIso ⟩
+   _ ∎Iso)
+
+testing : ∀ {ℓ ℓ' ℓ'' : Level} (X : Type ℓ) {A : X → Type ℓ'} →
+  _≡_ {ℓ-max (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ')) (ℓ-suc ℓ'')}
+      {Type (ℓ-max (ℓ-max ℓ ℓ') ℓ'')}
+      ((x : X) → Lift {ℓ'} {ℓ''} (A x))
+      (Lift {ℓ-max ℓ ℓ'} {ℓ-max ℓ ℓ''} ((x : X) → A x))
+testing X = isoToPath
+  (_ Iso⟨ codomainIsoDep (λ x → invIso LiftIso) ⟩
+   _ Iso⟨ LiftIso ⟩
+   _ ∎Iso)
 
 -- Auxiliary deifnition used for the iso between ⊎ and Σ Bool.
 bool2ty : {ℓ ℓ' : Level} -> Type ℓ -> Type ℓ' -> Bool -> Type (ℓ-max ℓ ℓ')
 bool2ty {ℓ' = ℓ'} A B true = Lift {j = ℓ'} A
 bool2ty {ℓ = ℓ} A B false = Lift {j = ℓ} B
 
-bool2ty-eq : {X : Type ℓ} {A : X -> Type ℓ'} {B : X -> Type ℓ''} ->
+bool2ty-eq : ∀ {ℓ ℓ' ℓ'' : Level} → {X : Type ℓ} {A : X -> Type ℓ'} {B : X -> Type ℓ''} ->
   (b : Bool) ->
   (∀ (x : X) -> bool2ty (A x) (B x) b) ≡
   bool2ty (∀ x -> A x) (∀ x -> B x) b
-bool2ty-eq {X} {A} {B} true = {!!}
-bool2ty-eq {X} {A} {B} false = {!!}
+bool2ty-eq {ℓ = ℓ} {ℓ' = ℓ'} {ℓ'' = ℓ''} {X = X} {A = A} {B = B} true =
+  lift-Π-eq {ℓ1 = ℓ} {ℓ2 = ℓ'}  {ℓ3 = ℓ''} X {A = A}
+  
+bool2ty-eq {ℓ = ℓ} {ℓ' = ℓ'} {ℓ'' = ℓ''} {X = X} {A = A} {B = B} false =
+  lift-Π-eq {ℓ1 = ℓ} {ℓ2 = ℓ''} {ℓ3 = ℓ'}  X {A = B}
 
 bool2ty-A-A : (A : Type ℓ) (b : Bool) -> bool2ty A A b ≡ Lift {j = ℓ} A
 bool2ty-A-A A true = refl
