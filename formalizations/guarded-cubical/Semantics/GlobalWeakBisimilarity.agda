@@ -202,19 +202,6 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
     f k0 .snd .snd .snd .snd
     
 
-  squash-∀ : ∀ {A : Type} {B : A → Type (ℓ-max ℓ ℓR)} → Iso (∀ x → ∥ B x ∥₁) (∥ (∀ (x : A) → B x) ∥₁)
-  Iso.fun squash-∀ = {!!}
-  Iso.inv squash-∀ = {!!}
-  Iso.rightInv squash-∀ = {!!}
-  Iso.leftInv squash-∀ = {!!}
-
-  iso-cong : ∀ {ℓ} → {A B : Type ℓ} → (f : Type ℓ → Type ℓ) →
-    Iso A B → Iso (f A) (f B)
-  Iso.fun (iso-cong f isom) = {! (Iso.fun isom)!}
-  Iso.inv (iso-cong f isom) = {!!}
-  Iso.rightInv (iso-cong f isom) = {!!}
-  Iso.leftInv (iso-cong f isom) = {!!}
-
   propTruncIso : ∀ {ℓ ℓ' : Level} → {A : Type ℓ} {B : Type ℓ'} →
     Iso A B → Iso ∥ A ∥₁ ∥ B ∥₁
   propTruncIso isom =
@@ -233,7 +220,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
     _
       Iso⟨ Σ-cong-iso-snd (λ x → Iso-∀clock-×) ⟩
     _
-      Iso⟨ Σ-cong-iso-snd (λ x → prodIso idIso squash-∀) ⟩
+      Iso⟨ Σ-cong-iso-snd (λ x → prodIso idIso ∀k-propTrunc) ⟩
     _
       Iso⟨ Σ-cong-iso-snd (λ x → prodIso funExtIso (propTruncIso
         (compIso (Iso-∀clock-Σ nat-clock-irrel)
@@ -254,9 +241,9 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
     _
       Iso⟨ Σ-cong-iso-snd (λ y → Iso-∀clock-×) ⟩
     _
-      Iso⟨ Σ-cong-iso-snd (λ y → prodIso idIso squash-∀) ⟩
+      Iso⟨ Σ-cong-iso-snd (λ y → prodIso idIso ∀k-propTrunc) ⟩
     _
-      Iso⟨ Σ-cong-iso-snd (λ y → prodIso funExtIso (iso-cong ∥_∥₁
+      Iso⟨ Σ-cong-iso-snd (λ y → prodIso funExtIso (propTruncIso
         (compIso (Iso-∀clock-Σ nat-clock-irrel)
           (compIso (Σ-cong-iso-snd (λ n → Iso-∀clock-Σ X-clk-irrel))
             (compIso (Σ-cong-iso-snd (λ n → Σ-cong-iso-snd (λ x → Iso-∀clock-×)))
@@ -363,7 +350,7 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
    zero  ⊨ f ≈ g = one-terminates-at-n zero f g + (f ↑fun[ 0 ] × g ↑fun[ 0 ])
    suc n ⊨ f ≈ g = one-terminates-at-n zero f g + (f ↑fun[ 0 ] × g ↑fun[ 0 ] × (n ⊨ (f ∘ suc) ≈ (g ∘ suc)))
 
-   -- n ⊨ f ≈ g = def f g + ((n ≡ zero) + (n ≡ suc n' × n' ⊨ f ≈ g))
+   -- n ⊨ f ≈ g = one-terminates-at-n zero f g + ((n ≡ zero) + (n ≡ suc n' × n' ⊨ f ≈ g))
 
 
    ↓-unique-downward : (f : Fun {ℓ = ℓ} {X = X}) → ↓-unique f → ↓-unique (f ∘ suc)
@@ -549,65 +536,11 @@ module _ (X : Type ℓ) (R : X → X → Type ℓR)
          --       IH : n ⊨ ⟦ lg1' ⟧ ≈ ⟦ lg2' ⟧
          --       Goal : n ⊨ (⟦ lg1 ⟧ ∘ suc) ≈ (⟦ lg2 ⟧ ∘ suc)
 
-{-
-   --
-   -- ##########################
-   --   The adequacy theorem.
-   -- ##########################
-   --
-   adequacy : (lg1 lg2 : L^gl X) →
-     (lg1 ≈g lg2) → (n : ℕ) → ⟦ lg1 ⟧ ≈fun[ n ] ⟦ lg2 ⟧
-   adequacy lg1 lg2 bisim zero m m≤0 with unfold-≈g bisim
-
-   -- Case 1: lg1 = ηL^gl x, lg2 = ηL^gl y, and x R y
-   ... | in1 (x , y , eq1 , eq2 , xRy) = let m≡0 = ≤0→≡0 m≤0 in aux
-       where
-         aux : _ × _
-         aux .fst x' eq3 = 0 , y , bigStep-η-zero lg2 y eq2 , transport (λ i → R (x≡x' i) y) xRy
-           where
-             x≡x' : x ≡ x'
-             x≡x' = isEmbedding→Inj isEmbedding-inl x x' {!!}
-         aux .snd y' eq4 = 0 , x , bigStep-η-zero lg1 x eq1 , transport (λ i → R x (y≡y' i)) xRy
-           where
-             y≡y' : y ≡ y'
-             y≡y' = {!!}
-        
-   -- Case 2: lg1 = η^gl x, lg2 = ((δ^gl) ^ n) (η^gl y), and x R y
-   ... | in2 (x , n , y , eq1 , eq2 , xRy) = let m≡0 = ≤0→≡0 m≤0 in aux
-     where
-       aux : _ × _
-       aux .fst x' eq3 = n , y , {!!} , {!!}
-       aux .snd y' eq4 = {!!}
-
-   -- Case 3:
-   ... | in3 x = {!!}
-
-   -- Case 4: lg1 = δ^gl lg1', lg2 = δ^gl lg2'
-   ... | in4 (lg1' , lg2' , eq1 , eq2 , bisim') =
-      (λ x eq3 → {!!}) , {!!}
-
-
-   adequacy lg1 lg2 bisim (suc n') with unfold-≈g bisim
-   ... | s = {!!}
-
--}
-
--- Arithmetic lemmas used:
--- ≤0→≡0 : n ≤ 0 → n ≡ 0
---
--- ≤-split : m ≤ n → (m < n) ⊎ (m ≡ n)
-
--- m ≤ suc n → m < n
 
 
 
--- Global bisim as an explicitly step-indexed definition
--- ≈g' : L^gl X → L^gl X → ℕ → Type
 
--- lg1 ≈g' lg2 is defined to be
---
--- ∀ n. ∀ m ≤ n. ∀ x. lg1 ↓m x → lg2 ↓ x   and
---                    lg2 ↓m x → lg1 ↓ x
+
 
 
 

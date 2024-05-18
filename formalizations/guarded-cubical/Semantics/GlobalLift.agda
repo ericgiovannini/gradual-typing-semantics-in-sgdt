@@ -98,10 +98,6 @@ L^gl-iso {ℓ = ℓ} {X = X} H-irrel =
 
 -- Describing the behavior of the above isomorphism:
 
--- Rewriting axioms used in the proofs:
-
-
-{-# REWRITE rewrite-transp #-}
 
 iso-inv-inl : {X : Type ℓ} (H : clock-irrel X) (x : X) ->
   Iso.inv (L^gl-iso H) (inl x) ≡ λ k -> η x
