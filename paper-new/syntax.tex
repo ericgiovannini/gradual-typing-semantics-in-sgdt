@@ -14,7 +14,7 @@ We include a syntax for \emph{type precision} derivations $c : A
 \ltdyn A'$, the typing is given in Figure~\ref{fig:typrec}.
 %
 Any type precision derivation $c : A \ltdyn A'$ induces a pair of
-casts, the upcast $\up c : A \ra A'$ and the downcast $\dn c : A' \ra
+casts, the upcast $\upc c : A \ra A'$ and the downcast $\dnc c : A' \ra
 A$.
 %
 The syntactic intuition is that $c$ is a proof that $A$ is ``less
@@ -48,8 +48,8 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn
   \begin{mathpar}
     \begin{array}{rcl}
     \text{Types } A &::=& \nat \alt \,\dyn \alt A \ra A' \alt A \times A'\\
-    \text{Type Precision } c &::=& r(A) \alt \iarr \alt \inat \alt \itimes \alt c \ra c' \alt c \times c'\\
-    \text{Values } V &::=& \upc c V \alt \zro \alt \suc\, V \alt \lda{x}{M} \alt (V,V') \\ 
+    \text{Type Precision } c &::=& r(A) \alt c c' \alt \iarr \alt \inat \alt \itimes \alt c \ra c' \alt c \times c'\\
+    \text{Values } V &::=& x \alt \upc c V \alt \zro \alt \suc\, V \alt \lda{x}{M} \alt (V,V') \\ 
     \text{Terms } M,N &::=& \err\alt \upc c M \alt \dnc c M \alt \zro \alt \suc\, M \alt \lda{x}{M} \\ 
      &&\alt M\, N \alt (M,N) \alt \textrm{let } (x,y) = M \textrm{ in } N\\
     \text{Contexts } \Gamma &::= &\cdot \alt \Gamma, x : A \\
@@ -62,7 +62,7 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn
 
   \inferrule
   {\Gamma \vdash N : A' \and c : A \ltdyn A'}
-  {\Gamma \vdash \dnc c N  A}
+  {\Gamma \vdash \dnc c N : A}
 
   \inferrule{}{\Gamma \vdash \mho : A}
   \end{mathpar}
@@ -105,7 +105,7 @@ The form of the term precision rule is $\Delta \vdash M \ltdyn M' : c$
 where $\Delta$ is a context where variables are assigned to type
 precision derivations.
 %
-The judgment is only well formed when every use of $x : c'$ for $c : A
+The judgment is only well formed when every use of $x : c$ for $c : A
 \ltdyn A'$ is used with type $A$ in $M$ and $A'$ in $M'$ and similarly
 the output types match $c$.
 %
@@ -139,7 +139,7 @@ given by functorial actions \cite{new-licata18,new-licata-ahmed2019}.
   (\lambda x. M)(V) = M[V/x] \and (V : A \ra A') = \lambda x. V\,x\\
 
    \textrm{let } (x,y) = (V,V') \textrm{ in } N = N[V/x,V'/y] \and
-   M[V:A\times A'/p] = \textrm{let } (x,y) = p \textrm{ in } M[(x,y)/p]
+   M[V:A\times A'/p] = \textrm{let } (x,y) = V \textrm{ in } M[(x,y)/p]
 
   \upc{(r(A))}M = M \and
   \upc{c'}\upc{c}M = \upc{cc'}M \and

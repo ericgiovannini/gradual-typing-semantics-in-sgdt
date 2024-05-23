@@ -20,7 +20,7 @@ i.e., $\tilde{x} \le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \til
 Likewise for bisimilarity.
 %
 We also give a predomain structure to the natural numbers $\mathbb{N}$, where both the
-ordering and the bisimiarity relation are equality.
+ordering and the bisimilarity relation are equality.
 %
 Morphisms of predomains are functions between the underlying sets that preserve the ordering
 and the bisimilarity relation. More formally:
@@ -130,7 +130,7 @@ the guarded recursive type equation $\li A \cong A + 1 + \later \li A$.} as foll
 This captures the intuition that a program may either return a value,
 fail at run-time, or take one or more observable steps of computation.
 Previous work has studied such a similar construct, called the guarded lift
-monad \cite{mogelberg-paviotti2016}; our version here our version augments it with the notion of error.
+monad \cite{mogelberg-paviotti2016}; our version here augments it with the notion of error.
 Since we claimed that $\li A$ is a monad, we need to define the monadic operations
 and show that they respect the monadic laws. The return is just $\eta$, and the monadic extend
 is defined via guarded recursion by cases on the input.
@@ -299,7 +299,7 @@ Explicitly, the ordering on $D$ is given by:
 \end{align*}
 %
 We define a relation $\inat : \mathbb{N} \rel D$ by
-$(n, d) \in \inat$ iff $e_\mathbb{N} \le_D d$.
+$(n, d) \in \inat$ iff $e_\mathbb{N}(n) \le_D d$.
 We similarly define $\itimes : D \times D \rel D$ by
 $((d_1, d_2), d) \in \itimes$ iff $e_\times(d_1, d_2) \le_D d$,
 and we define $\text{inj}_\to : U(D \arr F D) \rel D$ by

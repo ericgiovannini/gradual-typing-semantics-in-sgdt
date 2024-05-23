@@ -25,8 +25,8 @@ Let $c : A \rel A'$ and $f : A \to A'$ in a reflexive graph category
 with composition of relations. We say that $c$ is \emph{universally
 left-representable by} $f$ if for any $c_l : A_l \rel A$ and $c_r : A'
 \rel A_r$ we have $f \ltsq{cc_r}{c_r} \id$ and $\id \ltsq{c_l}{c_lc}
-f$. Dually, let $d : B \rel B'$ and $g : B' \to B$.  We say that $d$
-is \emph{universally right-representable by} $g$ if for any $d_l : B_l
+f$. Dually, let $d : B \rel B'$ and $\phi : B' \to B$.  We say that $d$
+is \emph{universally right-representable by} $\phi$ if for any $d_l : B_l
 \rel B$ and $d_r : B' \rel B_r$ we have $\id \ltsq{d_ld}{d_l} \phi$
 and $\phi \ltsq{d_r}{dd_r}\id$. In a reflexive graph category these
 are stronger than the definitions of left/right representability since
@@ -37,13 +37,14 @@ horizontal pasting.
 Additionally, while in the presence of horizontal pasting
 compositionality of representable morphisms is automatic, without this
 principle we must require it explicitly. Finally, we explicitly add in
-a requirement that the type constructors are functorial in the 
+a requirement that the type constructors are functorial on relations
+up to order equivalence.
 
 In summary, an extensional model consists of:
 \begin{enumerate}
   \item A locally thin reflexive graph internal to CBPV models.
   \item Composition of value and computation relations that form a category with the reflexive relations as identity. Call these categories $\mathcal V_r,\mathcal E_r$
-  \item Identity-on-objects functors $\upf : \mathcal V_r \to \mathcal V_f$ and $\dnf : \mathcal E_r^{op} \to \mathcal E_f$ such that every $\upf c$ universally left-represents $c$ and every $\dnf d$ universally represents $d$.
+  \item Identity-on-objects functors $\upf : \mathcal V_r \to \mathcal V_f$ and $\dnf : \mathcal E_r^{op} \to \mathcal E_f$ such that every $\upf\, c$ universally left-represents $c$ and every $\dnf\, d$ universally right-represents $d$.
   \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant} functorial on relations up to equivalence: $U(dd') \equidyn U(d)U(d')$ etc.\footnote{the reflexive graph structure already requires that these functors preserve identity relations}
     %% \begin{itemize}
     %% \item $U(dd') \equidyn U(d)U(d')$
@@ -53,12 +54,12 @@ In summary, an extensional model consists of:
     %% \end{itemize}
     where $c \equidyn c'$ means $\id \ltsq{c}{c'}\id$ and $\id \ltsq{c'}{c} \id$.
   \item A natural transformation $\mho : 1 \Rightarrow U$ such that
-    $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$
+    $\mho \circ {!} \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$
   \item Distinguished value type $\nat$ with morphisms $z : \mathcal
     V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
   \item Distinguished value types $D$ with distinguished relations
     $\iarr{}: U(D \to F D) \rel D$ and $\inat : \nat \rel D$ and $\itimes : D \times D \rel D$
-    each satisfying the retraction property $\dnc {\injarr{}}F(\upc{\injarr{}}) \equidyn \id$.
+    each satisfying the retraction property $\dnc {\iarr{}}F(\upc{\iarr{}}) \equidyn \id$.
 \end{enumerate}
 
 This mathematical structure is sufficient to interpret the theory of
@@ -74,7 +75,7 @@ gradual typing in Section~\ref{sec:GTLC}.
     way. Every equivalence axiom $c \equiv c'$ implies that $\sem{c} \equidyn \sem{c'}$.
   \item Every term $\Gamma \vdash M : A$ is interpreted as a morphism
     $\sem{M} : \mathcal V_f (\times\sem{\Gamma},UF\sem{A})$. Upcasts are interpreted as
-    $UF(u_{\sem{c}})$ and downcasts as $Ud_{F\sem{c}}$.
+    $UF(\upf\, {\sem{c}})$ and downcasts as $U (\dnf\, {(F\sem{c})})$.
   \item If $\Delta \vdash M \ltdyn M' : c$ then $\sem{M}
     \ltsq{\times\sem{\Delta}}{\sem{c}} \sem{M'}$ holds.
   \end{enumerate}
@@ -272,6 +273,13 @@ gradual typing in Section~\ref{sec:GTLC}.
 
 An intensional model of gradual typing is defined similarly to an extensional model,
 with a few key differences that will be discussed below.
+To aid in understanding the definition of an intensional model, we break the
+definition into five steps, with each one building on the previous.
+The last step will be the definition we have in mind when we refer to an intensional model.
+
+% This also facilitates the construction of an intensional model by breaking it down
+% into a few modular constructions between each subsequent phase.
+
 %
 The starting point is similar to that of the extensional model.
 This time, however, since we are working intensionally, the semantic denotation of
@@ -290,7 +298,7 @@ $r : \mathcal M_f \to \mathcal M_{sq}$ and $s, t : \mathcal M_{sq} \to \mathcal 
 just as before.
 %
 But now, we also have a CBPV morphism $m$ from the pullback 
-$\mathcal M_{sq} \times_{s = t} \mathcal M_{sq}$ to $M_{sq}$, i.e., ``composition of arrows".
+$\mathcal M_{sq} \times_{s = t} \mathcal M_{sq}$ to $\mathcal M_{sq}$, i.e., ``composition of arrows".
 In particular, this consists of a functor 
 $m_{\mathcal{V}} : \vsq \times_{\sv = \tv} \vsq \to \vsq$ for composition of value
 relations/squares, and a functor $m_{\mathcal{E}} : \esq \times_{\se = \te} \esq \to \esq$
@@ -298,7 +306,7 @@ for composition of computation relations/squares.
 Furthermore, $s \circ m = s \circ \pi_1$ and $t \circ m = t \circ \pi_2$.
 
 As in the extensional model, we also require the existence of a natural transformation
-$\mho : 1 \Rightarrow U$ such that $\mho \circ ! \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$,
+$\mho : 1 \Rightarrow U$ such that $\mho \circ {!} \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$,
 and a distinguished value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
 % Lastly, we require the existence of a morphism $\mho_B \in \vf(\Gamma, UB)$ for all $B$
 % satisfying the same ordering and commutativity properties required in the extensional model.
@@ -307,6 +315,8 @@ and a distinguished value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ an
 % one for the extensional case, but now with the addition of a functor $m_{\mathcal{V}}$ for
 % composition of value relations/squares and a functor $m_{\mathcal{E}}$ for
 % composition of computation relations/squares.
+
+We call a model satisfying these properties a \emph{step-0 intensional model}.
 
 % For the sake of ease of reference, we recap the definition of a step-0 model:
 % %
@@ -483,11 +493,11 @@ The requirements are summarized below:
 \begin{definition}\label{def:step-2-model}
   A \emph{step-2} model of intensional gradual typing consists of all the data of a step-1 model plus:
   \begin{enumerate}
-    \item For each value type $A$, there is a monoid $P_A$ and a homomorphism of monoids
-    $\ptb_A : P_A \to \{ f \in \vf(A,A) \mid f \bisim \id \}$.
+    \item For each value type $A$, there is a monoid $\pv_A$ and a homomorphism of monoids
+    $\ptb_A : \pv_A \to \{ f \in \vf(A,A) \mid f \bisim \id \}$.
     \item For each computation type $B$, there is a monoid $\pe_B$ and a homomorphism of monoids
-    $\ptb_B : P_B \to \{ g \in \ef(B,B) \mid g \bisim \id \}$.
-    \item For all $B$, the distinguished endomorphism $\delta_{UB}^*$ is in $P_{UB}$.
+    $\ptb_B : \pe_B \to \{ g \in \ef(B,B) \mid g \bisim \id \}$.
+    \item For all $B$, the distinguished endomorphism $\delta_{UB}^*$ is in $\pv_{UB}$.
     % \item $\pv_A$ and a monoid homomorphism 
     %   \[ \ptbv_A : \pv_A \to \{ f \in \vf(A,A) \mid f \bisim \id \} \]
     % \item $\pe_B$ and a monoid homomorphism
@@ -520,11 +530,11 @@ homomorphism into the endomorphisms on $X$.
 %
 \begin{definition}\label{def:quasi-left-representable}
   Let $R$ be a horizontal morphism in $\mathcal M$ between objects $X$ and $Y$.
-  We say that $R$ is quasi-left-representable by a vertical morphism $f$ in
+  We say that $R$ is \emph{quasi-left-representable by} a vertical morphism $f$ in
   $\mathcal M(X, Y)$ if there are perturbations $\delle_R \in P_X$ and
   $\delre_R \in P_Y$ such that there is a square
   $\upl : f \ltsq{R}{r(Y)} \delre_R$ and a square 
-  $\upr : \delle_R \ltsq{r(X)}{R}$
+  $\upr : \delle_R \ltsq{r(X)}{R} f$.
 %
 %   \begin{center}
 %     \begin{tabular}{ m{7em} m{7em} } 
@@ -711,12 +721,12 @@ First, we will need a definition:
 \end{definition}
 %
 We require that the CBPV connectives $U,F,\times,\to$ are \emph{quasi-functorial} on relations,
-which we specify as follows:
+which we specify as follows, with $c \comp c'$ denoting the relational composition of $c$ and $c'$:
 \begin{itemize}
-  \item $U(d \comp d') \qordeq U(d)U(d')$
-  \item $F(c \comp c'') \qordeq F(c)F(c')$
-  \item $(cc') \to (dd') \qordeq (c \to d)(c' \to d')$
-  \item $(c_1c_1') \times (c_2c_2') \qordeq (c_1 \times c_2)(c_1'\times c_2')$
+  \item $U(d \comp d') \qordeq U(d) \comp U(d')$
+  \item $F(c \comp c') \qordeq F(c) \comp F(c')$
+  \item $(c \comp c') \to (d \comp d') \qordeq (c \to d) \comp (c' \to d')$
+  \item $(c_1 \comp c_1') \times (c_2 \comp c_2') \qordeq (c_1 \times c_2) \comp (c_1'\times c_2')$
 \end{itemize}
 
 We summarize the requirements of a step-3 model below:
@@ -725,7 +735,7 @@ We summarize the requirements of a step-3 model below:
   A \emph{step-3 intensional model} consists
   of all the data of a step-2 intensional model, such that additionally:
   \begin{enumerate}
-    \item There are functors $\upf : \ve \to \vf$ and $\dnf : \ee^{op} \to \ef$ % TODO: image is thin?
+    \item There are functors $\upf : \vr \to \vf$ and $\dnf : \er^{op} \to \ef$ % TODO: image is thin?
     \item Every value edge $c : A \rel A'$ is quasi-left-representable by $\upf(c)$ and
     every computation edge $d : B \rel B'$ is quasi-right-representable by $\dnf(d)$.
     \item The CBPV connectives $U,F,\times,\to$ are quasi-functorial on relations.
@@ -781,7 +791,7 @@ Now we can discuss what it means for an intensional model to model the dynamic t
 In the previous section, we have given the definition of an intensional model
 of gradual typing as a series of steps with each definition building on the previous one.
 %
-Here, we discuss how to construct an extensional model from an intensional model with dyn.
+Here, we discuss how to construct an extensional model from a step-4 intensional model.
 We do so in several phases, beginning with a step-1 intensional model with dyn
 and ending with an extensional model.
 Moreover, this construction is \emph{modular}, in that each phase of the
@@ -834,7 +844,7 @@ $\rho^L_c$ is a quasi-\emph{left}-representation for $c$
 and the two relevant squares), and similarly $\rho^R_{Fc}$ is
 a quasi-\emph{right}-representation for $Fc$.
 Computation relations are triples $(d, \rho^R_d, \rho^L_{Ud})$ where $d : B \rel B'$,
-$\rho^R_d$ is a quasi-right-representation for $d$ and $\rho^L{Ud}$ is a quasi-left-representation for $Ud$.
+$\rho^R_d$ is a quasi-right-representation for $d$ and $\rho^L_{Ud}$ is a quasi-left-representation for $Ud$.
 The value and computation squares are the same as those of $\mathcal{M}$.
 We then define composition of relations and the action of the functors $F$, $U$, $\times$, and $\arr$.
 

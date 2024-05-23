@@ -133,23 +133,28 @@ but later on, we will need to make use of clock quantification.
 \subsection{Ticked Cubical Type Theory}
 % TODO motivation for Clocked Cubical Type Theory, e.g., delayed substitutions?
 
-Ticked Cubical Type Theory \cite{mogelberg-veltri2019} is an extension of Cubical
-Type Theory \cite{CohenCoquandHuberMortberg2017}
-in which there is an additional sort called \emph{ticks}. Given a clock $k$,
-a tick $t : \tick\, k$ serves as evidence that one unit of time has passed according to the clock $k$.
-The type $\later A$ is represented as a function from ticks of a clock $k$ to $A$.
-The type $A$ is allowed to depend on $t$, in which case we write $\later^k_t A$
-to emphasize the dependence.
+Ticked Cubical Type Theory \cite{mogelberg-veltri2019} is an extension of
+Cubical Type Theory \cite{CohenCoquandHuberMortberg2017} that has clocks as well
+as an additional sort called \emph{ticks}. Ticks were originally introduced in
+\cite{bahr-grathwohl-bugge-mogelberg2017}. Given a clock $k$, a tick $t :
+\tick\, k$ serves as evidence that one unit of time has passed according to the
+clock $k$. In Ticked Cubical Type Theory, the type $\later^k A$ is the type of
+dependent functions from ticks of the clock $k$ to $A$. The type $A$ is allowed
+to depend on $t$, in which case we write $\later^k_t A$ to emphasize the
+dependence.
 
 % TODO next as a function that ignores its input tick argument?
 
-The rules for tick abstraction and application are similar to those of dependent
-$\Pi$ types. 
-In particular, if we have a term $M$ of type $\later^k A$, and we
-have available in the context a tick $t' : \tick\, k$, then we can apply the tick to $M$ to get
-a term $M[t'] : A[t'/t]$. We will also write tick application as $M_t$.
-Conversely, if in a context $\Gamma, t : \tick\, k$ we have that $M$ has type $A$,
-then in context $\Gamma$ we have $\lambda t.M$ has type $\later A$. % TODO dependent version?
+The rules for tick abstraction and application are similar to those of ordinary
+$\Pi$ types. In particular, if in a context $\Gamma, t : \tick\, k$ we have that $M$
+has type $A$, then in context $\Gamma$ we have $\lambda t.M$ has type $\later^k
+A$. % TODO dependent version?
+%
+Conversely, if we have a term $M$ of type $\later^k A$, and we have available in
+the context a tick $t' : \tick\, k$, then we can apply the tick to $M$ to get a
+term $M[t'] : A[t'/t]$. % TODO restriction on tick application
+%
+For the sake of brevity, we will also write tick application as $M_t$.
 
 % TODO mention Agda implementation of Clocked Cubical Type Theory?
 %The statements in this paper have been formalized in a variant of Agda called

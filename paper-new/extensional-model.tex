@@ -1,7 +1,7 @@
 \section{Idealized Double Categorical Models of Graduality}
 \label{sec:cbpv}
 
-In order to organize our construction of denotational models we first
+In order to organize our construction of denotational models, we first
 develop sufficient \emph{abstract} categorical semantics of gradually
 typed languages. We start by modeling the type and term structure of
 gradual typing and then extend this to type and term precision.
@@ -11,13 +11,13 @@ errors and non-termination and typically in practice many others such
 as mutable state and I/O.
 %
 To model this cleanly categorically, we follow New, Licata and Ahmed's
-GTT calculus and base our models off of Levy's Call-by-push-value
+GTT calculus and base our models on Levy's Call-by-push-value
 (CBPV) calculus which is a standard model of effectful programming
 \cite{levy99}.
 %
 There are several notions of model of CBPV from the literature with
 varying requirements of which connectives are present
-\cite{levy99,cfm2016,eec}, we will use a variant which models precisely
+\cite{levy99,cfm2016,eec}. We will use a variant which models precisely
 the connectives we require and no more
 ($1,\times,F,U,\to$)\footnote{It is essential in this case that we do
 not require a cartesian closed category of values as there is no way
@@ -40,12 +40,12 @@ to implement casts for an exponential in general.}.
   Given a strong monad $T$ on a bicartesian closed category $\mathcal
   V$, we can extend this to a CBPV model by defining $\mathcal E$ to
   be the category $\mathcal V^T$ of algebras of the monad, defining $A
-  \to B$ as the powering of algebras, $F$ as the free algebra and $U$
+  \to B$ as the powering of algebras, $F$ as the free algebra functor and $U$
   as the underlying object functor.
 \end{example}
 
 To additionally model the error terms, we add a requirement that there
-is a natural transformation $\mho : 1 \to U B$. The naturality
+is a natural transformation $\mho : 1 \Rightarrow U$. The naturality
 requirement encodes that strict morphisms (e.g., the denotations of
 evaluation contexts) preserve errors.
 
@@ -53,7 +53,7 @@ We can then model CBV terms and types in a straightforward adaptation
 of Levy's interpretation of CBV in CBPV. We interpret types $A$ and
 contexts $\Gamma$ as objects $A,\Gamma \in \mathcal V$ and CBV terms
 $\Gamma \vdash M : A$ as morphisms of any of the equivalent forms
-$\mathcal E(F\Gamma, FA) \cong \mathcal V(\Gamma \vdash UFA) \cong
+$\mathcal E(F\Gamma, FA) \cong \mathcal V(\Gamma , UFA) \cong
 \mathcal E(F(1), \Gamma \to F(A))$. The most interesting type
 translation is the CBV function type: $A \ra A' = U(A \to F A')$.
 %
@@ -67,7 +67,7 @@ casts.
 
 \subsection{Double Categorical Semantics of Graduality}
 
-New and Licata modeled the graduality and type casts for call-by-name
+New and Licata \cite{new-licata18} modeled the graduality and type casts for call-by-name
 gradual typing using \emph{double categories}, which are defined to be
 categories internal to the category of categories. That is, a double
 category $\mathcal C$ consists of a category $\mathcal C_o$ of
@@ -79,7 +79,7 @@ C_{sq} \times_{s,t} C_{sq} \to C_{sq}$ respecting source and
 target. This models an abstract notion of functions and relations. For
 notation, we write function morphisms as $f : A \to B$ and relation
 morphisms as $c : A \rel B$ where $c \in C_{sq}$ and $s(c) = A$ and
-$t(c) = B$. Finally a morphism $\alpha$ from $c$ to $d$ with
+$t(c) = B$. Finally, a morphism $\alpha$ from $c$ to $d$ with
 $s(\alpha) = f$ and $s(\beta) = g$ is visualized as
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkEnIl0sWzEsMSwiQiciXSxbMCwyLCJmIiwyXSxbMSwzLCJnIl0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiZCIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -90,7 +90,7 @@ $s(\alpha) = f$ and $s(\beta) = g$ is visualized as
 	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
 	\arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
 \end{tikzcd}\]
-And is thought of as an abstraction of the notion of relatedness of
+Such a morphism is thought of as an abstraction of the notion of relatedness of
 functions: functions take related inputs to related outputs. The
 composition operations and functoriality give us a notion of
 composition of relations as well as functions and vertical and
@@ -102,8 +102,10 @@ like the above exists.
 
 New, Licata and Ahmed \cite{new-licata-ahmed2019} extended the axiomatic
 syntax to call-by-push-value but did not analyze the structure
-categorically. We fill in this missing analysis now: a model of the
-congruence rules of their system can be given by a locally thin
+categorically.
+We fill in this missing analysis now, extending the double categorical semantics
+given in \cite{new-licata18} from cartesian closed categories to CBPV models.
+A model of the congruence rules of the CBPV system can be given by a locally thin
 ``double CBPV model'', which we define as a category internal to the
 category of CBPV models and \emph{strict} homomorphisms of CBPV
 models\footnote{it may be possible to also define this as a notion of
@@ -113,7 +115,9 @@ model}. A strict homomorphism of CBPV models from $(\mathcal
 V,\mathcal E,\ldots)$ to $(\mathcal V', \mathcal E',\ldots)$ consists
 of functors $G_v : \mathcal V \to \mathcal V'$ and $G_e : \mathcal E
 \to \mathcal E'$ that strictly preserve all CBPV constructions, see
-the appendix for a more detailed definition. We call this a strict morphism in contrast to a \emph{lax} morphism, which only preserves CBPV constructions up to transformation.
+the appendix for a more detailed definition. We call this a strict morphism
+in contrast to a \emph{lax} morphism, which only preserves CBPV constructions
+up to transformation.
 Some of the data of a double CBPV model can be visualized as follows:
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXHZzcSJdLFsyLDAsIlxcZXNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFxzdiIsMCx7ImN1cnZlIjotMn1dLFswLDIsIlxcdHYiLDIseyJjdXJ2ZSI6Mn1dLFsxLDMsIlxcc2UiLDAseyJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHRlIiwyLHsiY3VydmUiOjJ9XSxbMywxLCJcXHJlIl0sWzQsNSwiXFxib3QiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw3LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -159,7 +163,7 @@ casts. Additionally, since representable morphisms compose and so the
 compositionality of casts comes for free. However, the retraction
 property must be added as an additional axiom to the model.  To model
 the error being a least element we add the requirement that $\mho
-\circ ! \ltsq{r(A)}{r(UB)} f$ holds for all $f : \mathcal V(A,B)$.
+\circ {!} \ltsq{r(A)}{r(UB)} f$ holds for all $f : \mathcal V(A,B)$.
 Finally, the dynamic type can be modeled as an arbitrary value type $D$ with
 arbitrary relations $\nat \rel D$ and $D \ra D \rel D$ and $D \times D
 \rel D$ (or whatever basic type cases are required).
