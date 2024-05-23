@@ -1,0 +1,279 @@
+\section{A Concrete Term Model}\label{sec:concrete-term-model}
+
+In this section, we use SGDT to give a set-theoretic denotational semantics to
+the terms of the gradually-typed lambda calculus introduced in Section
+\ref{sec:GTLC}. This serves two purposes: First, it is a simple setting in which
+to employ the tools of SGDT. Second, constructing this semantic model
+establishes the validity of the beta and eta principles for the gradually-typed
+lambda calculus.
+%
+In Section \ref{sec:towards-relational-model}, we will discuss how to extend the
+denotational semantics to accommodate the type and term precision orderings.
+
+%\subsection{Semantic Constructions}\label{sec:domain-theory}
+
+We begin by discussing the objects of the model into which we will embed
+the types and terms of the gradually-typed lambda calculus. Recall that we are
+working in an ambient guarded type theory (see Section
+\ref{sec:technical-background}) for details. The constructions in this section
+will make significant use of the primitives of guarded type theory.
+
+\subsection{Value and Computation Types}
+
+% TODO there aren't actually computation types in the syntax. They
+% arise because we are embedding call-by-value into CBPV.
+
+% TODO should we introduce the lift monad first, and then introduce error
+% domains as algebras of the lift monad?
+
+We will give an embedding of our call-by-value syntax into a call-by-push-value
+model based on a free-forgetful adjunction $F \dashv U$. Value types will denote
+sets. Computation types will denote sets with additional algebraic structure
+corresponding to the possible behaviors of a term. Recall that we are modelling
+gradually-typed programs. Thus, one such behavior is \emph{failure}: a program
+may fail at run-time because of a type error. In addition to this, a program may
+fail to terminate. This is possible because the dynamic type includes function
+types and so is recursive. We will discuss the dynamic type further in a
+subsequent section, but for now it suffices to know that we can express a
+diverging computation in our syntax. Therefore, it will be necessary to track
+the ``steps'' taken by a term; we can regard this as a way of intensionally
+modelling \emph{partiality}.
+
+The semantic objects modelling computations will be sets $B$ that are
+equipped with a distinguished error element $\mho_B$ and a map $\theta_B \colon
+\laterhs B \to B$. We call such sets \emph{error domains}. A \emph{morphism of
+error domains} from $B_1$ to $B_2$ is a function $\phi$ on the underlying sets
+that respects the error and $\theta$ maps, i.e., for which 
+%
+(1) $\phi(\mho_{B_1}) = \mho_{B_2}$ and
+%
+(2) $\phi(\theta_{B_1}(\tilde{x})) = \theta_{B_2}(\later (\phi(\tilde{x})))$
+(using the functorial action of $\later$).
+
+\subsection{The Lift + Error Monad}\label{sec:lift-monad}
+
+% When thinking about how to model gradually-typed programs semantically, we
+% should consider their possible behaviors. On the one hand, we have
+% \emph{failure}: a program may fail at run-time because of a type error. In
+% addition to this, a program may fail to terminate. This is possible because the
+% dynamic type includes function types and so is recursive. We will discuss the
+% dynamic type further in the next section, but for now it suffices to know that
+% we can express a diverging computation in our syntax. Therefore, it will be
+% useful to track the ``steps'' taken by a term; we can regard this as a way of
+% intensionally modelling \emph{partiality}.
+
+% With this in mind, we can describe a semantic object that models these
+% behaviors: a monad for embedding computations that has cases for failure and
+% ``stepping''. Previous work has studied such a construct in the setting of the
+% latter, called the lift monad \cite{mogelberg-paviotti2016}; here, we augment it
+% with the additional effect of failure.
+
+We now describe the monad that decomposes into the free-forgetful adjunction
+between sets and error domains. We base the construction on the \emph{guarded
+lift monad} described in \cite{mogelberg-paviotti2016}. Here, we augment the
+guarded lift monad to accommodate the additional effect of failure. For a type
+$A$, we define the \emph{guarded lift monad with failure} $\li A$, which we will
+just call the \emph{guarded lift monad} or simply the \emph{lift monad}.
+
+\begin{align*}
+  \li A &:= \\
+  &\eta \colon A \to \li A \\
+  &\mho \colon \li A \\
+  &\theta \colon \laterhs (\li A) \to \li A
+\end{align*}
+
+Unless otherwise mentioned, all constructs involving $\later$ or $\fix$ are
+understood to be with respect to a fixed clock $k$. So for the above, we really
+have for each clock $k$ a type $\li^k A$ with respect to that clock.
+%
+Formally, the lift monad $\li A$ is defined as the solution to the guarded
+recursive type equation
+%
+\[ \li A \cong A + 1\, + \laterhs \li A. \]
+%
+An element of $\li A$ should be viewed as a computation that can either (1)
+return a value (via $\eta$), (2) raise an error and stop (via $\mho$), or (3)
+take a step (via $\theta$).
+%
+Notice there is a computation $\fix\, \theta$ of type $\li A$. This represents a
+computation that runs forever and never returns a value.
+
+Since we claimed that $\li A$ is a monad, we need to define the monadic
+operations and show that they respect the monadic laws. The return is just
+$\eta$, and the monadic extension is defined via guarded recursion by cases on
+the input.
+% It is instructive to give at least one example of a use of guarded recursion, so
+% we show below how to define extend:
+% TODO
+%
+%
+Verifying that the monadic laws hold uses \lob-induction and is straightforward.
+
+% TODO mention that error domains are algebras of the lift monad?
+We observe that the guarded lift monad constructs the free error domain on a set
+$A$, i.e., we have $\li = UF$ where $F : \Set \to \errdom$ and $U : \errdom \to
+\Set$ and $F \dashv U$. Given a set $A$ and an error domain $B$, the set of
+functions $A \to UB$ is naturally isomorphic to the set of error domain
+morphisms $FA \to B$.
+
+% The function type A \ra A' will be modeled as \sem{A} \to \li \sem{A'}
+
+
+\subsection{Modeling the Dynamic Type}\label{sec:dynamic-type}
+
+We discuss how to model the dynamic type $\dyn$.
+% For simplicity, we omit the
+% case of products in the dynamic type, as from a semantic viewpoint it is the
+% function case that is problematic.
+We will define a semantic object $D$ that satisfies the isomorphism
+
+% TODO make sure we deal with the product correctly
+\[ D \cong \Nat + (D \times D) + (D \to \li D). \]
+
+where the $\li D$ represents the fact that in the case where the value of type
+$\dyn$ is a function, the function when called may return an error or take a
+step of computation. Unfortunately, this equation does not have inductive or
+coinductive solutions. The usual way of dealing with such equations is via
+domain theory, by which we can obtain an exact solution. However, the machinery
+of domain theory can be difficult for language designers to learn and apply in
+the mechanized setting. Instead, we will leverage the tools of guarded type
+theory. Consider the following similar-looking equation:
+%
+\[ D \cong \Nat + (D \times D)\, + \laterhs (D \to \li D). \]
+%
+Since the negative occurrence of $D$ is guarded under a later, this equation has
+a solution constructed via a combination of least fixed-point and guarded
+recursion. Specifically, consider the parameterized inductive type
+%
+\[ D'\, X := \mu T. \Nat + (T \times T) + X. \]
+%
+Now consider the function $f$ defined by
+%
+\[ \lambda (\tilde{D} \colon \laterhs \type) . D' (\later_t (\tilde{D}_t \to (\li (\tilde{D}_t)))). \]
+%
+Recall that the tick $t : \tick$ is evidence that time has passed, and since
+$\tilde{D}$ has type $\later \type$, i.e. $\tick \to \type$, then $\tilde{D}_t$
+has type $\type$.
+
+Now, define 
+\[ D := \fix f. \]
+%
+% TODO refer to technical background?
+Observe that the unfolding equality of the guarded fixpoint implies that $D = D'
+(\later D \to \li D)$, and by unfolding $D'$ we see that this is equal to $\Nat
++ (D \times D) + \later (D \to \li D)$.
+
+
+\subsection{Term Semantics}\label{sec:term-interpretation}
+
+We can now give a semantics to the terms of the gradually-typed lambda calculus.
+The full definition is given in Figure \ref{fig:term-semantics}.
+%
+Much of the semantics is similar to a normal call-by-value denotational
+semantics: We interpret types as sets, and terms as functions. Contexts $\Gamma
+= x_1 \colon A_1, \dots, x_n \colon A_n$ is interpreted as the product
+$\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic type
+$\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The product
+type $A \times A'$ is interpreted as the product of the denotations of $A$ and
+$A'$. The function type $A \ra A'$ is interpreted as the set of functions from
+$\sem{A}$ to $\li (\sem {A'})$.
+
+The interpretation of a value $\hasty {\Gamma} V A$ is a function from
+$\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\hasty {\Gamma} M {{A}}$ is
+interpreted as a function from $\sem{\Gamma}$ to $\li \sem{A}$.
+
+Upcasts are pure, so an upcast $\upc c$ where $c : A \ltdyn A'$ denotes an
+ordinary function from $\sem{A}$ to $\sem{A'}$. Downcasts are effectful, so a
+downcast $\dnc c$ is interpreted as a morphism of error domains between
+$F\sem{A'}$ and $F\sem{A}$, which by definition of the adjunction is
+equivalently an ordinary function between $\sem{A'}$ and $UF\sem{A}$, i.e.,
+$\sem{A'} \to \li \sem{A}$.
+
+The semantics of the casts for a type precision derivation $c$ are defined by
+induction on $c$. The interesting cases are $\inat$, $\itimes$, and $\iarr$.
+Recall that $\Dyn$ is isomorphic to $\Nat\, + (\Dyn \times \Dyn) + \laterhs
+(\Dyn \to \li \Dyn)$ (say that the sum is left-associative).
+%
+For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $\Dyn
+\to \li \Nat$ and performs a case inspection on the sum type. If it's a natural
+number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
+the fact that a run-time error occurs.
+%
+For $\itimes$, the upcast is $\inr \circ \inl$, and the downcast performs a case
+inspection analogously to the natural number downcast.
+%
+% TODO explain this further
+For $\iarr$, the upcast is given by $\inr \circ \nxt$. The downcast performs a
+case inspection, and in the $\inr$ case, it uses a $\theta$ in order to gain
+access to the function under the $\later$.
+%
+% TODO write this out explicitly?
+
+% TODO function casts
+
+% The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule
+% for lambda that $\phasty {\Gamma, x : A_i} M {{A_o}}$, so the interpretation of
+% $M$ has type $(\sem{\Gamma} \times \sem{A_i})$ to $\li \sem{A_o}$. The
+% interpretation of lambda is thus a function (in the ambient type theory) that
+% takes a value $a$ representing the argument and applies it (along with $\gamma$)
+% as argument to the interpretation of $M$.
+
+
+\vspace{2ex}
+
+
+\begin{figure*}
+  \noindent Types:
+  \begin{align*}
+    \sem{\nat} &= \Nat \\
+    \sem{\dyn} &= \Dyn \\
+    \sem{A \times A'} &= \sem{A} \times \sem{A'} \\ 
+    \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
+  \end{align*}
+
+  % Contexts:
+
+  % TODO check these
+  \noindent Values and terms:
+  \begin{align*}
+    \sem{\zro}         &= \lambda \gamma . 0 \\
+    \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
+    \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
+    \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
+    \sem{V_f\, V_x}    &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
+    \sem{\err_B}       &= \lambda \gamma . \mho \\
+    %
+    % upcasts
+    \sem{\upc{\inat{V_n}}} &= \lambda \gamma . \inl\, \inl\, (\sem{V_n}\, \gamma) \\
+    \sem{\upc{\itimes{V_1, V_2}}} &= \lambda \gamma . \inl\, \inr\, (\sem{V_1}\, \gamma, \sem{V_2}\, \gamma) \\
+    \sem{\upc{\iarr{V_f}}} &= \lambda \gamma . \inr\, \nxt (\sem{V_f}\, \gamma) \\[2ex]
+    %
+    % downcasts
+    \sem{\dnc{\inat V_d}} &=
+      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+      \{ \inl\, (\inl\, n) \to \eta\, n
+         \alt \text{otherwise} \to \mho \} \\
+    \sem{\dnc{\itimes V_d}} &=
+      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+      \{ \inl\, (\inr\, (d_1, d_2)) \to \eta\, (d_1, d_2)
+         \alt \text{otherwise} \to \mho \} \\
+    \sem{\dnc{\iarr V_d}} &=
+      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+      \{ \inr\, \tilde{f} \to \theta\, (\lambda t. \eta (\tilde{f}_t))
+         \alt \text{otherwise} \to \mho \} \\
+    %
+    % TODO product and function
+    %
+    % \sem{\casedyn{V}{n} {M_{nat}} {\tilde{f}}{M_{fun}}} &=
+    % \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
+    % &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{nat}}(n) \\
+    % &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{fun}}(\tilde{f})
+    %
+    %
+    % \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
+    % \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
+  \end{align*}
+
+  \caption{Term semantics for the gradually-typed lambda calculus.}
+  \label{fig:term-semantics}
+\end{figure*}
