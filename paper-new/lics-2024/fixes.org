@@ -1,98 +1,336 @@
-> Figure 1:
-> * Where are variables?
-> * Transitivity is missing in type precision.
-> * There is a colon `:` missing in the conclusion of the downcast rule.
 
-We will fix these in the revision.
- 
-> line 325, what is this notation for upcast and downcast here? It doesn't
-  appear elsewhere in your paper.
+* > Figure 1:
+  > * Where are variables?
+  > * Transitivity is missing in type precision.
+  > * There is a colon `:` missing in the conclusion of the downcast rule.
 
-This appears to be a macro-related typo, which we will fix.
-  
-> line 373, what is c'?
+  We will fix these in the revision.
 
-It should be c.
-  
-> line 866-867, is • notation for composition of relations? If so, please say it.
-
-Yes, this is notation for composition of relations, and we will make this clear
-in the revision.
-
-> line 875, what are V_e and E_e? Should they be V_r and E_r?
-
-Yes; we will fix this.
-  
-> line 896, what is dyn?
-
-dyn here means an object modeling the dynamic type, i.e., D in Definition 5.8.
+** DONE 
   
 
-  
-> Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset
-> structure by ⊑? In domain theory, it is common to use ⊑ for the CPO structure
-> instead of ≤, so I think that switching this notation would be clearer.
+* > line 325, what is this notation for upcast and downcast here? It doesn't
+  > appear elsewhere in your paper.
 
-I know but ⊑ is also used in gradual typing so New-Licata went with
-the notation that would be clearer to gradual typing experts.
+  This appears to be a macro-related typo, which we will fix.
 
-> l470: When you write “1 -> U”, does it mean Delta(1) or
-> something?
+** DONE
 
-This is the term representing a runtime type error. There is a typo
-and it should be $1 -> UB$.
+   
+* > line 373, what is c'?
+
+  It should be c.
+
+** DONE
+
+   
+* > line 866-867, is • notation for composition of relations? If so, please say it.
+
+  Yes, this is notation for composition of relations, and we will make
+  this clear in the revision.
+
+** DONE
+
+   
+* > line 875, what are V_e and E_e? Should they be V_r and E_r?
+
+  Yes; we will fix this.
+
+** DONE
+
+   
+* > line 896, what is dyn?
+
+  dyn here means an object modeling the dynamic type, i.e., D in
+  Definition 5.8.
+
+** DONE 
+
+   
+* > Example 4.3: what is the reason for denoting the CPO-structure by ≤ and the poset
+  > structure by ⊑? In domain theory, it is common to use ⊑ for the CPO structure
+  > instead of ≤, so I think that switching this notation would be clearer.
+
+  I know but ⊑ is also used in gradual typing so New-Licata went with
+  the notation that would be clearer to gradual typing experts.
+
+** Eric: Nothing to change here.
+
+   
+* > l470: When you write “1 -> U”, does it mean Delta(1) or
+  > something?
+
+  This is the term representing a runtime type error. There is a typo
+  and it should be $1 -> UB$.
+
+**  Eric: I changed this to say that \mho : 1 \Rightarrow U (a natural transformation)
+
+   
+* > line 760, what is a step-0 intensional model? You explain it first in line 904,
+  > but it should be moved earlier.
+
+  A step-0 model is a category internal to the category of CBPV models.
+  We will make this clearer in the revision, possibly giving each of the
+  step-i models more informative names.
+
+**  Eric: I added the definition of a step-0 model
 
 
-> line 760, what is a step-0 intensional model? You explain it first in line 904,
-> but it should be moved earlier.
+* > The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional
+  > model", "step-3 intensional model", and "step-4 intensional model" are not very informative.
+  > In this context, they might even be misleading: in intensional model, computational steps are
+  > observable (lines 634-635). It would be better to rename these notions, and to instead
+  > use terminology like 'a CBPV model with ...-structure". It would also be good to add a
+  > final Definition of an intensional model, and be explicit what an intensional model
+  > ultimately entails to in this paper: is step-4 intensional model the main notion in
+  > this paper and is the role of step-n intensional models with n≤3 to help formulate
+  > that notion? Or is each notion interesting in its own right?
 
-A step-0 model is a category internal to the category of CBPV models.
-We will make this clearer in the revision, possibly giving each of the
-step-i models more informative names. 
-  
-> The names "step-0 intensional model", "step-1 intensional model", "step-2 intensional
-> model", "step-3 intensional model", and "step-4 intensional model" are not very informative.
-> In this context, they might even be misleading: in intensional model, computational steps are
-> observable (lines 634-635). It would be better to rename these notions, and to instead
-> use terminology like 'a CBPV model with ...-structure". It would also be good to add a
-> final Definition of an intensional model, and be explicit what an intensional model
-> ultimately entails to in this paper: is step-4 intensional model the main notion in
-> this paper and is the role of step-n intensional models with n≤3 to help formulate
-> that notion? Or is each notion interesting in its own right?
+  This is a good point, and we are considering renaming the step-i models to be more informative.
+  You are right that the main purpose of the step-n models with n≤3 is to build up in a modular
+  way the final definition of an intensional model (i.e., a step-4 model), and also to allow
+  for us to *construct* such a model as a sequence of smaller constructions from step-i to
+  step-(i+1).
 
-This is a good point, and we are considering renaming the step-i models to be more informative.
-You are right that the main purpose of the step-n models with n≤3 is to build up in a modular
-way the final definition of an intensional model (i.e., a step-4 model), and also to allow
-for us to *construct* such a model as a sequence of smaller constructions from step-i to
-step-(i+1).
+** TODO Eric: Think about renaming these.
 
-> Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that
-> the double categorical semantics of gradual type theory has not been given before.
-> However, this is already in Section 5 of "Call-by-name gradual type theory" by New
-> and Licata so it would be good to add a citation to that work.
 
-We will re-word this to clarify our meaning: using double categorical
-semantics for gradual type theory is not novel, what was missing from
-the prior work was an extension of the double categorical semantics
-from cartesian closed categories to CBPV models.
+* > Lines 512-514: the phrasing "We fill in this missing analysis now" suggests that
+  > the double categorical semantics of gradual type theory has not been given before.
+  > However, this is already in Section 5 of "Call-by-name gradual type theory" by New
+  > and Licata so it would be good to add a citation to that work.
+
+  We will re-word this to clarify our meaning: using double categorical
+  semantics for gradual type theory is not novel, what was missing from
+  the prior work was an extension of the double categorical semantics
+  from cartesian closed categories to CBPV models.
+
+** Eric : Added some additional explanantion.
 
 
 From Reviewer 1:
 
->  line 226, I guess GTT stands for Gradual Type Theory, but in the literature
->  it appears also as an acronym for Guarded Type Theory. Please carefully
->  introduce the acronyms you employ.
+* > line 226, I guess GTT stands for Gradual Type Theory, but 
+  > in the literature it appears also as an acronym for Guarded Type
+  > Theory. Please carefully introduce the acronyms you employ.
 
-Yes, on line 226 this stands for Gradual Type Theory, we will avoid
-this collision between acronyms in revisions.
+  Yes, on line 226 this stands for Gradual Type Theory, we will avoid
+  this collision between acronyms in revisions.
 
-> In Section 5.1 you start working with reflexive graph categories, but you only
-> use the ones where relations can be composed. I missed this detail in line 651
-> the first time I went through the paper, and I was so confused about your definition
-> of left- and right-representability and extensional model. Please make it more visible
-> that you always require the presence of a category of relations.
+** DONE
 
-We will improve the explanation in this section, in particular we will emphasize that we
-need relations to compose, i.e., we have a category whose objects are the same as the
-objects of V_f / E_f and whose morphisms are the value / computation relations respectively.
-We will also clarify the discussion of universally left/right-representable relations.
+
+* > In Section 5.1 you start working with reflexive graph categories, 
+  > but you only use the ones where relations can be composed. I
+  > missed this detail in line 651 the first time I went through the
+  > paper, and I was so confused about your definition of left- and
+  > right-representability and extensional model. Please make it more
+  > visible that you always require the presence of a category of
+  > relations.
+
+  We will improve the explanation in this section, in particular we
+  will emphasize that we need relations to compose, i.e., we have a
+  category whose objects are the same as the objects of V_f / E_f and
+  whose morphisms are the value / computation relations respectively.
+  We will also clarify the discussion of universally
+  left/right-representable relations.
+
+** TODO
+
+
+* line 71, remove "the"
+** DONE
+
+* line 175, maybe properly cite the work of Lennon-Bertrand et al.
+** TODO
+
+* line 214, remove "use to"
+** DONE
+
+* line 226, I guess GTT stands for Gradual Type Theory,
+  but in the literature it appears also as an acronym for Guarded Type
+  Theory. Please carefully introduce the acronyms you employ.
+** DONE (see above)
+
+
+* Figure 1:
+  + Where are variables?
+  + Transitivity is missing in type precision.
+  + There is a colon `:` missing in the conclusion of the downcast
+    rule.
+** DONE (see above)
+
+
+* line 311, ▷ should be ▷^k
+** DONE
+
+
+* line 325, what is this notation for upcast and downcast here? 
+  It doesn't appear elsewhere in your paper.
+** DONE (see above)
+
+
+* line 373, what is c'?
+** DONE (see above)
+
+
+* line 411, there is no V in the right hand side.
+** DONE
+
+
+* line 476, ⊢ should be a comma.
+** DONE
+
+
+* In line 509 you introduce the notation f ≤_{c,d} g, but in the
+  rest of the section you use different notation for it, e.g. in line
+  539 where ⊑_{c,UFc} should be ≤_{c,UFc}, or in line 552, where
+  ⊑^{c}_{r(B)} should be ≤_{c,r(B)}. And the various notations are all
+  employed multiple times. Please be more consistent.
+** TODO
+
+
+* As discussed already above, I find section 4.2 to be the weakest 
+  in the paper. Many statements are claimed without reference nor
+  supporting (counter)examples.
+** TODO improve this as discussed in the response
+
+
+* In Section 5.1 you start working with reflexive graph categories,
+  but you only use the ones where relations can be composed. I missed
+  this detail in line 651 the first time I went through the paper, and
+  I was so confused about your definition of left- and
+  right-representability and extensional model. Please make it more
+  visible that you always require the presence of a category of
+  relations. By the way, is this a variation of double category that
+  appeared before in the literature?
+** TODO (see above)
+
+
+* lines 655-656, ϕ should be g.
+** DONE (Eric: changed g to \phi)
+
+
+* line 664, "are functorial in the...". In the?
+** DONE
+
+
+
+* line 672, universally "right-"represents d
+** DONE
+
+
+* line 684, I can't parse the retraction property.
+** TODO fixed in the latex, but make sure it looks okay in the pdf.
+
+
+* lines 701-702, `u` and `d` are called `up` and `dn`.
+** TODO fixed in the latex, but make sure it looks okay in the pdf.
+
+
+
+* line 721, there is an `M` with the wrong font.
+** DONE
+
+
+* lines 720-727, you do not really say what changes in an intensional
+  model when we give up horizontal composition being a strict CBPV
+  morphism. You only say that now m_V and m_E are CBPV morphisms,
+  while before they where strict. So what changes concretely?
+
+** TODO incorporate this into the revision:
+  Composition is only a lax morphism because relation constructors
+  generally do not commute strongly strongly with relation
+  composition. Specifically, ->, U and F only laxly commute with
+  relation composition. This is already true of the action of the
+  function arrow on ordinary relations, and for U and F it is because
+  value type relations are composed by the ordinary relation
+  composition whereas the computation type relations are composed by
+  the free composition defined inductively at 1034.
+
+
+* line 760, what is a step-0 intensional model? You explain it first 
+  in line 904, but it should be moved earlier.
+** See above
+
+
+* line 792, notation ×^k, →^k and U^k is never mentioned in the 
+  main part of the paper, only in the appendix. If you show it here,
+  you should at least briefly say what it means, and maybe refer the
+  reader to the appendix for more details.
+** TODO introduce these functors in the body of the paper
+
+
+* line 806, the monoid is called P^{E}_{B} but in the next line (and
+  in other places) becomes simply P_B. While P^{V}_A seems to always
+  be called P_A. Please be consistent with your annotations.
+** DONE (but need to make sure this is fixed in the appendix as well)
+
+
+* line 832, `f` is missing in the end of the line.
+** DONE
+
+
+* line 866-867, is • notation for composition of relations? If so,
+  please say it.
+** DONE (See above)
+
+
+* line 875, what are V_e and E_e? Should they be V_r and E_r?
+** DONE (See above)
+
+
+* line 896, what is dyn?
+** Done (See above)
+
+
+
+* Section 5.3.1, when extending F with perturbations, you have `ℕ × P_A`
+  instead of simply `P_A`. Can you comment on why you have the
+  cartesian product with natural numbers here? What breaks if you do
+  not add it and simply take P_A? It is not immediately clear to me by
+  quickly reading through Appendix C.1.
+** TODO this should be better motivated by considering what happens
+   in the concrete setting.
+
+   See [[file:response.org::*Reviewer 1 Minor Questions][Response]].
+
+
+* line 939, `ρ^{L}Ud` should be `ρ^{L}_{Ud}`.
+** DONE
+
+
+* line 984, "bisimiarity"
+** DONE
+
+
+* line 1034-1040, this definition seems to indicate that your relations
+  are proof-relevant in the model. Is this the case?
+** TODO make clear that the relations using weak bisimilarity
+   are not truncated.
+
+
+* line 1058, remove "our version"
+** DONE
+
+
+* line 1152, `e_{ℕ}` should be `e_{ℕ}(n)`
+** DONE
+
+
+* line 1280, you should remark that weak bisimilarity is defined
+  coinductively by the rules.
+** TODO
+
+
+* line 1366, "transitivite"
+** DONE
+
+
+
+* line 1728, missing application of F on vertical arrows
+** TODO
+
+
+
+
