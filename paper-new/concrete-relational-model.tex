@@ -1,0 +1,396 @@
+\section{Towards a Full Relational Model}\label{sec:towards-relational-model}
+
+\eric{Wording?}
+In this section, we build on the ideas used in defining a term model with the
+goal of defining a model of the full gradually-typed lambda calculus, i.e., one
+that has constructs that model type and term precision.
+%
+% The purpose of this section is to motivate the need for many of the
+% seemingly complicated features of the abstract model introduced in
+% Section \ref{sec:abstract-models}.
+
+We will not give the complete description of the concrete model in this section;
+rather we seek to develop just enough to motivate the need for the non-standard
+aspects in the definitions of abstract model introduced in Section
+\ref{sec:abstract-models}. After defining the notion of abstract model and
+describing a modular way of constructing such a model, we will return in Section
+\ref{sec:concrete-model} to the complete construction of a concrete model.  
+
+\subsection{A First Attempt}
+
+% TODO should we frame this in terms of the idealized categorical models
+% i.e. say what the vertical and horizontal morphisms and squares are
+% introduced previously? What is the proper denotation of values versus terms?
+% We don't distinguish between value types and computation types in the syntax
+
+As a first attempt at giving a semantics to the term precision relation, we
+could try to model types as sets equipped with an ordering that models term
+precision. Since term precision is reflexive and transitive, and since we
+identify terms that are equi-precise, we could model value types as
+partially-ordered sets and values $\Gamma \vdash V : A$ as \emph{monotone}
+functions. Analogously, every error domain is now equipped with a partial
+ordering for which the error element is the bottom, and the map $\theta_B
+\laterhs B \to B$ is now required to be monotone. 
+%
+\footnote{This requires us to define a notion of ``later'' for partially-ordered
+sets $X$, but this can be done. The elements are simply ``later''-elements of
+$X$, and the ordering is the obvious one, i.e., two later-elements are related
+if after one time step, the elements they step to are related.}
+%
+% \eric{What about computation
+% types? We need to extend the error domains mentioned in the term model section
+% to also have an ordering such that the error element is the least element and
+% the theta morphism is monotone. Is this best introduced here, or should we wait
+% until after we have introduced the revised notions of abstract model?}
+%
+We model type precision $c : A \ltdyn B$ as a \emph{montone relation}, i.e., a
+relation $R$ that is upward-closed under the relation on $B$ and downward-closed
+under the relation on $A$. We could then model the term precision ordering $M
+\ltdyn N : A \ltdyn B$ as an ordering relation between the monotone functions
+denoted by $M$ and $N$.
+
+However, it turns out that modeling term precision is not as straightforward as
+one might hope. A first attempt might be to define an ordering $\semltbad$
+between $\li X$ and $\li Y$ that allows for computations that may take different
+numbers of steps to be related. We call this the \emph{step-insensitive error
+ordering}. The ordering is parameterized by an ordering relation $\le$ between
+$X$ and $Y$. The definition is by guarded recursion and is shown in Figure
+\ref{fig:step-insensitive-error-ordering}.
+
+\begin{figure*}
+    \begin{align*}
+        &\eta\, x \semltbad \eta\, y \text{ if } 
+            x \semlt y \\
+        %		
+        &\mho \semltbad l \\
+        %
+        &\theta\, \tilde{l} \semltbad \theta\, \tilde{l'} \text{ if } 
+            \later_t (\tilde{l}_t \semltbad \tilde{l'}_t) \\
+        %	
+        &\theta\, \tilde{l} \semltbad \mho \text{ if } 
+            \theta\, \tilde{l} = \delta^n(\mho) \text { for some $n$ } \\
+        %	
+        &\theta\, \tilde{l} \semltbad \eta\, y \text{ if }
+            (\theta\, \tilde{l} = \delta^n(\eta\, x))
+        \text { for some $n$ and $x : \ty{X}$ such that $x \le y$ } \\
+        %
+        &\mho \semltbad \theta\, \tilde{l'} \text { if } 
+            \theta\, \tilde{l'} = \delta^n(\mho) \text { for some $n$ } \\
+        %	
+        &\eta\, x \semltbad \theta\, \tilde{l'} \text { if }
+            (\theta\, \tilde{l'} = \delta^n (\eta\, y))
+        \text { for some $n$ and $y : \ty{Y}$ such that $x \le y$ }
+    \end{align*}
+    \caption{The step-insensitive error ordering.}
+    \label{fig:step-insensitive-error-ordering}
+\end{figure*}
+
+Two computations that immediately return $(\eta)$ are related if the returned
+values are related in the underlying ordering. The computation that errors
+$(\mho)$ is the least term in the ordering. If both sides step (i.e., both sides
+are $\theta$), then we allow one time step to pass and compare the resulting
+terms (this is where use the relation defined ``later'' and is why we employ
+guarded recursion to define the relation).
+%
+Lastly, if one side steps and the other immediately returns a value, then in
+order for these terms to be related, the side that steps must terminate with a
+value in some finite number of steps $n$, and that value must be related to
+the value returned by the other side. Likewise, if the LHS steps and the RHS
+immediately errors, then the LHS must eventually terminate with error.
+
+\subsection{Problem: Failure of Transitivity}
+
+The problem with the above definition is that the relation is \emph{not}
+transitive, which we explain below. We begin with a general ``no-go'' theorem
+about relations defined on the guarded lift monad:
+
+\begin{theorem}[No-go theorem for relations on $\li X$]\label{thm:no-go}
+    Let $R$ be a relation on the guarded lift monad satisfying the following
+    three properties:
+    \begin{enumerate}
+        \item Transitivity
+        
+        \item Congruence with respect to $\theta$: If $\later_t (\tilde{x}_t
+        \binrel{R} \tilde{y}_t)$, then $\theta(\tilde{x}) \binrel{R}
+        \theta(\tilde{y})$
+
+        \item Closure under delay on both sides: If $x \binrel{R} y$, then $x
+        \binrel{R} \delta y$ and $\delta x  \binrel{R} y$
+    \end{enumerate}
+
+    Then $R$ is trivial, i.e., $x \binrel{R} y$ for all $x : \li X$ and $y : \li
+    Y$.
+    
+\end{theorem}
+
+This theorem follows from two ``one-sided'' lemmas where we assume that the
+relation $R$ is closed under delay on the left (resp. right) and show that
+$(\fix\, \theta) \binrel{R} y$ for all $y$ (resp. $x \binrel{R} (\fix\, \theta)$
+for all $x$). These lemmas in turn are proved by \lob-induction.
+
+The theorem implies that the relation $\semltbad$ defined on $\li X \times \li
+Y$ is \emph{not} transitive whenever the underlying relation $\semlt$ on $X$ and
+$Y$ is not trivial, i.e., when there are $x_0$ and $y_0$ that are not related in
+the relation $\semlt$ on $X$ and $Y$. To show this, first observe that
+$\semltbad$ satisfies properties (2) and (3) in the above theorem. Congruence
+with respect to $\theta$ is immediate from the definition, while closure under
+delay can be proved using \lob-induction.
+% TODO the proof of this uses tick irrelevance
+Then since $x_0$ is not related to $y_0$, we have that $\eta\, x_0$ is not
+related to $\eta\, y_0$ in $\semltbad$, i.e., $\semltbad$ is non-trivial. But if
+it were transitive, then by the theorem, it would be trivial, a contradiction.
+Thus, we are able to refute transitivity of $\semltbad$ provided the underlying
+relation is non-trivial.
+
+% It can be shown (in Clocked Cubical Type
+% Theory) that if $R$ is a relation on $\li X$ satisfying three specific
+% properties, one of which is transitivity, then that relation is trivial. The
+% other two properties are that the relation is a congruence with respect to
+% $\theta$, and that the relation is closed under delays $\delta = \theta \circ
+% \nxt$ on either side. Since the above relation \emph{does} satisfy the other
+% two properties, we conclude that it must not be transitive.
+
+\eric{I'm not sure that this is a satisfactory explanation...}
+At this point, we could give up on transitivity and instead of requiring types
+to be modeled by partially-ordered sets, we could model types as sets equipped
+with a reflexive, anti-symmetric ordering relation. However, this is not
+convenient for carrying out the constructions necessary for proving graduality.
+For example, in order to model the UpL/UpR/DnL/DnR rules for casts, in the
+presence of transitivity it suffices to model simpler rules that do not build in
+composition. We can then use transitivity to derive the actual, more complicated
+rules we need to show.
+% For example, in order to model the UpL/UpR/DnL/DnR rules for casts, prior work
+% has taken as primitive simpler rules that do not involve composition, and then
+% uses transitivity to establish the more complicated versions that have
+% composition ``built in''.
+Without transitivity, however, this is not possible, and so we must instead take as
+primitive the more complicated versions of the cast rules. Then in the model, we
+must verify that those rules hold ``from scratch''. So, although this approach
+would suffice for proving graduality, it lacks the compositionality that we seek
+in a reusable framework for the semantics of gradual typing.
+
+%Because it is convenient to make use of transitive reasoning in proving graduality, ...
+We are therefore led to wonder whether we can formulate an ordering
+relation on $\li X \times \li Y$ that \emph{is} transitive. The theorem above
+tells us, however, that any such relation must either not be a congruence with
+respect to $\theta$, or must not be closed under delay.
+\footnote{Technically, we only need to give up closure under delay on \emph{one}
+side, as the above theorem requires $R$ to be closed on both sides. We could
+define two separate ``step-semi-sensitive'' relations on $\li X \times \li Y$,
+each closed under delays on the left and right respectively. The denotation of
+term precision would then involve the conjunction of those relations. We do not
+pursue this approach in this paper, because (1) it is not clear if the
+step-semi-sensitive relations would be transitive, and (2) we would need to
+reason about the two ordering relations separately for every pair of terms.}
+%
+We cannot forego the property of being a $\theta$-congruence, as without this we
+would not be able to prove properties of the relation using \lob-induction,
+e.g., that the monadic bind for the guarded lift monad is a \emph{monotone}
+function with respect to the ordering.
+%and moreover this would mean that $\theta$ would not be a monotone function.
+
+Thus, we choose to sacrifice closure under delays. That is, we will define an
+ordering relation that requires terms to be in ``lock-step''. In order for two
+computations to be related in this ordering, they must have the same stepping
+behavior (or the left-hand side must be an error). To deal with terms that take
+differing numbers of steps, we then define a separate relation called \emph{weak
+bisimilarity} that relates terms that are extensionally equal and may differ by
+a finite number of delays. Then, the semantics of the error ordering for the
+guarded lift monad will involve a combination of these two relations: the
+``closure'' of the lock-step error ordering under weak bisimilarity on both
+sides.
+% Although the combined relation will not be transitive (for the same reason that
+% $\semltbad$ is not transitive), this...
+This decomposition has the advantage that we can recover some transitive
+reasoning and push much of the reasoning about stepping to the margins of the
+development.
+
+% Doing so, we define a \emph{lock-step} error ordering, where roughly speaking,
+% in order for computations to be related, they must have the same stepping
+% behavior. We then formulate a separate relation, \emph{weak bisimilarity}, that
+% relates computations that are extensionally equal and may differ only in their
+% stepping behavior. % up to a finite number of \delta's
+% Finally, the semantics of term precision will involve a combination of these two
+% relations, a sort of closure of the lock-step ordering under weak bisimilarity
+% on both sides. This decomposition has the advantage that we can recover some
+% transitive reasoning and push the parts involving stepping to the margins of the
+% development.
+
+\subsection{Solution: Splitting into Two Relations}
+
+As mentioned, to recover transitive reasoning we will decompose the error
+ordering on the guarded lift monad into two separate relations. The first is the
+\emph{lock-step error-ordering} (also called the ``step-sensitive error
+ordering''), the idea being that two computations $l$ and $l'$ are related if
+they are in lock-step with regard to their intensional behavior, up to $l$
+erroring. This will be the partial ordering with which we equip the guarded lift monad.
+Figure \ref{fig:lock-step-error-ordering} gives the definition.
+
+\begin{figure}
+    \fbox{$l_1 \ltls l_2$}
+    \begin{align*}
+        &\eta\, x \ltls \eta\, y \text{ if } 
+            x \mathbin{R} y \\
+        %		
+        &\mho \ltls l' \\
+        %
+        &\theta\, \tilde{l} \ltls \theta\, \tilde{l'} \text{ if } 
+            \later_t (\tilde{l}_t \ltls \tilde{l'}_t)
+    \end{align*}
+    \caption{The lock-step error ordering.}
+    \label{fig:lock-step-error-ordering}
+\end{figure}
+
+When both sides are $\eta$, then we check that the returned values are related
+in $R$. The error term $\mho$ is below everything. Lastly, if both sides step
+(i.e., are a $\theta$) then we compare the resulting computations one time step
+later.
+%
+It is straightforward to prove using \lob-induction that this relation is
+reflexive, transitive and anti-symmetric given that the underyling relation $R$
+has those properties. The lock-step ordering is therefore the partial ordering
+we will associate with $\li X$.
+%
+We similarly define a heterogeneous version of this ordering between the lifts
+of two different types $X$ and $Y$, parameterized by a relation $R$ between $X$
+and $Y$.
+
+The second relation we define on the guarded lift monad is \emph{weak bisimilarity}.
+% For a type $X$, we define a relation on $\li X$, called ``weak bisimilarity",
+% written $l \bisim l'$. 
+Intuitively, we say $l \bisim l'$ if they are the same ``up to delays''.
+%
+Weak bisimilarity on $\li X$ is parameterized by an underlying relation $R$ on $X$
+and is defined by guarded fixpoint as shown in Figure \ref{fig:weak-bisimilarity}.
+
+\begin{figure}
+    \fbox{$l_1 \bisim l_2$}
+    \begin{align*}
+        &\mho \bisim \mho \\
+      %
+        &\eta\, x \bisim \eta\, y \text{ if } 
+          x \mathbin{R} y \\
+      %		
+        &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
+          \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+      %	
+        &\theta\, \tilde{x} \bisim \mho \text{ if } 
+          \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
+      %	
+        &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
+          (\theta\, \tilde{x} = \delta^n(\eta\, x))
+        \text { for some $n$ and $x : X$ such that $x \mathbin{R} y$ } \\
+      %
+        &\mho \bisim \theta\, \tilde{y} \text { if } 
+          \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
+      %	
+        &\eta\, x \bisim \theta\, \tilde{y} \text { if }
+          (\theta\, \tilde{y} = \delta^n (\eta\, y))
+        \text { for some $n$ and $y : X$ such that $x \mathbin{R} y$ }
+      \end{align*}
+    \caption{The weak bisimilarity relation.}
+    \label{fig:weak-bisimilarity}
+\end{figure}
+
+When both sides are $\eta$, then we ensure that the underlying values are
+bisimilar in the underlying bisimilarity relation on $A$. When one side is a
+$\theta$ and the other is $\eta x$ (i.e., one side steps), we stipulate that the
+$\theta$-term runs to $\eta y$ where $x$ is related to $y$. When one side is
+$\theta$ and the other $\mho$, we require that the $\theta$-term runs to $\mho$.
+If both sides step, then we allow one time step to pass and compare the
+resulting terms. This definition captures the intuition of two terms being
+related up to delays.
+
+It can be shown (by \lob-induction) that weak bisimilarity is reflexive and
+symmetric. We can also show that this relation is \emph{not} transitive. The
+argument is the same as that used to show that the step-insensitive error
+ordering $\semltbad$ described above is not transitive. In particular, we
+observe that weak bisimilarity is a congruence with respect to $\theta$, and we
+can show by $\lob$-induction that it is closed under delay on both sides. Thus,
+we may appeal to the no-go theorem as before.
+% We appeal to the no-go theorem given above
+
+% This issue of non-transitivity will be resolved when we consider the relation's \emph{globalization}.
+
+Now we can define the denotation of term precision for closed terms of type
+$\nat$ as follows:
+%
+\[ l_1 \leq l_2 := 
+  \Sigma_{l_1', l_2' \in \li \mathbb{N}}. l_1 \bisim l_1' \ltls l_2' \bisim l_2. \]
+
+\eric{Does this belong in the next section?}
+Importantly, we note that as with the original ordering $\semltbad$ defined at
+the beginning of this section, the relation just defined is not transitive
+(again as a result of the above no-go theorem). It may therefore seem that we
+have not solved the original issue we faced. In a sense, this is true. Indeed,
+we will need to weaken our abstract notion of categorical model to no longer
+require transitivity of term precision. On the other hand, we now have the
+ability to apply transitive reasoning when working with the lock-step ordering.
+This allows us to carry out complex proofs compositionally, a key goal of our
+framework.
+
+\subsection{Failure of the Cast Rules}
+
+We have seen how we can recover transitive reasoning by working with the
+lock-step error ordering. However, we cannot completely isolate the reasoning
+about steps from the reasoning about the ordering.
+% Unfortunately, by defining the partial order on the guarded lift monad to be
+% the lock-step error ordering, we introduce a new issue.
+In particular, the cast rules required for proving graduality no longer hold if
+interpreted using the lock-step ordering. The source of the problem is that the
+downcast from the dynamic type to a function takes a step, i.e., involves a
+$\theta$. Consider a simplified version of the DnL rule shown below (see Section
+\ref{sec:GTLC} for background):
+%
+\begin{mathpar}
+  \inferrule*{c : A \ltdyn B \and M \ltdyn_i N : B}
+             {\dnc{c}{M} \ltdyn_i N : c}
+\end{mathpar}
+%
+Suppose that $c$ is $\iarr \colon \dyntodyn \ltdyn\, \dyn$, and recall the
+definition of the semantics of a downcast given in Section
+\ref{sec:term-interpretation}. When we downcast $M$ from $dyn$ to $\dyntodyn$,
+semantically this will involve a $\theta$ because the value of type $D$ in the
+model will be a \emph{later} function $\tilde{f}$.
+%
+Thus, in order for the downcast to be related to the term $N$ in the lock-step
+error ordering on $\li (D \to \li D)$, the right-hand side must be of the form
+$\theta(\dots)$, and moreover, after one time step, the argument to $\theta$ on
+the LHS must be related to the argument of $\theta$ on the RHS. We can achieve
+this by inserting a ``delay'' on the right, i.e., wrapping the RHS in $\delta =
+\theta \circ \nxt$. Notice that this delay function is weakly bisimlar to the
+identity, and thus it will disappear when we apply the bisimilarity-closure
+construction described above. That is, this delay makes no difference in the
+extensional setting, but its presence is crucial in the intensional setting.
+
+% TODO Maybe show the correct form of the rule in the special case $c = inj-arr$.
+
+
+\subsection{Extending the Model to Higher-Order Types}
+
+% At this point, we could carry out the full construction of a concrete relational
+% model with these additional features. 
+
+So far, we have been focusing on closed terms of base type, for which the above
+techniques give a semantic interpretation of term precision. We now consider how
+to extend these constructions to \emph{all} types. In particular, in order to
+model higher-order data types (i.e., functions) we need to equip \emph{every}
+semantic object with not only a partial ordering relation but also a
+``bisimilarity'' relation that is reflexive and symmetric. We must similarly
+equip every object with a structured set of delays that can be inserted to
+ensure the appropriate cast rules hold at all higher-order types. For example,
+the upcast for a derivation $c \ra d$ involves the downcast corresponding to $c$
+and an upcast corresponding to $d$. We must be able to insert delays in a
+functorial manner to mimic the structure of the casts.
+
+For the sake of reusability and modularity, rather than carry out this
+construction in the concrete setting developed here, we will instead return to
+the abstract setting and adjust our definition of model to account for these
+requirements. We will break the construction into smaller steps and isolate the
+pieces that require the techniques of SGDT from those that do not. Then with
+this framework at our disposal, we will return to the construction of a concrete
+model in Section \ref{sec:concrete-model}.
+% , taking as a starting point the definitions introduced in the current section.
+
+% Thus in the next section we define revised notions of a model of
+% gradual typing based on the lessons learned in the present section. 
