@@ -41,7 +41,7 @@ transitivity and functoriality for the monotonicity rules.
 %
 We note the following two admissible principles: any two derivations
 $c,c' : A \ltdyn A'$ of the same fact are equivalent $c \equiv c'$ and
-for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn
+for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\,
 \dyn$. That is, $\dyn$ is the ``most dynamic'' type.
 
 \begin{figure}
@@ -74,9 +74,9 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn
   \begin{mathpar}
     \inferrule{}{r(A) : A \ltdyn A}\and
     \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
-    \inferrule{}{\iarr : D \ra D \ltdyn D}\and
-    \inferrule{}{\inat : \nat \ltdyn D}\and
-    \inferrule{}{\iarr : D \times D \ltdyn D}\and
+    \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn\, \dyn}\and
+    \inferrule{}{\inat \colon \nat \ltdyn\, \dyn}\and
+    \inferrule{}{\iarr \colon \dyn\, \times\, \dyn \ltdyn\, \dyn}\and
     \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}\and
     \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}\and
      r(A)c \equiv c\and
