@@ -181,24 +181,6 @@ these reusable mathematical principles from these explicit
 step-indexed to make formalization of realistic gradual languages
 tractible.
 
-%% \subsubsection{Classical Domain Models}
-
-%%  and gave a denotational
-%% model of this calculus using classical domain theory based on
-%% $\omega$-CPOs. This semantics has scaled up to an analysis of a
-%% dependently typed gradual calculus in \cite{asdf}. This meets our
-%% criterion of being a reusable mathematical theory, as general semantic
-%% theorems about gradual domains can be developed independent of any
-%% particular syntax and then reused in many different denotational
-%% models. However, it is widely believed that such classical domain
-%% theoretic techniques cannot be extended to model higher-order store, a
-%% standard feature of realistic gradually typed languages such as Typed
-%% Racket. Thus if we want a reusable mathematical theory of gradual
-%% typing that can scale to realistic programming languages, we need to
-%% look elsewhere to so-called ``step-indexed'' techniques.
-
-%% \subsubsection{Operational Reduction Proofs}
-
 
 % Alternative phrasing:
 \begin{comment}
@@ -235,45 +217,148 @@ corresponding technical reports having 50+ pages of proofs.
 % is tracked.
 \end{comment}
 
-An alternative approach, which we
-investigate in this paper, is provided by \emph{synthetic guarded
-domain theory}\cite{birkedal-mogelberg-schwinghammer-stovring2011}.
-The techniques of synthetic guarded domain theory allow us to
-internalize the step-indexed reasoning normally required in logical
-relations proofs of graduality, ultimately allowing us to specify the
-logical relation in a manner that looks nearly identical to a typical,
-non-step-indexed logical relation. In fact, guarded domain theory goes
-further, allowing us to define step-indexed \emph{denotational
-semantics} not just step-indexed relations, just as easily as
-constructing an ordinary set-theoretic semantics.
+An alternative approach, which we investigate in this paper, is provided by
+\emph{synthetic guarded domain
+theory}\cite{birkedal-mogelberg-schwinghammer-stovring2011}, abbreviated as
+SGDT. The techniques of SGDT allow us to internalize the step-indexed reasoning
+normally required in logical relations proofs of graduality, ultimately allowing
+us to specify the logical relation in a manner that looks nearly identical to a
+typical, non-step-indexed logical relation. In fact, guarded domain theory goes
+further, allowing us to define step-indexed \emph{denotational semantics} not
+just step-indexed relations, just as easily as constructing an ordinary
+set-theoretic semantics.
 
-In this paper, we develop an adequate denotational semantics that
-satisfies graduality and soundness of the equational theory of cast
-calculi using the techniques of SGDT.  Our longer-term goal is to
-mechanize these proofs in a reusable way in the Guarded Cubical Agda
-proof assistant, thereby providing a framework to more easily
-and conveniently prove that existing languages satisfy graduality and
-have sound equational theories. Moreover, the aim is for designers of
-new languages to utilize the framework to facilitate the design of new
-provably-correct gradually-typed languages with more complex features.
+In this paper, we develop an adequate denotational semantics that satisfies
+graduality and soundness of the equational theory of cast calculi using the
+techniques of SGDT.  
+
+\eric{This is out of date: the mechanization is now an artifact of the current paper.}
+Our longer-term goal is to mechanize these proofs in a reusable way in the
+Guarded Cubical Agda \cite{veltri-vezzosi2020} proof assistant, thereby
+providing a framework to more easily and conveniently prove that existing
+languages satisfy graduality and have sound equational theories.
+
+Moreover, the aim is for designers of new languages to utilize the framework to
+facilitate the design of new provably-correct gradually-typed languages with
+more complex features.
 
 \subsection{Contributions}
 
-The main contribution of this work is a categorical and denotational
-semantics for gradually typed langauges that models not just the term
-language but the graduality property as well.
+The main contribution of this work is a categorical and denotational semantics
+for gradually typed langauges that models not just the term language but the
+graduality property as well.
 \begin{enumerate}
-\item First, we give a simple abstract categorical model of Gradual Type Theory using CBPV double categories.
-\item Next, we modify this semantics to develop reflexive graph- and
-  double categorical models that abstract over the details of
-  step-indexed models, and provide a method for constructing such models.
-\item We instantiate the abstract construction to provide a concrete
-  semantics in informal guarded type theory.
-\item We prove that the resulting denotational model is
-  \emph{adequate} for the graduality property: a closed term precision
-  $M \ltdyn N : \nat$ has the expected semantics, that $M$ errors or
-  $M$ and $N$ have the same extensional behavior.
+\item First, we give a simple abstract categorical model of Gradual Type Theory
+using CBPV double categories.
+\item Next, we modify this semantics to develop reflexive graph- and double
+  categorical models that abstract over the details of step-indexed models, and
+  provide a method for constructing such models.
+\item We instantiate the abstract construction to provide a concrete semantics
+  in informal guarded type theory.
+\item We prove that the resulting denotational model is \emph{adequate} for the
+  graduality property: a closed term precision $M \ltdyn N : \nat$ has the
+  expected semantics, that $M$ errors or $M$ and $N$ have the same extensional
+  behavior.
 \end{enumerate}
+
+% TODO is it okay to refer to our cast calculus as *the* gradually-typed lambda
+% calculus?
+\eric{Where should we put the description of the big-step semantics and adequacy
+of the semantics? I can put it in the outline of the remainder of the paper, or
+I can postpone it until the subsequent section on the syntax of gradual typing.
+Adequacy seems to be better introduced there since at that point we have
+introduced the notion of term precision.}
+
+The remainder of the paper is organized as follows. In Section
+\ref{sec:technical-background}, we provide technical background on synthetic
+guarded domain theory and some important details about the specific variant of
+SGDT we employ as our ambient language.
+%
+In Section \ref{sec:GTLC}, we describe the syntactic theory of a standard cast
+calculus for gradual typing, which we also refer to as the \emph{gradually-typed
+lambda calculus}. We do this to establish a common syntax that will be
+interpreted into the models we subsequently construct.
+%
+In Section \ref{sec:cbpv}, we develop \emph{abstract} categorical
+semantics of gradually typed languages with the goal of organizing our
+construction of denotational models of gradual typing.
+%
+In Sections \ref{sec:concrete-term-model} and
+\ref{sec:towards-relational-model}, we set out to instantiate the abstract
+categorical semantics by constructing a concrete model in a suitable double
+category. First, in Section \ref{sec:concrete-term-model}, we give a concrete
+model for the \emph{terms} of the gradually-typed lambda calculus. This involves
+using the tools of SGDT to solve a domain equation to give the semantics of the
+dynamic type. We explain how to \emph{globalize} this model to obtain a model in
+the usual (non-guarded) dependent type theory. In the end, we obtain a
+\emph{big-step semantics} for closed terms of type $\nat$:
+%
+\[ \sem{\cdot} \colon (\cdot \vdash M : \nat) \to (\mathbb{N} \to (\sem{nat} + 1)) \] 
+%
+where a closed term $M$ of type $\nat$ denotes a \emph{function} from
+$\mathbb{N}$ to $\sem{nat} + 1$ which given input $i$ returns $\inl\, m$ if $M$
+terminates with value $m$ in $i$ or fewer steps, and returns $\inr\, *$ if $M$
+fails to terminate in $i$ or fewer steps. This is already a significant result,
+as it serves to verify the $\beta$ and $\eta$ laws of the equational theory.
+%
+Then in Section \ref{sec:towards-relational-model}, we attempt to extend the
+methodology of the previous section to give a denotational semantics that models
+the relational theory of the gradually-typed lambda calculus in addition to the
+terms. Interesting issues arise here arising from the \emph{intensional} nature
+of SGDT, that is, the fact that \emph{steps are observable}. We then develop
+novel solutions to address these issues. We do not complete the construction of
+the concrete relational model in this section. Instead, we choose to reformulate
+the definition of abstract categorical model to take into account the solutions
+to the issues discussed here.
+
+% Interesting issues arise here, and the novel solutions we employ to
+% address these issues inform the definition of the abstract models introduced in
+% the subsequent section.
+
+With the lessons from the concrete setting at our disposal, in Section
+\ref{sec:abstract-models}, we describe revised categorical models of gradual
+typing. We actually introduce two separate notions of model: \emph{intensional},
+where the stepping behavior of terms is observable, and \emph{extensional},
+where we consider terms that differ only in their stepping behavior to be equal.
+The extensional model is what we will ultimately use to interpret the syntax and
+relational axioms of gradually-typed languages. The principal benefit of the
+notion of intensional model is that it admits more compositional reasoning. It
+therefore serves as a convenient intermediate setting that enjoys many of the
+benefits of the usual double-categorical models of gradual typing.
+% We give the definition of intensional model as a sequence of steps each
+% building on the previous. 
+We then outline how to build an extensional model in a sequence of steps beginning
+with a significantly simpler ``input'' model. The construction proceeds in
+steps, first building up an intensional model, and then from there extracting an
+extensional model.
+%We are able to leverage the compositional reasoning afforded by the intensional
+%model to more easily meet the requirements of an extensional model.
+This gives us a more tractable way to construct models.
+Moreover, the abstract definitions and constructions in the definitions make no
+mention of SGDT, so that the places where SGDT techniques are employed are
+conveniently limited to the data passed as input to the model construction.
+%
+%In addition to organizing and facilitating the construction of a model, the abstract constructions are described independently of SGDT
+%
+%we also isolate the parts of the definition the notion of model without any explicit mention of SGDT.
+%
+Then in Section \ref{sec:concrete-model} we return to the task of defining a
+concrete model. Equipped now with the abstract constructions of the previous
+section, we provide only the data needed as an input to the construction. Many
+of the relevant definitions have already been introduced in Section
+\ref{sec:towards-relational-model} and can be provided to the construction
+as-is; the remainder of the necessary data is defined in this section.
+%
+We end the section by sketching a proof of the \emph{adequacy} of our concrete
+model with respect to graduality.
+%
+Finally, in Section \ref{sec:discussion} we conclude with discussion: comparison
+to related work, the mechanization of our concrete model in Guarded Cubical
+Agda, and directions for future research.
+
+
+
+
 
 %% \subsection{Outline of Remainder of Paper}
 
