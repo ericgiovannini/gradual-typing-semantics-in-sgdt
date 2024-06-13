@@ -1,20 +1,31 @@
 \section{A Concrete Term Model}\label{sec:concrete-term-model}
 
-In this section, we use SGDT to give a set-theoretic denotational semantics to
-the terms of the gradually-typed lambda calculus introduced in Section
-\ref{sec:GTLC}. This serves two purposes: First, it is a simple setting in which
-to employ the tools of SGDT. Second, constructing this semantic model
-establishes the validity of the beta and eta principles for the gradually-typed
-lambda calculus.
+\eric{Wording?}
+The principal goal of the next two sections is to ground the refined notions of
+abstract model of gradual typing described in Section \ref{sec:abstract-models}
+in a concrete setting. We aim to introduce the key issues whose resolutions in
+the concrete setting inspire the refined definitions of abstract model.
+
+In the present section, we use the techniques of SGDT to give a set-theoretic
+denotational semantics to the terms of the gradually-typed lambda calculus
+introduced in Section \ref{sec:GTLC}. This serves two important purposes: First,
+it acts as a warm-up for employing the tools of SGDT to define a denotational
+semantics. Second, constructing this semantic model establishes the validity of
+the $\beta$ and $\eta$ principles for the gradually-typed lambda calculus. It
+also acts as a stepping stone into the next section, where we extend the
+techniques employed here to accommodate the type and term precision orderings of
+the gradually-typed lambda calculus.
 %
-In Section \ref{sec:towards-relational-model}, we will discuss how to extend the
-denotational semantics to accommodate the type and term precision orderings.
+% In Section \ref{sec:towards-relational-model}, we will discuss how to extend the
+% denotational semantics to accommodate the type and term precision orderings. 
+
+%necessitate the abstract components that are found in the definition of the model.
 
 %\subsection{Semantic Constructions}\label{sec:domain-theory}
 
-We begin by discussing the objects of the model into which we will embed
-the types and terms of the gradually-typed lambda calculus. Recall that we are
-working in an ambient guarded type theory (see Section
+We begin by discussing the objects of the model into which we will embed the
+types and terms of the gradually-typed lambda calculus. Recall that we are
+working informally in a guarded type theory with clocks and ticks (see Section
 \ref{sec:technical-background}) for details. The constructions in this section
 will make significant use of the primitives of guarded type theory.
 
@@ -39,11 +50,11 @@ diverging computation in our syntax. Therefore, it will be necessary to track
 the ``steps'' taken by a term; we can regard this as a way of intensionally
 modelling \emph{partiality}.
 
-The semantic objects modelling computations will be sets $B$ that are
-equipped with a distinguished error element $\mho_B$ and a map $\theta_B \colon
-\laterhs B \to B$. We call such sets \emph{error domains}. A \emph{morphism of
-error domains} from $B_1$ to $B_2$ is a function $\phi$ on the underlying sets
-that respects the error and $\theta$ maps, i.e., for which 
+The semantic objects modelling computations will be sets $B$ that are equipped
+with a distinguished error element $\mho_B$ and a map $\theta_B \colon \laterhs
+B \to B$. We call such sets \emph{error domains}. A \emph{morphism of error
+domains} from $B_1$ to $B_2$ is a function $\phi$ on the underlying sets that
+respects the error and $\theta$ maps, i.e., for which 
 %
 (1) $\phi(\mho_{B_1}) = \mho_{B_2}$ and
 %
@@ -74,14 +85,14 @@ lift monad} described in \cite{mogelberg-paviotti2016}. Here, we augment the
 guarded lift monad to accommodate the additional effect of failure. For a type
 $A$, we define the \emph{guarded lift monad with failure} $\li A$, which we will
 just call the \emph{guarded lift monad} or simply the \emph{lift monad}.
-
+%
 \begin{align*}
-  \li A &:= \\
-  &\eta \colon A \to \li A \\
-  &\mho \colon \li A \\
-  &\theta \colon \laterhs (\li A) \to \li A
+  \li A :=\quad
+  &\alt \eta \colon A \to \li A \\
+  &\alt \mho \colon \li A \\
+  &\alt \theta \colon \laterhs (\li A) \to \li A
 \end{align*}
-
+%
 Unless otherwise mentioned, all constructs involving $\later$ or $\fix$ are
 understood to be with respect to a fixed clock $k$. So for the above, we really
 have for each clock $k$ a type $\li^k A$ with respect to that clock.
@@ -149,29 +160,30 @@ recursion. Specifically, consider the parameterized inductive type
 %
 Now consider the function $f$ defined by
 %
-\[ \lambda (\tilde{D} \colon \laterhs \type) . D' (\later_t (\tilde{D}_t \to (\li (\tilde{D}_t)))). \]
+\[ \lambda (\tilde{D} \colon \laterhs \type) . D' (\laterhs_t (\tilde{D}_t \to (\li (\tilde{D}_t)))). \]
 %
 Recall that the tick $t : \tick$ is evidence that time has passed, and since
 $\tilde{D}$ has type $\later \type$, i.e. $\tick \to \type$, then $\tilde{D}_t$
 has type $\type$.
-
-Now, define 
+%
+Finally, define 
 \[ D := \fix f. \]
 %
 % TODO refer to technical background?
 Observe that the unfolding equality of the guarded fixpoint implies that $D = D'
-(\later D \to \li D)$, and by unfolding $D'$ we see that this is equal to $\Nat
-+ (D \times D) + \later (D \to \li D)$.
+(\later D \to \li D)$, and by the definition of $D'$ as a least fixpoint we see
+that this is equal to $\Nat + (D \times D) + \later (D \to \li D)$.
 
 
 \subsection{Term Semantics}\label{sec:term-interpretation}
 
 We can now give a semantics to the terms of the gradually-typed lambda calculus.
-The full definition is given in Figure \ref{fig:term-semantics}.
+The definition of the interpretation of types and cast terms is given in Figure
+\ref{fig:term-semantics}.
 %
 Much of the semantics is similar to a normal call-by-value denotational
 semantics: We interpret types as sets, and terms as functions. Contexts $\Gamma
-= x_1 \colon A_1, \dots, x_n \colon A_n$ is interpreted as the product
+= x_1 \colon A_1, \dots, x_n \colon A_n$ are interpreted as the product
 $\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic type
 $\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The product
 type $A \times A'$ is interpreted as the product of the denotations of $A$ and
@@ -191,11 +203,11 @@ $\sem{A'} \to \li \sem{A}$.
 
 The semantics of the casts for a type precision derivation $c$ are defined by
 induction on $c$. The interesting cases are $\inat$, $\itimes$, and $\iarr$.
-Recall that $\Dyn$ is isomorphic to $\Nat\, + (\Dyn \times \Dyn) + \laterhs
-(\Dyn \to \li \Dyn)$ (say that the sum is left-associative).
+Recall that $D$ is isomorphic to $\Nat\, + (D \times D)\, + \laterhs (D \to \li
+D)$ (say that the sum is left-associative).
 %
-For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $\Dyn
-\to \li \Nat$ and performs a case inspection on the sum type. If it's a natural
+For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $D
+\to \li D$ and performs a case inspection on the sum type. If it is a natural
 number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
 the fact that a run-time error occurs.
 %
@@ -209,7 +221,7 @@ access to the function under the $\later$.
 %
 % TODO write this out explicitly?
 
-% TODO function casts
+% TODO should we include function casts?
 
 % The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule
 % for lambda that $\phasty {\Gamma, x : A_i} M {{A_o}}$, so the interpretation of
@@ -219,14 +231,13 @@ access to the function under the $\later$.
 % as argument to the interpretation of $M$.
 
 
-\vspace{2ex}
 
 
 \begin{figure*}
   \noindent Types:
   \begin{align*}
     \sem{\nat} &= \Nat \\
-    \sem{\dyn} &= \Dyn \\
+    \sem{\dyn} &= D \\
     \sem{A \times A'} &= \sem{A} \times \sem{A'} \\ 
     \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
   \end{align*}
@@ -234,14 +245,14 @@ access to the function under the $\later$.
   % Contexts:
 
   % TODO check these
-  \noindent Values and terms:
+  \noindent Casts:
   \begin{align*}
-    \sem{\zro}         &= \lambda \gamma . 0 \\
-    \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
-    \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
-    \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
-    \sem{V_f\, V_x}    &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
-    \sem{\err_B}       &= \lambda \gamma . \mho \\
+    % \sem{\zro}         &= \lambda \gamma . 0 \\
+    % \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
+    % \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
+    % \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
+    % \sem{V_f\, V_x}    &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
+    % \sem{\err_B}       &= \lambda \gamma . \mho \\
     %
     % upcasts
     \sem{\upc{\inat{V_n}}} &= \lambda \gamma . \inl\, \inl\, (\sem{V_n}\, \gamma) \\
@@ -277,3 +288,11 @@ access to the function under the $\later$.
   \caption{Term semantics for the gradually-typed lambda calculus.}
   \label{fig:term-semantics}
 \end{figure*}
+
+
+\eric{TODO: big-step semantics via clock quantification}
+
+\subsection{A Big-Step Term Semantics}
+
+
+
