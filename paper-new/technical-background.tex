@@ -1,4 +1,4 @@
-\section{Background on Guarded Domain Theory}\label{sec:technical-background}
+\section{Background on Synthetic Guarded Domain Theory}\label{sec:technical-background}
 
 % Modeling the dynamic type as a recursive sum type?
 % Observational equivalence and approximation?
@@ -107,11 +107,11 @@ We will use a tilde to denote a term of type $\later A$, e.g., $\tilde{M}$.
 % TODO later is an applicative functor, but not a monad
 
 There is a \emph{guarded fixpoint} operator
-
+%
 \[
   \fix : \forall T, (\later T \to T) \to T.
 \]
-
+%
 That is, to construct a term of type $T$, it suffices to assume that we have access to
 such a term ``later'' and use that to help us build a term ``now''.
 This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
@@ -145,14 +145,28 @@ dependence.
 
 % TODO next as a function that ignores its input tick argument?
 
+% TODO include a figure with some of the rules for ticks
+
 The rules for tick abstraction and application are similar to those of ordinary
-$\Pi$ types. In particular, if in a context $\Gamma, t : \tick\, k$ we have that $M$
-has type $A$, then in context $\Gamma$ we have $\lambda t.M$ has type $\later^k
-A$. % TODO dependent version?
+$\Pi$ types. A context now consists of ordinary variables $x : A$ as well as
+tick variables $t : \tick\, k$. The presence of the tick variable $t$ in context
+$\Gamma, (t : \tick\, k), \Gamma'$ intuitively means that the values of the
+variables in $\Gamma$ arrive ``first'', then one time step occurs on $k$, and
+then the values of the variables in $\Gamma'$ arrive.
+
+The abstraction rule for ticks states that if in context $\Gamma, t : \tick\, k$
+the term $M$ has type $A$, then in context $\Gamma$ the term $\lambda t.M$ has
+type $\later^k_t A$. % TODO dependent version?
 %
 Conversely, if we have a term $M$ of type $\later^k A$, and we have available in
 the context a tick $t' : \tick\, k$, then we can apply the tick to $M$ to get a
-term $M[t'] : A[t'/t]$. % TODO restriction on tick application
+term $M[t'] : A[t'/t]$. However, there is an important restriction on when we
+are allowed to apply ticks. In order to apply $M$ to tick $t$, $M$ must be
+well-typed in the prefix of the context occurring before the tick $t$. That is,
+all variables mentioned in $M$ must be available before $t$. This ensures that
+we cannot, for example, define a term of type $\later \laterhs A \to\, \laterhs
+A$ via repeated tick application.
+% TODO restriction on tick application
 %
 For the sake of brevity, we will also write tick application as $M_t$.
 
