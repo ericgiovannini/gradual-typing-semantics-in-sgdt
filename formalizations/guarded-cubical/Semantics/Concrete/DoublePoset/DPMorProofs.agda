@@ -36,17 +36,17 @@ private
     ℓA ℓ'A ℓ''A ℓA' ℓ'A' ℓ''A' : Level
     ℓB ℓ'B ℓ''B ℓB' ℓ'B' ℓ''B' : Level
     ℓC ℓ'C ℓ''C ℓC' ℓ'C' ℓ''C' ℓΓ ℓ'Γ ℓ''Γ : Level
-    Γ :  DoublePoset ℓΓ ℓ'Γ ℓ''Γ
-    A :  DoublePoset ℓA ℓ'A ℓ''A
-    A' : DoublePoset ℓA' ℓ'A' ℓ''A'
-    B :  DoublePoset ℓB ℓ'B ℓ''B
-    B' : DoublePoset ℓB' ℓ'B' ℓ''B'
-    C :  DoublePoset ℓC ℓ'C ℓ''C
-    C' : DoublePoset ℓC' ℓ'C' ℓ''C'
+    Γ :  PosetBisim ℓΓ ℓ'Γ ℓ''Γ
+    A :  PosetBisim ℓA ℓ'A ℓ''A
+    A' : PosetBisim ℓA' ℓ'A' ℓ''A'
+    B :  PosetBisim ℓB ℓ'B ℓ''B
+    B' : PosetBisim ℓB' ℓ'B' ℓ''B'
+    C :  PosetBisim ℓC ℓ'C ℓ''C
+    C' : PosetBisim ℓC' ℓ'C' ℓ''C'
 
 
 rel-transport-≤ :
-  {A B : DoublePoset ℓ ℓ' ℓ''} ->
+  {A B : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
   {a1 a2 : ⟨ A ⟩} ->
   rel-≤ A a1 a2 ->
@@ -58,7 +58,7 @@ rel-transport-≤ {A} {B} eq {a1} {a2} a1≤a2 =
   a1≤a2
 
 rel-transport-≈ :
-  {A B : DoublePoset ℓ ℓ' ℓ''} ->
+  {A B : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
   {a1 a2 : ⟨ A ⟩} ->
   rel-≈ A a1 a2 ->
@@ -69,7 +69,7 @@ rel-transport-≈ {A} {B} eq {a1} {a2} a1≤a2 =
     (transport-filler (λ j → ⟨ eq j ⟩) a2 i))
   a1≤a2
 
-rel-transport-sym-≤ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
+rel-transport-sym-≤ : {A B : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
   {b1 b2 : ⟨ B ⟩} ->
   rel-≤ B b1 b2 ->
@@ -78,7 +78,7 @@ rel-transport-sym-≤ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
     (transport (λ i → ⟨ sym eq i ⟩) b2)
 rel-transport-sym-≤ eq {b1} {b2} b1≤b2 = rel-transport-≤ (sym eq) b1≤b2
 
-rel-transport-sym-≈ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
+rel-transport-sym-≈ : {A B : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
   {b1 b2 : ⟨ B ⟩} ->
   rel-≈ B b1 b2 ->
@@ -87,27 +87,27 @@ rel-transport-sym-≈ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
     (transport (λ i → ⟨ sym eq i ⟩) b2)
 rel-transport-sym-≈ eq {b1} {b2} b1≤b2 = rel-transport-≈ (sym eq) b1≤b2
 
-mon-transport-domain-≤ : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
+mon-transport-domain-≤ : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
-  (f : DPMor A C) ->
+  (f : PBMor A C) ->
   {b1 b2 : ⟨ B ⟩} ->
   (rel-≤ B b1 b2) ->
   rel-≤ C
-    (DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b1))
-    (DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b2))
+    (PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b1))
+    (PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b2))
 mon-transport-domain-≤ eq f {b1} {b2} b1≤b2 =
-  DPMor.isMon f (rel-transport-≤ (sym eq) b1≤b2)
+  PBMor.isMon f (rel-transport-≤ (sym eq) b1≤b2)
 
-mon-transport-domain-≈ : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
+mon-transport-domain-≈ : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
-  (f : DPMor A C) ->
+  (f : PBMor A C) ->
   {b1 b2 : ⟨ B ⟩} ->
   (rel-≈ B b1 b2) ->
   rel-≈ C
-    (DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b1))
-    (DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b2))
+    (PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b1))
+    (PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b2))
 mon-transport-domain-≈ eq f {b1} {b2} b1≤b2 =
-  DPMor.pres≈ f (rel-transport-≈ (sym eq) b1≤b2)
+  PBMor.pres≈ f (rel-transport-≈ (sym eq) b1≤b2)
 
 
 module ClockedProofs (k : Clock) where
@@ -115,35 +115,35 @@ module ClockedProofs (k : Clock) where
   open import Semantics.LockStepErrorOrdering k
   open import Semantics.WeakBisimilarity k
   open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
-  open LiftDoublePoset
+  open LiftPosetBisim
   
 
   private
     ▹_ : Type ℓ → Type ℓ
     ▹_ A = ▹_,_ k A
 
-  ret-monotone-het-≤ : {A A' : DoublePoset ℓA ℓ'A ℓ''A} ->
+  ret-monotone-het-≤ : {A A' : PosetBisim ℓA ℓ'A ℓ''A} ->
     (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
     TwoCell rAA' (LiftRelation._≾_ _ _ rAA') ret ret
   ret-monotone-het-≤ {A = A} {A' = A'} rAA' = λ a a' a≤a' →
     LiftRelation.Properties.ord-η-monotone ⟨ A ⟩ ⟨ A' ⟩ rAA' a≤a'
 
-  ret-monotone-≤ : {A : DoublePoset ℓA ℓ'A ℓ''A} ->
+  ret-monotone-≤ : {A : PosetBisim ℓA ℓ'A ℓ''A} ->
     (a a' : ⟨ A ⟩) ->
     rel-≤ A a a' ->
     rel-≤ (𝕃 A) (ret a) (ret a')
   ret-monotone-≤ {A = A} = λ a a' a≤a' →
     LiftRelation.Properties.ord-η-monotone ⟨ A ⟩ ⟨ A ⟩ _ a≤a'
 
-  ret-monotone-≈ : {A : DoublePoset ℓA ℓ'A ℓ''A} ->
+  ret-monotone-≈ : {A : PosetBisim ℓA ℓ'A ℓ''A} ->
     (a a' : ⟨ A ⟩) ->
     rel-≈ A a a' ->
     rel-≈ (𝕃 A) (ret a) (ret a')
   ret-monotone-≈ {A = A} = λ a a' a≤a' → {!!}
     where
-      module LBisim = Bisim (⟨ A ⟩ ⊎ Unit) (rel-≈ (A ⊎p UnitDP))
+      module LBisim = Bisim (⟨ A ⟩ ⊎ Unit) (rel-≈ (A ⊎p UnitPB))
 
-  ext-monotone-het-≤ : {A A' : DoublePoset ℓA ℓ'A ℓ''A} {B B' : DoublePoset ℓB ℓ'B ℓ''B}
+  ext-monotone-het-≤ : {A A' : PosetBisim ℓA ℓ'A ℓ''A} {B B' : PosetBisim ℓB ℓ'B ℓ''B}
     (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
     (rBB' : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type ℓR2) ->
     (f :  ⟨ A ⟩  -> ⟨ (𝕃 B) ⟩) ->
@@ -157,10 +157,10 @@ module ClockedProofs (k : Clock) where
       (sym (λ i -> LiftBB'.unfold-≾ i (unfold-ext f i la) (unfold-ext f' i la')))
       (fixed la la' (transport (λ i → LiftAA'.unfold-≾ i la la') la≤la'))
     where
-      _≾'LA_  = LiftDoublePoset._≾'_ A
-      _≾'LA'_ = LiftDoublePoset._≾'_ A'
-      _≾'LB_  = LiftDoublePoset._≾'_ B
-      _≾'LB'_ = LiftDoublePoset._≾'_ B'
+      _≾'LA_  = LiftPosetBisim._≾'_ A
+      _≾'LA'_ = LiftPosetBisim._≾'_ A'
+      _≾'LB_  = LiftPosetBisim._≾'_ B
+      _≾'LB'_ = LiftPosetBisim._≾'_ B'
 
       module LiftAA' = LiftRelation ⟨ A ⟩ ⟨ A' ⟩ rAA'
       module LiftBB' = LiftRelation ⟨ B ⟩ ⟨ B' ⟩ rBB'
@@ -192,12 +192,12 @@ module ClockedProofs (k : Clock) where
             (transport (λ i -> LiftAA'.unfold-≾ i (lx~ t) (ly~ t)) (la≤la' t)))
 
   --temporarily placed here
-  rel-≈L : (A : DoublePoset ℓA ℓ'A ℓ''A) → L ⟨ A ⟩ → L ⟨ A ⟩ → Type (ℓ-max ℓA ℓ''A)
+  rel-≈L : (A : PosetBisim ℓA ℓ'A ℓ''A) → L ⟨ A ⟩ → L ⟨ A ⟩ → Type (ℓ-max ℓA ℓ''A)
   rel-≈L A = LBsim._≈_
     where
       module LBsim = Bisim ⟨ A ⟩ (rel-≈ A)
   
-  extL-monotone-≈ : {A : DoublePoset ℓA ℓ'A ℓ''A} {B : DoublePoset ℓB ℓ'B ℓ''B} ->
+  extL-monotone-≈ : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} ->
     (f g : ⟨ A ⟩ -> L ⟨ B ⟩) ->
     TwoCell (rel-≈ A) (rel-≈L B) f g ->
     (la la' : L ⟨ A ⟩) ->
@@ -265,7 +265,7 @@ module ClockedProofs (k : Clock) where
       
   
 
-  ext-monotone-≈ : {A : DoublePoset ℓA ℓ'A ℓ''A} {B : DoublePoset ℓB ℓ'B ℓ''B} ->
+  ext-monotone-≈ : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} ->
     (f g : ⟨ A ⟩ -> ⟨ (𝕃 B) ⟩) ->
     TwoCell (rel-≈ A) (rel-≈ (𝕃 B)) f g ->
     TwoCell (rel-≈ (𝕃 A)) (rel-≈ (𝕃 B)) (ext f) (ext g)
@@ -316,21 +316,21 @@ module ClockedProofs (k : Clock) where
       eq2 lb = sym (L℧ALA⊎Unit-iso B .rightInv lb)
       
 
-      f∘≈g∘ : TwoCell (rel-≈ A) (rel-≈ (𝕃 B)) f g -> TwoCell (rel-≈ (A ⊎p UnitDP)) (rel-≈L (B ⊎p UnitDP)) (L℧→LB ∘ f*) (L℧→LB ∘ g*)
+      f∘≈g∘ : TwoCell (rel-≈ A) (rel-≈ (𝕃 B)) f g -> TwoCell (rel-≈ (A ⊎p UnitPB)) (rel-≈L (B ⊎p UnitPB)) (L℧→LB ∘ f*) (L℧→LB ∘ g*)
       f∘≈g∘ f≈g (inl a) (inl a') a≈a' = f≈g a a' (lower a≈a')
       f∘≈g∘ f≈g (inr tt) (inr tt) a≈a' = transport
-        (λ i -> rel-≈L (B ⊎p UnitDP) (unfold-L℧→L B (~ i) ℧) (unfold-L℧→L B (~ i) ℧))
-        (LBisim.Reflexive.≈-refl (reflexive-≈ (B ⊎p UnitDP)) (η (inr tt)))
+        (λ i -> rel-≈L (B ⊎p UnitPB) (unfold-L℧→L B (~ i) ℧) (unfold-L℧→L B (~ i) ℧))
+        (LBisim.Reflexive.≈-refl (reflexive-≈ (B ⊎p UnitPB)) (η (inr tt)))
         where
-          module LBisim = Bisim (⟨ B ⟩ ⊎ Unit) (rel-≈ (B ⊎p UnitDP))
+          module LBisim = Bisim (⟨ B ⟩ ⊎ Unit) (rel-≈ (B ⊎p UnitPB))
       
       monotone-ext' :
         ▹ ((la la' : ⟨ 𝕃 A ⟩) -> rel-≈ (𝕃 A) la la' ->
           rel-≈ (𝕃 B) (ext f la) (ext g la')) ->
           (la la' : ⟨ 𝕃 A ⟩) -> rel-≈ (𝕃 A) la la' ->
           rel-≈ (𝕃 B) (ext f la) (ext g la')
-      monotone-ext' IH la la' la≈la' = transport (λ i → rel-≈L (B ⊎p UnitDP) (L℧→LB (eq la (~ i))) (L℧→LB (eq1 la' (~ i))))
-                                                           (transport (λ i → rel-≈L (B ⊎p UnitDP) (eq2 (extL (L℧→LB ∘ f*) (L℧→LA la)) i) (eq2 (extL (L℧→LB ∘ g*) (L℧→LA la')) i))
+      monotone-ext' IH la la' la≈la' = transport (λ i → rel-≈L (B ⊎p UnitPB) (L℧→LB (eq la (~ i))) (L℧→LB (eq1 la' (~ i))))
+                                                           (transport (λ i → rel-≈L (B ⊎p UnitPB) (eq2 (extL (L℧→LB ∘ f*) (L℧→LA la)) i) (eq2 (extL (L℧→LB ∘ g*) (L℧→LA la')) i))
                                                              (extL-monotone-≈ (L℧→LB ∘ f*) (L℧→LB ∘ g*) (f∘≈g∘ f≈g) (L℧→LA la) (L℧→LA la') la≈la'))
 
   ext-monotone-≤ :
@@ -363,7 +363,7 @@ module ClockedProofs (k : Clock) where
       ext-monotone-≈ {A = A} {B = B} f f' f≈f' la la' la≈la'
 
 
-  mapL-monotone-het-≤ : {A A' : DoublePoset ℓA ℓ'A ℓ''A} {B B' : DoublePoset ℓB' ℓ'B' ℓ''B'} ->
+  mapL-monotone-het-≤ : {A A' : PosetBisim ℓA ℓ'A ℓ''A} {B B' : PosetBisim ℓB' ℓ'B' ℓ''B'} ->
     (rAA' : ⟨ A ⟩ -> ⟨ A' ⟩ -> Type ℓR1) ->
     (rBB' : ⟨ B ⟩ -> ⟨ B' ⟩ -> Type ℓR2) ->
     (f : ⟨ A ⟩ -> ⟨ B ⟩) ->
@@ -378,7 +378,7 @@ module ClockedProofs (k : Clock) where
       la la' la≤la'
 
   
-  mapL-monotone-≤ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
+  mapL-monotone-≤ : {A B : PosetBisim ℓ ℓ' ℓ''} ->
     (f f' : ⟨ A ⟩ -> ⟨ B ⟩) ->
     TwoCell (rel-≤ A) (rel-≤ B) f f' ->
     TwoCell (rel-≤ (𝕃 A)) (rel-≤ (𝕃 B)) (mapL f) (mapL f')
@@ -386,7 +386,7 @@ module ClockedProofs (k : Clock) where
     bind-monotone-≤ (ret ∘ f) (ret ∘ f') la≤la'
       (λ a1 a2 a1≤a2 → ord-η-monotone B (f≤f' a1 a2 a1≤a2))
   
-  mapL-monotone-≈ : {A B : DoublePoset ℓ ℓ' ℓ''} ->
+  mapL-monotone-≈ : {A B : PosetBisim ℓ ℓ' ℓ''} ->
     (f f' : ⟨ A ⟩ -> ⟨ B ⟩) ->
     TwoCell (rel-≈ A) (rel-≈ B) f f' ->
     TwoCell (rel-≈ (𝕃 A)) (rel-≈ (𝕃 B)) (mapL f) (mapL f')
@@ -396,16 +396,16 @@ module ClockedProofs (k : Clock) where
 
   monotone-bind-mon-≤ :
     {la la' : ⟨ 𝕃 A ⟩} ->
-    (f : DPMor A (𝕃 B)) ->
+    (f : PBMor A (𝕃 B)) ->
     (rel-≤ (𝕃 A) la la') ->
-    rel-≤ (𝕃 B) (bind la (DPMor.f f)) (bind la' (DPMor.f f))
-  monotone-bind-mon-≤ f la≤la' = bind-monotone-≤ (DPMor.f f) (DPMor.f f) la≤la'
+    rel-≤ (𝕃 B) (bind la (PBMor.f f)) (bind la' (PBMor.f f))
+  monotone-bind-mon-≤ f la≤la' = bind-monotone-≤ (PBMor.f f) (PBMor.f f) la≤la'
     (≤mon-refl {!f!})
 
   monotone-bind-mon-≈ :
     {la la' : ⟨ 𝕃 A ⟩} ->
-    (f : DPMor A (𝕃 B)) ->
+    (f : PBMor A (𝕃 B)) ->
     (rel-≈ (𝕃 A) la la') ->
-    rel-≈ (𝕃 B) (bind la (DPMor.f f)) (bind la' (DPMor.f f))
-  monotone-bind-mon-≈ f la≈la' = bind-monotone-≈ (DPMor.f f) (DPMor.f f) la≈la'
+    rel-≈ (𝕃 B) (bind la (PBMor.f f)) (bind la' (PBMor.f f))
+  monotone-bind-mon-≈ f la≈la' = bind-monotone-≈ (PBMor.f f) (PBMor.f f) la≈la'
     (≈mon-refl f)

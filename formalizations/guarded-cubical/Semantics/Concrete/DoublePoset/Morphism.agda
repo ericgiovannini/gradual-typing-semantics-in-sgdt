@@ -33,10 +33,12 @@ private
     ℓX ℓ'X ℓ''X : Level
     ℓY ℓ'Y ℓ''Y : Level
     ℓZ ℓ'Z ℓ''Z : Level
+    ℓW ℓ'W ℓ''W : Level
 
-    X : DoublePoset ℓX ℓ'X ℓ''X
-    Y : DoublePoset ℓY ℓ'Y ℓ''Y
-    Z : DoublePoset ℓZ ℓ'Z ℓ''Z
+    X : PosetBisim ℓX ℓ'X ℓ''X
+    Y : PosetBisim ℓY ℓ'Y ℓ''Y
+    Z : PosetBisim ℓZ ℓ'Z ℓ''Z
+    W : PosetBisim ℓW ℓ'W ℓ''W
 
 
 module _ where
@@ -45,12 +47,12 @@ module _ where
   -- a separate version of MonFun where the arguments to the isMon
   -- constructor are explicit.
   -- See https://github.com/agda/cubical/issues/995.
-  module _ {X : DoublePoset ℓX ℓ'X ℓ''X} {Y : DoublePoset ℓY ℓ'Y ℓ''Y} where
+  module _ {X : PosetBisim ℓX ℓ'X ℓ''X} {Y : PosetBisim ℓY ℓ'Y ℓ''Y} where
 
     private
 
-      module X = DblPosetStr (X .snd)
-      module Y = DblPosetStr (Y .snd)
+      module X = PosetBisimStr (X .snd)
+      module Y = PosetBisimStr (Y .snd)
       _≤X_ = X._≤_
       _≤Y_ = Y._≤_
       _≈X_ = X._≈_
@@ -69,11 +71,13 @@ module _ where
     preserve≈ f = {x y : ⟨ X ⟩} -> x ≈X y → f x ≈Y f y
 
 
+    preserve≡preserve' : preserve≈' ≡ preserve≈
+    preserve≡preserve' = {!!}
 
 
   -- Monotone functions from X to Y
   -- This definition works with Cubical Agda's reflection.
-  record DPMor' (X : DoublePoset ℓX ℓ'X ℓ''X) (Y : DoublePoset ℓY ℓ'Y ℓ''Y) :
+  record PBMor' (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ''Y) :
     Type ((ℓ-max (ℓ-max ℓX (ℓ-max ℓ'X ℓ''X)) (ℓ-max ℓY (ℓ-max ℓ'Y ℓ''Y)))) where
     field
       f : (X .fst) → (Y .fst)
@@ -83,140 +87,173 @@ module _ where
 
   -- This is the definition we want, where the first two arguments to isMon
   -- are implicit.
-  record DPMor (X : DoublePoset ℓX ℓ'X ℓ''X) (Y : DoublePoset ℓY ℓ'Y ℓ''Y) :
+  record PBMor (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ''Y) :
     Type ((ℓ-max (ℓ-max ℓX (ℓ-max ℓ'X ℓ''X)) (ℓ-max ℓY (ℓ-max ℓ'Y ℓ''Y)))) where
     field
       f : (X .fst) → (Y .fst)
       isMon : monotone {X = X} {Y = Y} f
       pres≈ : preserve≈ {X = X} {Y = Y} f
 
-  open DPMor
+  open PBMor
 
 
-  isoDPMorDPMor' : {X : DoublePoset ℓX ℓ'X ℓ''X} {Y : DoublePoset ℓY ℓ'Y ℓ''Y} ->
-    Iso (DPMor X Y) (DPMor' X Y) 
-  isoDPMorDPMor' = iso
-    (λ g → record { f = DPMor.f g ; isMon = λ x y x≤y → isMon g x≤y ;
+  isoPBMorPBMor' : {X : PosetBisim ℓX ℓ'X ℓ''X} {Y : PosetBisim ℓY ℓ'Y ℓ''Y} ->
+    Iso (PBMor X Y) (PBMor' X Y) 
+  isoPBMorPBMor' = iso
+    (λ g → record { f = PBMor.f g ; isMon = λ x y x≤y → isMon g x≤y ;
                     pres≈ = λ x y x≈y -> pres≈ g x≈y})
-    (λ g → record { f = DPMor'.f g ; isMon = λ {x} {y} x≤y -> DPMor'.isMon g x y x≤y ;
-                    pres≈ = λ {x} {y} x≈y -> DPMor'.pres≈ g x y x≈y })
+    (λ g → record { f = PBMor'.f g ; isMon = λ {x} {y} x≤y -> PBMor'.isMon g x y x≤y ;
+                    pres≈ = λ {x} {y} x≈y -> PBMor'.pres≈ g x y x≈y })
     (λ g → refl)
     (λ g → refl)
 
 
   
-  isPropIsMonotone : (f : DPMor X Y) ->
-    isProp (monotone {X = X} {Y = Y} (DPMor.f f))
+  isPropIsMonotone : (f : PBMor X Y) ->
+    isProp (monotone {X = X} {Y = Y} (PBMor.f f))
   isPropIsMonotone {X = X} {Y = Y} f =
     isPropImplicitΠ2 (λ x y ->
-      isPropΠ (λ x≤y -> DblPosetStr.is-prop-valued (Y .snd) (DPMor.f f x) (DPMor.f f y)))
+      isPropΠ (λ x≤y -> PosetBisimStr.is-prop-valued (Y .snd) (PBMor.f f x) (PBMor.f f y)))
 
   isPropIsMonotone' : (f : ⟨ X ⟩ -> ⟨ Y ⟩) ->
     isProp (monotone' {X = X} {Y = Y} f)
   isPropIsMonotone' {X = X} {Y = Y} f =
-    isPropΠ3 (λ x y x≤y -> DblPosetStr.is-prop-valued (Y .snd) (f x) (f y))
+    isPropΠ3 (λ x y x≤y -> PosetBisimStr.is-prop-valued (Y .snd) (f x) (f y))
 
   isPropPres≈' : (f : ⟨ X ⟩ -> ⟨ Y ⟩) ->
     isProp (preserve≈' {X = X} {Y = Y} f)
   isPropPres≈' {X = X} {Y = Y} f =
-    isPropΠ3 (λ x y x≤y -> DblPosetStr.is-prop-valued-PER (Y .snd) (f x) (f y))
+    isPropΠ3 (λ x y x≤y -> PosetBisimStr.is-prop-valued-Bisim (Y .snd) (f x) (f y))
 
 
  -- Equivalence between MonFun' record and a sigma type   
-  unquoteDecl DPMor'IsoΣ = declareRecordIsoΣ DPMor'IsoΣ (quote (DPMor'))
+  unquoteDecl PBMor'IsoΣ = declareRecordIsoΣ PBMor'IsoΣ (quote (PBMor'))
+
 
 
   -- Equality of monotone functions is implied by equality of the
   -- underlying functions.
-  eqDPMor' :  (f g : DPMor' X Y) ->
-    DPMor'.f f ≡ DPMor'.f g -> f ≡ g
-  eqDPMor' {X = X} {Y = Y} f g p =
-    isoFunInjective DPMor'IsoΣ f g
+  eqPBMor' :  (f g : PBMor' X Y) ->
+    PBMor'.f f ≡ PBMor'.f g -> f ≡ g
+  eqPBMor' {X = X} {Y = Y} f g p =
+    isoFunInjective PBMor'IsoΣ f g
       (Σ≡Prop (λ h -> isProp× (isPropIsMonotone' {X = X} {Y = Y} h)
                               (isPropPres≈' {X = X} {Y = Y} h))
                p)
 
-  eqDPMor : (f g : DPMor X Y) ->
-    DPMor.f f ≡ DPMor.f g -> f ≡ g
-  eqDPMor {X} {Y} f g p = isoFunInjective isoDPMorDPMor' f g (eqDPMor' _ _ p)
+  eqPBMor : (f g : PBMor X Y) ->
+    PBMor.f f ≡ PBMor.f g -> f ≡ g
+  eqPBMor {X} {Y} f g p = isoFunInjective isoPBMorPBMor' f g (eqPBMor' _ _ p)
 
 
 
-  -- isSet for DP morphisms
-  DPMorIsSet : isSet (DPMor X Y)
-  DPMorIsSet {X = X} {Y = Y} = let composedIso = (compIso isoDPMorDPMor' DPMor'IsoΣ) in
+{-
+  eqPBMor' : (f g : PBMor' X Y) ->
+    (p : PBMor'.f f ≡ PBMor'.f g) ->
+    PathP (λ i → preserve≈' {X = X} {Y = Y} (p i)) (PBMor'.pres≈ f) (PBMor'.pres≈ g) ->
+    f ≡ g
+  eqPBMor' {X = X} {Y = Y} f g eq1 eq2 =
+    isoFunInjective PBMor'IsoΣ f g
+     (ΣPathP (eq1 ,
+       ΣPathP
+         ((isProp→PathP (λ i → isPropIsMonotone' {X = X} {Y = Y} (eq1 i)) _ _)
+         , eq2)))
+
+
+  eqPBMor : (f g : PBMor X Y) ->
+    (p : PBMor.f f ≡ PBMor.f g) ->
+    PathP (λ i → preserve≈ {X = X} {Y = Y} (p i)) (PBMor.pres≈ f) (PBMor.pres≈ g) ->
+    f ≡ g
+  eqPBMor {X = X} {Y = Y} f g eq1 eq2 =
+    isoFunInjective isoPBMorPBMor' f g (eqPBMor' _ _ eq1 {!eq2!})
+-}
+
+  -- isSet for PB morphisms
+  PBMorIsSet : isSet (PBMor X Y)
+  PBMorIsSet {X = X} {Y = Y} = let composedIso = (compIso isoPBMorPBMor' PBMor'IsoΣ) in
     isSetRetract
       (Iso.fun composedIso) (Iso.inv composedIso) (Iso.leftInv composedIso)
+      -- (isSetΣ
+      --   (isSet→ (PosetBisimStr.is-set (Y .snd)))
+      --   (λ f → isSet×
+      --            (isProp→isSet (isPropIsMonotone' {X = X} {Y = Y} f))
+      --            (isSetΠ3 (λ x y x≈y → PosetBisimStr.is-set-valued (Y .snd) (f x) (f y)))))
       (isSetΣSndProp
-        (isSet→ (DblPosetStr.is-set (Y .snd)))
+        (isSet→ (PosetBisimStr.is-set (Y .snd)))
         (λ h -> isProp×
                   (isPropIsMonotone' {X = X} {Y = Y} h)
                    (isPropPres≈' {X = X} {Y = Y} h)))
 
 
 
-  -- Ordering on DP morphisms
-  module _ {X : DoublePoset ℓX ℓ'X ℓ''X} {Y : DoublePoset ℓY ℓ'Y ℓ''Y} where
+
+  -- Ordering on PB morphisms
+  module _ {X : PosetBisim ℓX ℓ'X ℓ''X} {Y : PosetBisim ℓY ℓ'Y ℓ''Y} where
 
     private
-      module X = DblPosetStr (X .snd)
-      module Y = DblPosetStr (Y .snd)
-      module YPoset = PosetStr (DoublePoset→Poset Y .snd)
+      module X = PosetBisimStr (X .snd)
+      module Y = PosetBisimStr (Y .snd)
+      module YPoset = PosetStr (PosetBisim→Poset Y .snd)
 
     _≤mon_ :
-      DPMor X Y → DPMor X Y → Type (ℓ-max ℓX ℓ'Y)
-    _≤mon_ f g = ∀ x -> DPMor.f f x Y.≤ DPMor.f g x
+      PBMor X Y → PBMor X Y → Type (ℓ-max ℓX ℓ'Y)
+    _≤mon_ f g = ∀ x -> PBMor.f f x Y.≤ PBMor.f g x
 
     ≤mon-prop : isPropValued _≤mon_
     ≤mon-prop f g =
-      isPropΠ (λ x -> Y.is-prop-valued (DPMor.f f x) (DPMor.f g x))
+      isPropΠ (λ x -> Y.is-prop-valued (PBMor.f f x) (PBMor.f g x))
 
     ≤mon-refl : isRefl _≤mon_
-    ≤mon-refl = λ f x → Y.is-refl (DPMor.f f x)
+    ≤mon-refl = λ f x → Y.is-refl (PBMor.f f x)
 
     ≤mon-trans : isTrans _≤mon_
     ≤mon-trans = λ f g h f≤g g≤h x →
-      Y.is-trans (DPMor.f f x) (DPMor.f g x) (DPMor.f h x)
+      Y.is-trans (PBMor.f f x) (PBMor.f g x) (PBMor.f h x)
         (f≤g x) (g≤h x)
 
     ≤mon-antisym : isAntisym _≤mon_
-    ≤mon-antisym f g f≤g g≤f =
-      eqDPMor f g (funExt (λ x -> Y.is-antisym (DPMor.f f x) (DPMor.f g x) (f≤g x) (g≤f x)))
-
-
-    -- Alternate definition of ordering on monotone functions, where we allow for the
-    -- arguments to be distinct
-    _≤mon-het_ : DPMor X Y -> DPMor X Y -> Type (ℓ-max (ℓ-max ℓX ℓ'X) ℓ'Y)
-    _≤mon-het_ f f' = ∀ x x' -> x X.≤ x' -> (DPMor.f f x) Y.≤ (DPMor.f f' x')
-
-    ≤mon→≤mon-het : (f f' : DPMor X Y) -> f ≤mon f' -> f ≤mon-het f'
-    ≤mon→≤mon-het f f' f≤f' = λ x x' x≤x' →
-      DPMor.f f x    ≤⟨ DPMor.isMon f x≤x' ⟩
-      DPMor.f f x'   ≤⟨ f≤f' x' ⟩
-      DPMor.f f' x'  ◾
+    ≤mon-antisym f g f≤g g≤f = eqPBMor f g {!!}
       where
-        open PosetReasoning (DoublePoset→Poset Y)
+        eq1 : _
+        eq1 = (funExt (λ x -> Y.is-antisym (PBMor.f f x) (PBMor.f g x) (f≤g x) (g≤f x)))
+      -- eqPBMor f g (funExt (λ x -> Y.is-antisym (PBMor.f f x) (PBMor.f g x) (f≤g x) (g≤f x)))
 
-    TwoCell→≤mon : (f g : DPMor X Y) ->
-      TwoCell (X._≤_) (Y._≤_) (DPMor.f f) (DPMor.f g) ->
+
+    -- Alternate definition of ordering on morphisms where we allow for the
+    -- arguments to be distinct
+    _≤mon-het_ : PBMor X Y -> PBMor X Y -> Type (ℓ-max (ℓ-max ℓX ℓ'X) ℓ'Y)
+    _≤mon-het_ f f' = ∀ x x' -> x X.≤ x' -> (PBMor.f f x) Y.≤ (PBMor.f f' x')
+
+    ≤mon→≤mon-het : (f f' : PBMor X Y) -> f ≤mon f' -> f ≤mon-het f'
+    ≤mon→≤mon-het f f' f≤f' = λ x x' x≤x' →
+      PBMor.f f x    ≤⟨ PBMor.isMon f x≤x' ⟩
+      PBMor.f f x'   ≤⟨ f≤f' x' ⟩
+      PBMor.f f' x'  ◾
+      where
+        open PosetReasoning (PosetBisim→Poset Y)
+
+    TwoCell→≤mon : (f g : PBMor X Y) ->
+      TwoCell (X._≤_) (Y._≤_) (PBMor.f f) (PBMor.f g) ->
       f ≤mon g
     TwoCell→≤mon f g f≤g = λ x → f≤g x x (X.is-refl x)
 
-    -- Bisimilarity relation on DP morphisms
+
+
+    -- Bisimilarity relation on PB morphisms
     _≈mon_ :
-      DPMor X Y -> DPMor X Y -> Type (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
-    _≈mon_ f g = ∀ x x' -> x X.≈ x' -> DPMor.f f x Y.≈ DPMor.f g x'
+      PBMor X Y -> PBMor X Y -> Type (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
+    _≈mon_ f g = ∀ x x' -> x X.≈ x' -> PBMor.f f x Y.≈ PBMor.f g x'
 
     ≈mon-prop : isPropValued _≈mon_
-    ≈mon-prop f g = isPropΠ3 (λ x x' x≈x' -> Y.is-prop-valued-PER (DPMor.f f x) (DPMor.f g x'))
+    ≈mon-prop f g = isPropΠ3 (λ x x' x≈x' -> Y.is-prop-valued-Bisim (PBMor.f f x) (PBMor.f g x'))
 
     ≈mon-refl : isRefl _≈mon_
     ≈mon-refl f x x' x≈x' = pres≈ f x≈x'
 
     ≈mon-sym : isSym _≈mon_
     ≈mon-sym f g f≈g x x' x≈x' =
-      DblPosetStr.is-sym (Y .snd) (DPMor.f f x') (DPMor.f g x)
-        (f≈g x' x (DblPosetStr.is-sym (X .snd) x x' x≈x'))
+      PosetBisimStr.is-sym (Y .snd) (PBMor.f f x') (PBMor.f g x)
+        (f≈g x' x (PosetBisimStr.is-sym (X .snd) x x' x≈x'))
      -- NTS:
      --   g x ≈Y f x'
      --
@@ -228,41 +265,53 @@ module _ where
 
 
 
- -- Double poset of DP morphisms between two double posets
-  IntHom : DoublePoset ℓX ℓ'X ℓ''X -> DoublePoset ℓY ℓ'Y ℓ''Y ->
-    DoublePoset (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) ℓ''X) ℓY) ℓ'Y) ℓ''Y) (ℓ-max ℓX ℓ'Y) (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
+ -- PB of PB morphisms between two PB's
+  IntHom : PosetBisim ℓX ℓ'X ℓ''X -> PosetBisim ℓY ℓ'Y ℓ''Y ->
+    PosetBisim (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) ℓ''X) ℓY) ℓ'Y) ℓ''Y) (ℓ-max ℓX ℓ'Y) (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
   IntHom X Y =
-    DPMor X Y ,
-    dblposetstr
-      DPMorIsSet
+    PBMor X Y ,
+    posetbisimstr
+      PBMorIsSet
       _≤mon_
       (isorderingrelation ≤mon-prop ≤mon-refl ≤mon-trans ≤mon-antisym)
       _≈mon_
-      (isper ≈mon-refl ≈mon-sym ≈mon-prop)
+      (isbisim ≈mon-refl ≈mon-sym ≈mon-prop)
 
     -- Notation
-  _==>_ : DoublePoset ℓX ℓ'X ℓ''X -> DoublePoset ℓY ℓ'Y ℓ''Y ->
-    DoublePoset (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) ℓ''X) ℓY) ℓ'Y) ℓ''Y) (ℓ-max ℓX ℓ'Y) (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
+  _==>_ : PosetBisim ℓX ℓ'X ℓ''X -> PosetBisim ℓY ℓ'Y ℓ''Y ->
+    PosetBisim (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) ℓ''X) ℓY) ℓ'Y) ℓ''Y) (ℓ-max ℓX ℓ'Y) (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
   X ==> Y = IntHom X Y
 
   infixr 20 _==>_
 
 
 
-  -- Some basic combinators/utility functions on double poset morphisms
+  -- Some basic combinators/utility functions on morphisms of posets with bisimilarity
 
-  MonId : {X : DoublePoset ℓX ℓ'X ℓ''X} -> DPMor X X
-  MonId = record { f = λ x -> x ; isMon = λ x≤y → x≤y ; pres≈ = λ x≈y -> x≈y }
+  Id : {X : PosetBisim ℓX ℓ'X ℓ''X} -> PBMor X X
+  Id = record { f = λ x -> x ; isMon = λ x≤y → x≤y ; pres≈ = λ x≈y -> x≈y }
 
-  _$_ : DPMor X Y -> ⟨ X ⟩ -> ⟨ Y ⟩
-  f $ x = DPMor.f f x
+  _$_ : PBMor X Y -> ⟨ X ⟩ -> ⟨ Y ⟩
+  f $ x = PBMor.f f x
 
-  MonComp :
-    DPMor X Y -> DPMor Y Z -> DPMor X Z
-  MonComp f g = record {
+  Comp :
+    PBMor X Y -> PBMor Y Z -> PBMor X Z
+  Comp f g = record {
     f = λ x -> g $ (f $ x) ;
     isMon = λ {x1} {x2} x1≤x2 → isMon g (isMon f x1≤x2) ;
     pres≈ = λ x≈x' -> pres≈ g (pres≈ f x≈x')}
+
+  _∘p_ : PBMor Y Z → PBMor X Y → PBMor X Z
+  g ∘p f = Comp f g
+
+{-
+  IdL : (f : PBMor X Y) → Comp Id f ≡ f
+  IdL f = eqPBMor (Comp Id f) f refl refl
+
+  Assoc : (f : PBMor X Y) (g : PBMor Y Z) (h : PBMor Z W) →
+    Comp (Comp f g) h ≡ Comp f (Comp g h)
+  Assoc f g h = eqPBMor _ _ refl refl
+-}
 
 
 

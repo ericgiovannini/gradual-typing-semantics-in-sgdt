@@ -33,46 +33,50 @@ record IsOrderingRelation {A : Type ℓ} (_≤_ : A -> A -> Type ℓ') : Type (�
 
 unquoteDecl IsOrderingRelationIsoΣ = declareRecordIsoΣ IsOrderingRelationIsoΣ (quote IsOrderingRelation)
 
-record IsPER {A : Type ℓ} (_≈_ : A -> A -> Type ℓ') : Type (ℓ-max ℓ ℓ') where
+record IsBisim {A : Type ℓ} (_≈_ : A -> A -> Type ℓ') : Type (ℓ-max ℓ ℓ') where
   no-eta-equality
-  constructor isper
+  constructor isbisim
   
   field
     is-refl : isRefl _≈_
     is-sym : isSym _≈_
     is-prop-valued : isPropValued _≈_
     -- Need to be prop-valued?
+    -- is-set-valued : ∀ x y → isSet (x ≈ y)
 
 
-unquoteDecl IsPERIsoΣ = declareRecordIsoΣ IsPERIsoΣ (quote IsPER)
+unquoteDecl IsBisimIsoΣ = declareRecordIsoΣ IsBisimIsoΣ (quote IsBisim)
 
 
-record DblPosetStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ''))) where
+record PosetBisimStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ''))) where
 
-  constructor dblposetstr
+  constructor posetbisimstr
 
   field
     is-set : isSet A
     _≤_     : A → A → Type ℓ'
     isOrderingRelation : IsOrderingRelation _≤_
     _≈_ : A -> A -> Type ℓ''
-    isPER : IsPER _≈_
+    isBisim : IsBisim _≈_
 
   infixl 7 _≤_
 
-
-  open IsPER isPER public renaming (is-refl to is-refl-PER ;
-                                    is-prop-valued to is-prop-valued-PER )
+  open IsBisim isBisim public renaming (is-refl to is-refl-Bisim
+                                      ; is-prop-valued to is-prop-valued-Bisim )
   open IsOrderingRelation isOrderingRelation public
 
-DoublePoset : ∀ ℓ ℓ' ℓ'' → Type (ℓ-max (ℓ-suc ℓ) (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ'')))
-DoublePoset ℓ ℓ' ℓ'' = TypeWithStr ℓ (DblPosetStr ℓ' ℓ'')
 
-open DblPosetStr
+unquoteDecl PosetBisimIsoΣ = declareRecordIsoΣ PosetBisimIsoΣ (quote PosetBisimStr)
 
 
-DoublePoset→Poset : DoublePoset ℓ ℓ' ℓ'' -> Poset ℓ ℓ'
-DoublePoset→Poset X = ⟨ X ⟩ ,
+PosetBisim : ∀ ℓ ℓ' ℓ'' → Type (ℓ-max (ℓ-suc ℓ) (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ'')))
+PosetBisim ℓ ℓ' ℓ'' = TypeWithStr ℓ (PosetBisimStr ℓ' ℓ'')
+
+open PosetBisimStr
+
+
+PosetBisim→Poset : PosetBisim ℓ ℓ' ℓ'' -> Poset ℓ ℓ'
+PosetBisim→Poset X = ⟨ X ⟩ ,
   (posetstr (X .snd ._≤_)
     (isposet (X .snd .is-set)
              (X .snd .is-prop-valued)

@@ -44,7 +44,7 @@ open import Semantics.WeakBisimilarity k
 
 
 open BinaryRelation
-open DblPosetStr hiding (_≤_)
+open PosetBisimStr hiding (_≤_)
 
 private
   variable
@@ -57,14 +57,14 @@ private
   ▹_ : Type ℓ → Type ℓ
   ▹_ A = ▹_,_ k A
 
-module LiftDoublePoset (A : DoublePoset ℓ ℓ' ℓ'') where
-  module A = DblPosetStr (A .snd)
+module LiftPosetBisim (A : PosetBisim ℓ ℓ' ℓ'') where
+  module A = PosetBisimStr (A .snd)
   open import Common.Poset.MonotoneRelation
   open A using (_≤_)
   open LiftRelation ⟨ A ⟩ ⟨ A ⟩ _≤_ public
 
-  A⊎1 : DoublePoset ℓ (ℓ-max ℓ' ℓ-zero) (ℓ-max ℓ'' ℓ-zero)
-  A⊎1 = A ⊎p UnitDP
+  A⊎1 : PosetBisim ℓ (ℓ-max ℓ' ℓ-zero) (ℓ-max ℓ'' ℓ-zero)
+  A⊎1 = A ⊎p UnitPB
 
   Bisim-⊎ : ⟨ A ⟩ ⊎ Unit → ⟨ A ⟩ ⊎ Unit → Type ℓ''
   Bisim-⊎ = A⊎1 .snd ._≈_
@@ -212,23 +212,23 @@ module LiftDoublePoset (A : DoublePoset ℓ ℓ' ℓ'') where
   bisim-prop = {!!} -}
       
 
-  𝕃 : DoublePoset ℓ ℓ' (ℓ-max ℓ ℓ'')
+  𝕃 : PosetBisim ℓ ℓ' (ℓ-max ℓ ℓ'')
   𝕃 = L℧ ⟨ A ⟩ ,
-    (dblposetstr (isSetL℧ A.is-set)
+    (posetbisimstr (isSetL℧ A.is-set)
       _≾_
       (isorderingrelation ord-prop ord-refl ord-trans ord-antisym)
       _∽_
-      (isper (functionalRel-refl L℧A→LA⊎Unit LiftBisim._≈_ (LiftBisim.Reflexive.≈-refl (A⊎1 .snd .is-refl-PER)))
+      (isbisim (functionalRel-refl L℧A→LA⊎Unit LiftBisim._≈_ (LiftBisim.Reflexive.≈-refl (A⊎1 .snd .is-refl-Bisim)))
              (functionalRel-sym L℧A→LA⊎Unit LiftBisim._≈_ (LiftBisim.Symmetric.symmetric (A⊎1 .snd .is-sym)))
-             (functionalRel-propValued L℧A→LA⊎Unit L℧A→LA⊎Unit LiftBisim._≈_ (LiftBisim.PropValued.prop (A⊎1 .snd .is-prop-valued-PER)))))
+             (functionalRel-propValued L℧A→LA⊎Unit L℧A→LA⊎Unit LiftBisim._≈_ (LiftBisim.PropValued.prop (A⊎1 .snd .is-prop-valued-Bisim)))))
 
 
-module LiftDPMorRel (A : DoublePoset ℓA ℓ'A ℓ''A) (B : DoublePoset ℓB ℓ'B ℓ''B) (R : DPMorRel A B ℓ'') where
-  module LR = LiftRelation ⟨ A ⟩ ⟨ B ⟩ (DPMorRel.R R)
-  open LiftDoublePoset
-  open DPMorRel
+module LiftDPMorRel (A : PosetBisim ℓA ℓ'A ℓ''A) (B : PosetBisim ℓB ℓ'B ℓ''B) (R : PBRel A B ℓ'') where
+  module LR = LiftRelation ⟨ A ⟩ ⟨ B ⟩ (PBRel.R R)
+  open LiftPosetBisim
+  open PBRel
   
-  ℝ : DPMorRel (𝕃 A) (𝕃 B) ℓ''
+  ℝ : PBRel (𝕃 A) (𝕃 B) ℓ''
   ℝ = record {
     R = LR._≾_ ;
     is-prop-valued = {!!} ;

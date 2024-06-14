@@ -33,47 +33,48 @@ private
     ℓA ℓ'A ℓ''A ℓA' ℓ'A' ℓ''A' : Level
     ℓB ℓ'B ℓ''B ℓB' ℓ'B' ℓ''B' : Level
     ℓC ℓ'C ℓ''C ℓC' ℓ'C' ℓ''C' ℓΓ ℓ'Γ ℓ''Γ : Level
-    Γ :  DoublePoset ℓΓ ℓ'Γ ℓ''Γ
-    A :  DoublePoset ℓA ℓ'A ℓ''A
-    A' : DoublePoset ℓA' ℓ'A' ℓ''A'
-    B :  DoublePoset ℓB ℓ'B ℓ''B
-    B' : DoublePoset ℓB' ℓ'B' ℓ''B'
-    C :  DoublePoset ℓC ℓ'C ℓ''C
-    C' : DoublePoset ℓC' ℓ'C' ℓ''C'
+    ℓD ℓ'D ℓ''D : Level
+    Γ :  PosetBisim ℓΓ ℓ'Γ ℓ''Γ
+    A :  PosetBisim ℓA ℓ'A ℓ''A
+    A' : PosetBisim ℓA' ℓ'A' ℓ''A'
+    B :  PosetBisim ℓB ℓ'B ℓ''B
+    B' : PosetBisim ℓB' ℓ'B' ℓ''B'
+    C :  PosetBisim ℓC ℓ'C ℓ''C
+    C' : PosetBisim ℓC' ℓ'C' ℓ''C'
     
-open DPMor
+open PBMor
 open import Semantics.Concrete.DoublePoset.DPMorProofs
 
 
-mTransport : {A B : DoublePoset ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
+mTransport : {A B : PosetBisim ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
 mTransport {A} {B} eq = record {
   f = λ b → transport (λ i -> ⟨ eq i ⟩) b ;
   isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ eq b1≤b2 ;
   pres≈ = λ {b1} {b2} b1≈b2 → rel-transport-≈ eq b1≈b2 }
 
-mTransportSym : {A B : DoublePoset ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
+mTransportSym : {A B : PosetBisim ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
 mTransportSym {A} {B} eq = record {
   f = λ b → transport (λ i -> ⟨ sym eq i ⟩) b ;
   isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ (sym eq) b1≤b2 ;
   pres≈ = λ {b1} {b2} b1≤b2 → rel-transport-≈ (sym eq) b1≤b2 }
 
-mTransportDomain : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
+mTransportDomain : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
-  DPMor A C ->
-  DPMor B C
+  PBMor A C ->
+  PBMor B C
 mTransportDomain {A} {B} {C} eq f = record {
   f = g eq f ;
   isMon = mon-transport-domain-≤ eq f ;
   pres≈ = mon-transport-domain-≈ eq f  }
   where
-    g : {A B C : DoublePoset ℓ ℓ' ℓ''} ->
+    g : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
       (eq : A ≡ B) ->
-      DPMor A C ->
+      PBMor A C ->
       ⟨ B ⟩ -> ⟨ C ⟩
-    g eq f b = DPMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
+    g eq f b = PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
 
         
-mCompU : DPMor B C -> DPMor A B -> DPMor A C
+mCompU : PBMor B C -> PBMor A B -> PBMor A C
 mCompU f1 f2 = record {
   f = λ a -> f1 .f (f2 .f a) ;
   isMon = λ x≤y -> f1 .isMon (f2 .isMon x≤y) ;
@@ -87,7 +88,7 @@ mComp = record {
     f = λ fAB → mCompU fBC fAB ;
     isMon = λ {f1} {f2} f1≤f2 -> λ a → isMon fBC (f1≤f2 a) ;
     pres≈ = λ {f1} {f2} f1≈f2 → λ a1 a2 a1≈a2 → pres≈ fBC (f1≈f2 a1 a2 a1≈a2) } ;
-  isMon = λ {f1} {f2} f1≤f2 → λ f' a → f1≤f2 (DPMor.f f' a) ;
+  isMon = λ {f1} {f2} f1≤f2 → λ f' a → f1≤f2 (PBMor.f f' a) ;
   pres≈ = λ {fBC} {fBC'} fBC≈fBC' fAB fAB' fAB≈fAB' a a' a≈a' →
     fBC≈fBC' _ _ (fAB≈fAB' a a' a≈a') }
 
@@ -103,13 +104,13 @@ Pair {A = A} {B = B} = record {
 
 PairFun : (f : ⟨ A ==> B ⟩) -> (g : ⟨ A ==> C ⟩ ) -> ⟨ A ==> B ×dp C ⟩
 PairFun f g = record {
-  f = λ a -> (DPMor.f f a) , (DPMor.f g a) ;
+  f = λ a -> (PBMor.f f a) , (PBMor.f g a) ;
   isMon = λ {a1} {a2} a1≤a2 → isMon f a1≤a2 , isMon g a1≤a2 ;
   pres≈ = λ {a1} {a2} a1≈a2 → (pres≈ f a1≈a2) , (pres≈ g a1≈a2) }
 
 Case' : ⟨ A ==> C ⟩ -> ⟨ B ==> C ⟩ -> ⟨ (A ⊎p B) ==> C ⟩
 Case' f g = record {
-  f = λ { (inl a) → DPMor.f f a ; (inr b) → DPMor.f g b} ;
+  f = λ { (inl a) → PBMor.f f a ; (inr b) → PBMor.f g b} ;
   isMon = λ { {inl a1} {inl a2} a1≤a2 → isMon f (lower a1≤a2) ;
               {inr b1} {inr b2} b1≤b2 → isMon g (lower b1≤b2) }  ;
   pres≈ = λ { {inl a1} {inl a2} a1≤a2 → pres≈ f (lower a1≤a2) ;
@@ -141,32 +142,32 @@ mSuc = record {
     pres≈ = λ {n1} {n2} n1≈n2 → λ i → suc (n1≈n2 i) }
 
 U : ⟨ A ==> B ⟩ -> ⟨ A ⟩ -> ⟨ B ⟩
-U f = DPMor.f f
+U f = PBMor.f f
 
 
-S : (Γ : DoublePoset ℓΓ ℓ'Γ ℓ''Γ) ->
+S : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) ->
     ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
 S Γ f g = record {
-  f = λ γ → DPMor.f f (γ , (U g γ)) ;
+  f = λ γ → PBMor.f f (γ , (U g γ)) ;
   isMon = λ {γ1} {γ2} γ1≤γ2 ->
         isMon f (γ1≤γ2 , (isMon g γ1≤γ2)) ;
   pres≈ = λ {γ1} {γ2} γ1≈γ2 -> pres≈ f (γ1≈γ2 , pres≈ g γ1≈γ2) }
 
 _!_<*>_ :
-    (Γ : DoublePoset ℓ ℓ' ℓ'') -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
+    (Γ : PosetBisim ℓ ℓ' ℓ'') -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
 Γ ! f <*> g = S Γ f g
 
-K : (Γ : DoublePoset ℓΓ ℓ'Γ ℓ''Γ) -> {A : DoublePoset ℓA ℓ'A ℓ''A} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
+K : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) -> {A : PosetBisim ℓA ℓ'A ℓ''A} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
 K _ {A} = λ a → record {
     f = λ γ → a ;
     isMon = λ {a1} {a2} a1≤a2 → reflexive-≤ A a ;
     pres≈ = λ {a1} {a2} a1≈a2 → reflexive-≈ A a }
 
-Id : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> A ⟩
-Id = record {
-  f = id ;
-  isMon = λ x≤y → x≤y ;
-  pres≈ = λ x≈y → x≈y }
+-- Id : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> A ⟩
+-- Id = record {
+--   f = id ;
+--   isMon = λ x≤y → x≤y ;
+--   pres≈ = λ x≈y → x≈y }
 
 
 Curry :  ⟨ (Γ ×dp A) ==> B ⟩ -> ⟨ Γ ==> A ==> B ⟩
@@ -193,10 +194,10 @@ Lambda {Γ = Γ} {A = A} = record {
 
 Uncurry : ⟨ Γ ==> A ==> B ⟩ -> ⟨ (Γ ×dp A) ==> B ⟩
 Uncurry f = record {
-  f = λ (γ , a) → DPMor.f (DPMor.f f γ) a ;
+  f = λ (γ , a) → PBMor.f (PBMor.f f γ) a ;
   isMon = λ {(γ1 , a1)} {(γ2 , a2)} (γ1≤γ2 , a1≤a2) ->
       let fγ1≤fγ2 = isMon f γ1≤γ2 in 
-        ≤mon→≤mon-het (DPMor.f f γ1) (DPMor.f f γ2) fγ1≤fγ2 a1 a2 a1≤a2 ;
+        ≤mon→≤mon-het (PBMor.f f γ1) (PBMor.f f γ2) fγ1≤fγ2 a1 a2 a1≤a2 ;
   pres≈ = λ {(γ1 , a1)} {(γ2 , a2)} (γ1≈γ2 , a1≈a2) ->
       let fγ1≈fγ2 = pres≈ f γ1≈γ2 in
         fγ1≈fγ2 a1 a2 a1≈a2 }
@@ -205,10 +206,10 @@ App : ⟨ ((A ==> B) ×dp A) ==> B ⟩
 App = Uncurry Id
 
 {-
-Swap : (Γ : DoublePoset ℓ ℓ' ℓ'') -> {A B : DoublePoset ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
+Swap : (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B : PosetBisim ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
 Swap Γ {A = A} f = record {
   f = λ a → record {
-    f = λ γ → DPMor.f (DPMor.f f γ) a ;
+    f = λ γ → PBMor.f (PBMor.f f γ) a ;
     isMon =  λ {γ1} {γ2} γ1≤γ2 ->
       let fγ1≤fγ2 = isMon f γ1≤γ2 in
         ≤mon→≤mon-het _ _ fγ1≤fγ2 a a (reflexive-≤ A a) ;
@@ -238,7 +239,7 @@ IntroArg' :
     ⟨ Γ ==> B ⟩ -> ⟨ B ==> B' ⟩ -> ⟨ Γ ==> B' ⟩
 IntroArg' {Γ = Γ} {B = B} {B' = B'} fΓB fBB' = S Γ (With2nd {A = B} {Γ = Γ} fBB') fΓB
 
-IntroArg : {Γ B B' : DoublePoset ℓ ℓ' ℓ''} ->
+IntroArg : {Γ B B' : PosetBisim ℓ ℓ' ℓ''} ->
   ⟨ B ==> B' ⟩ -> ⟨ (Γ ==> B) ==> (Γ ==> B') ⟩
 IntroArg {Γ = Γ} {B = B} {B' = B'} f = (Curry {Γ = Γ ==> B} {A = Γ}) (mCompU f (App {A = Γ} {B = B}))
 
@@ -274,10 +275,10 @@ TransformDomain :
 TransformDomain {Γ = Γ} {A = A} fΓ×A->B f =
   Uncurry (IntroArg' (Curry {Γ = Γ} {A = A} fΓ×A->B) f)
 
-mComp' : (Γ : DoublePoset ℓΓ ℓ'Γ ℓ''Γ) ->
+mComp' : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) ->
     ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 mComp' {B = B} {C = C} {A = A} Γ f g = record {
-  f = λ { (γ , a) → DPMor.f f (γ , (DPMor.f g (γ , a))) } ;
+  f = λ { (γ , a) → PBMor.f f (γ , (PBMor.f g (γ , a))) } ;
   isMon = λ { {γ1 , a1} {γ2 , a2} (γ1≤γ2 , a1≤a2) →
     isMon f (γ1≤γ2 , (isMon g (γ1≤γ2 , a1≤a2))) } ;
   pres≈ = λ { {γ1 , a1} {γ2 , a2} (γ1≈γ2 , a1≈a2) →
@@ -287,16 +288,17 @@ _∘m_ :
    ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 _∘m_ {Γ = Γ} {B = B} {C = C} {A = A} = mComp' {B = B} {C = C} {A = A} Γ
 
-_$_∘m_ :  (Γ : DoublePoset ℓ ℓ' ℓ'') -> {A B C : DoublePoset ℓ ℓ' ℓ''} ->
+_$_∘m_ :  (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B C : PosetBisim ℓ ℓ' ℓ''} ->
     ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 _$_∘m_ Γ {A = A} {B = B} {C = C} f g = mComp' {B = B} {C = C} {A = A} Γ f g
 infixl 20 _∘m_
 
-Comp : (Γ : DoublePoset ℓ ℓ' ℓ'') -> {A B C : DoublePoset ℓ ℓ' ℓ''} ->
-    ⟨ Γ ×dp B ==> C ⟩ -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ×dp A ==> C ⟩
-Comp Γ f g = {!!}
+-- Comp : (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B C : PosetBisim ℓ ℓ' ℓ''} ->
+--     ⟨ Γ ×dp B ==> C ⟩ -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ×dp A ==> C ⟩
+-- Comp Γ f g = {!!}
 
-_~->_ : {A B C D : DoublePoset ℓ ℓ' ℓ''} ->
+_~->_ : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B}
+        {C : PosetBisim ℓC ℓ'C ℓ''C} {D : PosetBisim ℓD ℓ'D ℓ''D} ->
     ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
 _~->_ {A = A} {B = B} {C = C} {D = D} pre post =
   Curry {Γ = B ==> C} {A = A} {B = D} ((mCompU post App) ∘m (With2nd pre))
@@ -308,7 +310,7 @@ g ^m n = record {
   pres≈ = pres n }
   where
     fun : Nat -> _
-    fun m = (DPMor.f g) ^ m
+    fun m = (PBMor.f g) ^ m
 
     mon : (m : Nat) -> monotone (fun m)
     mon zero {x} {y} x≤y = x≤y
@@ -332,66 +334,68 @@ module ClockedCombinators (k : Clock) where
   open import Semantics.WeakBisimilarity k
 
 
-  open LiftDoublePoset
+  open LiftPosetBisim
   open ClockedProofs k
+  open Clocked k
 
   Map▹ :
-    ⟨ A ==> B ⟩ -> ⟨ DP▸'_ k A ==> DP▸'_ k B ⟩
+    ⟨ A ==> B ⟩ -> ⟨ (PB▹ A) ==> (PB▹ B) ⟩
   Map▹ {A} {B} f = record {
-    f = map▹ (DPMor.f f) ;
+    f = map▹ (PBMor.f f) ;
     isMon = λ {a1} {a2} a1≤a2 t → isMon f (a1≤a2 t) ;
     pres≈ = λ {a1} {a2} a1≈a2 t → pres≈ f (a1≈a2 t) }
 
+
   Ap▹ :
-    ⟨ (DP▸'_ k (A ==> B)) ==> (DP▸'_ k A ==> DP▸'_ k B) ⟩
+    ⟨ (PB▹ (A ==> B)) ==> ((PB▹ A) ==> (PB▹ B)) ⟩
   Ap▹ {A = A} {B = B} = record {
     f = UAp▹ ;
     isMon = UAp▹-mon ;
     pres≈ = UAp▹-pres≈}
     where
       UAp▹ :
-        ⟨ (DP▸'_ k (A ==> B)) ⟩ -> ⟨ (DP▸'_ k A ==> DP▸'_ k B) ⟩
+        ⟨ (PB▹ (A ==> B)) ⟩ -> ⟨ (PB▹ A) ==> (PB▹ B) ⟩
       UAp▹ f~ = record {
-        f = _⊛_ (λ t → DPMor.f (f~ t)) ;
+        f = _⊛_ (λ t → PBMor.f (f~ t)) ;
         isMon = λ {a1} {a2} a1≤a2 t → isMon (f~ t) (a1≤a2 t) ;
         pres≈ = λ {a1} {a2} a1≈a2 t → pres≈ (f~ t) (a1≈a2 t) }
 
       UAp▹-mon : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≤ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≤ ((DP▸'_ k A) ==> (DP▸'_ k B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≤ ((PB▹ A) ==> (PB▹ B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-mon {f1~} {f2~} f1~≤f2~ a~ t = f1~≤f2~ t (a~ t)
 
       UAp▹-pres≈ : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≈ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≈ ((DP▸'_ k A) ==> (DP▸'_ k B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≈ ((PB▹ A) ==> (PB▹ B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-pres≈ {f1~} {f2~} f1~≈f2~ a1~ a2~ a1~≈a2~ t =
         f1~≈f2~ t (a1~ t) (a2~ t) (a1~≈a2~ t)
 
-  Next : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> DP▸'_ k A ⟩
+  Next : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> PB▹ A ⟩
   Next = record {
     f = next ;
     isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 ;
     pres≈ = λ {a1} {a2} a1≈a2 t → a1≈a2 }
 
-  mθ : {A : DoublePoset ℓ ℓ' ℓ''} ->
-    ⟨ DP▸'_ k (𝕃 A) ==> 𝕃 A ⟩
+  mθ : {A : PosetBisim ℓ ℓ' ℓ''} ->
+    ⟨ (PB▹ (𝕃 A)) ==> 𝕃 A ⟩
   mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone A ; pres≈ = λ x → {!!} }
 
   -- 𝕃's return as a monotone function
-  mRet : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
+  mRet : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
   mRet {A = A} = record { f = ret ; isMon = ord-η-monotone A ; pres≈ = λ x → {!!} }
     where
-      open Bisim ⟨ A ⊎p UnitDP ⟩ (rel-≈ (A ⊎p UnitDP))
+      open Bisim ⟨ A ⊎p UnitPB ⟩ (rel-≈ (A ⊎p UnitPB))
 
-  Δ : {A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
+  Δ : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
   Δ {A = A} = record {
       f = δ ;
       isMon = λ x≤y → ord-δ-monotone A x≤y ;
       pres≈ = {!!} }
 
-  mExtU : DPMor A (𝕃 B) -> DPMor (𝕃 A) (𝕃 B)
+  mExtU : PBMor A (𝕃 B) -> PBMor (𝕃 A) (𝕃 B)
   mExtU f = record {
-      f = λ la -> bind la (DPMor.f f) ;
+      f = λ la -> bind la (PBMor.f f) ;
       isMon = monotone-bind-mon-≤ f ;
       pres≈ = monotone-bind-mon-≈ f }
 
@@ -399,22 +403,22 @@ module ClockedCombinators (k : Clock) where
   mExt {A = A} = record {
       f = mExtU ;
       isMon = λ {f1} {f2} f1≤f2 la →
-        ext-monotone-≤ (DPMor.f f1) (DPMor.f f2)
+        ext-monotone-≤ (PBMor.f f1) (PBMor.f f2)
           (≤mon→≤mon-het f1 f2 f1≤f2) la la (reflexive-≤ (𝕃 A) la) ;
       pres≈ = λ {f1} {f2} f1≈f2 la la' la≈la' →
-        ext-monotone-≈ (DPMor.f f1) (DPMor.f f2) f1≈f2 la la' la≈la' }
+        ext-monotone-≈ (PBMor.f f1) (PBMor.f f2) f1≈f2 la la' la≈la' }
 
-  mExt' : (Γ : DoublePoset ℓ ℓ' ℓ'') ->
+  mExt' : (Γ : PosetBisim ℓ ℓ' ℓ'') ->
       ⟨ (Γ ×dp A ==> 𝕃 B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
   mExt' Γ f = TransformDomain f mExt
 
-  mRet' : (Γ : DoublePoset ℓ ℓ' ℓ'') -> { A : DoublePoset ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
+  mRet' : (Γ : PosetBisim ℓ ℓ' ℓ'') -> { A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
   mRet' Γ f = record {
-    f = λ γ -> ret (DPMor.f f γ) ;
-    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (DPMor.f f γ1) (DPMor.f f γ2) (isMon f γ1≤γ2);
-    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (DPMor.f f γ1) (DPMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
+    f = λ γ -> ret (PBMor.f f γ) ;
+    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (PBMor.f f γ1) (PBMor.f f γ2) (isMon f γ1≤γ2);
+    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (PBMor.f f γ1) (PBMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
 
-  Bind : (Γ : DoublePoset ℓ ℓ' ℓ'') ->
+  Bind : (Γ : PosetBisim ℓ ℓ' ℓ'') ->
       ⟨ Γ ==> 𝕃 A ⟩ -> ⟨ Γ ×dp A ==> 𝕃 B ⟩ -> ⟨ Γ ==> 𝕃 B ⟩
   Bind Γ la f = S Γ (mExt' Γ f) la
 
@@ -425,7 +429,7 @@ module ClockedCombinators (k : Clock) where
   mMap' :
       ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
   mMap' f = record {
-    f = λ { (γ , la) -> mapL (λ a -> DPMor.f f (γ , a)) la} ;
+    f = λ { (γ , la) -> mapL (λ a -> PBMor.f f (γ , a)) la} ;
     isMon = λ { {γ , la} {γ' , la'} (γ≤γ' , la≤la') → {!!} } ;
     pres≈ = {!!} }
 
@@ -435,7 +439,7 @@ module ClockedCombinators (k : Clock) where
 
 
     -- Embedding of function spaces is monotone
-  mFunEmb : (A A' B B' : DoublePoset ℓ ℓ' ℓ'') ->
+  mFunEmb : (A A' B B' : PosetBisim ℓ ℓ' ℓ'') ->
       ⟨ A' ==> 𝕃 A ⟩ ->
       ⟨ B ==> B' ⟩ ->
       ⟨ (A ==> 𝕃 B) ==> (A' ==> 𝕃 B') ⟩
@@ -446,7 +450,7 @@ module ClockedCombinators (k : Clock) where
     --  _ $ (mExt' _ (_ $ (mMap' (K _ fBB')) ∘m Id)) ∘m (K _ fA'LA)
     -- mComp' (mExt' (mComp' (mMap' (K fBB')) Id)) (K fA'LA)
 
-  mFunProj : (A A' B B' : DoublePoset ℓ ℓ' ℓ'') ->
+  mFunProj : (A A' B B' : PosetBisim ℓ ℓ' ℓ'') ->
      ⟨ A ==> A' ⟩ ->
      ⟨ B' ==> 𝕃 B ⟩ ->
      ⟨ (A' ==> 𝕃 B') ==> 𝕃 (A ==> 𝕃 B) ⟩

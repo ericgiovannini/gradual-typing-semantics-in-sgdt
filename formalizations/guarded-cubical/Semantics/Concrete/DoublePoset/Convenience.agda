@@ -12,37 +12,37 @@ private
     ℓ ℓ' ℓ'' : Level
     ℓX ℓ'X ℓY ℓ'Y : Level
 
-is-set-DblPoset : (X : DoublePoset ℓ ℓ' ℓ'') -> isSet ⟨ X ⟩
-is-set-DblPoset X = DblPosetStr.is-set (X .snd)
+is-set-PosetBisim : (X : PosetBisim ℓ ℓ' ℓ'') -> isSet ⟨ X ⟩
+is-set-PosetBisim X = PosetBisimStr.is-set (X .snd)
 
-rel-≤ : (X : DoublePoset ℓ ℓ' ℓ'') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ')
-rel-≤ X = DblPosetStr._≤_ (X .snd)
+rel-≤ : (X : PosetBisim ℓ ℓ' ℓ'') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ')
+rel-≤ X = PosetBisimStr._≤_ (X .snd)
 
-prop-valued-≤ : (X : DoublePoset ℓ ℓ' ℓ'') -> isPropValued (DblPosetStr._≤_ (str X))
+prop-valued-≤ : (X : PosetBisim ℓ ℓ' ℓ'') -> isPropValued (PosetBisimStr._≤_ (str X))
 prop-valued-≤ X = IsOrderingRelation.is-prop-valued
-  (DblPosetStr.isOrderingRelation (str X))
+  (PosetBisimStr.isOrderingRelation (str X))
 
-reflexive-≤ : (X : DoublePoset ℓ ℓ' ℓ'') -> (x : ⟨ X ⟩) -> (rel-≤ X x x)
-reflexive-≤ X x = IsOrderingRelation.is-refl (DblPosetStr.isOrderingRelation (str X)) x
+reflexive-≤ : (X : PosetBisim ℓ ℓ' ℓ'') -> (x : ⟨ X ⟩) -> (rel-≤ X x x)
+reflexive-≤ X x = IsOrderingRelation.is-refl (PosetBisimStr.isOrderingRelation (str X)) x
 
-transitive-≤ : (X : DoublePoset ℓ ℓ' ℓ'') -> (x y z : ⟨ X ⟩) ->
+transitive-≤ : (X : PosetBisim ℓ ℓ' ℓ'') -> (x y z : ⟨ X ⟩) ->
   rel-≤ X x y -> rel-≤ X y z -> rel-≤ X x z
 transitive-≤ X x y z x≤y y≤z =
-  IsOrderingRelation.is-trans (DblPosetStr.isOrderingRelation (str X)) x y z x≤y y≤z
+  IsOrderingRelation.is-trans (PosetBisimStr.isOrderingRelation (str X)) x y z x≤y y≤z
 
-antisym-≤ : (X : DoublePoset ℓ ℓ' ℓ'') -> (x y : ⟨ X ⟩) ->
+antisym-≤ : (X : PosetBisim ℓ ℓ' ℓ'') -> (x y : ⟨ X ⟩) ->
   rel-≤ X x y -> rel-≤ X y x -> x ≡ y
 antisym-≤ X x y x≤y y≤x =
-  IsOrderingRelation.is-antisym (DblPosetStr.isOrderingRelation (str X)) x y x≤y y≤x
+  IsOrderingRelation.is-antisym (PosetBisimStr.isOrderingRelation (str X)) x y x≤y y≤x
 
-rel-≈ : (X : DoublePoset ℓ ℓ' ℓ'') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ'')
-rel-≈ X = DblPosetStr._≈_ (X .snd)
+rel-≈ : (X : PosetBisim ℓ ℓ' ℓ'') -> (⟨ X ⟩ -> ⟨ X ⟩ -> Type ℓ'')
+rel-≈ X = PosetBisimStr._≈_ (X .snd)
 
-reflexive-≈ : (X : DoublePoset ℓ ℓ' ℓ'') -> (x : ⟨ X ⟩) -> (rel-≈ X x x)
-reflexive-≈ X x = IsPER.is-refl (DblPosetStr.isPER (str X)) x
+reflexive-≈ : (X : PosetBisim ℓ ℓ' ℓ'') -> (x : ⟨ X ⟩) -> (rel-≈ X x x)
+reflexive-≈ X x = IsBisim.is-refl (PosetBisimStr.isBisim (str X)) x
 
-sym-≈ : (X : DoublePoset ℓ ℓ' ℓ'') -> (x y : ⟨ X ⟩) -> rel-≈ X x y -> rel-≈ X y x
-sym-≈ X x y x≈y = IsPER.is-sym (DblPosetStr.isPER (str X)) x y x≈y
+sym-≈ : (X : PosetBisim ℓ ℓ' ℓ'') -> (x y : ⟨ X ⟩) -> rel-≈ X x y -> rel-≈ X y x
+sym-≈ X x y x≈y = IsBisim.is-sym (PosetBisimStr.isBisim (str X)) x y x≈y
 
-prop-valued-≈ : (X : DoublePoset ℓ ℓ' ℓ'') -> isPropValued (DblPosetStr._≈_ (str X))
-prop-valued-≈ X = IsPER.is-prop-valued (DblPosetStr.isPER (str X))
+prop-valued-≈ : (X : PosetBisim ℓ ℓ' ℓ'') -> isPropValued (PosetBisimStr._≈_ (str X))
+prop-valued-≈ X = IsBisim.is-prop-valued (PosetBisimStr.isBisim (str X))
