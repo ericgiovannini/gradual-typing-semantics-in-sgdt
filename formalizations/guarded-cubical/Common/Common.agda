@@ -73,12 +73,12 @@ isoInv→isIso isom = (Iso.fun isom) , ((Iso.leftInv isom) , (Iso.rightInv isom)
 
 -- Definitions about relations and two-cells
 
-compRel : {ℓ' : Level} ->
+compRel : {ℓR1 ℓR2 : Level} ->
   {X : Type ℓX} {Y : Type ℓY} {Z : Type ℓZ}
-  (R1 : X -> Y -> Type ℓ') ->
-  (R2 : Y -> Z -> Type ℓ') ->
-  (X -> Z -> Type (ℓ-max ℓY ℓ'))
-compRel {ℓ' = ℓ'} {X = X} {Y = Y} {Z = Z} R1 R2 x z = Σ[ y ∈ Y ] R1 x y × R2 y z
+  (R1 : X -> Y -> Type ℓR1) ->
+  (R2 : Y -> Z -> Type ℓR2) ->
+  (X -> Z -> Type (ℓ-max ℓY (ℓ-max ℓR1 ℓR2)))
+compRel {X = X} {Y = Y} {Z = Z} R1 R2 x z = Σ[ y ∈ Y ] R1 x y × R2 y z
 
 isPropValuedRel : {A : Type ℓA} {B : Type ℓB} ->
   (R : A -> B -> Type ℓR) -> Type (ℓ-max (ℓ-max ℓA ℓB) ℓR)
