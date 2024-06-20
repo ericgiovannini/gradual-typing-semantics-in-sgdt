@@ -91,6 +91,9 @@ module LiftOrd (X : Type ℓX) (Y : Type ℓY) (R : X → Y → Type ℓR) where
      δ^n-monotone zero lx⊑ly = lx⊑ly
      δ^n-monotone (suc n) lx⊑ly = δ-monotone (δ^n-monotone n lx⊑ly)
 
+     ℧⊥ : ∀ (ly : L℧ Y) → ℧ ⊑ ly
+     ℧⊥ ly = ⊑℧⊥ ly
+
      -- prop-valued
      isProp⊑ : ∀ lx ly → isProp (lx ⊑ ly)
      isProp⊑ = fix aux
@@ -100,39 +103,48 @@ module LiftOrd (X : Type ℓX) (Y : Type ℓY) (R : X → Y → Type ℓR) where
          aux IH lx ly = {!!}
 
 
+module UpwardClosed
+  (X : Type ℓX) (Y : Type ℓY)
+  (_≤Y_ : Y → Y → Type ℓ≤Y)
+  (R : X → Y → Type ℓR)
+  (R-≤Y-upward : ∀ x y y' → R x y → y ≤Y y' → R x y')
+  where
 
-module Monotone (X : Type ℓX) (Y : Type ℓY)
-                (_≤X_ : X → X → Type ℓ≤X)
-                (_≤Y_ : Y → Y → Type ℓ≤Y)
-                (R : X → Y → Type ℓR)
-                (R-≤X-downward : ∀ x' x y → x' ≤X x → R x y → R x' y)
-                (R-≤Y-upward : ∀ x y y' → R x y → y ≤Y y' → R x y') where
+  open module LR = LiftOrd X Y R
+  open module ⊑Y = LiftOrd Y Y _≤Y_ renaming (_⊑_ to _⊑Y_) 
+
+  ⊑-upward' : ▹ (∀ lx ly ly' → lx ⊑ ly → ly ⊑Y ly' → lx ⊑ ly') →
+                 ∀ lx ly ly' → lx ⊑ ly → ly ⊑Y ly' → lx ⊑ ly'
+  ⊑-upward' _ .(η x) .(η y) .(η y') (⊑ηη x y xRy) (⊑ηη .y y' y≤y') =
+    LR.⊑ηη x y' (R-≤Y-upward x y y' xRy y≤y')
+  ⊑-upward' _ .℧ ly ly' (⊑℧⊥ .ly) H2 =
+    LR.⊑℧⊥ ly'
+  ⊑-upward' IH .(θ lx~) .(θ ly~) .(θ ly'~) (⊑θθ lx~ ly~ H~) (⊑θθ .ly~ ly'~ H'~) =
+    LR.⊑θθ lx~ ly'~ (λ t → IH t (lx~ t) (ly~ t) (ly'~ t) (H~ t) (H'~ t)) -- auto solved this!
+
+  ⊑-upward = fix ⊑-upward'
+
+
+module DownwardClosed
+  (X : Type ℓX) (Y : Type ℓY)
+  (_≤X_ : X → X → Type ℓ≤X)
+  (R : X → Y → Type ℓR)
+  (R-≤X-downward : ∀ x' x y → x' ≤X x → R x y → R x' y)
+  where
 
   open module LR = LiftOrd X Y R
   open module ⊑X = LiftOrd X X _≤X_ renaming (_⊑_ to _⊑X_) 
-  open module ⊑Y = LiftOrd Y Y _≤Y_ renaming (_⊑_ to _⊑Y_) 
 
-  ⊑-monotone' : ▹ (∀ lx ly ly' → lx ⊑ ly → ly ⊑Y ly' → lx ⊑ ly') →
-                   ∀ lx ly ly' → lx ⊑ ly → ly ⊑Y ly' → lx ⊑ ly'
-  ⊑-monotone' _ .(η x) .(η y) .(η y') (⊑ηη x y xRy) (⊑ηη .y y' y≤y') =
-    LR.⊑ηη x y' (R-≤Y-upward x y y' xRy y≤y')
-  ⊑-monotone' _ .℧ ly ly' (⊑℧⊥ .ly) H2 =
-    LR.⊑℧⊥ ly'
-  ⊑-monotone' IH .(θ lx~) .(θ ly~) .(θ ly'~) (⊑θθ lx~ ly~ H~) (⊑θθ .ly~ ly'~ H'~) =
-    LR.⊑θθ lx~ ly'~ (λ t → IH t (lx~ t) (ly~ t) (ly'~ t) (H~ t) (H'~ t)) -- auto solved this!
-
-  ⊑-montone = fix ⊑-monotone'
-
-  ⊑-antitone' : ▹ (∀ lx' lx ly → lx' ⊑X lx → lx ⊑ ly → lx' ⊑ ly) →
-                   ∀ lx' lx ly → lx' ⊑X lx → lx ⊑ ly → lx' ⊑ ly
-  ⊑-antitone' IH .(η x') .(η x) .(η y) (⊑ηη x' x x'≤x) (⊑ηη .x y xRy) =
+  ⊑-downward' : ▹ (∀ lx' lx ly → lx' ⊑X lx → lx ⊑ ly → lx' ⊑ ly) →
+                  ∀ lx' lx ly → lx' ⊑X lx → lx ⊑ ly → lx' ⊑ ly
+  ⊑-downward' IH .(η x') .(η x) .(η y) (⊑ηη x' x x'≤x) (⊑ηη .x y xRy) =
     LR.⊑ηη x' y (R-≤X-downward x' x y x'≤x xRy)
-  ⊑-antitone' IH .℧ lx ly (⊑℧⊥ .lx) H2 =
+  ⊑-downward' IH .℧ lx ly (⊑℧⊥ .lx) H2 =
     LR.⊑℧⊥ ly
-  ⊑-antitone' IH .(θ lx'~) .(θ lx~) .(θ ly~) (⊑θθ lx'~ lx~ H~) (⊑θθ .lx~ ly~ H'~) =
+  ⊑-downward' IH .(θ lx'~) .(θ lx~) .(θ ly~) (⊑θθ lx'~ lx~ H~) (⊑θθ .lx~ ly~ H'~) =
     LR.⊑θθ lx'~ ly~ (λ t → IH t (lx'~ t) (lx~ t) (ly~ t) (H~ t) (H'~ t))
 
-  ⊑-antitone = fix ⊑-antitone'
+  ⊑-downward = fix ⊑-downward'
   
 
 

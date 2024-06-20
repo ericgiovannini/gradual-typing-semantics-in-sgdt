@@ -303,6 +303,7 @@ module _ where
 
   _∘p_ : PBMor Y Z → PBMor X Y → PBMor X Z
   g ∘p f = Comp f g
+  infixl 20 _∘p_ -- TODO is this a good level?
 
 {-
   IdL : (f : PBMor X Y) → Comp Id f ≡ f

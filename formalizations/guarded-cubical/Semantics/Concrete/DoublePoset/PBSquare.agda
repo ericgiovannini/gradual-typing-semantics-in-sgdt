@@ -104,7 +104,17 @@ PBSq cᵢ cₒ f g = TwoCell (cᵢ .PBRel.R) (cₒ .PBRel.R) (f .PBMor.f) (g .PB
 --          cₒ
 
 
-
+isPropPBSq :
+  {Aᵢ  : PosetBisim ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ}
+  {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
+  {Aₒ  : PosetBisim ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ} 
+  {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} →
+  (cᵢ  : PBRel Aᵢ Aᵢ' ℓcᵢ) →
+  (cₒ  : PBRel Aₒ Aₒ' ℓcₒ) →
+  (f   : PBMor Aᵢ  Aₒ) →
+  (g   : PBMor Aᵢ' Aₒ') →
+  isProp (PBSq cᵢ cₒ f g)
+isPropPBSq cᵢ cₒ f g = isPropTwoCell (cₒ .PBRel.is-prop-valued)
 
 
 -- "Horizontal" identity squares.
@@ -112,22 +122,22 @@ PBSq cᵢ cₒ f g = TwoCell (cᵢ .PBRel.R) (cₒ .PBRel.R) (f .PBMor.f) (g .PB
 -- The existence of these squares relies on the fact that f is
 -- *montone*.
 
-IdSqH : {ℓo : Level} →
+Predom-IdSqH : -- {ℓo : Level} →
   {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ}
   {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} →
   (f : PBMor Aᵢ Aₒ) →
-  PBSq (idRel {ℓo = ℓo} Aᵢ) (idRel {ℓo = ℓo} Aₒ) f f
-IdSqH f x₁ x₂ x₁≤x₂ =
-  lift (f .PBMor.isMon (lower x₁≤x₂))
+  PBSq (idPRel Aᵢ) (idPRel Aₒ) f f
+Predom-IdSqH f x₁ x₂ x₁≤x₂ =
+  (f .PBMor.isMon x₁≤x₂)
 
 -- "Vertical" identity squares.
 
-IdSqV : {ℓo : Level} →
+Predom-IdSqV : -- {ℓo : Level} →
   {A : PosetBisim ℓA ℓ≤A ℓ≈A}
   {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
   (c : PBRel A A' ℓc) →
   PBSq c c Id Id
-IdSqV c x y xRy = xRy
+Predom-IdSqV c x y xRy = xRy
   
 
 
@@ -150,7 +160,7 @@ IdSqV c x y xRy = xRy
 --           c₃
 
 
-compSqV :
+CompSqV :
   {A₁  : PosetBisim ℓA₁  ℓ≤A₁  ℓ≈A₁ }
   {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
   {A₂  : PosetBisim ℓA₂  ℓ≤A₂  ℓ≈A₂ }
@@ -167,7 +177,7 @@ compSqV :
   PBSq c₁ c₂ f₁ g₁ →
   PBSq c₂ c₃ f₂ g₂ →
   PBSq c₁ c₃ (f₂ ∘p f₁) (g₂ ∘p g₁)
-compSqV α₁ α₂ x y xRy = α₂ _ _ (α₁ _ _ xRy)
+CompSqV α₁ α₂ x y xRy = α₂ _ _ (α₁ _ _ xRy)
 
 
 
@@ -193,7 +203,7 @@ compSqV α₁ α₂ x y xRy = α₂ _ _ (α₁ _ _ xRy)
 --            Aₒ₁ o-------* Aₒ₂
 --                cₒ₁ ⊙ cₒ₂
 
-compSqH :
+CompSqH :
   {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁}
   {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂}
   {Aᵢ₃ : PosetBisim ℓAᵢ₃ ℓ≤Aᵢ₃ ℓ≈Aᵢ₃}
@@ -210,7 +220,7 @@ compSqH :
   PBSq cᵢ₁ cₒ₁  f g →
   PBSq cᵢ₂ cₒ₂ g h →
   PBSq (cᵢ₁ ⊙ cᵢ₂) (cₒ₁ ⊙ cₒ₂) f h
-compSqH {g = g} α β x z xcᵢ₁cᵢ₂z =
+CompSqH {g = g} α β x z xcᵢ₁cᵢ₂z =
   PTmap
     (λ (y , xcᵢ₁y , ycᵢ₂z) →
       (g $ y)

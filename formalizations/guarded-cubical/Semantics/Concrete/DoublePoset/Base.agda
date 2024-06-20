@@ -2,6 +2,7 @@ module Semantics.Concrete.DoublePoset.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Function
 
 open import Cubical.Relation.Binary.Order.Poset.Base
 open import Cubical.Relation.Binary.Base
@@ -47,7 +48,6 @@ record IsBisim {A : Type ℓ} (_≈_ : A -> A -> Type ℓ') : Type (ℓ-max ℓ 
 
 unquoteDecl IsBisimIsoΣ = declareRecordIsoΣ IsBisimIsoΣ (quote IsBisim)
 
-
 record PosetBisimStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ''))) where
 
   constructor posetbisimstr
@@ -87,4 +87,28 @@ PosetBisim→Poset X = ⟨ X ⟩ ,
 
 
 
+-- Bisimilarity extends to functions
+
+_≈fun_ :
+  {ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓAₒ ℓ≤Aₒ ℓ≈Aₒ : Level}
+  {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
+  (f g : ⟨ Aᵢ ⟩ → ⟨ Aₒ ⟩) → Type (ℓ-max (ℓ-max ℓAᵢ ℓ≈Aᵢ) ℓ≈Aₒ)
+_≈fun_ {Aᵢ = Aᵢ} {Aₒ = Aₒ} f g = ∀ x x' -> x Aᵢ.≈ x' -> f x Aₒ.≈ g x'
+  where
+    module Aᵢ = PosetBisimStr (Aᵢ .snd)
+    module Aₒ = PosetBisimStr (Aₒ .snd)
+
+-- Closure under composition of bisimilarity
+module _
+  {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level}
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+  (f₁ g₁ : ⟨ A₁ ⟩ → ⟨ A₂ ⟩)
+  (f₂ g₂ : ⟨ A₂ ⟩ → ⟨ A₃ ⟩) where
+
+  ≈comp : (_≈fun_ {Aᵢ = A₁} {Aₒ = A₂} f₁ g₁) →
+          (_≈fun_ {Aᵢ = A₂} {Aₒ = A₃} f₂ g₂) →
+           _≈fun_ {Aᵢ = A₁} {Aₒ = A₃} (f₂ ∘ f₁) (g₂ ∘ g₁)
+  ≈comp f₁≈g₁ f₂≈g₂ x y x≈y = f₂≈g₂ (f₁ x) (g₁ y) (f₁≈g₁ x y x≈y)
 

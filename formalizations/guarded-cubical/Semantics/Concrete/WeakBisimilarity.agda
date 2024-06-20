@@ -146,38 +146,6 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
 
 
 
-
-  -- TODO prove that this is reflexive and symmetric
-  -- TODO prove that θ preserves bisimilarity
-  -- TODO prove that δ preserves bisimilarity
-
-
-
-  is-prop : isPropValued R → isPropValued _≈_
-  is-prop isPropValuedR = fix aux
-    where
-      aux : ▹ (isPropValued _≈_) → isPropValued _≈_
-      aux IH .(η x) .(η y) (≈ηη x y H1) (≈ηη .x .y H2) =
-        λ i → ≈ηη x y (isPropValuedR x y H1 H2 i)
-      aux IH .(η x) .(η y) (≈ηη x y H1) (≈ηθ .x .(η y) H2) = ⊥.rec (PTrec isProp⊥ (λ (n , y' , eq , _) → Lη≠Lθ eq) H2)
-      aux IH .(η x) .(η y) (≈ηη x y H1) (≈θη .(η x) .y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H2)
-      aux IH .(η x) .(η y) (≈ηθ x .(η y) H1) (≈ηη .x y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1)
-      aux IH .(η x) ly (≈ηθ x .ly H1) (≈ηθ .x .ly H2) = λ i → ≈ηθ x ly (eq i)
-        -- Because the type of H1 and H2 is the same and is a Prop, H1 ≡ H2!
-        where
-          eq : H1 ≡ H2
-          eq = isPropPropTrunc H1 H2
-      aux IH .(η x) .(η y) (≈ηθ x .(η y) H1) (≈θη .(η x) y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
-      aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηη x .y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1)
-      aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηθ x .(η y) H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
-      aux IH lx .(η y) (≈θη .lx y H1) (≈θη .lx .y H2) = {!!}
-      aux IH .(θ lx~) .(θ ly~) (≈θθ lx~ ly~ H1~) (≈θθ .lx~ .ly~ H2~) =
-        λ i → ≈θθ lx~ ly~ (later-ext eq i)
-        where
-          eq : ▸ (λ t → H1~ t ≡ H2~ t)
-          eq t = IH t (lx~ t) (ly~ t) (H1~ t) (H2~ t)
-
-
   -- Eliminator for the weak bisimilarity type.  We are given a
   -- dependent type B parameterized by lx, ly, and a proof that lx ≈I
   -- ly.  The eliminator allows us to construct a proof that for any
@@ -232,50 +200,81 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
   -- ≈-η (η x) y Rxy = (0 , x , refl , lower Rxy)
   -- ≈-η (θ lx~) y H = H
 
-  ≈-δ^n∘η-δ^m∘η-sufficient : (x y : X) (n : ℕ) (m : ℕ) →
-    R x y → (δ ^ n) (η x) ≈ (δ ^ m) (η y)
-  ≈-δ^n∘η-δ^m∘η-sufficient x y zero zero xRy = ≈ηη x y xRy
-  ≈-δ^n∘η-δ^m∘η-sufficient x y zero (suc m) xRy = ≈ηθ x ((δ ^ suc m) (η y)) ∣ m , y , refl , xRy ∣₁
-  ≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) zero xRy = ≈θη ((δ ^ suc n) (η x)) y ∣ n , x , refl , xRy ∣₁
-  ≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) (suc m) xRy = ≈θθ _ _ (λ t → ≈-δ^n∘η-δ^m∘η-sufficient x y n m xRy)
 
--- ≈θη ((δ ^ suc n) (η x)) y ∣ n , x , refl , H ∣₁
+  module Properties where
+
+    is-prop : isPropValued R → isPropValued _≈_
+    is-prop isPropValuedR = fix aux
+      where
+        aux : ▹ (isPropValued _≈_) → isPropValued _≈_
+        aux IH .(η x) .(η y) (≈ηη x y H1) (≈ηη .x .y H2) =
+          λ i → ≈ηη x y (isPropValuedR x y H1 H2 i)
+        aux IH .(η x) .(η y) (≈ηη x y H1) (≈ηθ .x .(η y) H2) = ⊥.rec (PTrec isProp⊥ (λ (n , y' , eq , _) → Lη≠Lθ eq) H2)
+        aux IH .(η x) .(η y) (≈ηη x y H1) (≈θη .(η x) .y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H2)
+        aux IH .(η x) .(η y) (≈ηθ x .(η y) H1) (≈ηη .x y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1)
+        aux IH .(η x) ly (≈ηθ x .ly H1) (≈ηθ .x .ly H2) = λ i → ≈ηθ x ly (eq i)
+          -- Because the type of H1 and H2 is the same and is a Prop, H1 ≡ H2!
+          where
+            eq : H1 ≡ H2
+            eq = isPropPropTrunc H1 H2
+        aux IH .(η x) .(η y) (≈ηθ x .(η y) H1) (≈θη .(η x) y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
+        aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηη x .y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1)
+        aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηθ x .(η y) H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
+        aux IH lx .(η y) (≈θη .lx y H1) (≈θη .lx .y H2) = {!!}
+        aux IH .(θ lx~) .(θ ly~) (≈θθ lx~ ly~ H1~) (≈θθ .lx~ .ly~ H2~) =
+          λ i → ≈θθ lx~ ly~ (later-ext eq i)
+          where
+            eq : ▸ (λ t → H1~ t ≡ H2~ t)
+            eq t = IH t (lx~ t) (ly~ t) (H1~ t) (H2~ t)
+
+    ≈-δ^n∘η-δ^m∘η-sufficient : (x y : X) (n : ℕ) (m : ℕ) →
+      R x y → (δ ^ n) (η x) ≈ (δ ^ m) (η y)
+    ≈-δ^n∘η-δ^m∘η-sufficient x y zero zero xRy = ≈ηη x y xRy
+    ≈-δ^n∘η-δ^m∘η-sufficient x y zero (suc m) xRy = ≈ηθ x ((δ ^ suc m) (η y)) ∣ m , y , refl , xRy ∣₁
+    ≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) zero xRy = ≈θη ((δ ^ suc n) (η x)) y ∣ n , x , refl , xRy ∣₁
+    ≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) (suc m) xRy = ≈θθ _ _ (λ t → ≈-δ^n∘η-δ^m∘η-sufficient x y n m xRy)
+
+    -- ≈θη ((δ ^ suc n) (η x)) y ∣ n , x , refl , H ∣₁
 
 
-  -- If lx ≈ ly, then lx ≈ δ ly.
-  -- This is more general than the corresponding "homogeneous" version
-  -- i.e., x ≈ (δ x). This proof is more involved because we need to
-  -- consider both lx and ly, which leads to complications in the case
-  -- where lx is θ and ly is η, because when we add a θ on the right,
-  -- now both sides are a θ and so we change to a different case of
-  -- the relation than the one used to prove the assumption lx ≈ ly.
-  δ-closed-r : ▹ ((lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)) ->
-                  (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
-  δ-closed-r _ lx ly H =
-           Elim.f
-              {B = λ lx' ly' lx'≈ly' → lx' ≈ (δ ly')}
-              (λ _ x y xRy → ≈ηθ _ _ ∣ 0 , y , refl , xRy ∣₁)
+    -- If lx ≈ ly, then lx ≈ δ ly.
+    -- This is more general than the corresponding "homogeneous" version
+    -- i.e., x ≈ (δ x). This proof is more involved because we need to
+    -- consider both lx and ly, which leads to complications in the case
+    -- where lx is θ and ly is η, because when we add a θ on the right,
+    -- now both sides are a θ and so we change to a different case of
+    -- the relation than the one used to prove the assumption lx ≈ ly.
+    δ-closed-r' : ▹ ((lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)) ->
+                     (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
+    δ-closed-r' _ lx ly H =
+             Elim.f
+                {B = λ lx' ly' lx'≈ly' → lx' ≈ (δ ly')}
+                (λ _ x y xRy → ≈ηθ _ _ ∣ 0 , y , refl , xRy ∣₁)
 
-              -- In this case and the next case, we need to use that ≈
-              -- is prop-valued here so we can remove the truncation
-              -- from the hypothesis.
-              (λ _ x ly H → PTrec {!!} (λ {(n , y , eq , xRy) →
-                ≈ηθ _ _ ∣ suc n , y , (cong δ eq) , xRy ∣₁}) H)
+                -- In this case and the next case, we need to use that ≈
+                -- is prop-valued here so we can remove the truncation
+                -- from the hypothesis.
+                (λ _ x ly H → PTrec {!!} (λ {(n , y , eq , xRy) →
+                  ≈ηθ _ _ ∣ suc n , y , (cong δ eq) , xRy ∣₁}) H)
 
-              (λ _ lx y H → PTrec {!!} (λ {(n , x , eq , xRy) →
-                transport (cong₂ _≈_ (sym eq) refl) (≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) 1 xRy)}) H)
+                (λ _ lx y H → PTrec {!!} (λ {(n , x , eq , xRy) →
+                  transport (cong₂ _≈_ (sym eq) refl) (≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) 1 xRy)}) H)
 
-              (λ IH lx~ ly~ H~ → ≈θθ lx~ (next (θ ly~)) (λ t → 
-                 -- NTS: lx~ t ≈ (θ ly~)
-                 -- Know: ly~ ≡ (next (ly~ t)) (by tick irrelevance + later extensionality)
-                 -- ==> θ ly~ ≡ θ (next (ly~ t)) ≡ δ (ly~ t)
-                 -- Know: lx~ t ≈ δ (ly~ t) by IH
-                 --
-                 -- Have: lx~ t ≈ δ (ly~ t)
-                 --             ≡ θ (next (ly~ t))
-                 --             ≡ θ ly~
-                 transport (cong₂ _≈_ refl (congS θ (next-Mt≡M ly~ t))) (IH t (lx~ t) (ly~ t) (H~ t))
-                )) lx ly H
+                (λ IH lx~ ly~ H~ → ≈θθ lx~ (next (θ ly~)) (λ t → 
+                   -- NTS: lx~ t ≈ (θ ly~)
+                   -- Know: ly~ ≡ (next (ly~ t)) (by tick irrelevance + later extensionality)
+                   -- ==> θ ly~ ≡ θ (next (ly~ t)) ≡ δ (ly~ t)
+                   -- Know: lx~ t ≈ δ (ly~ t) by IH
+                   --
+                   -- Have: lx~ t ≈ δ (ly~ t)
+                   --             ≡ θ (next (ly~ t))
+                   --             ≡ θ ly~
+                   transport (cong₂ _≈_ refl (congS θ (next-Mt≡M ly~ t))) (IH t (lx~ t) (ly~ t) (H~ t))
+                  )) lx ly H
+
+    δ-closed-r :  (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
+    δ-closed-r = fix δ-closed-r'
+
               
 
 -- aux : (H : θ lx~ ≈' θ ly~) → θ lx~ ≈' δ (θ ly~)
@@ -283,10 +282,16 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
 --            (cong ∥_∥₁ (cong₂ _≈'_ refl (congS θ (next-Mt≡M ly~ t))))
 --            (IH t (lx~ t) (ly~ t) (≈→≈p _ _ (H t))))
 
-  module Symmetric (isSymR : isSym R) where
 
-    symmetric : isSym _≈_
-    symmetric lx ly lx≈ly =
+    reflexive : (isReflR : isRefl R) → isRefl _≈_
+    reflexive isReflR = fix aux
+      where
+        aux : ▹ (isRefl _≈_) → isRefl _≈_
+        aux _ (η x) = ≈ηη x x (isReflR x)
+        aux IH (θ lx~) = ≈θθ lx~ lx~ (λ t → IH t (lx~ t))
+
+    symmetric : (isSymR : isSym R) → isSym _≈_
+    symmetric isSymR lx ly lx≈ly =
       Elim.f
       {B = λ lx ly lx≈ly → ly ≈ lx}
       (λ _ x y xRy → (≈ηη y x (isSymR x y xRy)))
@@ -296,6 +301,17 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
       lx ly lx≈ly
 
 
+  -- TODO prove that θ preserves bisimilarity
+    θ-pres≈ : {lx~ ly~ : ▹ L X} →
+       ▸ (λ t → lx~ t ≈ ly~ t) → θ lx~ ≈ θ ly~
+    θ-pres≈ = {!!}
+
+
+
+  -- TODO prove that δ preserves bisimilarity
+    δ-pres≈ : {lx ly : L X} →
+      lx ≈ ly → (δ lx) ≈ (δ ly)
+    δ-pres≈ = {!!}
 
 
 -- TODO equivalence with sum type (needed for adequacy proof where we
