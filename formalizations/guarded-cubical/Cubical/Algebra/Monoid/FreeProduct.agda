@@ -118,9 +118,19 @@ module Rec {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
     identityᵣ* identityₗ* assoc* (λ _ -> trunc*)
 
   
-_⋆_ : Monoid ℓ -> Monoid ℓ' -> Monoid (ℓ-max ℓ ℓ')
-M ⋆ N = makeMonoid {M = FreeMonoidProd M N} ε _·_ trunc assoc identityᵣ identityₗ
+_⊕_ : Monoid ℓ -> Monoid ℓ' -> Monoid (ℓ-max ℓ ℓ')
+M ⊕ N = makeMonoid {M = FreeMonoidProd M N} ε _·_ trunc assoc identityᵣ identityₗ
 
+
+
+-- isSetMonoidHom : (M : Monoid ℓ) (N : Monoid ℓ') → isSet (MonoidHom M N)
+-- isSetMonoidHom M N = {!!}
+
+
+-- Injecting a pair of elements into the free product
+
+pair : {M : Monoid ℓ} {N : Monoid ℓ'} → ⟨ M ⟩ → ⟨ N ⟩ → ⟨ M ⊕ N ⟩
+pair m n = ⟦ m ⟧₁ · ⟦ n ⟧₂
 
 -- Universal property of the free product
 
@@ -128,14 +138,14 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
 
   open MonoidStr
 
-  i₁ : MonoidHom M (M ⋆ N)
+  i₁ : MonoidHom M (M ⊕ N)
   i₁ = ⟦_⟧₁ , (monoidequiv id₁ comp₁)
 
-  i₂ : MonoidHom N (M ⋆ N)
+  i₂ : MonoidHom N (M ⊕ N)
   i₂ = ⟦_⟧₂ , (monoidequiv id₂ comp₂)
 
   case : (P : Monoid ℓ'') (f : MonoidHom M P) (g : MonoidHom N P) ->
-    isContr (Σ[ h ∈ MonoidHom (M ⋆ N) P ] (f ≡ h ∘hom i₁) × (g ≡ h ∘hom i₂))
+    isContr (Σ[ h ∈ MonoidHom (M ⊕ N) P ] (f ≡ h ∘hom i₁) × (g ≡ h ∘hom i₂))
   case P f g .fst .fst .fst =
     Rec.f (f .fst) (g .fst) P.ε P._·_ (f .snd .presε) (g .snd .presε)
           (f .snd .pres·) (g .snd .pres·) P.·IdR P.·IdL P.·Assoc P.is-set
@@ -143,8 +153,83 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
       module P = MonoidStr (P .snd)
   case P f g .fst .fst .snd = monoidequiv refl (λ x y -> refl)
   case P f g .fst .snd = (eqMonoidHom _ _ refl) , (eqMonoidHom _ _ refl)
-  case P f g .snd = {!!}
+  case P f g .snd (h , eq1 , eq2) =
+    ΣPathPProp
+      (λ h' → isProp× (isSetMonoidHom M P f (h' ∘hom i₁))
+                       {!!})
+      (eqMonoidHom _ _ (funExt aux))
+        where
+          aux : (x : ⟨ M ⊕ N ⟩) → _
+          aux x = {!!} -- can use the eliminator!
 
   [_,hom_] : {P : Monoid ℓ''} (f : MonoidHom M P) (g : MonoidHom N P) ->
-    MonoidHom (M ⋆ N) P
+    MonoidHom (M ⊕ N) P
   [_,hom_] {P = P} f g = fst (fst (case P f g))
+
+
+-- Eliminating from M ⊕ N into a type A parameterized by elements of
+-- M ⊕ N and elements of an arbitrary monoid P.
+module Elim2
+  {ℓM ℓN ℓP ℓA : Level}
+  (M : Monoid ℓM)
+  (N : Monoid ℓN)
+  (P : Monoid ℓP)
+  (A : ⟨ M ⊕ N ⟩ → ⟨ P ⟩ → Type ℓA)
+  (AProp : ∀ {x y} → isProp (A x y))
+  (f : MonoidHom M P) (g : MonoidHom N P)
+  -- (isMon : MonoidStr (Σ[ x ∈ ⟨ M ⊕ N ⟩ ] A x ([ f ,hom g ] .fst x)))
+  where
+
+  module M = MonoidStr (M .snd)
+  module N = MonoidStr (N .snd)
+
+  hom : MonoidHom (M ⊕ N) P
+  hom =  [ f ,hom g ]
+
+  h = hom .fst
+
+   -- e.g. A x y = Sq c c (ptbA x) (ptbA' y)
+   -- Σ x . A x (push x) = Σ x . Sq c c (ptbA x) (ptbA' (push x))
+  
+  --module Mon = MonoidStr isMon
+
+ --   (_·*_ : ∀ {x y} -> B x -> B y -> B (x · y))
+  elim2 : (⟦_⟧₁* : (m : ⟨ M ⟩) → A ⟦ m ⟧₁ (h ⟦ m ⟧₁)) →
+          (⟦_⟧₂* : (n : ⟨ N ⟩) → A ⟦ n ⟧₂ (h ⟦ n ⟧₂)) →
+          (ε* : A ε (h ε)) →
+          (_·*_ : {x y : ⟨ M ⊕ N ⟩} → A x (h x) → A y (h y) → A (x · y) (h (x · y))) →
+          (∀ (x : ⟨ M ⊕ N ⟩) → A x (h x))
+  elim2 ⟦_⟧₁* ⟦_⟧₂* ε* _·*_ = Elim.f {B = λ x → A x (h x)}
+          (λ m → ⟦ m ⟧₁*)
+          (λ n → ⟦ n ⟧₂*)
+          ε*
+          _·*_
+          (isProp→PathP (λ i → AProp) ⟦ M.ε ⟧₁* ε*)
+          (toPathP (AProp (transport (λ i → A (id₂ i) (h (id₂ i))) _) ε*))
+          (λ m m' → toPathP (AProp _ _))
+          (λ n n' → toPathP (AProp _ _))
+          (λ xs → toPathP (AProp _ _))
+          (λ xs → toPathP (AProp _ _))
+          (λ xs ys zx → toPathP (AProp _ _))
+          (λ _ → isProp→isSet AProp)
+
+
+
+          -- Elim.f {B = λ x → Σ[ h ∈ MonoidHom (M ⊕ N) P ] (∀ (x : ⟨ M ⊕ N ⟩) → A (h .fst x))}
+          -- (λ m → {!!} , {!!})
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+          -- {!!}
+    -- Σ[ h ∈ MonoidHom (M ⊕ N) P ] (∀ (x : ⟨ M ⊕ N ⟩) → A (h .fst x))
+  
+  
+ 

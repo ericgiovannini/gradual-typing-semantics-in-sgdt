@@ -7,7 +7,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.Predomains.Predomains where
+module Semantics.Concrete.Predomains.Predomains (k : Clock) where
 
 open import Common.Common
 open import Common.LaterProperties
@@ -19,6 +19,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Transport
+open import Cubical.Foundations.Function hiding (_$_)
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
@@ -37,15 +38,20 @@ open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.Constructions
 open import Semantics.Concrete.DoublePoset.DPMorRelation
 open import Semantics.Concrete.DoublePoset.PBSquare
+open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 
-open import Semantics.Concrete.DoublePoset.ErrorDomain
+open import Semantics.Concrete.DoublePoset.ErrorDomain k
+open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+
+open import Semantics.Concrete.Predomains.Perturbations k
 
 private
   variable
     ℓ ℓ' ℓ'' ℓ''' : Level
     ℓ≤ ℓ≈ ℓM : Level
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
-    ℓc : Level
+    ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
+    ℓc ℓd : Level
 
   variable
     ℓX ℓY ℓR : Level
@@ -56,40 +62,6 @@ open PBMor
 ---------------------------------------------------------------
 -- Value Types
 ---------------------------------------------------------------
-
-
--- Given a poset-with-bisimilarity X, a pre-perturbation on X is an endomorphism on X
--- that is bisimilar to the identity.
-
-PrePtb : (X : PosetBisim ℓ ℓ' ℓ'') → Type (ℓ-max (ℓ-max ℓ ℓ') ℓ'')
-PrePtb X = Σ[ f ∈ PBMor X X ] _≈mon_ {X = X} {Y = X} f Id
-
-PrePtbId : {X : PosetBisim ℓ ℓ' ℓ''} → PrePtb X
-PrePtbId .fst = Id
-PrePtbId {X = X} .snd = ≈mon-refl {X = X} {Y = X} Id
-
-PrePtb∘ : {X : PosetBisim ℓ ℓ' ℓ''} → PrePtb X → PrePtb X → PrePtb X
-PrePtb∘ f g .fst = Comp (f .fst) (g .fst)
-PrePtb∘ f g .snd = λ x y x≈y → g .snd (f .fst $ x) y (f .snd x y x≈y)
-
-
--- Equality of pre-perturbations follows from equality of the underlying endomorphisms.
-
-PrePtb≡ : {X : PosetBisim ℓ ℓ' ℓ''} →
-  (f1 f2 : PrePtb X) →
-  f1 .fst .f ≡ f2 .fst .f → f1 ≡ f2
-PrePtb≡ f g eq = Σ≡Prop (λ h → ≈mon-prop h Id) (eqPBMor _ _ eq)
-
-
--- The pre-perturbations on X form a monoid under composition.
-
-Endo : (X : PosetBisim ℓ ℓ' ℓ'') -> Monoid (ℓ-max (ℓ-max ℓ ℓ') ℓ'')
-Endo X = makeMonoid {M = PrePtb X}
-  PrePtbId PrePtb∘ {!!}
-  (λ f g h → PrePtb≡ _ _ refl)
-  (λ f → PrePtb≡ _ _ refl)
-  (λ f → PrePtb≡ _ _ refl)
-
 
 
 -- record ValType (ℓ ℓ' ℓ'' ℓ''' : Level) :
@@ -112,15 +84,15 @@ record ValTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (A : Type ℓ) :
 
   field
     is-poset-with-bisim : PosetBisimStr ℓ≤ ℓ≈ A
-    Ptb : Monoid ℓM
-    hom : MonoidHom Ptb (Endo (A , is-poset-with-bisim))
+    PtbV : Monoid ℓM
+    interpV : MonoidHom PtbV (Endo (A , is-poset-with-bisim))
 
   open PosetBisimStr is-poset-with-bisim public
   posetWithBisim : PosetBisim ℓ ℓ≤ ℓ≈
   posetWithBisim = A , is-poset-with-bisim
 
-  ι : ⟨ Ptb ⟩ → PBMor posetWithBisim posetWithBisim
-  ι p = hom .fst p .fst
+  ι : ⟨ PtbV ⟩ → PBMor posetWithBisim posetWithBisim
+  ι p = interpV .fst p .fst
 
   
 
@@ -132,15 +104,7 @@ ValType→PosetBisim A = ⟨ A ⟩ , (A .snd .is-poset-with-bisim)
   where open ValTypeStr
 
 
--- Notion of an endomorphism of value types "belonging to" the monoid
--- of perturbations under the specified homomorphism of monoids.
- 
-monoidContains : {X : PosetBisim ℓ ℓ≤ ℓ≈} →
-  (f : PrePtb X) → (M : Monoid ℓM) → (hom : MonoidHom M (Endo X)) → Type {!!}
-monoidContains {X = X} f M hom =
-  Σ[ p ∈ ⟨ M ⟩ ] (hom .fst p ≡ f)
 
-syntax monoidContains f M hom = f ∈[ hom ] M
 
 -- Later for value types
 
@@ -221,8 +185,8 @@ module _ {k : Clock} where
   P▸ : ▹ ValType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
   P▸ X~ .fst = ▸ (λ t → ⟨ X~ t ⟩)
   P▸ X~ .snd .is-poset-with-bisim = {!!}
-  P▸ X~ .snd .Ptb = Monoid▸ (λ t → X~ t .snd .Ptb)
-  P▸ X~ .snd .hom = {!!}
+  P▸ X~ .snd .PtbV = Monoid▸ (λ t → X~ t .snd .PtbV)
+  P▸ X~ .snd .interpV = {!!}
 
   -- Later for value types
   P▹ : ValType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM

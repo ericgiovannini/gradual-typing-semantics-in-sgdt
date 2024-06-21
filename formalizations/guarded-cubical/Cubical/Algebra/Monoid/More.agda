@@ -8,18 +8,21 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
 
 open import Cubical.Data.Nat hiding (_·_)
 open import Cubical.Data.Unit
-
-
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.CommMonoid.Base
 
-
 open import Cubical.Data.Sigma
+
+open import Cubical.Reflection.Base
+open import Cubical.Reflection.RecordEquiv
+
+
 
 private
   variable
@@ -28,6 +31,24 @@ private
 
 open IsMonoidHom
 
+
+-- Opposite of a monoid
+
+_^op : (M : Monoid ℓ) → Monoid ℓ
+M ^op = makeMonoid {M = ⟨ M ⟩}
+                   M.ε (λ x y → y M.· x)
+                   M.is-set (λ x y z → sym (M.·Assoc z y x)) M.·IdL M.·IdR
+  where
+    module M = MonoidStr (M .snd)
+
+
+_^opHom : {M : Monoid ℓ} {N : Monoid ℓ'} →
+  MonoidHom M N → MonoidHom (M ^op) (N ^op)
+(h ^opHom) .fst = h .fst
+(h ^opHom) .snd .presε = h .snd .presε
+(h ^opHom) .snd .pres· x y = h .snd .pres· y x
+
+
 -- Composition of monoid homomorphisms
 
 _∘hom_ : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''} ->
@@ -35,13 +56,47 @@ _∘hom_ : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''} ->
 g ∘hom f = fst g ∘ fst f  ,
            monoidequiv
              ((cong (fst g) (snd f .presε)) ∙ (snd g .presε))
-             λ m m' -> {!!}
+             λ m m' -> cong (fst g) (snd f .pres· m m') ∙ snd g .pres· _ _
 
--- Equality of monoid homomorphisms
+
+
+-- Isomorphism between IsMonoidHom and a sigma type
+unquoteDecl IsMonoidHomIsoΣ = declareRecordIsoΣ IsMonoidHomIsoΣ (quote (IsMonoidHom))
+
+isPropIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
+  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
+  isProp (IsMonoidHom M f N)
+isPropIsMonoidHom M f N =
+  isPropRetract
+    (Iso.fun IsMonoidHomIsoΣ) (Iso.inv IsMonoidHomIsoΣ) (Iso.leftInv IsMonoidHomIsoΣ)
+    (isProp× (N.is-set _ _) (isPropΠ2 (λ x y → N.is-set _ _)))
+  where
+    module N = MonoidStr N
+
+
+
+isSetIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
+  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
+  isSet (IsMonoidHom M f N)
+isSetIsMonoidHom M f N = isProp→isSet (isPropIsMonoidHom M f N)
+
+isSetMonoidHom : (M : Monoid ℓ) (N : Monoid ℓ') →
+  isSet (MonoidHom M N)
+isSetMonoidHom M N =
+  isSetΣ (isSet→ N.is-set) (λ h → isSetIsMonoidHom (M .snd) h (N .snd))
+  where
+    module N = MonoidStr (N .snd)
+
+
+-- Equality of monoid homomorphisms follows from equality of the
+-- underlying functions.
+
 eqMonoidHom : {M : Monoid ℓ} {N : Monoid ℓ'} ->
   (f g : MonoidHom M N) ->
   fst f ≡ fst g -> f ≡ g
-eqMonoidHom = {!!}
+eqMonoidHom f g eq = Σ≡Prop (λ f → isPropIsMonoidHom _ _ _) eq
+
+
 
 
 isSetMonoid : (M : Monoid ℓ) -> isSet ⟨ M ⟩
@@ -218,8 +273,54 @@ extend-domain-r N f .snd .pres· (m , n) (m' , n') = f.pres· m m'
 nat-monoid : CommMonoid ℓ-zero
 nat-monoid = makeCommMonoid {M = ℕ} zero _+_ isSetℕ +-assoc +-zero +-comm
 
+NatM : Monoid ℓ-zero
+NatM = makeMonoid {M = ℕ} zero _+_ isSetℕ +-assoc +-zero (λ _ → refl)
+
+
+
+-- Universal property of the additive monoid of natural numbers.
+module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
+
+  module M = MonoidStr (M .snd)
+
+  f : ℕ → ⟨ M ⟩
+  f zero = M.ε
+  f (suc n) = x M.· (f n)
+
+  f1≡x : f 1 ≡ x
+  f1≡x = M.·IdR x
+
+  -- Existence: An element of a monoid M determines a homomorphism of monoids from NatM to M:
+  h : MonoidHom NatM M
+  h .fst = f
+  h .snd .presε = refl
+  h .snd .pres· = aux
+    where
+      aux : (n₁ n₂ : ℕ) → _
+      aux zero n₂ = sym (M.·IdL _)
+      aux (suc n₁) n₂ = (cong₂ M._·_ refl (aux n₁ n₂)) ∙ (M.·Assoc _ _ _)
+
+
+  -- Uniqueness: A homomorphism out of NatM is determined by where it
+  -- sends the element 1.  That is, any other homomorphism of monoids
+  -- out of NatM that agrees with NatM→ on where it sends 1 must be
+  -- equal to NatM→.
+  uniqueness : (h' : MonoidHom NatM M) → (h' .fst 1 ≡ x) → h' ≡ h  -- (h' .fst 1 ≡ h .fst 1) → h' ≡ h
+  uniqueness h' eq = eqMonoidHom _ _ (funExt aux)
+    where
+      module h' = IsMonoidHom (h' .snd)
+
+      aux : ∀ n → (h' .fst n) ≡ (h .fst n)
+      aux zero = h'.presε
+      aux (suc n) = (h'.pres· 1 n) ∙ (cong₂ M._·_ eq (aux n))
+
+
 
 -- Trivial monoid
+𝟙M : Monoid ℓ-zero
+𝟙M = makeMonoid tt (λ _ _ → tt) isSetUnit (λ _ _ _ → refl) (λ _ → refl) (λ _ → refl)
+
+-- Trivial monoid as a commutative monoid
 trivial-monoid : CommMonoid ℓ-zero
 trivial-monoid = makeCommMonoid
   tt (λ _ _ -> tt) isSetUnit (λ _ _ _ -> refl) (λ _ -> refl) (λ _ _ -> refl)
