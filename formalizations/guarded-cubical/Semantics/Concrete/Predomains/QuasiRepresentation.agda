@@ -158,13 +158,24 @@ record LeftRepC
   (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') (MB' : Monoid ℓMB') (iB' : MonoidHom MB' (CEndo B'))
   (d : ErrorDomRel B B' ℓd)
   (Πd : PushPullC B MB iB B' MB' iB' d) :
-  Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓB ℓB') (ℓ-max ℓ≤B ℓ≤B')) (ℓ-max (ℓ-max ℓ≈B ℓ≈B') (ℓ-max ℓMB ℓMB'))) ℓd) where
+  Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓB ℓB') (ℓ-max ℓ≤B ℓ≤B'))
+                     (ℓ-max (ℓ-max ℓ≈B ℓ≈B') (ℓ-max ℓMB ℓMB'))) ℓd) where
 
   field
-    p : ErrorDomMor B' B
+    e : ErrorDomMor B B'
     δl : ⟨ MB ⟩
     δr : ⟨ MB' ⟩
-
+    --  UpL:                   UpR:
+    --
+    --        d                  ⊑LB
+    --   B o----* B'         B o----* B
+    --   |        |          |        |
+    -- e |        | δr    δl |        | e
+    --   v        v          v        v
+    --   B' o---* B'         B o----* B'
+    --        d                   d
+    UpL : ErrorDomSq d (idEDRel B') e (ptbC MB' iB' δr)
+    UpR : ErrorDomSq (idEDRel B) d (ptbC MB iB δl) e
     --  UpL:                   UpR:
     --
     --       ⊑LB'                ⊑LB
@@ -174,9 +185,6 @@ record LeftRepC
     --   v        v          v        v
     --   B o----* B'         B o----* B
     --        d                   d
-
-    DnL : ErrorDomSq (idEDRel B') d p (ptbC MB' iB' δr)
-    DnR : ErrorDomSq d (idEDRel B) (ptbC MB iB δl) p
 
 
 -- Right quasi-representation of a predomain relation
@@ -190,22 +198,22 @@ record RightRepV
                      (ℓ-max (ℓ-max ℓ≈A ℓ≈A') (ℓ-max ℓMA ℓMA'))) ℓc) where
 
   field
-    e : PBMor A A'
+    p : PBMor A' A
     δl : ⟨ MA ⟩
     δr : ⟨ MA' ⟩
 
     --  DnL:                   DnR:
     --
-    --       ⊑A                    c
-    --   A o----* A           A o----* A'
-    --   |        |           |        |
-    -- δl|        | p      e  |        | δr
-    --   v        v           v        v
-    --   A o----* A'          A' o---* A'
     --       c                    ⊑A'
+    --   A o----* A'          A' o---* A'
+    --   |        |           |        |
+    -- δl|        | p      p  |        | δr
+    --   v        v           v        v
+    --   A o----* A           A o----* A'
+    --       ⊑A                   c
 
-    UpL : PBSq (idPRel A) c (ptbV MA iA δl) e
-    UpR : PBSq c (idPRel A') e (ptbV MA' iA' δr)
+    DnL : PBSq c (idPRel A) (ptbV MA iA δl) p
+    DnR : PBSq (idPRel A') c p (ptbV MA' iA' δr)
 
 
 -- Left quasi-representations compose
@@ -276,11 +284,11 @@ module ComposeLeftRepC
   open LeftRepC
 
   compose : LeftRepC B₁ MB₁ iB₁ B₃ MB₃ iB₃ (d ⊙ed d') Πdd'
-  compose .p = ρd.p ∘ed ρd'.p
+  compose .e = ρd'.e ∘ed ρd.e
   compose .δl = ρd.δl MB₁.· Πd.pull .fst ρd'.δl
   compose .δr = ρd'.δr MB₃.· Πd'.push .fst ρd.δr
-  compose .DnL = {!!}
-  compose .DnR = {!!}
+  compose .UpL = {!!}
+  compose .UpR = {!!}
 
 
 
@@ -312,11 +320,11 @@ module ComposeRightRepV
   open RightRepV
 
   compose : RightRepV A₁ MA₁ iA₁ A₃ MA₃ iA₃ (c ⊙ c') Πcc'
-  compose .e = ρc'.e ∘p ρc.e
+  compose .p = ρc.p ∘p ρc'.p
   compose .δl = ρc.δl MA₁.· Πc.pull .fst ρc'.δl
   compose .δr = ρc'.δr MA₃.· Πc'.push .fst ρc.δr
-  compose .UpL = {!!}
-  compose .UpR = {!!}
+  compose .DnL = {!!}
+  compose .DnR = {!!}
 
 module ComposeRightRepC
   (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁)
