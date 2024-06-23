@@ -16,7 +16,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum hiding (elim)
 open import Cubical.Data.Empty hiding (elim)
-open import Cubical.HITs.PropositionalTruncation renaming (map to PTmap)
+open import Cubical.HITs.PropositionalTruncation renaming (map to PTmap ; rec to PTrec)
 
 
 open import Common.Common
@@ -289,3 +289,21 @@ module _
 --                    cₒ₂   
 --
 -- This is just vertical pasting of squares!
+
+
+
+
+
+id-sq-left : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A') (c : PBRel A A' ℓc) → PBSq (idPRel A ⊙ c) c Id Id
+id-sq-left A A' c x y H = PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+  where
+    module c = PBRel c
+
+
+id-sq-right : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A') (c : PBRel A A' ℓc) → PBSq (c ⊙ idPRel A') c Id Id
+id-sq-right A A' c x y H = PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+  where
+    module c = PBRel c
+
+-- EHC-convenient
+

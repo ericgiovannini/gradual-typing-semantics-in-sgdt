@@ -223,3 +223,12 @@ cᵢ ==>pbmonrel cₒ = record {
     cₒ .PBRel.is-antitone (f1≤f2 a) (f1≤g a b aRb) ;
   is-monotone = λ {f} {g1} {g2} f≤g1 g1≤g2 a b aRb →
     cₒ .PBRel.is-monotone (f≤g1 a b aRb) (g1≤g2 b) }
+
+-- Lifting a PB relation to a higher universe level
+LiftPBRel : {ℓc ℓc' : Level} {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} (R : PBRel A₁ A₂ ℓc) ->
+  PBRel A₁ A₂ (ℓ-max ℓc ℓc')
+LiftPBRel {ℓc' = ℓc'} R = record {
+  R = λ x y → Lift {j = ℓc'} (R .PBRel.R x y) ;
+  is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PBRel.is-prop-valued x y) ;
+  is-antitone = λ x'≤x xRy -> lift (R .PBRel.is-antitone x'≤x (lower xRy)) ;
+  is-monotone = λ xRy y≤y' -> lift (R .PBRel.is-monotone (lower xRy) y≤y') }
