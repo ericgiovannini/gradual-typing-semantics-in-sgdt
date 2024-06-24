@@ -41,6 +41,7 @@ private
     B' : PosetBisim ℓB' ℓ'B' ℓ''B'
     C :  PosetBisim ℓC ℓ'C ℓ''C
     C' : PosetBisim ℓC' ℓ'C' ℓ''C'
+    D : PosetBisim ℓD ℓ'D ℓ''D
     
 open PBMor
 open import Semantics.Concrete.DoublePoset.DPMorProofs
@@ -116,6 +117,8 @@ Case' f g = record {
   pres≈ = λ { {inl a1} {inl a2} a1≤a2 → pres≈ f (lower a1≤a2) ;
               {inr b1} {inr b2} b1≤b2 → pres≈ g (lower b1≤b2) } }
 
+×mor : ⟨ A ==> B ⟩ → ⟨ C ==> D ⟩ → ⟨ A ×dp C ==> B ×dp D ⟩
+×mor f g = PairFun (f ∘p π1) (g ∘p π2)
 
 Case : ⟨ (A ==> C) ==> (B ==> C) ==> ((A ⊎p B) ==> C) ⟩
 Case {C = C} = record {
@@ -287,6 +290,9 @@ mComp' {B = B} {C = C} {A = A} Γ f g = record {
 _∘m_ :
    ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 _∘m_ {Γ = Γ} {B = B} {C = C} {A = A} = mComp' {B = B} {C = C} {A = A} Γ
+
+_∘p'_ = _∘m_
+infixl 20 _∘p'_
 
 _$_∘m_ :  (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B C : PosetBisim ℓ ℓ' ℓ''} ->
     ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩

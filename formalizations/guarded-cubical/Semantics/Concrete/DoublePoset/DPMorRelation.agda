@@ -205,6 +205,8 @@ _⊙_ {A₁ = A₁} {A₂ = A₂} {A₃ = A₃} c₁ c₂ = record {
 
 -- Identity and associativity laws for composition
 -- TODO
+-- PredomainRel-Comp-IdL : {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+--   (c : PBRel A₁ A₂ ℓc) → ((idPRel A₁) ⊙ c) ≡ {!c!}
 
 
 -- Exponential of relations
@@ -223,6 +225,22 @@ cᵢ ==>pbmonrel cₒ = record {
     cₒ .PBRel.is-antitone (f1≤f2 a) (f1≤g a b aRb) ;
   is-monotone = λ {f} {g1} {g2} f≤g1 g1≤g2 a b aRb →
     cₒ .PBRel.is-monotone (f≤g1 a b aRb) (g1≤g2 b) }
+
+
+-- Composing with vertical morphisms on either side
+
+functionalRel :
+  {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
+  {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'} {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} 
+  (f : PBMor Aᵢ  Aₒ) →
+  (g : PBMor Aᵢ' Aₒ') →
+  (c : PBRel Aₒ Aₒ' ℓc) →
+  PBRel Aᵢ Aᵢ' ℓc
+functionalRel f g c = record {
+  R = λ x' y' -> PBRel.R c (PBMor.f f x') (PBMor.f g y') ;
+  is-prop-valued = λ x' y' -> PBRel.is-prop-valued c (PBMor.f f x') (PBMor.f g y') ;
+  is-antitone = λ {x'1} {x'2} {y}   x'1≤x'2 H → PBRel.is-antitone c (PBMor.isMon f x'1≤x'2) H ;
+  is-monotone = λ {x'}  {y'1} {y'2} H y'1≤y'2 → PBRel.is-monotone c H (PBMor.isMon g y'1≤y'2) }
 
 -- Lifting a PB relation to a higher universe level
 LiftPBRel : {ℓc ℓc' : Level} {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} (R : PBRel A₁ A₂ ℓc) ->

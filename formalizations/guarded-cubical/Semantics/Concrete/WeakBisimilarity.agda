@@ -301,17 +301,16 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
       lx ly lx≈ly
 
 
-  -- TODO prove that θ preserves bisimilarity
+    η-pres≈ : {x y : X} → R x y → (η x) ≈ (η y)
+    η-pres≈ x≈y = ≈ηη _ _ x≈y
+      
     θ-pres≈ : {lx~ ly~ : ▹ L X} →
        ▸ (λ t → lx~ t ≈ ly~ t) → θ lx~ ≈ θ ly~
-    θ-pres≈ = {!!}
+    θ-pres≈ H~ = ≈θθ _ _ H~
 
-
-
-  -- TODO prove that δ preserves bisimilarity
     δ-pres≈ : {lx ly : L X} →
       lx ≈ ly → (δ lx) ≈ (δ ly)
-    δ-pres≈ = {!!}
+    δ-pres≈ lx≈ly = θ-pres≈ (next lx≈ly)
 
 
 -- TODO equivalence with sum type (needed for adequacy proof where we

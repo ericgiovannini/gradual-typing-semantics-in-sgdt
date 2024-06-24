@@ -179,7 +179,8 @@ CompSqV :
   PBSq c₁ c₃ (f₂ ∘p f₁) (g₂ ∘p g₁)
 CompSqV α₁ α₂ x y xRy = α₂ _ _ (α₁ _ _ xRy)
 
-
+_∘psqv_ = CompSqV
+infixl 20 _∘psqv_
 
 -- Horizontal composition of squares
 
@@ -228,10 +229,8 @@ CompSqH {g = g} α β x z xcᵢ₁cᵢ₂z =
       , β _ _ ycᵢ₂z) -- NTS (g y) cₒ₂ (h z)
     xcᵢ₁cᵢ₂z
 
-
-
--- Action of the functor F on squares
-
+_∘psqh_ = CompSqH
+infixl 20 _∘psqh_
 
 
 
@@ -294,16 +293,25 @@ module _
 
 
 
-id-sq-left : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A') (c : PBRel A A' ℓc) → PBSq (idPRel A ⊙ c) c Id Id
-id-sq-left A A' c x y H = PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
-  where
-    module c = PBRel c
+sq-idA⊙c-c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
+  PBSq (idPRel A ⊙ c) c Id Id
+sq-idA⊙c-c {A = A} {A' = A'} c x y H = PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+  where module c = PBRel c
 
 
-id-sq-right : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A') (c : PBRel A A' ℓc) → PBSq (c ⊙ idPRel A') c Id Id
-id-sq-right A A' c x y H = PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
-  where
-    module c = PBRel c
+sq-c⊙A'-c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
+  PBSq (c ⊙ idPRel A') c Id Id
+sq-c⊙A'-c {A = A} {A' = A'} c x y H = PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+  where module c = PBRel c
 
--- EHC-convenient
 
+sq-c-idA⊙c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
+    PBSq c (idPRel A ⊙ c) Id Id
+sq-c-idA⊙c {A = A} {A' = A'} c x y xRy = ∣ x , A.is-refl x , xRy ∣₁
+  where module A = PosetBisimStr (A .snd)
+
+
+sq-c-c⊙A' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
+    PBSq c (c ⊙ idPRel A') Id Id
+sq-c-c⊙A' {A = A} {A' = A'} c x y xRy = ∣ y , xRy , A'.is-refl y ∣₁
+  where module A' = PosetBisimStr (A' .snd)

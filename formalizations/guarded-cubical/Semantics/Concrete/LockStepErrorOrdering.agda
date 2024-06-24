@@ -11,6 +11,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat hiding (_^_)
 open import Cubical.Relation.Binary.Base
+open import Cubical.HITs.PropositionalTruncation
 
 
 open import Common.Common
@@ -103,6 +104,31 @@ module LiftOrd (X : Type ℓX) (Y : Type ℓY) (R : X → Y → Type ℓR) where
          aux IH lx ly = {!!}
 
 
+module HetTransitivity
+  (X : Type ℓX) (Y : Type ℓY) (Z : Type ℓZ)
+  (R : X → Y → Type ℓR) (S : Y → Z → Type ℓS) where
+
+  module LR = LiftOrd X Y R
+  module LS = LiftOrd Y Z S
+
+  RS : X → Z → Type {!!}
+  RS x z =  ∥ compRel R S x z ∥₁
+
+  module LRS = LiftOrd X Z RS
+
+  het-trans' : ▹ (∀ lx ly lz → lx LR.⊑ ly → ly LS.⊑ lz → lx LRS.⊑ lz) →
+                  ∀ lx ly lz → lx LR.⊑ ly → ly LS.⊑ lz → lx LRS.⊑ lz
+  het-trans' _ .(η x) .(η y) .(η z) (LR.⊑ηη x y xRy) (LS.⊑ηη .y z ySz) =
+    LRS.⊑ηη x z ∣ y , xRy , ySz ∣₁
+  het-trans' _ .℧ ly lz (LR.⊑℧⊥ .ly) H2 =
+    LRS.⊑℧⊥ lz
+  het-trans' IH .(θ lx~) .(θ ly~) .(θ lz~) (LR.⊑θθ lx~ ly~ H~) (LS.⊑θθ .ly~ lz~ H'~) =
+    LRS.⊑θθ lx~ lz~ (λ t → IH t (lx~ t) (ly~ t) (lz~ t) (H~ t) (H'~ t)) -- auto solved this!
+
+  het-trans : ∀ lx ly lz → lx LR.⊑ ly → ly LS.⊑ lz → lx LRS.⊑ lz
+  het-trans = fix het-trans'
+
+
 module UpwardClosed
   (X : Type ℓX) (Y : Type ℓY)
   (_≤Y_ : Y → Y → Type ℓ≤Y)
@@ -158,34 +184,39 @@ module DownwardClosed
     -- in {!!}
 
   
-  
 
 -- Lifting a relation on X to a relation on L℧ X
 module LiftOrdHomogenous (X : Type ℓX) (R : X → X → Type ℓR) where
 
-  open LiftOrd X X R public -- brings _⊑_ and properties into scope
+  -- open LiftOrd X X R public renaming (module Properties to Properties')  -- brings _⊑_ and properties into scope
+  open module LR = LiftOrd X X R public renaming (module Properties to Properties')
 
-  -- reflexive
-  ⊑-refl : (isReflR : isRefl R) → isRefl _⊑_
-  ⊑-refl isReflR = fix aux
-    where
-      aux : ▹ (isRefl _⊑_)  → isRefl _⊑_
-      aux IH (η x) = ⊑ηη x x (isReflR x)
-      aux IH ℧ = ⊑℧⊥ ℧
-      aux IH (θ lx~) = ⊑θθ lx~ lx~ (λ t → IH t (lx~ t)) -- auto solved this!
-    
+  module Properties where
 
-  -- anti-symmetric
-  ⊑-antisym : (isAntisym _⊑_)
-  ⊑-antisym = {!!}
+    open Properties' public
+
+    -- reflexive
+    ⊑-refl : (isReflR : isRefl R) → isRefl _⊑_
+    ⊑-refl isReflR = fix aux
+      where
+        aux : ▹ (isRefl _⊑_)  → isRefl _⊑_
+        aux IH (η x) = ⊑ηη x x (isReflR x)
+        aux IH ℧ = ⊑℧⊥ ℧
+        aux IH (θ lx~) = ⊑θθ lx~ lx~ (λ t → IH t (lx~ t)) -- auto solved this!
 
 
-  -- transitive
-  ⊑-transitive : isTrans R → isTrans _⊑_
-  ⊑-transitive isTransR = {!!}
-    where
-      aux : ▹ (isTrans _⊑_) → isTrans _⊑_
-      aux IH .(η x) .(η y) .(η z) (LiftOrd.⊑ηη x y xRy) (LiftOrd.⊑ηη .y z yRz) =
-        ⊑ηη x z (isTransR x y z xRy yRz)
-      aux IH .℧ ly lz (LiftOrd.⊑℧⊥ .ly) ly≤lz = {!!}
-      aux IH .(θ lx~) .(θ ly~) lz (LiftOrd.⊑θθ lx~ ly~ x) ly≤lz = {!!}
+    -- anti-symmetric
+    ⊑-antisym : isAntisym R → (isAntisym _⊑_)
+    ⊑-antisym = {!!}
+
+
+    -- transitive
+    ⊑-transitive : isTrans R → isTrans _⊑_
+    ⊑-transitive isTransR = fix aux
+      where
+        aux : ▹ (isTrans _⊑_) → isTrans _⊑_
+        aux IH .(η x) .(η y) .(η z) (LiftOrd.⊑ηη x y xRy) (LiftOrd.⊑ηη .y z yRz) =
+          ⊑ηη x z (isTransR x y z xRy yRz)
+        aux IH .℧ ly lz (LiftOrd.⊑℧⊥ .ly) ly≤lz = LiftOrd.⊑℧⊥ lz
+        aux IH .(θ lx~) .(θ ly~) .(θ lz~) (LiftOrd.⊑θθ lx~ ly~ H1~) (LiftOrd.⊑θθ .ly~ lz~ H2~) =
+          ⊑θθ lx~ lz~ (λ t → IH t (lx~ t) (ly~ t) (lz~ t) (H1~ t) (H2~ t)) -- auto solved this!

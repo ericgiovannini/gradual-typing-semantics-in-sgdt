@@ -118,8 +118,26 @@ TwoCell→TwoCell : {A : Type ℓA} {B : Type ℓB} {C : Type ℓC} {D : Type �
 TwoCell→TwoCell R'→R S→S' {f = f} {g = g} f≤g =
   λ a b aR'b → S→S' (f a) (g b) (f≤g a b (R'→R a b aR'b))
 
-
-
+TwoCell-VertComp :
+  {ℓA₁ ℓA₁' ℓA₂ ℓA₂' ℓA₃ ℓA₃' ℓR₁ ℓR₂ ℓR₃ : Level}
+  {A₁  : Type ℓA₁ }
+  {A₁' : Type ℓA₁'}
+  {A₂  : Type ℓA₂ }
+  {A₂' : Type ℓA₂'}
+  {A₃  : Type ℓA₃ }
+  {A₃' : Type ℓA₃'}
+  {R₁  : A₁ → A₁' → Type ℓR₁}
+  {R₂  : A₂ → A₂' → Type ℓR₂}
+  {R₃  : A₃ → A₃' → Type ℓR₃}
+  {f₁  : A₁ →  A₂ }
+  {g₁  : A₁' → A₂'}
+  {f₂  : A₂ →  A₃ }
+  {g₂  : A₂' → A₃'} →
+  TwoCell R₁ R₂ f₁ g₁ →
+  TwoCell R₂ R₃ f₂ g₂ →
+  TwoCell R₁ R₃ (f₂ ∘ f₁) (g₂ ∘ g₁)
+TwoCell-VertComp α₁ α₂ x y xR₁y = α₂ _ _ (α₁ _ _ xR₁y)
+  
 
 
 isSplitMono : {ℓA ℓB : Level} {A : Type ℓA} {B : Type ℓB} ->

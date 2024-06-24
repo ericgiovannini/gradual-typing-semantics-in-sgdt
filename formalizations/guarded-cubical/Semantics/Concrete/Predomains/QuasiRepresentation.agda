@@ -30,6 +30,7 @@ open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 
+open import Semantics.Concrete.Predomains.PrePerturbations k
 open import Semantics.Concrete.Predomains.Perturbations k
 
 --open import Cubical.HigherCategories.ThinDoubleCategory.ThinDoubleCat
@@ -145,14 +146,14 @@ record RightRepC
     DnL : ErrorDomSq (idEDRel B') d p (ptbC MB' iB' δr)
 
 
+
+----------------------------------------------------------------
 -- We dually define left representations for error domain relations,
 -- and right representations for predomain relations:
 
--- TODO
-
 
 -- Left quasi-representation of an error domain relation
-----------------------------------------------------
+--------------------------------------------------------
 record LeftRepC
   (B  : ErrorDomain ℓB  ℓ≤B  ℓ≈B)  (MB  : Monoid ℓMB)  (iB  : MonoidHom MB  (CEndo B))
   (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') (MB' : Monoid ℓMB') (iB' : MonoidHom MB' (CEndo B'))
@@ -188,7 +189,7 @@ record LeftRepC
 
 
 -- Right quasi-representation of a predomain relation
-----------------------------------------------------
+------------------------------------------------------
 record RightRepV
   (A  : PosetBisim ℓA  ℓ≤A  ℓ≈A)  (MA  : Monoid ℓMA)  (iA  : MonoidHom MA  (Endo A))
   (A' : PosetBisim ℓA' ℓ≤A' ℓ≈A') (MA' : Monoid ℓMA') (iA' : MonoidHom MA' (Endo A'))
@@ -215,6 +216,141 @@ record RightRepV
     DnL : PBSq c (idPRel A) (ptbV MA iA δl) p
     DnR : PBSq (idPRel A') c p (ptbV MA' iA' δr)
 
+
+
+-- Quasi-order equivalence of value relations
+-----------------------------------------------
+
+record QuasiOrderEquivV
+  (A  : PosetBisim ℓA  ℓ≤A  ℓ≈A)  (MA  : Monoid ℓMA)  (iA  : MonoidHom MA  (Endo A))
+  (A' : PosetBisim ℓA' ℓ≤A' ℓ≈A') (MA' : Monoid ℓMA') (iA' : MonoidHom MA' (Endo A'))
+  (c : PBRel A A' ℓc) (c' : PBRel A A' ℓc') :
+  Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓA ℓA') (ℓ-max ℓ≤A ℓ≤A'))
+                     (ℓ-max (ℓ-max ℓ≈A ℓ≈A') (ℓ-max ℓMA ℓMA'))) (ℓ-max ℓc ℓc')) 
+  where
+
+  field
+    δ₁  : ⟨ MA ⟩
+    δ₁' : ⟨ MA' ⟩
+    sq-c-c' : PBSq c c' (ptbV MA iA δ₁) (ptbV MA' iA' δ₁')
+
+    δ₂  : ⟨ MA ⟩
+    δ₂' : ⟨ MA' ⟩
+    sq-c'-c : PBSq c' c (ptbV MA iA δ₂) (ptbV MA' iA' δ₂')
+
+
+
+-- Quasi-order equivalence of computation relations
+----------------------------------------------------
+
+record QuasiOrderEquivC
+  (B  : ErrorDomain ℓB  ℓ≤B  ℓ≈B)  (MB  : Monoid ℓMB)  (iB  : MonoidHom MB  (CEndo B))
+  (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') (MB' : Monoid ℓMB') (iB' : MonoidHom MB' (CEndo B'))
+  (d : ErrorDomRel B B' ℓd) (d' : ErrorDomRel B B' ℓd') :
+  Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓB ℓB') (ℓ-max ℓ≤B ℓ≤B'))
+                     (ℓ-max (ℓ-max ℓ≈B ℓ≈B') (ℓ-max ℓMB ℓMB'))) (ℓ-max ℓd ℓd')) 
+  where
+
+  field
+    δ₁  : ⟨ MB ⟩
+    δ₁' : ⟨ MB' ⟩
+    sq-d-d' : ErrorDomSq d d' (ptbC MB iB δ₁) (ptbC MB' iB' δ₁')
+
+    δ₂  : ⟨ MB ⟩
+    δ₂' : ⟨ MB' ⟩
+    sq-d'-d : ErrorDomSq d' d (ptbC MB iB δ₂) (ptbC MB' iB' δ₂')
+
+
+----------------------------------------------------------------------
+
+-- Important lemma: If two error domain relations d and d' between B
+-- and B' are left-representable by the same embedding morphism e,
+-- then d is quasi-order-equivalent to d'.
+
+module LeftRepC-Lemma 
+  (B  : ErrorDomain ℓB  ℓ≤B  ℓ≈B)  (MB  : Monoid ℓMB)  (iB  : MonoidHom MB  (CEndo B))
+  (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') (MB' : Monoid ℓMB') (iB' : MonoidHom MB' (CEndo B'))
+  (d : ErrorDomRel B B' ℓd) (d' : ErrorDomRel B B' ℓd')
+  (Πd  : PushPullC B MB iB B' MB' iB' d)
+  (Πd' : PushPullC B MB iB B' MB' iB' d')
+  (ρd  : LeftRepC B MB iB B' MB' iB' d  Πd)
+  (ρd' : LeftRepC B MB iB B' MB' iB' d' Πd')
+  (eq : ρd .LeftRepC.e ≡ ρd' .LeftRepC.e) where
+
+    -- The first square is formed by horizontally composing the
+    -- following squares, and using the fact that composing with the
+    -- homogeneous relations is the identity.
+    
+    --           ⊑B                    d
+    --       B o----* B           B o----* B'
+    --       |        |           |        |
+    -- d'.δl | d'.UpR | e      e  | d.UpL  | d.δr
+    --       v        v           v        v
+    --       B o----* B'          B' o---* B'
+    --           d'                   ⊑B'
+
+    -- The second square is formed similarly:
+
+
+    --          ⊑B                    d'
+    --      B o----* B           B o----* B'
+    --      |        |           |        |
+    -- d.δl | d.UpR  | e      e  | d'.UpL | d'.δr
+    --      v        v           v        v
+    --      B o----* B'          B' o---* B'
+    --          d                    ⊑B'
+    
+    
+    open QuasiOrderEquivC
+    module MB = MonoidStr (MB .snd)
+    module MB' = MonoidStr (MB' .snd)
+    module iB = IsMonoidHom (iB .snd)
+    module iB' = IsMonoidHom (iB' .snd)
+    module ρd = LeftRepC ρd
+    module ρd' = LeftRepC ρd'
+
+    equiv-d-d' : QuasiOrderEquivC B MB iB B' MB' iB' d d'
+    equiv-d-d' .δ₁ = ρd'.δl
+    equiv-d-d' .δ₁' = ρd.δr
+    equiv-d-d' .sq-d-d' = {!!}  -- α1 ∘esqv α2 ∘esqv α3 -- sq-d-idB⊙d d ∘esqv α ∘esqv sq-d⊙B'-d d'
+      where
+        α1 : ErrorDomSq d (idEDRel B ⊙ed d) IdE IdE
+        α1 = sq-d-idB⊙d d
+
+        α2 : ErrorDomSq (idEDRel B ⊙ed d) (d' ⊙ed idEDRel B') (ptbC MB iB ρd'.δl) (ptbC MB' iB' ρd.δr)
+        α2 = _∘esqh_ {ϕ₁ =  (ptbC MB iB ρd'.δl)} {ϕ₂ = ρd' .LeftRepC.e} {ϕ₃ = (ptbC MB' iB' ρd.δr)}
+               ρd'.UpR
+               (transport (λ i → ErrorDomSq d (idEDRel B') (eq i) (ptbC MB' iB' ρd.δr)) ρd.UpL)
+
+        α3 : ErrorDomSq (d' ⊙ed idEDRel B') d' IdE IdE
+        α3 = sq-d⊙B'-d d'
+
+        composed12 : ErrorDomSq d (d' ⊙ed idEDRel B') ((ptbC MB iB ρd'.δl) ∘ed IdE) ((ptbC MB' iB' ρd.δr) ∘ed IdE)
+        composed12 = ED-CompSqV
+          {d₁ = d} {d₂ = (idEDRel B ⊙ed d)} {d₃ = (d' ⊙ed idEDRel B')}
+          {ϕ₁ = IdE} {ϕ₁' = IdE} {ϕ₂ = (ptbC MB iB ρd'.δl)} {ϕ₂' = (ptbC MB' iB' ρd.δr)}
+          α1 α2
+
+        composed123 : ErrorDomSq d d' (IdE ∘ed (ptbC MB iB ρd'.δl) ∘ed IdE) (IdE ∘ed (ptbC MB' iB' ρd.δr) ∘ed IdE)
+        composed123 = ED-CompSqV
+          {d₁ = d} {d₂ = (d' ⊙ed idEDRel B')} {d₃ = d'}
+          {ϕ₁ = (ptbC MB iB ρd'.δl)} {ϕ₁' = (ptbC MB' iB' ρd.δr)} {ϕ₂ = IdE} {ϕ₂' = IdE}
+          composed12 α3
+       
+    
+    equiv-d-d' .δ₂ = ρd.δl
+    equiv-d-d' .δ₂' = ρd'.δr
+    equiv-d-d' .sq-d'-d = {!!}
+
+
+
+
+
+
+
+ 
+
+--------------------------------------------------------------------
 
 -- Left quasi-representations compose
 module ComposeLeftRepV
@@ -246,7 +382,7 @@ module ComposeLeftRepV
   compose .e = ρc'.e ∘p ρc.e
   compose .δl = ρc.δl MA₁.· Πc.pull .fst ρc'.δl
   compose .δr = ρc'.δr MA₃.· Πc'.push .fst ρc.δr
-  compose .UpL = CompSqV (CompSqV (CompSqH ρc.UpL (Πc'.pushSq ρc.δr)) is-id-sq) ρc'.UpL
+  compose .UpL = {!!} -- CompSqV (CompSqV (CompSqH ρc.UpL (Πc'.pushSq ρc.δr)) is-id-sq) ρc'.UpL
     where
       foo : (idPRel A₂) ⊙ c' ≡ LiftPBRel {ℓc = ℓc'} {ℓc' = ℓ-max ℓA₂ ℓ≤A₂} c'
       foo = {!!}
@@ -255,7 +391,7 @@ module ComposeLeftRepV
 
       
       
-  compose .UpR = CompSqV {!ρc.UpR!}  (CompSqV {!!} CompSqH (Πc.pullSq ρc'.δl) {!!})
+  compose .UpR = {!!} -- CompSqV {!ρc.UpR!}  (CompSqV {!!} CompSqH (Πc.pullSq ρc'.δl) {!!})
 
 
 module ComposeLeftRepC

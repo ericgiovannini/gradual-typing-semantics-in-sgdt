@@ -13,12 +13,13 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
 
 open import Cubical.Relation.Binary.Order.Poset.Base
 open import Cubical.Relation.Binary.Base
 open import Cubical.Reflection.Base
 open import Cubical.Reflection.RecordEquiv
-open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.PropositionalTruncation renaming (rec to PTrec)
 open import Cubical.Data.Sigma
 
 open import Cubical.Reflection.Base
@@ -63,6 +64,7 @@ private
     ℓB₂'  ℓ≤B₂'  ℓ≈B₂'  : Level
     ℓB₃   ℓ≤B₃   ℓ≈B₃   : Level
     ℓB₃'  ℓ≤B₃'  ℓ≈B₃'  : Level
+    ℓB₄   ℓ≤B₄   ℓ≈B₄   : Level
     ℓd₁ ℓd₂ ℓd₃ ℓd' : Level
 
     ℓA₁   ℓ≤A₁   ℓ≈A₁   : Level
@@ -91,6 +93,7 @@ private
 module _ where
 
   open ClockedConstructions k
+  open ClockedCombinators k
 
   record ErrorDomainStr {ℓ : Level} (ℓ≤ ℓ≈ : Level) (B : Type ℓ) :
     Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) ℓ≈)) where
@@ -108,6 +111,12 @@ module _ where
       θ : PBMor (PB▹ Pre) Pre
 
     module θ = PBMor θ
+    
+    δ : PBMor Pre Pre
+    δ = θ ∘p Next
+    
+    field
+      δ≈id : δ ≈mon Id
 
 
   ErrorDomain : ∀ ℓ ℓ≤ ℓ≈ → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) ℓ≈))
@@ -116,27 +125,49 @@ module _ where
   ErrorDomain→Predomain : {ℓ ℓ≤ ℓ≈ : Level} → ErrorDomain ℓ ℓ≤ ℓ≈ → PosetBisim ℓ ℓ≤ ℓ≈
   ErrorDomain→Predomain B = ⟨ B ⟩ , (B .snd .is-predomain)
     where open ErrorDomainStr
-
-  -- TODO iso with sigma type
-  -- TODO Error domains form a Set
   
 
 
+  module MkErrorDomain
+    (A : PosetBisim ℓA ℓ≤A ℓ≈A)
+    (℧ : ⟨ A ⟩)
+    (℧⊥ : (∀ (x : ⟨ A ⟩) → (A .snd .PosetBisimStr._≤_) ℧ x))
+    (θ : PBMor (PB▹ A) A) where
+
+    δ : PBMor A A
+    δ = θ ∘p Next
+
+    mkErrorDomain : (δ ≈mon Id) → ErrorDomain ℓA ℓ≤A ℓ≈A
+    mkErrorDomain H≈ .fst = ⟨ A ⟩
+    mkErrorDomain H≈ .snd .ErrorDomainStr.is-predomain = A .snd
+    mkErrorDomain H≈ .snd .ErrorDomainStr.℧ = ℧
+    mkErrorDomain H≈ .snd .ErrorDomainStr.℧⊥ = ℧⊥
+    mkErrorDomain H≈ .snd .ErrorDomainStr.θ = θ
+    mkErrorDomain H≈ .snd .ErrorDomainStr.δ≈id = H≈
 
 
 
+  -- product of error domains
+  -- open ClockedCombinators k
+  
+  _×ed_ : (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁) → (B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂) →
+    ErrorDomain (ℓ-max ℓB₁ ℓB₂) (ℓ-max ℓ≤B₁ ℓ≤B₂) (ℓ-max ℓ≈B₁ ℓ≈B₂)
+  B₁ ×ed B₂ = MkErrorDomain.mkErrorDomain
+    (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂)
+    (B₁.℧ , B₂.℧)
+    (λ {(x , y) → (B₁.℧⊥ x) , (B₂.℧⊥ y)})
+    (PairFun (B₁.θ ∘p (Map▹ π1)) (B₂.θ ∘p (Map▹ π2)))
+      (λ {(x₁ , x₂) (y₁ , y₂) (x₁≈y₁ , x₂≈y₂) →
+        (B₁.δ≈id x₁ y₁ x₁≈y₁) , (B₂.δ≈id x₂ y₂ x₂≈y₂)})
+    where
+      module B₁ = ErrorDomainStr (B₁ .snd)
+      module B₂ = ErrorDomainStr (B₂ .snd)
+      -- θ-prod : PBMor
+      --            (PB▹ (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂))
+      --            (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂)
+      -- θ-prod .PBMor.f x~ = (B₁.θ $ (λ t → x~ t .fst)) , (B₂.θ $ (λ t → x~ t .snd))
+      
 
-
-  mkErrorDomain :
-    (A : PosetBisim ℓA ℓ≤A ℓ≈A) →
-    (℧ : ⟨ A ⟩) →
-    (℧⊥ : (∀ (x : ⟨ A ⟩) → (A .snd .PosetBisimStr._≤_) ℧ x)) →
-    (θ : PBMor (PB▹ A) A) → ErrorDomain ℓA ℓ≤A ℓ≈A
-  mkErrorDomain A _ _ _ .fst = ⟨ A ⟩
-  mkErrorDomain A _ _ _ .snd .ErrorDomainStr.is-predomain = A .snd
-  mkErrorDomain A ℧ _ _ .snd .ErrorDomainStr.℧ = ℧
-  mkErrorDomain A _ ℧⊥ _ .snd .ErrorDomainStr.℧⊥ = ℧⊥
-  mkErrorDomain A _ _ θ .snd .ErrorDomainStr.θ = θ
 
   ---------------------------------------
   -- Vertical morphisms of error domains
@@ -162,11 +193,21 @@ module _ where
     --fun : _
     --fun = f .PBMor.f
 
-  -- TODO iso with sigma type
-  -- TODO vertical morphisms form a Set
+  
+  -- Equivalence between ErrorDomMor record and a sigma type   
+  unquoteDecl ErrorDomMorIsoΣ = declareRecordIsoΣ ErrorDomMorIsoΣ (quote (ErrorDomMor))
 
-
-
+  
+  EDMorIsSet :
+    {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ}
+    {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
+    isSet (ErrorDomMor Bᵢ Bₒ)
+  EDMorIsSet {Bₒ = Bₒ} = isSetRetract
+    (Iso.fun ErrorDomMorIsoΣ) (Iso.inv ErrorDomMorIsoΣ)
+    (Iso.leftInv ErrorDomMorIsoΣ)
+    (isSetΣSndProp PBMorIsSet (λ f → isProp× (Bₒ.is-set _ _) (isPropΠ (λ x~ → Bₒ.is-set _ _))))
+      where
+        module Bₒ = ErrorDomainStr (Bₒ .snd)
 
 
 
@@ -180,10 +221,15 @@ module _ where
       module ϕ  = ErrorDomMor ϕ
       module ϕ' = ErrorDomMor ϕ'
 
-    eqErrorDomMor :
+    eqEDMor :
       ϕ.fun ≡ ϕ'.fun → ϕ ≡ ϕ'
-    eqErrorDomMor = {!!} -- TODO
-
+    eqEDMor eq = isoFunInjective ErrorDomMorIsoΣ ϕ ϕ'
+      (Σ≡Prop (λ f → isProp×
+                         (Bₒ.is-set _ _)
+                         (isPropΠ (λ x~ → Bₒ.is-set _ _)))
+              (eqPBMor _ _ eq))
+      where
+        module Bₒ = ErrorDomainStr (Bₒ .snd)
 
 
 
@@ -221,12 +267,27 @@ module _ where
     ErrorDomMor B₁ B₃
   ϕ' ∘ed ϕ = CompErrorDomMor.CompE ϕ ϕ'
 
+  infixl 20 _∘ed_
+
 
   -- Identity and associativity laws for composition
 
-  -- CompED-IdL
+  CompED-IdL : {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ} {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
+    (ϕ : ErrorDomMor Bᵢ Bₒ) → IdE ∘ed ϕ ≡ ϕ
+  CompED-IdL g = eqEDMor _ _ refl
 
+  CompED-IdR : {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ} {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
+    (ϕ : ErrorDomMor Bᵢ Bₒ) → ϕ ∘ed IdE ≡ ϕ
+  CompED-IdR g = eqEDMor _ _ refl
 
+  CompED-Assoc :
+    {B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁}
+    {B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂}
+    {B₃ : ErrorDomain ℓB₃ ℓ≤B₃ ℓ≈B₃}
+    {B₄ : ErrorDomain ℓB₄ ℓ≤B₄ ℓ≈B₄} →
+    (ϕ : ErrorDomMor B₁ B₂) (ϕ' : ErrorDomMor B₂ B₃) (ϕ'' : ErrorDomMor B₃ B₄) →
+    ϕ'' ∘ed (ϕ' ∘ed ϕ) ≡ (ϕ'' ∘ed ϕ') ∘ed ϕ
+  CompED-Assoc f g h = eqEDMor _ _ refl
 
 
 
@@ -288,16 +349,22 @@ module _ where
             (isProp→isSet (isPropΠ3 (λ _ _ _ → R .PBRel.is-prop-valued _ _ )))))
 
 
-  -- Equality of horizontal morphisms
+  -- Equality of horizontal morphisms follows from equality of the underlying relations.
 
-  -- TODO
-  
-
-
+  eqEDRel : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'} →
+    (d d' : ErrorDomRel B B' ℓd) →
+    d .ErrorDomRel.UR .PBRel.R ≡ d' .ErrorDomRel.UR .PBRel.R →
+    d ≡ d'
+  eqEDRel d d' eq = isoFunInjective
+    EDRelIsoΣ d d'
+    (Σ≡Prop (λ R → isProp× ((isPropΠ (λ _ → R .PBRel.is-prop-valued _ _)))
+                            (isPropΠ3 (λ _ _ _ → R .PBRel.is-prop-valued _ _ )))
+            (eqPBRel _ _ eq))
 
 
 
   -- Identity and composition of horizontal morphisms
+  ----------------------------------------------------
   
   idEDRel : (B : ErrorDomain ℓB ℓ≤B ℓ≈B) -> ErrorDomRel B B ℓ≤B
   idEDRel B .ErrorDomRel.UR = idPRel (ErrorDomain→Predomain B)
@@ -465,9 +532,37 @@ module _ where
 -}
 
 
-  -- Identity and associativity laws for horizontal composition
+  -- *Identity and associativity laws for horizontal composition*
   --
-  -- TODO
+  -- As is the case with predomain relations, due to universe level
+  -- mismatches, we cannot in general state the laws for composition
+  -- of error domain relations as equalities between relations. This
+  -- is because in general, the two sides of the equalities live at
+  -- different universe levels.  This only works when we place
+  -- restrictions on the universe levels of the error domains and
+  -- relations, such that the both sides of the relevant equalities
+  -- live at the same universe level.
+  -- 
+  -- However, we can retain the generality by stating the laws in
+  -- terms of **squares**, since there the top and bottom relations need
+  -- not be at the same universe level.
+  --
+  -- We will do this below, after introducing squares.
+
+  -- CompEDRel-IdL :
+  --   {B : ErrorDomain ℓ ℓ ℓ} {B' : ErrorDomain ℓ ℓ ℓ} →
+  --   (d : ErrorDomRel B B' ℓ) →
+  --   (idEDRel B) ⊙ed d ≡ d
+  -- CompEDRel-IdL {B = B} {B' = B'} d =
+  --   eqEDRel _ _
+  --     (funExt (λ x → funExt (λ y →
+  --       hPropExt {!!} (d.is-prop-valued x y)
+  --                (λ p → {!!}) (λ p → HorizontalComp.inj x x y (B.is-refl x) p))))
+  --       where
+  --         module B = ErrorDomainStr (B .snd)
+  --         module d = ErrorDomRel d
+         
+     
 
 
 
@@ -508,7 +603,7 @@ module _ where
                (ϕ .ErrorDomMor.f) (ϕ' .ErrorDomMor.f)
 
 
-  module HorizCompUMP
+  module HorizontalCompUMP
     {Bᵢ₁ : ErrorDomain ℓBᵢ₁ ℓ≤Bᵢ₁ ℓ≈Bᵢ₁}
     {Bᵢ₂ : ErrorDomain ℓBᵢ₂ ℓ≤Bᵢ₂ ℓ≈Bᵢ₂}
     {Bᵢ₃ : ErrorDomain ℓBᵢ₃ ℓ≤Bᵢ₃ ℓ≈Bᵢ₃}
@@ -524,7 +619,7 @@ module _ where
     where
 
     open ErrorDomRel
-    open HorizontalComp d d' -- brings modules d and d' in scope
+    open HorizontalComp d d' public -- brings modules d and d' in scope
 
     module ϕ₁ = ErrorDomMor ϕ₁
     module ϕ₂ = ErrorDomMor ϕ₂
@@ -570,10 +665,61 @@ module _ where
         (ElimHorizComp H b₁ b₃ p) (ElimHorizComp H b₁ b₃ q) i
      
 
+    -- Since the relation S is prop-valued, we can actually get away
+    -- with requiring only that there is a square whose top is the
+    -- **non-truncated** composition of d and d'.  That is, the client
+    -- gets to assume that there is some intermediate b₂ such that b₁
+    -- d b₂ and b₂ d' b₃, and this is a Σ, not an ∃, so the user can
+    -- directly access the intermediate element and the proofs of
+    -- relatedness.
+   
+    dd'-non-trunc : ⟨ Bᵢ₁ ⟩ → ⟨ Bᵢ₃ ⟩ → Type (ℓ-max (ℓ-max ℓBᵢ₂ ℓd) ℓd')
+    dd'-non-trunc = compRel (d.UR .PBRel.R) (d'.UR .PBRel.R)
 
-    
+    EHC-convenient :
+      (TwoCell dd'-non-trunc (S.UR .PBRel.R) (ϕ₁.f .PBMor.f) (ϕ₃.f .PBMor.f)) →
+       ErrorDomSq (d ⊙ed d') S ϕ₁ ϕ₃
+    EHC-convenient α = ElimHorizComp α'
+      where
+        α' : PBSq (d.UR ⊙ d'.UR) S.UR ϕ₁.f ϕ₃.f
+        α' x z x-dd'-z =
+          PTrec
+            (S.is-prop-valued (ϕ₁.f $ x) (ϕ₃.f $ z))
+            (λ {(y , x-d-y , y-d'-z) → α x z (y , x-d-y , y-d'-z)})
+            x-dd'-z
+
+
+ 
+  -- TODO fill these in
+  
+  sq-idB⊙d-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+    ErrorDomSq (idEDRel B ⊙ed d) d IdE IdE
+  sq-idB⊙d-d {B = B} {B' = B'} d x y H = EHC-convenient {!!} {!!} {!!} {!!} {!!} -- PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+    where
+      module d = ErrorDomRel d
+      open HorizontalCompUMP (idEDRel B) d IdE IdE IdE
+
+
+  sq-d⊙B'-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+    ErrorDomSq (d ⊙ed idEDRel B') d IdE IdE
+  sq-d⊙B'-d {B = B} {B' = B'} d x y H = {!!} -- PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+    where
+      module d = ErrorDomRel d
+      open HorizontalCompUMP
+
+
+  sq-d-idB⊙d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+    ErrorDomSq d (idEDRel B ⊙ed d) IdE IdE
+  sq-d-idB⊙d = {!!}
+
+  sq-d-d⊙B' : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+    ErrorDomSq d (d ⊙ed idEDRel B') IdE IdE
+  sq-d-d⊙B' = {!!}
+
+
 
   -- Identity and composition of squares
+  --------------------------------------
 
   -- "Horizontal" identity squares.
 
@@ -619,6 +765,9 @@ module _ where
             {g₂ = ϕ₂' .ErrorDomMor.f} α₁ α₂
 
 
+  _∘esqv_ = ED-CompSqV
+  infixl 20 _∘esqv_
+
   ED-CompSqH :
     {Bᵢ₁ : ErrorDomain ℓBᵢ₁ ℓ≤Bᵢ₁ ℓ≈Bᵢ₁}
     {Bᵢ₂ : ErrorDomain ℓBᵢ₂ ℓ≤Bᵢ₂ ℓ≈Bᵢ₂}
@@ -638,26 +787,27 @@ module _ where
     ErrorDomSq (dᵢ₁ ⊙ed dᵢ₂) (dₒ₁ ⊙ed dₒ₂) ϕ₁ ϕ₃
   ED-CompSqH
     {dᵢ₁ = dᵢ₁} {dᵢ₂ = dᵢ₂} {dₒ₁ = dₒ₁} {dₒ₂ = dₒ₂}
-    {ϕ₁ = ϕ₁} {ϕ₂ = ϕ₂} {ϕ₃ = ϕ₃} α β = HorizCompUMP.ElimHorizComp dᵢ₁ dᵢ₂ ϕ₁ ϕ₂ ϕ₃ (dₒ₁ ⊙ed dₒ₂) {!!}
+    {ϕ₁ = ϕ₁} {ϕ₂ = ϕ₂} {ϕ₃ = ϕ₃} α β = EHC-convenient α'
+      where
+        open HorizontalCompUMP dᵢ₁ dᵢ₂ ϕ₁ ϕ₂ ϕ₃ (dₒ₁ ⊙ed dₒ₂)
+        module Comp-dₒ₁-dₒ₂ = HorizontalComp dₒ₁ dₒ₂
+        α' : _
+        α' x z (y , x-dᵢ₁-y , y-dᵢ₂-z) =
+          -- we use the inj constructor of the free horizontal composition
+          Comp-dₒ₁-dₒ₂.inj (ϕ₁.f $ x) (ϕ₂.f $ y) (ϕ₃.f $ z) (α x y x-dᵢ₁-y) (β y z y-dᵢ₂-z)
+    -- HorizontalCompUMP.ElimHorizComp dᵢ₁ dᵢ₂ ϕ₁ ϕ₂ ϕ₃ (dₒ₁ ⊙ed dₒ₂) {!!}
     -- HorizontalComp.ElimHorizComp dᵢ₁ dᵢ₂ {!(dₒ₁ ⊙ed dₒ₂)!} {!!} x z xRz
 
 
-
+  _∘esqh_ = ED-CompSqH
+  infixl 20 _∘esqh_
 
 
   -----------------------------
   -----------------------------
-  -- Functors F, U, and ⟶
+  -- Functors U and ⟶
   -----------------------------
   -----------------------------
-
-
-  -------------------
-  -- The F functor.
-  -------------------
-
-
-
 
 
   -------------------
@@ -741,6 +891,8 @@ module _ where
       B.θ .isMon (λ t → g1~≤g2~ t x)
     Arr-ob .snd .θ .pres≈ {g1~} {g2~} g1~≈g2~ x x' x≈x' =
       B.θ .pres≈ (λ t → g1~≈g2~ t x x' x≈x')
+
+    Arr-ob .snd .δ≈id f g f≈g x x' x≈x' = B.δ≈id (f $ x) (g $ x') (f≈g x x' x≈x')
     
 
   -- The action of ⟶ on objects
@@ -766,11 +918,9 @@ module _ where
 
   -- Functoriality (preservation of identity and composition)
  
-
   arrowPresIdVert : {A : PosetBisim  ℓA ℓ≤A ℓ≈A}  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
     (Id {X = A}) ⟶mor (IdE {B = B}) ≡ IdE
-  arrowPresIdVert = eqErrorDomMor _ _ (funExt (λ g → eqPBMor _ _ refl)) -- g is a predomain morphism A → UB
-
+  arrowPresIdVert = eqEDMor _ _ (funExt (λ g → eqPBMor _ _ refl)) -- g is a predomain morphism A → UB
 
   -- presIdL : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ} {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
   --   (ϕ : ErrorDomMor Bᵢ Bₒ) →
@@ -783,10 +933,35 @@ module _ where
     (ϕ₁ : ErrorDomMor B₁ B₂) (ϕ₂ : ErrorDomMor B₂ B₃) where
 
     arrowPresCompVert : (f₁ ∘p f₂) ⟶mor (ϕ₂ ∘ed ϕ₁) ≡ ((f₂ ⟶mor ϕ₂) ∘ed (f₁ ⟶mor ϕ₁))
-    arrowPresCompVert = eqErrorDomMor _ _ (funExt (λ g → eqPBMor _ _ refl)) -- g is a predomain morphism A₁ → UB₁
+    arrowPresCompVert = eqEDMor _ _ (funExt (λ g → eqPBMor _ _ refl)) -- g is a predomain morphism A₁ → UB₁
 
 
+  arrowPresCompVertRight :
+    {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+    {B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁} {B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂}
+    {B₃ : ErrorDomain ℓB₃ ℓ≤B₃ ℓ≈B₃} →
+    (f  : PBMor A₁ A₂)
+    (ϕ₁ : ErrorDomMor B₁ B₂) (ϕ₂ : ErrorDomMor B₂ B₃) →
+    f ⟶mor (ϕ₂ ∘ed ϕ₁) ≡ ((f ⟶mor ϕ₂) ∘ed (Id ⟶mor ϕ₁))
+  arrowPresCompVertRight f ϕ₁ ϕ₂ =
+    cong₂ _⟶mor_ (sym (CompPD-IdL f)) refl ∙
+    PresCompositionVertical.arrowPresCompVert Id f ϕ₁ ϕ₂
 
+
+  arrowPresCompVertLeft :
+    {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+    {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+    {B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁} {B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂} →
+    (f₁ : PBMor A₂ A₁) (f₂ : PBMor A₃ A₂)
+    (ϕ : ErrorDomMor B₁ B₂) →
+    (f₁ ∘p f₂) ⟶mor ϕ ≡ ((f₂ ⟶mor ϕ) ∘ed (f₁ ⟶mor IdE))
+  arrowPresCompVertLeft f₁ f₂ ϕ =
+    cong₂ _⟶mor_ refl (sym (CompED-IdR ϕ)) ∙
+    (PresCompositionVertical.arrowPresCompVert f₁ f₂ IdE ϕ)
+    
+
+
+  ----------------------------------------
   -- Action of ⟶ on horizontal morphisms
   
   module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A}  {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
@@ -815,6 +990,12 @@ module _ where
   c ⟶rel d = Arr-rel c d           
 
 
+  -- Functoriality for the identity
+  arrowPresIdHoriz : ∀  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+    (idPRel A) ⟶rel (idEDRel B) ≡ {!idEDRel (A ⟶ob B)!}
+  arrowPresIdHoriz = {!!}
+
+
   -- Lax functoriality of ⟶ on relations, i.e., relationship between
   -- (c ⊙ c') ⟶ (d ⊙ d') and (c ⟶ d) ⊙ (c' ⟶ d')
   --
@@ -827,8 +1008,9 @@ module _ where
 
 
 
-
+  ---------------------------
   -- Action of ⟶ on squares
+  
   module _
     {Aᵢ  : PosetBisim ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ}
     {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
@@ -849,7 +1031,10 @@ module _ where
 
     _⟶sq_ : PBSq cₒ cᵢ f g → ErrorDomSq dᵢ dₒ ϕ ϕ' →
       ErrorDomSq (cᵢ ⟶rel dᵢ) (cₒ ⟶rel dₒ) (f ⟶mor ϕ) (g ⟶mor ϕ')
-    α ⟶sq β = {!!}
+    α ⟶sq β =
+      _==>psq_ {cᵢ₁ = cᵢ} {cₒ₁ = cₒ} {f₁ = f} {g₁ = g}
+               {cᵢ₂ = dᵢ .ErrorDomRel.UR} {cₒ₂ = dₒ .ErrorDomRel.UR}
+               {f₂ = ϕ .ErrorDomMor.f} {g₂ = ϕ' .ErrorDomMor.f} α β
     --   PBSq (cᵢ₁ ==>pbmonrel cᵢ₂) (cₒ₁ ==>pbmonrel cₒ₂) (f₁ ~-> f₂) (g₁ ~-> g₂)
     -- α ==>psq β = λ q q' γ → λ x y xRy → β _ _ (γ _ _ (α _ _ xRy))
 
