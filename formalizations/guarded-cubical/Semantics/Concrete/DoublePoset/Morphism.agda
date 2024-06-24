@@ -305,6 +305,21 @@ module _ where
   g ∘p f = Comp f g
   infixl 20 _∘p_ -- TODO is this a good level?
 
+
+  -- Identity and associativity of composition:
+
+  CompPD-IdL : (f : PBMor X Y) → Id ∘p f ≡ f
+  CompPD-IdL g = eqPBMor _ _ refl
+
+  CompPD-IdR : (f : PBMor X Y) → f ∘p Id ≡ f
+  CompPD-IdR g = eqPBMor _ _ refl
+
+  CompPD-Assoc : (f : PBMor X Y) (g : PBMor Y Z) (h : PBMor Z W) →
+    Comp (Comp f g) h ≡ Comp f (Comp g h)
+  CompPD-Assoc f g h = eqPBMor _ _ refl
+
+
+
 {-
   IdL : (f : PBMor X Y) → Comp Id f ≡ f
   IdL f = eqPBMor (Comp Id f) f refl refl
