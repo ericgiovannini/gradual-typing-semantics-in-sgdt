@@ -98,50 +98,32 @@ monoidContains {X = X} f M hom =
 syntax monoidContains f M hom = f ∈[ hom ] M
 
 
--- The predomain squares where the top and bottom are both some fixed relation c
--- and the left and right are iterates of a fixed morphism f and g
--- form a monoid under vertical composition.
+-- "Action" of the F functor on perturbations.
+--
+-- This makes crucial use of the existence of a delay homomorphism
+-- δ* : F A --o F A for every A We define this homomorphism to be
+-- ext (δ ∘ η) where δ = θ ∘ next.
+module F-Ptb
+  {A  : PosetBisim  ℓA  ℓ≤A  ℓ≈A}
+  (MA : Monoid ℓMA)
+  (iA  : MonoidHom MA  (Endo A)) where
 
-{-
-module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) where
+  --module MA = MonoidStr (MA .snd)
+  --module iA = IsMonoidHom (iA .snd)
 
-  VSq = Σ[ f ∈ PBMor A A ] Σ[ g ∈ PBMor A' A' ] PBSq c c f g
+  open IsMonoidHom
+  open F-ob
 
-  Comp-VSq : VSq → VSq → VSq
-  Comp-VSq (f₁ , g₁ , α₁) (f₂ , g₂ , α₂) =
-    (f₂ ∘p f₁) , (g₂ ∘p g₁) , (CompSqV {c₁ = c} {c₂ = c} {c₃ = c} α₁ α₂)
+  M-FA  = NatM ⊕ MA
 
-  PsqMonoid : Monoid (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓA ℓ≤A) ℓ≈A) ℓA') ℓ≤A') ℓ≈A') ℓc)
-  PsqMonoid = makeMonoid {M = VSq} (Id , Id , Predom-IdSqV c) Comp-VSq {!!} {!!} {!!} {!!}
--}
-{-
-    CompSqV
-    (isProp→isSet (isPropPBSq c c Id Id))
-    (λ _ _ _ → isPropPBSq c c Id Id _ _)
-    (λ _ → isPropPBSq c c Id Id _ _)
-    (λ _ → isPropPBSq c c Id Id _ _)
--}
+  iFA : MonoidHom M-FA (CEndo (F-ob A))
+  iFA = {!!} -- [ h1 ,hom h2 ]
+    where
+      h1 : MonoidHom NatM (CEndo (F-ob A))
+      h1 = {!!} -- NatM→.h (CEndo (F-ob A)) (δ*FA-as-PrePtb A)
 
-
-{-
-Endofun : (X : hSet ℓ) → Monoid ℓ
-Endofun X = makeMonoid {M = ⟨ X ⟩ → ⟨ X ⟩} id (λ g f → g ∘ f) (isSet→ (X .snd)) (λ _ _ _ → refl) (λ _ → refl) λ _ → refl
-
-record PushPull'
-  {ℓX ℓY ℓMX ℓMY ℓR : Level}
-  (X : hSet ℓX) (Y : hSet ℓY)
-  (R : ⟨ X ⟩ → ⟨ Y ⟩ → Type ℓR)
-  (MX : Monoid ℓMX) (MY : Monoid ℓMY)
-  (iX : ⟨ MX ⟩ → (⟨ X ⟩ → ⟨ X ⟩))
-  (iY : ⟨ MY ⟩ → (⟨ Y ⟩ → ⟨ Y ⟩)) :
-  Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓY) (ℓ-max ℓMX ℓMY)) ℓR) where
-
-  field
-   push : (pᴸ : ⟨ MX ⟩) →
-     Σ[ pᴿ ∈ ⟨ MY ⟩ ] TwoCell R R (iX pᴸ) (iY pᴿ) 
-   pull : (pᴿ : ⟨ MY ⟩) →
-     Σ[ pᴸ ∈ ⟨ MX ⟩ ] TwoCell R R (iX pᴸ) (iY pᴿ) 
--}
+      h2 : MonoidHom MA (CEndo (F-ob A))
+      h2 = {!!} --Endo-A→CEndo-FA ∘hom iA
 
 
 ----------------------------------------------------------------
@@ -385,21 +367,20 @@ module F-PushPull
   module PPV = PushPullV
   module PPC = PushPullC
 
-  M-FA  = NatM ⊕ MA
-  M-FA' = NatM ⊕ MA'
+  module Ptb-FA  = F-Ptb MA  iA 
+  module Ptb-FA' = F-Ptb MA' iA'
 
-  iFA : MonoidHom M-FA (CEndo (F-ob A))
-  iFA = [ h1 ,hom h2 ]
-    where
-      h1 : MonoidHom NatM (CEndo (F-ob A))
-      h1 = NatM→.h (CEndo (F-ob A)) {!!}
+  M-FA  = Ptb-FA.M-FA  -- NatM ⊕ MA
+  M-FA' = Ptb-FA'.M-FA -- NatM ⊕ MA'
 
-      h2 : MonoidHom MA (CEndo (F-ob A))
-      h2 = {!!} ∘hom iA
+  iFA : MonoidHom Ptb-FA.M-FA (CEndo (F-ob A))
+  iFA = Ptb-FA.iFA
 
+  iFA' : MonoidHom _ _
+  iFA' = Ptb-FA'.iFA
   
 
-  F-PushPull : PushPullC (F-ob A) M-FA {!!} (F-ob A') M-FA' {!!} (F-rel c)
+  F-PushPull : PushPullC (F-ob A) M-FA iFA (F-ob A') M-FA' iFA' (F-rel c)
   F-PushPull .PPC.push = [ i₁ ,hom (i₂ ∘hom Πc.push) ]
   F-PushPull .PPC.pushSq pᴸ = {!!}
   F-PushPull .PPC.pull = [ i₁ ,hom (i₂ ∘hom Πc.pull) ]
