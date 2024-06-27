@@ -20,7 +20,7 @@ open import Cubical.Data.Sum
 open import Cubical.Data.Sigma
 
 import Cubical.Algebra.Monoid.FreeProduct as FP
-open FP using (_⋆_)
+-- open FP using (_⊕_)
 
 
 private

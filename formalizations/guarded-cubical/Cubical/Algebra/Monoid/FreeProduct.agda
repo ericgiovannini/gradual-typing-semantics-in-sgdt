@@ -90,7 +90,30 @@ module Elim {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
   f (assoc x y z i) = assoc* (f x) (f y) (f z) i
   f (trunc x y p q i j) = isOfHLevel→isOfHLevelDep 2 trunc*
     (f x) (f y) (cong f p) (cong f q) (trunc x y p q) i j
-  
+
+
+
+
+module ElimProp {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
+  {B : FreeMonoidProd M N -> Type ℓ''}
+  (BProp : {xs : FreeMonoidProd M N} → isProp (B xs))
+  (⟦_⟧₁* : (m : ⟨ M ⟩) -> B ⟦ m ⟧₁)
+  (⟦_⟧₂* : (n : ⟨ N ⟩) -> B ⟦ n ⟧₂)
+  (ε*    : B ε)
+  (_·*_ : ∀ {x y} -> B x -> B y -> B (x · y)) where
+
+  f : (xs : FreeMonoidProd M N) → B xs
+  f = Elim.f {B = B} ⟦_⟧₁* ⟦_⟧₂* ε* _·*_
+    (toPathP (BProp (transport (λ i → B (id₁ i)) ⟦ MonoidStr.ε (M .snd) ⟧₁*) ε*))
+    (toPathP (BProp (transport (λ i → B (id₂ i)) ⟦ MonoidStr.ε (N .snd) ⟧₂*) ε*))
+    (λ m m' → toPathP (BProp (transport (λ i → B (comp₁ m m' i)) ⟦ (M .snd MonoidStr.· m) m' ⟧₁*) (⟦ m ⟧₁* ·* ⟦ m' ⟧₁*)))
+    (λ n n' → toPathP (BProp (transport (λ i → B (comp₂ n n' i)) ⟦ (N .snd MonoidStr.· n) n' ⟧₂*) (⟦ n ⟧₂* ·* ⟦ n' ⟧₂*)))
+    (λ {x} xs → toPathP (BProp (transport (λ i → B (identityᵣ x i)) (xs ·* ε*)) xs))
+    (λ {x} xs → toPathP (BProp (transport (λ i → B (identityₗ x i)) (ε* ·* xs)) xs))
+    (λ {x y z} xs ys zs → toPathP (BProp (transport (λ i → B (assoc x y z i)) (xs ·* (ys ·* zs))) ((xs ·* ys) ·* zs)))
+    (λ _ → isProp→isSet BProp) 
+
+
 
 module Rec {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
   {B : Type ℓ''}
@@ -144,27 +167,62 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
   i₂ : MonoidHom N (M ⊕ N)
   i₂ = ⟦_⟧₂ , (monoidequiv id₂ comp₂)
 
-  case : (P : Monoid ℓ'') (f : MonoidHom M P) (g : MonoidHom N P) ->
-    isContr (Σ[ h ∈ MonoidHom (M ⊕ N) P ] (f ≡ h ∘hom i₁) × (g ≡ h ∘hom i₂))
-  case P f g .fst .fst .fst =
-    Rec.f (f .fst) (g .fst) P.ε P._·_ (f .snd .presε) (g .snd .presε)
+  module UMP (P : Monoid ℓ'') (f : MonoidHom M P) (g : MonoidHom N P) where
+
+    module P = MonoidStr (P .snd)
+
+    case-fun : ⟨ M ⊕ N ⟩ → ⟨ P ⟩
+    case-fun = Rec.f
+          (f .fst) (g .fst) P.ε P._·_ (f .snd .presε) (g .snd .presε)
           (f .snd .pres·) (g .snd .pres·) P.·IdR P.·IdL P.·Assoc P.is-set
-    where
-      module P = MonoidStr (P .snd)
-  case P f g .fst .fst .snd = monoidequiv refl (λ x y -> refl)
-  case P f g .fst .snd = (eqMonoidHom _ _ refl) , (eqMonoidHom _ _ refl)
-  case P f g .snd (h , eq1 , eq2) =
-    ΣPathPProp
-      (λ h' → isProp× (isSetMonoidHom M P f (h' ∘hom i₁))
-                       {!!})
-      (eqMonoidHom _ _ (funExt aux))
-        where
-          aux : (x : ⟨ M ⊕ N ⟩) → _
-          aux x = {!!} -- can use the eliminator!
+
+    case-is-hom : IsMonoidHom ((M ⊕ N) .snd) case-fun (P .snd)
+    case-is-hom = monoidequiv refl (λ x y → refl)
+
+    case-hom : MonoidHom (M ⊕ N) P
+    case-hom = case-fun , case-is-hom
+
+    case-eq : (f ≡ case-hom ∘hom i₁) × (g ≡ case-hom ∘hom i₂)
+    case-eq = (eqMonoidHom _ _ refl) , (eqMonoidHom _ _ refl)
+
+    unique : ∀ (h : MonoidHom (M ⊕ N) P) →
+      (f ≡ h ∘hom i₁) → (g ≡ h ∘hom i₂) → case-hom ≡ h
+    unique h eq1 eq2 = eqMonoidHom _ _ (funExt aux)
+      where
+        module h = IsMonoidHom (h .snd)
+
+        -- We use the eliminator to establish uniqueness
+        aux : (x : ⟨ M ⊕ N ⟩) → case-hom .fst x ≡ h .fst x
+        aux = ElimProp.f
+          {B = λ x → case-hom .fst x ≡ h .fst x}
+          (λ {xs} → P.is-set _ _)
+          (λ m → (funExt⁻ (cong fst eq1) m))   -- NTS:  f .fst m ≡ h .fst ⟦ m ⟧₁
+          (λ n → (funExt⁻ (cong fst eq2) n))   -- NTS: g .fst n ≡ h .fst ⟦ n ⟧₂
+          (sym h.presε)
+          λ {x y} p q → (cong₂ P._·_ p q) ∙ (sym (h.pres· x y))
+
+    case :
+      isContr (Σ[ h ∈ MonoidHom (M ⊕ N) P ] (f ≡ h ∘hom i₁) × (g ≡ h ∘hom i₂))
+    case .fst .fst = case-hom
+    case .fst .snd = (eqMonoidHom _ _ refl) , (eqMonoidHom _ _ refl)
+    case .snd (h , eq1 , eq2) =
+      ΣPathPProp
+        (λ h' → isProp× (isSetMonoidHom M P f (h' ∘hom i₁))
+                        (isSetMonoidHom N P g (h' ∘hom i₂)))
+        (unique h eq1 eq2)
+        
 
   [_,hom_] : {P : Monoid ℓ''} (f : MonoidHom M P) (g : MonoidHom N P) ->
     MonoidHom (M ⊕ N) P
   [_,hom_] {P = P} f g = fst (fst (case P f g))
+    where open UMP
+
+  -- [_,hom_] {P = P} f g .fst =
+  --   Rec.f (f .fst) (g .fst) P.ε P._·_ (f .snd .presε) (g .snd .presε)
+  --         (f .snd .pres·) (g .snd .pres·) P.·IdR P.·IdL P.·Assoc P.is-set
+  --   where
+  --     module P = MonoidStr (P .snd)
+  -- [_,hom_] {P = P} f g  .snd = monoidequiv refl (λ x y -> refl)
 
 
 -- Eliminating from M ⊕ N into a type A parameterized by elements of

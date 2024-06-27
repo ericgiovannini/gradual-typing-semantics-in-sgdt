@@ -10,7 +10,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 
-open import Cubical.Data.Nat hiding (_·_)
+open import Cubical.Data.Nat hiding (_·_ ; _^_)
 open import Cubical.Data.Unit
 
 open import Cubical.Algebra.Monoid.Base
@@ -48,6 +48,13 @@ _^opHom : {M : Monoid ℓ} {N : Monoid ℓ'} →
 (h ^opHom) .snd .presε = h .snd .presε
 (h ^opHom) .snd .pres· x y = h .snd .pres· y x
 
+
+-- Identity monoid homomorphism
+
+idMon : (M : Monoid ℓ) → MonoidHom M M
+idMon M .fst = λ x → x
+idMon M .snd .presε = refl
+idMon M .snd .pres· _ _ = refl
 
 -- Composition of monoid homomorphisms
 
@@ -299,7 +306,7 @@ module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
       aux : (n₁ n₂ : ℕ) → _
       aux zero n₂ = sym (M.·IdL _)
       aux (suc n₁) n₂ = (cong₂ M._·_ refl (aux n₁ n₂)) ∙ (M.·Assoc _ _ _)
-
+      
 
   -- Uniqueness: A homomorphism out of NatM is determined by where it
   -- sends the element 1.  That is, any other homomorphism of monoids
@@ -316,9 +323,30 @@ module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
 
 
 
+𝟙M* : {ℓM : Level} → Monoid ℓM
+𝟙M* = makeMonoid tt* (λ _ _ → tt*) isSetUnit* (λ _ _ _ → refl) (λ _ → refl) (λ _ → refl)
+
+-- (unique) homomorphism out of the trivial monoid
+𝟙M*→ : {ℓM : Level} → (M : Monoid ℓ) -> MonoidHom (𝟙M* {ℓM = ℓM}) M
+𝟙M*→ M .fst tt* = M.ε
+  where module M = MonoidStr (M .snd)
+𝟙M*→ M .snd .presε = refl
+𝟙M*→ M .snd .pres· tt* tt* = sym (M.·IdR M.ε)
+  where module M = MonoidStr (M .snd)
+
+
 -- Trivial monoid
 𝟙M : Monoid ℓ-zero
 𝟙M = makeMonoid tt (λ _ _ → tt) isSetUnit (λ _ _ _ → refl) (λ _ → refl) (λ _ → refl)
+
+-- (unique) homomorphism out of the trivial monoid
+𝟙M→ : (M : Monoid ℓ) -> MonoidHom 𝟙M M
+𝟙M→ M .fst tt = M.ε
+  where module M = MonoidStr (M .snd)
+𝟙M→ M .snd .presε = refl
+𝟙M→ M .snd .pres· tt tt = sym (M.·IdR M.ε)
+  where module M = MonoidStr (M .snd)
+
 
 -- Trivial monoid as a commutative monoid
 trivial-monoid : CommMonoid ℓ-zero
