@@ -725,7 +725,13 @@ module _ where
   
   sq-idB⊙d-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq (idEDRel B ⊙ed d) d IdE IdE
-  sq-idB⊙d-d {B = B} {B' = B'} d x y H = EHC-convenient {!!} {!!} {!!} {!!} {!!} -- PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+  sq-idB⊙d-d {B = B} {B' = B'} d x y H = EHC-convenient (record
+                                                          { UR =
+                                                              record
+                                                              { R = {!!} ; is-prop-valued = {!!} ; is-antitone = {!!} ; is-monotone = {!!} }
+                                                          ; R℧ = {!!}
+                                                          ; Rθ = {!!}
+                                                          }) {!!} {!!} {!!} {!!} -- PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
     where
       module d = ErrorDomRel d
       open HorizontalCompUMP (idEDRel B) d IdE IdE IdE
@@ -1043,10 +1049,20 @@ module _ where
   -- Lax functoriality of ⟶ on relations, i.e., relationship between
   -- (c ⊙ c') ⟶ (d ⊙ d') and (c ⟶ d) ⊙ (c' ⟶ d')
   --
-  -- TODO
+  -- Doesn't seem provable...
+  -- arrowComp :
+  --   {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}  {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+  --   {B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁}  {B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂}  {B₃ : ErrorDomain ℓB₃ ℓ≤B₃ ℓ≈B₃}
+  --   (c : PBRel A₁ A₂ ℓc) (c' : PBRel A₂ A₃ ℓc') (d : ErrorDomRel B₁ B₂ ℓd) (d' : ErrorDomRel B₂ B₃ ℓd') →
+  --   ErrorDomSq ((c ⊙ c') ⟶rel (d ⊙ed d')) ((c ⟶rel d) ⊙ed (c' ⟶rel d')) IdE IdE
 
-
-
+  -- arrowComp {A₂ = A₂} {B₂ = B₂} c c' d d' f g α = inj f {!h!} g (λ a₁ a₂ c-a₁a₂ → {!!}) {!!}
+  --   where
+  --     open HorizontalComp
+  --     h :  ⟨ ErrorDomain→Predomain (A₂ ⟶ob B₂) ⟩
+  --     h .PBMor.f a₂ = {!α !}   
+      
+      
 
 
 

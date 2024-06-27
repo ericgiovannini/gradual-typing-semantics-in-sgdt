@@ -208,6 +208,12 @@ Uncurry f = record {
 App : ⟨ ((A ==> B) ×dp A) ==> B ⟩
 App = Uncurry Id
 
+Uncurry' : ⟨ (Γ ==> A ==> B)  ==> ((Γ ×dp A) ==> B) ⟩
+Uncurry' = record {
+  f = Uncurry ;
+  isMon = λ { {f} {g} f≤g (γ , a) → f≤g γ a } ;
+  pres≈ = λ { {f} {g} f≈g (γ , a) (γ' , a') (γ≈γ' , a≈a') → f≈g γ γ' γ≈γ' a a' a≈a' }}
+
 {-
 Swap : (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B : PosetBisim ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
 Swap Γ {A = A} f = record {

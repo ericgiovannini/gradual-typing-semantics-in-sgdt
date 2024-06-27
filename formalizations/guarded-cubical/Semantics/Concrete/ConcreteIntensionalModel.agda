@@ -246,7 +246,7 @@ record CompTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (B : Type ℓ) :
 
   field
     PtbC : Monoid ℓM
-    interpC : MonoidHom PtbC (CEndo errordom)
+    --interpC : MonoidHom PtbC (CEndo errordom)
 
     -- The abstract definition of a model requires that for all A, the
     -- monoid PtbC (F A) contains an element that maps to the delay
