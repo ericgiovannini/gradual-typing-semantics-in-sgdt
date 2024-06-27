@@ -267,7 +267,7 @@ record QuasiOrderEquivC
 -- and B' are left-representable by the same embedding morphism e,
 -- then d is quasi-order-equivalent to d'.
 
-module LeftRepC-Lemma 
+module LeftRepC-Lemma
   (B  : ErrorDomain ℓB  ℓ≤B  ℓ≈B)  (MB  : Monoid ℓMB)  (iB  : MonoidHom MB  (CEndo B))
   (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') (MB' : Monoid ℓMB') (iB' : MonoidHom MB' (CEndo B'))
   (d : ErrorDomRel B B' ℓd) (d' : ErrorDomRel B B' ℓd')
@@ -341,14 +341,43 @@ module LeftRepC-Lemma
     equiv-d-d' .δ₂ = ρd.δl
     equiv-d-d' .δ₂' = ρd'.δr
     equiv-d-d' .sq-d'-d = {!!}
+      where
+        α1 : {!!}
+        α1 = {!!}
 
 
+module Compose (A : PosetBisim ℓA ℓ≤A ℓ≈A) (M : Monoid ℓM) (iA : MonoidHom M (Endo A)) where
+  module M = MonoidStr (M .snd)
+  module iA = IsMonoidHom (iA .snd)
+  lemma : (m₁ m₂ : fst M) → ptbV M iA (m₁ M.· m₂) ≡ ptbV M iA m₁ ∘p ptbV M iA m₂ --  ∘p ptbV M iA m₃  M.· m₃
+  lemma m₁ m₂ = eqPBMor {!!} {!!} {!!}
+
+  lemma2 : (m₁ m₂ m₃ : fst M) → ptbV M iA (m₁ M.· m₂ M.· m₃) ≡ ptbV M iA m₁ ∘p ptbV M iA m₂ ∘p ptbV M iA m₃
+  lemma2 m₁ m₂ m₃ = lemma (m₁ M.· m₂) m₃ ∙ cong (λ x → x ∘p ptbV M iA m₃) (lemma m₁ m₂)
+
+module ComposeC (B : ErrorDomain ℓB ℓ≤B ℓ≈B) (M : Monoid ℓMB) (iB : MonoidHom M (CEndo B)) where
+  module M = MonoidStr (M .snd)
+  module iB = IsMonoidHom (iB .snd)
+  lemma : (m₁ m₂ : fst M) → ptbC M iB (m₁ M.· m₂) ≡ ptbC M iB m₁ ∘ed ptbC M iB m₂ --  ∘p ptbV M iA m₃  M.· m₃
+  lemma m₁ m₂ = {!!}
+
+  lemma2 : (m₁ m₂ m₃ : fst M) → ptbC M iB (m₁ M.· m₂ M.· m₃) ≡ ptbC M iB m₁ ∘ed ptbC M iB m₂ ∘ed ptbC M iB m₃
+  lemma2 m₁ m₂ m₃ = lemma (m₁ M.· m₂) m₃ ∙ cong (λ x → x ∘ed ptbC M iB m₃) (lemma m₁ m₂)
 
 
+module ptbVε≡Id (A : PosetBisim ℓA ℓ≤A ℓ≈A) (M : Monoid ℓM) (iA : MonoidHom M (Endo A)) where
+  module M = MonoidStr (M .snd)
+  module iA = IsMonoidHom (iA .snd)
+  lemma : ptbV M iA M.ε ≡ Id
+  lemma = eqPBMor (ptbV M iA M.ε) Id {!!}
 
+module ptbCε≡Id (B : ErrorDomain ℓB ℓ≤B ℓ≈B) (M : Monoid ℓMB) (iB : MonoidHom M (CEndo B)) where
+  module M = MonoidStr (M .snd)
+  module iB = IsMonoidHom (iB .snd)
+  lemma : ptbC M iB M.ε ≡ IdE
+  lemma = {!!}
+  
 
-
- 
 
 --------------------------------------------------------------------
 
@@ -375,24 +404,83 @@ module ComposeLeftRepV
   module MA₁ = MonoidStr (MA₁ .snd)
   module MA₂ = MonoidStr (MA₂ .snd)
   module MA₃ = MonoidStr (MA₃ .snd)
+  module iA₃ = IsMonoidHom (iA₃ .snd)
 
   open LeftRepV
 
+  -- RHS of the sqaure should be ptbV MA₃ iA₃ (ρc'.δr MA₃.· MA₃.ε MA₃.· Πc'.push .fst ρc.δr)
+  -- ≡ iA₃ (ρc'.δr) PrePtb∘ iA₃ (MA₃.ϵ) PrePtb∘ iA₃ ...
+  -- use ptbV function to get out a composition of predomain vertical morphisms
+  -- This is possible becasue iA₃ is a homomorphism (iA₃ ϵ ≡ Id)
+  -- (iA₃ (x · y) ≡ iA₃ x ∘ iA₃ y)
+
   compose : LeftRepV A₁ MA₁ iA₁ A₃ MA₃ iA₃ (c ⊙ c') Πcc'
-  compose .e = ρc'.e ∘p ρc.e
-  compose .δl = ρc.δl MA₁.· Πc.pull .fst ρc'.δl
-  compose .δr = ρc'.δr MA₃.· Πc'.push .fst ρc.δr
-  compose .UpL = {!!} -- CompSqV (CompSqV (CompSqH ρc.UpL (Πc'.pushSq ρc.δr)) is-id-sq) ρc'.UpL
+  compose .e = ρc'.e ∘p Id  ∘p ρc.e
+  compose .δl = Πc.pull .fst ρc'.δl MA₁.· MA₁.ε MA₁.· ρc.δl
+  compose .δr = ρc'.δr MA₃.· MA₃.ε MA₃.· Πc'.push .fst ρc.δr
+  compose .UpL = transport (cong (λ x → PBSq (c ⊙ c') (idPRel A₃) (ρc'.e ∘p Id ∘p ρc.e) x) (sym foo)) res  -- CompSqV (CompSqH α1 α2) (CompSqV id-sq α3) 
     where
-      foo : (idPRel A₂) ⊙ c' ≡ LiftPBRel {ℓc = ℓc'} {ℓc' = ℓ-max ℓA₂ ℓ≤A₂} c'
-      foo = {!!}
-      is-id-sq : PBSq (idPRel A₂ ⊙ c') c' Id Id
-      is-id-sq = transport (cong {!λ x → PBSq x c' Id Id!} foo) {!!}
+      α1 : PBSq c (idPRel A₂) ρc.e (ptbV MA₂ iA₂ ρc.δr)
+      α1 = ρc.UpL
 
-      
-      
-  compose .UpR = {!!} -- CompSqV {!ρc.UpR!}  (CompSqV {!!} CompSqH (Πc.pullSq ρc'.δl) {!!})
+      α2 : PBSq c' c' (ptbV MA₂ iA₂ ρc.δr) (ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))
+      α2 = Πc'.pushSq ρc.δr
 
+      id-sq : PBSq (idPRel A₂ ⊙ c') c' Id Id
+      id-sq = sq-idA⊙c-c c'
+
+      α3 : PBSq c' (idPRel A₃) ρc'.e (ptbV MA₃ iA₃ ρc'.δr)
+      α3 = ρc'.UpL
+
+      compose-α1α2 : PBSq (c ⊙ c') (idPRel A₂ ⊙ c') ρc.e (ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))
+      compose-α1α2 = CompSqH {cᵢ₁ = c} {cᵢ₂ = c'} {cₒ₁ = (idPRel A₂)} {cₒ₂ = c'} {f = ρc.e} {g = (ptbV MA₂ iA₂ ρc.δr)} {h = (ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))} α1 α2
+
+      compose-id-α3 : PBSq (idPRel A₂ ⊙ c') (idPRel A₃) (ρc'.e ∘p Id)  (ptbV MA₃ iA₃ ρc'.δr ∘p Id)
+      compose-id-α3 = CompSqV {c₁ = (idPRel A₂ ⊙ c')} {c₂ = c'} {c₃ = (idPRel A₃)} {f₁ = Id} {g₁ = Id} {f₂ = ρc'.e} {g₂ = (ptbV MA₃ iA₃ ρc'.δr)} id-sq α3
+
+      res : PBSq (c ⊙ c') (idPRel A₃) (ρc'.e ∘p Id ∘p ρc.e)
+             (ptbV MA₃ iA₃ ρc'.δr ∘p Id ∘p ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))
+      res = CompSqV {c₁ = (c ⊙ c')} {c₂ = (idPRel A₂ ⊙ c')} {c₃ = (idPRel A₃)} {f₁ = ρc.e} {g₁ = (ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))} {f₂ = (ρc'.e ∘p Id)} {g₂ = (ptbV MA₃ iA₃ ρc'.δr ∘p Id)} compose-α1α2 compose-id-α3
+
+      foo : ptbV MA₃ iA₃ (ρc'.δr MA₃.· MA₃.ε MA₃.· Πc'.push .fst ρc.δr) ≡ ptbV MA₃ iA₃ ρc'.δr ∘p Id ∘p ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr)
+      foo = C.lemma2 ρc'.δr MA₃.ε (Πc'.push .fst ρc.δr) ∙ cong (λ x → ptbV MA₃ iA₃ ρc'.δr ∘p x ∘p ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr)) id.lemma
+        where
+          module C = Compose A₃ MA₃ iA₃
+          module id = ptbVε≡Id A₃ MA₃ iA₃
+      
+  compose .UpR = transport (cong (λ x → PBSq (idPRel A₁) (c ⊙ c') x (ρc'.e ∘p Id ∘p ρc.e)) (sym foo)) res
+    where
+      α1 : PBSq (idPRel A₁) c (ptbV MA₁ iA₁ ρc.δl) ρc.e
+      α1 = ρc.UpR
+
+      id-sq : PBSq c (c ⊙ idPRel A₂) Id Id
+      id-sq = sq-c-c⊙A' c
+
+      αl : PBSq c c (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl)) (ptbV MA₂ iA₂ ρc'.δl)
+      αl = Πc.pullSq ρc'.δl
+
+      αr : PBSq (idPRel A₂) c' (ptbV MA₂ iA₂ ρc'.δl) ρc'.e
+      αr = ρc'.UpR
+
+      compose-αl-αr : PBSq (c ⊙ idPRel A₂) (c ⊙ c')
+                      (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl)) ρc'.e
+      compose-αl-αr = CompSqH {cᵢ₁ = c} {cᵢ₂ = (idPRel A₂)} {cₒ₁ = c} {cₒ₂ = c'} {f = (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl))} {g = (ptbV MA₂ iA₂ ρc'.δl) } {h = ρc'.e} αl αr
+
+      compose-id-αlαr : PBSq c (c ⊙ c')
+                       (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl) ∘p Id) (ρc'.e ∘p Id)
+      compose-id-αlαr = CompSqV {c₁ = c} {c₂ = (c ⊙ idPRel A₂)} {c₃ = (c ⊙ c')} {f₁ = Id} {g₁ = Id} {f₂ = (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl))} {g₂ = ρc'.e} id-sq compose-αl-αr
+      
+      res : PBSq (idPRel A₁) (c ⊙ c')
+             (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl) ∘p Id ∘p ptbV MA₁ iA₁ ρc.δl)
+             (ρc'.e ∘p Id ∘p ρc.e)
+      res = CompSqV {c₁ = (idPRel A₁)} {c₂ = c} {c₃ = (c ⊙ c')} {f₁ = (ptbV MA₁ iA₁ ρc.δl)} {g₁ = ρc.e} {f₂ = (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl) ∘p Id)} {g₂ = (ρc'.e ∘p Id)} α1 compose-id-αlαr
+
+      foo : ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl MA₁.· MA₁.ε MA₁.· ρc.δl) ≡ ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl) ∘p Id ∘p ptbV MA₁ iA₁ ρc.δl
+      foo = C.lemma2 (Πc.pull .fst ρc'.δl) MA₁.ε ρc.δl ∙ cong (λ x → ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl) ∘p x ∘p ptbV MA₁ iA₁ ρc.δl) id.lemma
+        where
+          module C = Compose A₁ MA₁ iA₁
+          module id = ptbVε≡Id A₁ MA₁ iA₁
+{-
 
 module ComposeLeftRepC
   (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁)
@@ -423,11 +511,56 @@ module ComposeLeftRepC
   compose .e = ρd'.e ∘ed ρd.e
   compose .δl = ρd.δl MB₁.· Πd.pull .fst ρd'.δl
   compose .δr = ρd'.δr MB₃.· Πd'.push .fst ρd.δr
-  compose .UpL = {!!}
+  compose .UpL = transport (cong (λ x → ErrorDomSq (d ⊙ed d') (idEDRel B₃) (ρd'.e ∘ed IdE ∘ed ρd.e) x) (sym foo)) res
+    where
+      β1 : ErrorDomSq d (idEDRel B₂) ρd.e (ptbC MB₂ iB₂ ρd.δr)
+      β1 = ρd.UpL
+
+      β2 : ErrorDomSq d' d' (ptbC MB₂ iB₂ ρd.δr) (ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))
+      β2 = Πd'.pushSq ρd.δr
+
+      id-sq : ErrorDomSq (idEDRel B₂ ⊙ed d') d' IdE IdE
+      id-sq = sq-idB⊙d-d d'
+
+      β3 : ErrorDomSq d' (idEDRel B₃) ρd'.e (ptbC MB₃ iB₃ ρd'.δr)
+      β3 = ρd'.UpL
+
+      compose-β1β2 : ErrorDomSq (d ⊙ed d') (idEDRel B₂ ⊙ed d') ρd.e (ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))
+      compose-β1β2 = ED-CompSqH {dᵢ₁ = d} {dᵢ₂ = d'} {dₒ₁ = (idEDRel B₂)} {dₒ₂ = d'} {ϕ₁ = ρd.e} {ϕ₂ = (ptbC MB₂ iB₂ ρd.δr)} {ϕ₃ = (ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))} β1 β2
+
+      compose-id-β3 : ErrorDomSq (idEDRel B₂ ⊙ed d') (idEDRel B₃) (ρd'.e ∘ed IdE)
+                       (ptbC MB₃ iB₃ ρd'.δr ∘ed IdE)
+      compose-id-β3 = ED-CompSqV {d₁ = (idEDRel B₂ ⊙ed d')} {d₂ = d'} {d₃ = (idEDRel B₃)} {ϕ₁ = IdE} {ϕ₁' = IdE} {ϕ₂ = ρd'.e} {ϕ₂' = (ptbC MB₃ iB₃ ρd'.δr)} id-sq β3
+
+      res : ErrorDomSq (d ⊙ed d') (idEDRel B₃) (ρd'.e ∘ed IdE ∘ed ρd.e)
+             (ptbC MB₃ iB₃ ρd'.δr ∘ed IdE ∘ed
+              ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))
+      res = ED-CompSqV {d₁ = (d ⊙ed d')} {d₂ = (idEDRel B₂ ⊙ed d')} {d₃ = (idEDRel B₃)} {ϕ₁ = ρd.e} {ϕ₁' = (ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))} {ϕ₂ = (ρd'.e ∘ed IdE)} {ϕ₂' = (ptbC MB₃ iB₃ ρd'.δr ∘ed IdE)} compose-β1β2 compose-id-β3
+
+      foo : ptbC MB₃ iB₃ (ρd'.δr MB₃.· Πd'.push .fst ρd.δr) ≡ ptbC MB₃ iB₃ ρd'.δr ∘ed IdE ∘ed ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr)
+      foo = C.lemma ρd'.δr (Πd'.push .fst ρd.δr) ∙ {!cong !}
+        where
+          module C = ComposeC B₃ MB₃ iB₃
+          module id = ptbCε≡Id B₃ MB₃ iB₃
+
+
   compose .UpR = {!!}
+    where
+      β1 : ErrorDomSq (idEDRel B₁) d (ptbC MB₁ iB₁ ρd.δl) ρd.e
+      β1 = ρd.UpR
+
+      id-sq : ErrorDomSq d (d ⊙ed idEDRel B₂) IdE IdE
+      id-sq = sq-d-d⊙B' d
+
+      β2 : ErrorDomSq d d (ptbC MB₁ iB₁ (Πd.pull .fst ρd'.δl)) (ptbC MB₂ iB₂ ρd'.δl)
+      β2 = Πd.pullSq ρd'.δl
+
+      β3 : ErrorDomSq (idEDRel B₂) d' (ptbC MB₂ iB₂ ρd'.δl) ρd'.e
+      β3 = ρd'.UpR
+      -}
 
 
-
+{-
 -- Right quasi-representations compose
 
 module ComposeRightRepV
@@ -460,7 +593,32 @@ module ComposeRightRepV
   compose .δl = ρc.δl MA₁.· Πc.pull .fst ρc'.δl
   compose .δr = ρc'.δr MA₃.· Πc'.push .fst ρc.δr
   compose .DnL = {!!}
+    where
+      β1 : PBSq c' (idPRel A₂) (ptbV MA₂ iA₂ ρc'.δl) ρc'.p
+      β1 = ρc'.DnL
+
+      id-sq : PBSq c' (idPRel A₂ ⊙ c') Id Id
+      id-sq = sq-c-idA⊙c c'
+
+      β2 : PBSq c (idPRel A₁) (ptbV MA₁ iA₁ ρc.δl) ρc.p
+      β2 = ρc.DnL
+
+      β3 : PBSq c' c' (ptbV MA₂ iA₂ ρc.δr) (ptbV MA₃ iA₃ (Πc'.push .fst ρc.δr))
+      β3 = Πc'.pushSq ρc.δr
+    
   compose .DnR = {!!}
+    where
+      β1 : PBSq c c (ptbV MA₁ iA₁ (Πc.pull .fst ρc'.δl)) (ptbV MA₂ iA₂ ρc'.δl)
+      β1 = Πc.pullSq ρc'.δl
+
+      β2 : PBSq (idPRel A₃) c' ρc'.p (ptbV MA₃ iA₃ ρc'.δr)
+      β2 = ρc'.DnR
+
+      id-sq : PBSq (c ⊙ idPRel A₂) c Id Id
+      id-sq = sq-c⊙A'-c c
+
+      β3 : PBSq (idPRel A₂) c ρc.p (ptbV MA₂ iA₂ ρc.δr)
+      β3 = ρc.DnR
 
 module ComposeRightRepC
   (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁)
@@ -492,5 +650,125 @@ module ComposeRightRepC
   compose .δl = ρd.δl MB₁.· Πd.pull .fst ρd'.δl
   compose .δr = ρd'.δr MB₃.· Πd'.push .fst ρd.δr
   compose .DnL = {!!}
-      
+    where
+      β1 : ErrorDomSq (idEDRel B₃) d' ρd'.p (ptbC MB₃ iB₃ ρd'.δr)
+      β1 = ρd'.DnL
+
+      id-sq : ErrorDomSq d' (idEDRel B₂ ⊙ed d') IdE IdE
+      id-sq = sq-d-idB⊙d d'
+
+      β2 : ErrorDomSq (idEDRel B₂) d ρd.p (ptbC MB₂ iB₂ ρd.δr)
+      β2 = ρd.DnL
+
+      β3 : ErrorDomSq d' d' (ptbC MB₂ iB₂ ρd.δr) (ptbC MB₃ iB₃ (Πd'.push .fst ρd.δr))
+      β3 = Πd'.pushSq ρd.δr      
   compose .DnR = {!!}
+    where
+      β1 : ErrorDomSq d d (ptbC MB₁ iB₁ (Πd.pull .fst ρd'.δl)) (ptbC MB₂ iB₂ ρd'.δl)
+      β1 = Πd.pullSq ρd'.δl
+
+      β2 : ErrorDomSq d' (idEDRel B₂) (ptbC MB₂ iB₂ ρd'.δl) ρd'.p
+      β2 = ρd'.DnR
+
+      id-sq : ErrorDomSq (d ⊙ed idEDRel B₂) d IdE IdE
+      id-sq = sq-d⊙B'-d d
+
+      β3 : ErrorDomSq d (idEDRel B₁) (ptbC MB₁ iB₁ ρd.δl) ρd.p
+      β3 = ρd.DnR
+-}
+
+
+-- If c is left-representable, then F c is left representable
+
+-- If c has push pull, then Fc has push pull (Perturbations.agda)
+
+-- 1. 4 composition lemmas (LeftRepV, LeftRepC, RightRepV, RightRepC)
+--       Each lemma involves two squares
+
+-- 2. Lemmas about U(d ⊙ed d') and F(c ⊙ c')
+--    a. If c and c' are left representable, then F(c ⊙ c') is right representable
+--    b. If d and d' are right representable, then U(d ⊙ed d') is left representable
+
+module Fc⊙c'
+  (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
+  (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
+  (A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃)
+  (MA₁ : Monoid ℓMA₁)  (iA₁ : MonoidHom MA₁ (Endo A₁))
+  (MA₂ : Monoid ℓMA₂)  (iA₂ : MonoidHom MA₂ (Endo A₂))
+  (MA₃ : Monoid ℓMA₃)  (iA₃ : MonoidHom MA₃ (Endo A₃))
+  (c  : PBRel A₁ A₂ ℓc)  (Πc  : PushPullV A₁ MA₁ iA₁ A₂ MA₂ iA₂ c)
+  (c' : PBRel A₂ A₃ ℓc') (Πc' : PushPullV A₂ MA₂ iA₂ A₃ MA₃ iA₃ c')
+  where
+  module B₁ = F-ob A₁
+  module pp-A₁ = F-PushPull c Πc
+  module B₂ = F-ob A₂
+  module B₃ = F-ob A₃
+  module d = F-rel c
+  module d' = F-rel c'
+  module rel⊙ = F-rel (c ⊙ c')
+  module push-pull-c = F-PushPull c Πc
+  module push-pull-c' = F-PushPull c' Πc'
+  module push-pull-composed-v = PushPullV-Compose MA₁ iA₁ MA₂ iA₂ MA₃ iA₃ c Πc c' Πc'
+  module push-pull-compose-c = F-PushPull (c ⊙ c') push-pull-composed-v.compPPV
+  
+
+  open RightRepC
+
+  B₁ = B₁.F-ob
+  B₂ = B₂.F-ob
+  B₃ = B₃.F-ob
+  MB = push-pull-compose-c.M-FA
+  MB' = push-pull-c'.M-FA
+  MB'' = push-pull-compose-c.M-FA'
+  iB = push-pull-compose-c.iFA
+  iB' = push-pull-c'.iFA
+  iB'' = push-pull-compose-c.iFA'
+  d = d.F-rel
+  d' = d'.F-rel
+  d⊙d' = rel⊙.F-rel
+  Πd = push-pull-c.F-PushPull
+  Πd' = push-pull-c'.F-PushPull
+  Πd∘Πd' = push-pull-compose-c.F-PushPull
+  ρd = LeftRepC B₁ MB iB B₂ MB' iB' d Πd -- I guess there's another way to define ρd and ρd'
+  ρd' = LeftRepC B₂ MB' iB' B₃ MB'' iB'' d' Πd'
+
+  --module ρd = LeftRepC ρd
+  --module ρd' = LeftRepC ρd'
+
+  lemma : (ρc : LeftRepV A₁ MA₁ iA₁ A₂ MA₂ iA₂ c Πc) (ρc' : LeftRepV A₂ MA₂ iA₂ A₃ MA₃ iA₃ c' Πc') →
+    RightRepC B₁ MB iB B₃ MB'' iB'' d⊙d' Πd∘Πd'
+  lemma ρc ρc' .p = {!!}
+  lemma ρc ρc' .δl = {!!}
+  lemma ρc ρc' .δr = {!!}
+  lemma ρc ρc' .DnL = {!!}
+  lemma ρc ρc' .DnR = {!!}
+
+
+module Ud⊙d'
+  (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁)
+  (B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂)
+  (B₃ : ErrorDomain ℓB₃ ℓ≤B₃ ℓ≈B₃)
+  (MB₁ : Monoid ℓMB₁)  (iB₁ : MonoidHom MB₁ (CEndo B₁))
+  (MB₂ : Monoid ℓMB₂)  (iB₂ : MonoidHom MB₂ (CEndo B₂))
+  (MB₃ : Monoid ℓMB₃)  (iB₃ : MonoidHom MB₃ (CEndo B₃))
+  (d  : ErrorDomRel B₁ B₂ ℓd)  (Πd : PushPullC B₁ MB₁ iB₁ B₂ MB₂ iB₂ d)
+  (d' : ErrorDomRel B₂ B₃ ℓd') (Πd' : PushPullC B₂ MB₂ iB₂ B₃ MB₃ iB₃ d')
+  where
+  module push-pull-c = PushPullC-Compose MB₁ iB₁ MB₂ iB₂ MB₃ iB₃ d Πd d' Πd'
+  module push-pull-v = U-PushPull (d ⊙ed d') push-pull-c.compPPC
+{-
+  module A₁ = U-ob B₁
+  module A₂ = U-ob B₂
+  module A₃ = U-ob B₃
+
+  module pp-B₁ = U-PushPull d Πd
+
+  module rel = U-rel (d ⊙ d')
+
+  module push-pull-c = PushPullC-Compose MB₁ iB₁ MB₂ iB₂ MB₃ iB₃ d Πd d' Πd'
+  module push-pull-v = U-PushPull (d ⊙ d') push-pull-c.compPPC
+-}
+  lemma : (ρd : RightRepC B₁ MB₁ iB₁ B₂ MB₂ iB₂ d Πd) (ρd' : RightRepC B₂ MB₂ iB₂ B₃ MB₃ iB₃ d' Πd') →
+    LeftRepV (U-ob B₁) push-pull-v.M-UB push-pull-v.iUB (U-ob B₃) push-pull-v.M-UB' push-pull-v.iUB' (U-rel (d ⊙ed d')) push-pull-v.U-PushPull
+  lemma ρd ρd' = {!!}
+

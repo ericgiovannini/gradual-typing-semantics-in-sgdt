@@ -205,10 +205,15 @@ module LiftOrdHomogenous (X : Type ℓX) (R : X → X → Type ℓR) where
         aux IH (θ lx~) = ⊑θθ lx~ lx~ (λ t → IH t (lx~ t)) -- auto solved this!
 
 
-    -- anti-symmetric
-    ⊑-antisym : isAntisym R → (isAntisym _⊑_)
-    ⊑-antisym = {!!}
-
+  -- anti-symmetric
+  ⊑-antisym : isAntisym R → isAntisym _⊑_
+  ⊑-antisym isAntisymR = fix aux
+    where
+      aux : ▹ isAntisym _⊑_ → isAntisym _⊑_
+      aux IH .(η x) .(η y) (⊑ηη x y xRy) (⊑ηη y x yRx) = cong η (isAntisymR x y xRy yRx)
+      aux IH ℧ ℧ (⊑℧⊥ ℧) (⊑℧⊥ ℧) = refl
+      aux IH .(θ lx~) .(θ ly~) (LiftOrd.⊑θθ lx~ ly~ xRy~) (LiftOrd.⊑θθ .ly~ .lx~ yRx~) = 
+        cong θ (λ i → λ t → IH t (lx~ t) (ly~ t) (xRy~ t) (yRx~ t) i)
 
     -- transitive
     ⊑-transitive : isTrans R → isTrans _⊑_
