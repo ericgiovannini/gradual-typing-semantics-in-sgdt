@@ -19,6 +19,7 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.FreeCommProduct
 open import Cubical.Algebra.CommMonoid.Base
+open import Cubical.Algebra.Monoid.More
 
 
 private

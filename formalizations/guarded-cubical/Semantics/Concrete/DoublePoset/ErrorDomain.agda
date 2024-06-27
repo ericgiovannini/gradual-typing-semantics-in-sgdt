@@ -21,6 +21,7 @@ open import Cubical.Reflection.Base
 open import Cubical.Reflection.RecordEquiv
 open import Cubical.HITs.PropositionalTruncation renaming (rec to PTrec)
 open import Cubical.Data.Sigma
+open import Cubical.Data.Nat
 
 open import Cubical.Reflection.Base
 open import Cubical.Reflection.RecordEquiv
@@ -28,7 +29,7 @@ open import Cubical.Reflection.RecordEquiv
 open import Common.Common
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
   renaming (module Clocked to ClockedConstructions)
 open import Semantics.Concrete.DoublePoset.DPMorRelation
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
@@ -292,6 +293,36 @@ module _ where
 
 
 
+  -- Iterated composition of error domain relations
+  module IteratedComp {B : ErrorDomain ℓB ℓ≤B ℓ≈B} (ϕ : ErrorDomMor B B) where
+
+    open ErrorDomMor
+    module B = ErrorDomainStr (B .snd)
+    module ϕ = ErrorDomMor ϕ
+
+    iterate : ℕ -> PBMor (ErrorDomain→Predomain B) (ErrorDomain→Predomain B)
+    iterate n = (ϕ.f ^m n)
+
+    pres℧ : ∀ n → iterate n $ B.℧ ≡ B.℧
+    pres℧ zero = refl
+    pres℧ (suc n) = (cong ϕ.fun (pres℧ n)) ∙ ϕ.f℧
+
+    presθ : ∀ n x~ →
+      iterate n $ (B.θ $ x~) ≡ (B.θ $ (map▹ (iterate n .PBMor.f) x~))
+    presθ zero x~ = refl
+    presθ (suc n) x~ = (cong ϕ.fun (presθ n x~)) ∙ (ϕ.fθ _)
+
+    morphism : ℕ → ErrorDomMor B B
+    morphism n .f = iterate n
+    morphism n .f℧ = pres℧ n
+    morphism n .fθ = presθ n 
+  
+  _^ed_ : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} → ErrorDomMor B B -> ℕ -> ErrorDomMor B B
+  _^ed_ = IteratedComp.morphism
+
+ 
+
+
 
   ------------------------------------------
   -- Horizontal morphisms of error domains
@@ -327,7 +358,7 @@ module _ where
     open PBRel UR public
     -- (can use fields from PBRel as well as the _rel_ shorthand)
 
-  syntax rel d b b' = b R[ d ] b'
+  -- syntax rel d b b' = b R[ d ] b'
 
 
   -- Iso with sigma type
@@ -768,6 +799,18 @@ module _ where
   _∘esqv_ = ED-CompSqV
   infixl 20 _∘esqv_
 
+
+  ED-CompSqV-iterate :
+    {B₁ : ErrorDomain ℓB₁  ℓ≤B₁  ℓ≈B₁}
+    {B₂ : ErrorDomain ℓB₂  ℓ≤B₂  ℓ≈B₂}
+    (d : ErrorDomRel B₁ B₂ ℓd) →
+    (ϕ : ErrorDomMor B₁ B₁) →
+    (ϕ' : ErrorDomMor B₂ B₂) →
+    (ErrorDomSq d d ϕ ϕ') →
+    (n : ℕ) → ErrorDomSq d d (ϕ ^ed n) (ϕ' ^ed n)
+  ED-CompSqV-iterate = {!!}
+  -- TODO
+
   ED-CompSqH :
     {Bᵢ₁ : ErrorDomain ℓBᵢ₁ ℓ≤Bᵢ₁ ℓ≈Bᵢ₁}
     {Bᵢ₂ : ErrorDomain ℓBᵢ₂ ℓ≤Bᵢ₂ ℓ≈Bᵢ₂}
@@ -991,6 +1034,7 @@ module _ where
 
 
   -- Functoriality for the identity
+  -- TODO universe level mismatch (need to restrict levels or use Lift)
   arrowPresIdHoriz : ∀  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
     (idPRel A) ⟶rel (idEDRel B) ≡ {!idEDRel (A ⟶ob B)!}
   arrowPresIdHoriz = {!!}

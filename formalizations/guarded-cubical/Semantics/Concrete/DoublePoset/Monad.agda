@@ -48,7 +48,7 @@ module StrongCBPVExt
   (℧B : B) (θB : (▹ B) → B)
   (f : Γ → A → B) where
 
-  private
+  -- private
     -- module Γ = PosetBisimStr (Γ .snd)
     -- module A = PosetBisimStr (A .snd)
     -- module B = ErrorDomainStr (B .snd)
@@ -175,7 +175,7 @@ module MonadLawsStrong
             eq1 = (λ i → A₂₃.ext g γ (A₁₂.Equations.ext-℧ f γ i)) ∙ (λ i → A₂₃.Equations.ext-℧ g γ i)
             eq2 = A₁₃.Equations.ext-℧ _ γ
             
-        aux IH (θ lx~) = eq1 ∙ sym eq2
+        aux IH (θ lx~) = eq1 ∙ (sym eq2)
           where
             eq1 = (λ i → A₂₃.ext g γ (A₁₂.Equations.ext-θ f γ lx~ i)) ∙
                   (λ i → A₂₃.Equations.ext-θ g γ (map▹ (A₁₂.ext f γ) lx~) i) ∙
@@ -256,10 +256,9 @@ module MonadLaws where
 
 module Map {Aᵢ : Type ℓAᵢ} {Aₒ : Type ℓAₒ} where
 
-  open CBPVExt Aᵢ (L℧ Aₒ) ℧ θ public
-
   map : (Aᵢ → Aₒ) → (L℧ Aᵢ → L℧ Aₒ)
   map f = ext (η ∘ f)
+    where open CBPVExt Aᵢ (L℧ Aₒ) ℧ θ
 
 
 module MapProperties where
@@ -288,16 +287,19 @@ module MapProperties where
 
   map-η : ∀ {Aᵢ : Type ℓAᵢ} {Aₒ : Type ℓAₒ} →
     (f : Aᵢ → Aₒ) (x : Aᵢ) → map f (η x) ≡ η (f x)
-  map-η f x = Equations.ext-η (η ∘ f) x
+  map-η {Aᵢ = Aᵢ} {Aₒ = Aₒ} f x = Equations.ext-η (η ∘ f) x
+    where open CBPVExt Aᵢ (L℧ Aₒ) ℧ θ
 
   map-℧ : ∀ {Aᵢ : Type ℓAᵢ} {Aₒ : Type ℓAₒ} →
     (f : Aᵢ → Aₒ) → map f ℧ ≡ ℧
-  map-℧ f = Equations.ext-℧ (η ∘ f)
+  map-℧ {Aᵢ = Aᵢ} {Aₒ = Aₒ} f = Equations.ext-℧ (η ∘ f)
+    where open CBPVExt Aᵢ (L℧ Aₒ) ℧ θ
 
   map-θ : ∀ {Aᵢ : Type ℓAᵢ} {Aₒ : Type ℓAₒ} →
     (f : Aᵢ → Aₒ) (lx~ : ▹ (L℧ Aᵢ)) →
       map f (θ lx~) ≡ θ (map▹ (map f) lx~)
-  map-θ f lx~ = Equations.ext-θ (η ∘ f) lx~
+  map-θ {Aᵢ = Aᵢ} {Aₒ = Aₒ} f lx~ = Equations.ext-θ (η ∘ f) lx~
+     where open CBPVExt Aᵢ (L℧ Aₒ) ℧ θ
 
 
   

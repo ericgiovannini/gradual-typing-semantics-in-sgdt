@@ -15,6 +15,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
+open import Cubical.Data.Nat hiding (_^_)
 
 
 open import Cubical.Algebra.Monoid.Base
@@ -25,11 +26,14 @@ open import Cubical.Algebra.Monoid.FreeProduct
 open import Common.Common
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
 open import Semantics.Concrete.DoublePoset.DPMorRelation
 open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
+open import Semantics.Concrete.DoublePoset.Monad k
+open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
+open import Semantics.Concrete.DoublePoset.MonadCombinators k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 
 
@@ -48,8 +52,9 @@ open PBMor
 
 
 
+---------------------------
 -- Value pre-perturbations
---------------------------
+---------------------------
 
 -- Given a predomain X, a *value pre-perturbation* on X is an
 -- endomorphism on X that is bisimilar to the identity.
@@ -83,12 +88,22 @@ EqEndomor→EqPrePtb f1 f2 eq = Σ≡Prop (λ h → ≈mon-prop h Id) eq
 
 Endo : (A : PosetBisim ℓ ℓ' ℓ'') -> Monoid (ℓ-max (ℓ-max ℓ ℓ') ℓ'')
 Endo A = makeMonoid {M = PrePtb A}
-  PrePtbId PrePtb∘ {!!} -- TODO is set
+  PrePtbId PrePtb∘ (isSetΣSndProp PBMorIsSet λ f → ≈mon-prop f Id)
   (λ f g h → PrePtb≡ _ _ refl)
   (λ f → PrePtb≡ _ _ refl)
   (λ f → PrePtb≡ _ _ refl)
 
 
+-- For any error domain B, the delay morphism δB : B → B is in Endo (U B)
+
+δB-as-PrePtb : (B : ErrorDomain ℓB ℓ≤B ℓ≈B) → PrePtb (U-ob B)
+δB-as-PrePtb B .fst = B.δ
+  where module B = ErrorDomainStr (B .snd)
+δB-as-PrePtb B .snd = B.δ≈id
+  where module B = ErrorDomainStr (B .snd)
+
+
+-- Shorthand for obtaining the underlying morphism
 
 ptbV : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
   (M : Monoid ℓM) (iA : MonoidHom M (Endo A)) → ⟨ M ⟩ → PBMor A A
@@ -96,7 +111,7 @@ ptbV M iA m = iA .fst m .fst
 
 
 
-
+--------------------------------
 -- Computation pre-perturbations
 --------------------------------
 
@@ -137,28 +152,48 @@ EqEndomor→EqCPrePtb ϕ ϕ' eq = Σ≡Prop (λ h → ≈mon-prop (U-mor h) Id) 
 -- The pre-perturbations on B form a monoid under composition.
 CEndo : (B : ErrorDomain ℓ ℓ' ℓ'') -> Monoid (ℓ-max (ℓ-max ℓ ℓ') ℓ'')
 CEndo B = makeMonoid {M = CPrePtb B}
-  CPrePtbId CPrePtb∘ {!!} -- TODO is set
+  CPrePtbId CPrePtb∘ (isSetΣSndProp EDMorIsSet (λ ϕ → ≈mon-prop (U-mor ϕ) Id))
   (λ f g h → CPrePtb≡ _ _ refl)
   (λ f → CPrePtb≡ _ _ refl)
   (λ f → CPrePtb≡ _ _ refl)
+
+
+-- For any predomain A, the delay morphism δ* : FA --o FA is in CEndo FA
+
+open F-ob
+
+δ*FA-as-PrePtb : (A : PosetBisim ℓA ℓ≤A ℓ≈A) → CPrePtb (F-ob A)
+δ*FA-as-PrePtb A .fst = δ*
+  where module A = PosetBisimStr (A .snd)
+δ*FA-as-PrePtb A .snd = δ*≈id
+  where module A = PosetBisimStr (A .snd)
+
+
+
+-- Shorthand for obtaining the underlying morphism
 
 ptbC : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
   (M : Monoid ℓM) (iB : MonoidHom M (CEndo B)) → ⟨ M ⟩ → ErrorDomMor B B
 ptbC M iB m = iB .fst m .fst
 
 
+
+
+
+------------------------------------------------------------------------
+
+
 -- Convenience: action of ⟶ on pre-perturbations
 
 _⟶PrePtb_ :
-  -- {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
-  -- {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ} {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
   {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
   (f : PrePtb A) (ϕ : CPrePtb B) → CPrePtb (A ⟶ob B)
 (f ⟶PrePtb ϕ) .fst = (f .fst) ⟶mor (ϕ .fst) --  : ErrorDomMor (A ⟶ob B) (A ⟶ob B)
 (f ⟶PrePtb ϕ) .snd g₁ g₂ g₁≈g₂ x y x≈y = ϕ .snd _ _ (g₁≈g₂ _ _ (f .snd _ _ x≈y))
-  where
-    -- There is also a "point-free" proof using the fact that composition preserves bisimilarity
-    -- but in this case it's easier to just inline that proof here.
+
+    -- There is also a "point-free" proof using the fact that
+    -- composition preserves bisimilarity but in this case it's easier
+    -- to just inline that proof here.
     
     -- aux : ((U-mor (ϕ .fst)) ∘p g₁ ∘p (f .fst)) ≈mon (Id ∘p g₁ ∘p Id)
     -- aux = ≈comp {!!} {!!} {!!} {!!} (f .snd) (≈comp {!!} {!!} {!!} {!!} g₁≈g₂ (ϕ .snd))
@@ -168,16 +203,100 @@ _⟶PrePtb_ :
     -- Have : (ϕ ∘ g₁ ∘ f) ≈ (id ∘ g₂ ∘ id) = g₂
 
 
--- Convenience: action of the U functor on pre-perturbations
+-- Action of the U functor on pre-perturbations
+
 U-PrePtb :
   {B : ErrorDomain ℓB ℓ≤B ℓ≈B} → CPrePtb B → PrePtb (U-ob B)
 U-PrePtb ϕ .fst = U-mor (ϕ .fst)
 U-PrePtb ϕ .snd = ϕ .snd
 
 
+-- The above action defines a monoid homomorphism from CEndo B to Endo UB.
 
 CEndo-B→Endo-UB : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
   MonoidHom (CEndo B) (Endo (U-ob B))
 CEndo-B→Endo-UB .fst = U-PrePtb
 CEndo-B→Endo-UB .snd .IsMonoidHom.presε = refl
 CEndo-B→Endo-UB .snd .IsMonoidHom.pres· ϕ ϕ' = refl
+
+
+
+-- Action of F on pre-perturbations
+
+open F-ob
+open F-mor
+
+F-PrePtb : {A : PosetBisim ℓA ℓ≤A ℓ≈A} → PrePtb A → CPrePtb (F-ob A)
+F-PrePtb f .fst = F-mor (f .fst)
+F-PrePtb {A = A} f .snd =
+  transport (λ i → U-mor (F-mor (f .fst)) ≈mon (lem2 i)) lem1
+  where
+    module A = PosetBisimStr (A .snd)
+    open MapPresBisim
+    open MapProperties
+    
+    lem1 : (U-mor (F-mor (f .fst))) ≈mon (U-mor (F-mor Id))
+    lem1 = map-pres-≈
+      ⟨ A ⟩ ⟨ A ⟩ A._≈_ A._≈_
+      A.is-prop-valued-Bisim A.is-refl-Bisim A.is-sym
+      (f .fst .PBMor.f) id (f .snd)
+
+    lem2 : U-mor (F-mor Id) ≡ (Id {X = U-ob (F-ob A)})
+    lem2 = eqPBMor _ _ (pres-id)
+
+-- NTS  : map f ≈ id
+
+-- Know : f ≈ id
+-- Know : If f ≈ g, then map f ≈ map g
+-- Know : map id ≡ id
+
+
+-- F-PrePtb {A = A} f .snd x y x≈y =
+--   transport (cong₂ UF._≈_ refl {!funExt⁻ pres-id ?!}) (F-mor (f .fst) .ErrorDomMor.f .PBMor.pres≈ x≈y)
+--   where
+    
+--     module UF = PosetBisimStr ((U-ob (F-ob A)) .snd)
+--     open MapProperties
+
+
+-- The above action defines a monoid homomorphism from Endo A to CEndo FA.
+
+Endo-A→CEndo-FA : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+  MonoidHom (Endo A) (CEndo (F-ob A))
+Endo-A→CEndo-FA .fst = F-PrePtb
+Endo-A→CEndo-FA .snd .IsMonoidHom.presε =
+  EqEndomor→EqCPrePtb _ _ F-mor-pres-id
+Endo-A→CEndo-FA .snd .IsMonoidHom.pres· f g =
+  EqEndomor→EqCPrePtb _ _ (F-mor-pres-comp (f .fst) (g .fst))
+
+
+
+-- Iterated composition of pre-perturbations
+-- Leaving in case it is needed...
+{-
+_^Vpreptb_ : {A : PosetBisim ℓA ℓ≤A ℓ≈A} → PrePtb A → ℕ → PrePtb A
+(p ^Vpreptb n) .fst = (p .fst) ^m n
+(p ^Vpreptb n) .snd = {!!}
+
+_^Cpreptb_ : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} → CPrePtb B → ℕ → CPrePtb B
+(p ^Cpreptb n) .fst = {!!} -- (p .fst) ^m n
+  where open IteratedComp
+(p ^Cpreptb n) .snd = {!!}
+  where open IteratedComp
+
+
+module NatMonoidHomomorphismFacts where
+  open NatM→
+
+  h-eq-V : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    NatM→.f (Endo A) ≡ _^Vpreptb_
+  h-eq-V {A = A} = funExt λ g → funExt (λ n → aux g n)
+    where
+      aux : ∀ g n →  NatM→.f (Endo A) g n ≡ (g ^Vpreptb n)
+      aux g zero = PrePtb≡ _ _ refl
+      aux g (suc n) = PrePtb≡ _ _ (funExt (λ x → {!!}))
+
+  h-eq-C : ∀ {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+    NatM→.f (CEndo B) ≡ _^Cpreptb_
+  h-eq-C = {!!}
+-}

@@ -13,9 +13,11 @@ open import Cubical.Relation.Binary
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Univalence
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum hiding (elim)
 open import Cubical.Data.Empty hiding (elim)
+open import Cubical.Data.Nat
 open import Cubical.HITs.PropositionalTruncation renaming (map to PTmap ; rec to PTrec)
 
 
@@ -23,7 +25,7 @@ open import Common.Common
 
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.DPMorRelation
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
@@ -182,6 +184,29 @@ CompSqV α₁ α₂ x y xRy = α₂ _ _ (α₁ _ _ xRy)
 _∘psqv_ = CompSqV
 infixl 20 _∘psqv_
 
+
+-- Iterated vertical composition
+CompSqV-iterate :
+  {A₁  : PosetBisim ℓA₁  ℓ≤A₁  ℓ≈A₁ }
+  {A₂  : PosetBisim ℓA₂  ℓ≤A₂  ℓ≈A₂ }
+  (c : PBRel A₁ A₂ ℓc) →
+  (f : PBMor A₁ A₁) →
+  (g : PBMor A₂ A₂) →
+  (PBSq c c f g) →
+  (n : ℕ) → PBSq c c (f ^m n) (g ^m n)
+CompSqV-iterate c f g α zero = Predom-IdSqV c
+CompSqV-iterate c f g α (suc n) =
+  CompSqV {c₁ = c} {c₂ = c} {c₃ = c}
+          {f₁ = f ^m n} {g₁ = g ^m n} {f₂ = f} {g₂ = g}
+          (CompSqV-iterate c f g α n) α
+
+-- TwoCell-iterated R f g α zero = λ _ _ → id
+-- TwoCell-iterated R f g α (suc n) = λ x₁ x₂ Rx₁x₂ →
+--   α ((f ^ n) x₁)
+--     ((g ^ n) x₂)
+--     (TwoCell-iterated R f g α n x₁ x₂ Rx₁x₂)
+
+
 -- Horizontal composition of squares
 
 --          cᵢ₁                    cᵢ₂
@@ -291,17 +316,20 @@ module _
 
 
 
-
+-- Squares corresponding to the identity and associativity of
+-- composition of predomain relatinos
 
 sq-idA⊙c-c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
   PBSq (idPRel A ⊙ c) c Id Id
-sq-idA⊙c-c {A = A} {A' = A'} c x y H = PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+sq-idA⊙c-c {A = A} {A' = A'} c x y H =
+  PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
   where module c = PBRel c
 
 
 sq-c⊙A'-c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
   PBSq (c ⊙ idPRel A') c Id Id
-sq-c⊙A'-c {A = A} {A' = A'} c x y H = PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+sq-c⊙A'-c {A = A} {A' = A'} c x y H =
+  PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
   where module c = PBRel c
 
 
@@ -315,3 +343,51 @@ sq-c-c⊙A' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ�
     PBSq c (c ⊙ idPRel A') Id Id
 sq-c-c⊙A' {A = A} {A' = A'} c x y xRy = ∣ y , xRy , A'.is-refl y ∣₁
   where module A' = PosetBisimStr (A' .snd)
+
+
+-- TODO associativity
+
+
+
+
+-- lemma about squares between functional relations
+SqV-functionalRel :
+  {Aᵢ  : PosetBisim ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ}  {Aₒ  : PosetBisim  ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ}
+  {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'} {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} →
+  (f : PBMor Aᵢ  Aₒ) →
+  (g : PBMor Aᵢ' Aₒ') →
+  (c : PBRel Aₒ Aₒ' ℓc) →
+  PBSq (functionalRel f g c) c f g
+SqV-functionalRel f g c a a' fa-R-gb = fa-R-gb
+
+-- SqV-functionalRel-bot :
+--   {Aᵢ  : PosetBisim ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ}  {Aₒ  : PosetBisim  ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ}
+--   {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'} {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} →
+--   (f : PBMor Aᵢ  Aᵢ) →
+--   (g : PBMor Aᵢ' Aᵢ') →
+--   (c : PBRel Aᵢ Aᵢ' ℓc) →
+--   PBSq c (functionalRel f g c) f g
+
+
+-- Identity and associativity laws for composition of horizontal morphisms
+--------------------------------------------------------------------------
+
+PredomainRel-Comp-IdL : {A₁ : PosetBisim ℓ ℓ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  (c : PBRel A₁ A₂ ℓ) → ((idPRel A₁) ⊙ c) ≡ c
+PredomainRel-Comp-IdL c = eqPBRel _ _ (funExt λ x → funExt λ y →
+  hPropExt
+    isPropPropTrunc (c.is-prop-valued x y)
+    (λ H → sq-idA⊙c-c c x y H)
+    (λ H → sq-c-idA⊙c c x y H))
+  where module c = PBRel c
+
+PredomainRel-Comp-IdR : {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓ ℓ ℓ≈A₂} →
+  (c : PBRel A₁ A₂ ℓ) → (c ⊙ (idPRel A₂)) ≡ c
+PredomainRel-Comp-IdR c = eqPBRel _ _ (funExt λ x → funExt λ y →
+  hPropExt
+    isPropPropTrunc (c.is-prop-valued x y)
+    (λ H → sq-c⊙A'-c c x y H)
+    (λ H → sq-c-c⊙A' c x y H))
+  where module c = PBRel c
+
+-- TODO associativity

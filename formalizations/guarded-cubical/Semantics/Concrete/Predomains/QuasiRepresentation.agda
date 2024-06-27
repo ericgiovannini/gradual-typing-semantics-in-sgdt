@@ -146,6 +146,18 @@ record RightRepC
     DnL : ErrorDomSq (idEDRel B') d p (ptbC MB' iB' δr)
 
 
+-- record HasRightRepC
+--   (B  : ErrorDomain ℓB  ℓ≤B  ℓ≈B)  
+--   (B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B') 
+--   (d : ErrorDomRel B B' ℓd)
+  
+--   field
+--     MB : Monoid
+--     MB' : Monoid
+--     iB : MonoidHom
+--     iB' : MonoidHom 
+--     Π : PushPullC B B'
+
 
 ----------------------------------------------------------------
 -- We dually define left representations for error domain relations,
@@ -312,7 +324,7 @@ module LeftRepC-Lemma
     equiv-d-d' : QuasiOrderEquivC B MB iB B' MB' iB' d d'
     equiv-d-d' .δ₁ = ρd'.δl
     equiv-d-d' .δ₁' = ρd.δr
-    equiv-d-d' .sq-d-d' = {!!}  -- α1 ∘esqv α2 ∘esqv α3 -- sq-d-idB⊙d d ∘esqv α ∘esqv sq-d⊙B'-d d'
+    equiv-d-d' .sq-d-d' = composed123
       where
         α1 : ErrorDomSq d (idEDRel B ⊙ed d) IdE IdE
         α1 = sq-d-idB⊙d d
@@ -376,6 +388,20 @@ module ptbCε≡Id (B : ErrorDomain ℓB ℓ≤B ℓ≈B) (M : Monoid ℓMB) (iB
   module iB = IsMonoidHom (iB .snd)
   lemma : ptbC M iB M.ε ≡ IdE
   lemma = {!!}
+  
+
+--------------------------------------------------------------------
+
+-- Identity quasi-representations
+
+module IdLeftRepV
+  (A : PosetBisim ℓA ℓ≤A ℓ≈A) (MA : Monoid ℓMA) (iA : MonoidHom MA (Endo A))
+  where
+
+  open PushPullV-Id
+
+  idLeftRepV : LeftRepV A MA iA A MA iA (idPRel A) {!idPPV!}
+  idLeftRepV = {!!}
   
 
 

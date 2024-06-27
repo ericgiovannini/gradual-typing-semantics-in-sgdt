@@ -244,9 +244,10 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
     -- where lx is θ and ly is η, because when we add a θ on the right,
     -- now both sides are a θ and so we change to a different case of
     -- the relation than the one used to prove the assumption lx ≈ ly.
-    δ-closed-r' : ▹ ((lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)) ->
+    δ-closed-r' : isPropValued R →
+                   ▹ ((lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)) ->
                      (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
-    δ-closed-r' _ lx ly H =
+    δ-closed-r' isPropValuedR _ lx ly H =
              Elim.f
                 {B = λ lx' ly' lx'≈ly' → lx' ≈ (δ ly')}
                 (λ _ x y xRy → ≈ηθ _ _ ∣ 0 , y , refl , xRy ∣₁)
@@ -254,10 +255,10 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
                 -- In this case and the next case, we need to use that ≈
                 -- is prop-valued here so we can remove the truncation
                 -- from the hypothesis.
-                (λ _ x ly H → PTrec {!!} (λ {(n , y , eq , xRy) →
+                (λ _ x ly H → PTrec (is-prop isPropValuedR _ _) (λ {(n , y , eq , xRy) →
                   ≈ηθ _ _ ∣ suc n , y , (cong δ eq) , xRy ∣₁}) H)
 
-                (λ _ lx y H → PTrec {!!} (λ {(n , x , eq , xRy) →
+                (λ _ lx y H → PTrec (is-prop isPropValuedR _ _) (λ {(n , x , eq , xRy) →
                   transport (cong₂ _≈_ (sym eq) refl) (≈-δ^n∘η-δ^m∘η-sufficient x y (suc n) 1 xRy)}) H)
 
                 (λ IH lx~ ly~ H~ → ≈θθ lx~ (next (θ ly~)) (λ t → 
@@ -272,8 +273,8 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
                    transport (cong₂ _≈_ refl (congS θ (next-Mt≡M ly~ t))) (IH t (lx~ t) (ly~ t) (H~ t))
                   )) lx ly H
 
-    δ-closed-r :  (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
-    δ-closed-r = fix δ-closed-r'
+    δ-closed-r : isPropValued R → (lx ly : L X) -> lx ≈ ly -> lx ≈ (δ ly)
+    δ-closed-r isPropValuedR = fix (δ-closed-r' isPropValuedR)
 
               
 

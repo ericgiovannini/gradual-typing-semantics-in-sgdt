@@ -35,6 +35,10 @@ private
     ℓZ ℓ'Z ℓ''Z : Level
     ℓW ℓ'W ℓ''W : Level
 
+    ℓ≤X ℓ≈X : Level
+    ℓ≤Y ℓ≈Y : Level
+    ℓ≤Z ℓ≈Z : Level
+
     X : PosetBisim ℓX ℓ'X ℓ''X
     Y : PosetBisim ℓY ℓ'Y ℓ''Y
     Z : PosetBisim ℓZ ℓ'Z ℓ''Z
@@ -264,7 +268,6 @@ module _ where
 
 
 
-
  -- PB of PB morphisms between two PB's
   IntHom : PosetBisim ℓX ℓ'X ℓ''X -> PosetBisim ℓY ℓ'Y ℓ''Y ->
     PosetBisim (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) ℓ''X) ℓY) ℓ'Y) ℓ''Y) (ℓ-max ℓX ℓ'Y) (ℓ-max (ℓ-max ℓX ℓ''X) ℓ''Y)
@@ -304,6 +307,12 @@ module _ where
   _∘p_ : PBMor Y Z → PBMor X Y → PBMor X Z
   g ∘p f = Comp f g
   infixl 20 _∘p_ -- TODO is this a good level?
+
+
+  ≈mon-comp : {X : PosetBisim ℓX ℓ≤X ℓ≈X} {Y : PosetBisim ℓY ℓ≤Y ℓ≈Y} {Z : PosetBisim ℓZ ℓ≤Z ℓ≈Z}
+    {f g : PBMor X Y} {f' g' : PBMor Y Z} → f ≈mon g → f' ≈mon g' → (f' ∘p f) ≈mon (g' ∘p g)
+  ≈mon-comp f≈g f'≈g' x₁ x₂ x₁≈x₂ = f'≈g' _ _ (f≈g x₁ x₂ x₁≈x₂)
+
 
 
   -- Identity and associativity of composition:

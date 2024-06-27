@@ -21,10 +21,11 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Common.Common
 open import Semantics.Concrete.GuardedLiftError k
 
+
 open import Semantics.Concrete.LockStepErrorOrdering k
 open import Semantics.Concrete.WeakBisimilarity k
+open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Error k
-
 open import Semantics.Concrete.DoublePoset.Monad k
 
 
@@ -151,16 +152,16 @@ module presθ→presδ {X : Type ℓ} {Y : Type ℓ'}
     (h-pres-δ ((δ ^ n) x)) ∙ (cong δY (h-pres-δ^n n x))
 
 
-TwoCell-iterated : {X : Type ℓ'} →
-  (R : X → X → Type ℓ'') →
-  (f g : X → X) →
+TwoCell-iterated : {X : Type ℓ'} {Y : Type ℓ''} →
+  (R : X → Y → Type ℓR) →
+  (f : X → X) (g : Y → Y) →
   (TwoCell R R f g) →
   (n : ℕ) → TwoCell R R (f ^ n) (g ^ n)
 TwoCell-iterated R f g α zero = λ _ _ → id
-TwoCell-iterated R f g α (suc n) = λ x₁ x₂ Rx₁x₂ →
-  α ((f ^ n) x₁)
-    ((g ^ n) x₂)
-    (TwoCell-iterated R f g α n x₁ x₂ Rx₁x₂)
+TwoCell-iterated R f g α (suc n) = λ x y Rxy →
+  α ((f ^ n) x)
+    ((g ^ n) y)
+    (TwoCell-iterated R f g α n x y Rxy)
 
 id^n≡id : {X : Type ℓ'} →
   ∀ n → (id {A = X}) ^ n ≡ id
@@ -168,7 +169,7 @@ id^n≡id zero = refl
 id^n≡id (suc n) = id^n≡id n
 
 TwoCell-iterated-idL : {X : Type ℓ'} →
-  (R : X → X → Type ℓ'') →
+  (R : X → X → Type ℓR) →
   (g : X → X) →
   (TwoCell R R id g) →
   (n : ℕ) → TwoCell R R id (g ^ n)
@@ -194,6 +195,8 @@ module Preserve-Bisim-Lemma
   (isProp≈B : ∀ x y → isProp (x ≈B y))
   (isRefl≈B : isRefl _≈B_)
   (isSym≈B : isSym _≈B_)
+  (≈Bθ  : ∀ (x~ y~ : ▹ B) →
+    ▸ (λ t → (x~ t) ≈B (y~ t)) → (θB x~) ≈B (θB y~))
   (δB≈id : TwoCell _≈B_ _≈B_  (θB ∘ next) id) 
   where
 
@@ -215,21 +218,21 @@ module Preserve-Bisim-Lemma
     (g-pres-℧ : g ℧ ≡ ℧B)
     (g-pres-θ : ∀ x~ → g (θ x~) ≡ θB (map▹ g x~)) where
 
-    ≈lem :
+    ≈lem' :
       ▹ (TwoCell _≈A_ _≈B_ (f ∘ η) (g ∘ η) → TwoCell _≈L℧A_ _≈B_ f g) →
          TwoCell _≈A_ _≈B_ (f ∘ η) (g ∘ η) → TwoCell _≈L℧A_ _≈B_ f g
 
     -- case η η : use the provided two-cell between (f ∘ η) and (g ∘ η)
-    ≈lem _ α .(η x) .(η y) (≈ηη (ok x) (ok y) x≈y) = α x y x≈y
+    ≈lem' _ α .(η x) .(η y) (≈ηη (ok x) (ok y) x≈y) = α x y x≈y
 
     -- case ℧ η : impossible
-    ≈lem _ α .℧ .(η y) (≈ηη error (ok y) contra) = ⊥.rec* contra
+    ≈lem' _ α .℧ .(η y) (≈ηη error (ok y) contra) = ⊥.rec* contra
 
     -- case η ℧ : impossible
-    ≈lem _ α .(η x) .℧ (≈ηη (ok x) error contra) = ⊥.rec* contra
+    ≈lem' _ α .(η x) .℧ (≈ηη (ok x) error contra) = ⊥.rec* contra
 
     -- case ℧ ℧ : follows by preservation of ℧ and reflexivity of _≈B_
-    ≈lem _ α .℧ .℧ (≈ηη error error contra) =
+    ≈lem' _ α .℧ .℧ (≈ηη error error contra) =
       transport (sym (λ i → (f-pres-℧ i) ≈B (g-pres-℧ i)))
                 (isRefl≈B ℧B)
 
@@ -237,7 +240,7 @@ module Preserve-Bisim-Lemma
     -- that is bisimilar to x. Then g ly ≡ g ((δ ^ n) (η y)) ≡ (δB ^ n) (g (η y))
     -- since g commutes with θ. Then since δB ≈ id and f (η x) ≈ g (η y),
     -- we have f (η x) ≈ (δB ^ n) (g (η y)).
-    ≈lem _ α .(η x) ly (≈ηθ (ok x) .ly H) = PTrec (isProp≈B _ _) aux H
+    ≈lem' _ α .(η x) ly (≈ηθ (ok x) .ly H) = PTrec (isProp≈B _ _) aux H
       where
         aux : _ → f (η x) ≈B (g ly)
         aux (n , (ok y) , eq , p) =
@@ -250,16 +253,38 @@ module Preserve-Bisim-Lemma
             lem2 = sym ((cong g eq) ∙ (h-pres-δ^n g g-pres-θ (suc n) (η y)))
 
     -- case ℧ θ
-    ≈lem _ α .℧ ly (≈ηθ error .ly H) = {!!}
+    ≈lem' _ α .℧ ly (≈ηθ error .ly H) = PTrec (isProp≈B _ _) aux H
+       where
+        aux : _ → f ℧ ≈B (g ly)
+        aux (n , error , eq , p) =
+          transport (λ i → (f ℧) ≈B lem2 i) lem1
+          where
+            lem1 : (f ℧) ≈B ((δB ^ (suc n)) (g ℧))
+            lem1 = TwoCell-iterated-idL _≈B_ δB id≈δB (suc n) (f ℧) (g ℧)
+                (transport (sym (λ i → (f-pres-℧ i) ≈B (g-pres-℧ i)))
+                           (isRefl≈B ℧B))
+
+            lem2 : (δB ^ (suc n)) (g ℧) ≡ g ly
+            lem2 = sym ((cong g eq) ∙ (h-pres-δ^n g g-pres-θ (suc n) ℧))
 
     -- case θ η
-    ≈lem _ α lx .(η y) (≈θη .lx (ok y) x) = {!!}
+    ≈lem' _ α lx .(η y) (≈θη .lx (ok y) H) = {!sym!}
 
     -- case θ ℧
-    ≈lem _ α lx .℧ (≈θη .lx error H) = {!!}
+    ≈lem' _ α lx .℧ (≈θη .lx error H) = {!!}
 
-    -- case θ θ : follows by Lob-induction
-    ≈lem IH α .(θ lx~) .(θ ly~) (≈θθ lx~ ly~ x) = {!!}
+    -- case θ θ : use the fact that f and g preserve θ, then use the
+    -- fact that ≈B is a θ-congruence, and then use Lob-induction
+    -- hypothesis.
+    ≈lem' IH α .(θ lx~) .(θ ly~) (≈θθ lx~ ly~ H~) =
+      transport (sym (λ i → (f-pres-θ lx~ i) ≈B (g-pres-θ ly~ i))) aux
+      where
+        aux : θB (map▹ f lx~) ≈B θB (map▹ g ly~)
+        aux = ≈Bθ (map▹ f lx~) (map▹ g ly~)
+          (λ t → IH t α (lx~ t) (ly~ t) (H~ t))
+
+    ≈lem : TwoCell _≈A_ _≈B_ (f ∘ η) (g ∘ η) → TwoCell _≈L℧A_ _≈B_ f g
+    ≈lem = fix ≈lem'
 
 
 module StrongExtPresBisim
@@ -271,16 +296,46 @@ module StrongExtPresBisim
   (isProp≈B : ∀ x y → isProp (x ≈B y))
   (isRefl≈B : isRefl _≈B_)
   (isSym≈B : isSym _≈B_)
+  (≈Bθ  : ∀ (x~ y~ : ▹ B) →
+    ▸ (λ t → (x~ t) ≈B (y~ t)) → (θB x~) ≈B (θB y~))
   (δB≈id : TwoCell _≈B_ _≈B_  (θB ∘ next) id)
 
   where
 
+  module Ext = StrongCBPVExt Γ  A  B  ℧B  θB
+  open LiftBisim (Error A) (≈ErrorX _≈A_) renaming (_≈_ to _≈L℧A_)
+  open Preserve-Bisim-Lemma
+    A _≈A_ B ℧B θB _≈B_ isProp≈B isRefl≈B isSym≈B ≈Bθ δB≈id
+
+  module _
+    -- (f g : (Γ → L℧ A → B))
+    -- (f-pres-℧ : ∀ γ → f γ ℧ ≡ ℧B)
+    -- (f-pres-θ : ∀ γ x~ → f γ (θ x~) ≡ θB (map▹ (f γ) x~))
+    -- (g-pres-℧ : ∀ γ → g γ ℧ ≡ ℧B)
+    -- (g-pres-θ : ∀ γ x~ → g γ (θ x~) ≡ θB (map▹ (g γ) x~))
+    where
   
+    strong-ext-pres≈ : ∀ f g →
+       TwoCell _≈Γ_ (TwoCell _≈A_ _≈B_) f g →
+       TwoCell _≈Γ_ (TwoCell _≈L℧A_ _≈B_) (Ext.ext f) (Ext.ext g)
+    strong-ext-pres≈ f g α γ γ' γ≤γ' =
+      aux λ a a' a≈a' →
+        transport
+          (sym λ i → (Ext.Equations.ext-η f γ a i) ≈B (Ext.Equations.ext-η g γ' a' i))
+          (α γ γ' γ≤γ' a a' a≈a')
+      where
+        aux : TwoCell _≈A_ _≈B_ ((Ext.ext f γ) ∘ η) ((Ext.ext g γ') ∘ η)  →
+              TwoCell _≈L℧A_ _≈B_ (Ext.ext f γ) (Ext.ext g γ')
+        aux = ≈lem
+          (λ z → Ext.ext f γ z) (λ z → Ext.ext g γ' z)
+          (Ext.Equations.ext-℧ f γ) (Ext.Equations.ext-θ f γ)
+          (Ext.Equations.ext-℧ g γ') (Ext.Equations.ext-θ g γ')
+        
 
-  
+-- Monotonicity and preservation of bisimilarity for the map
+-- function (Aᵢ → Aₒ) → (L℧ Aᵢ → L℧ Aₒ).
 
-
-module MapRelationalProps
+module MapMonotone
   {ℓAᵢ ℓAᵢ' ℓAₒ ℓAₒ' ℓRᵢ ℓRₒ : Level}
   (Aᵢ : Type ℓAᵢ) (Aᵢ' : Type ℓAᵢ')
   (Aₒ : Type ℓAₒ) (Aₒ' : Type ℓAₒ')
@@ -310,3 +365,48 @@ module MapRelationalProps
     where
       β : TwoCell _Rᵢ_ _LRₒ_ (η ∘ f) (η ∘ g)
       β x y xRᵢy = LRₒ.Properties.η-monotone (α x y xRᵢy)
+
+
+
+module MapPresBisim
+  {ℓAᵢ ℓAₒ ℓ≈Aᵢ ℓ≈Aₒ : Level}
+  (Aᵢ : Type ℓAᵢ) 
+  (Aₒ : Type ℓAₒ)
+  (_≈Aᵢ_ : Aᵢ → Aᵢ → Type ℓ≈Aᵢ)
+  (_≈Aₒ_ : Aₒ → Aₒ → Type ℓ≈Aₒ)
+  (isProp≈Aₒ : ∀ x y → isProp (x ≈Aₒ y))
+  (isRefl≈Aₒ : isRefl _≈Aₒ_)
+  (isSym≈Aₒ : isSym _≈Aₒ_) where
+
+  open module BisimLAᵢ = LiftBisim (Error Aᵢ) (≈ErrorX _≈Aᵢ_) renaming (_≈_ to _≈L℧Aᵢ_)
+  open module BisimLAₒ = LiftBisim (Error Aₒ) (≈ErrorX _≈Aₒ_) renaming (_≈_ to _≈L℧Aₒ_)
+
+  bisimErrorAₒ : IsBisim (≈ErrorX _≈Aₒ_)
+  bisimErrorAₒ = IsBisimErrorX _≈Aₒ_ (isbisim isRefl≈Aₒ isSym≈Aₒ isProp≈Aₒ)
+  module BisimErrorAₒ = IsBisim (bisimErrorAₒ)
+
+  symmetric : _
+  symmetric = BisimLAₒ.Properties.symmetric BisimErrorAₒ.is-sym
+
+  δ≈id : TwoCell _≈L℧Aₒ_ _≈L℧Aₒ_ (θ ∘ next) id
+  δ≈id lx ly lx≈ly =
+    symmetric _ _
+      (BisimLAₒ.Properties.δ-closed-r BisimErrorAₒ.is-prop-valued _ _ (symmetric _ _ lx≈ly))
+
+  open Map
+  open StrongExtPresBisim Unit (λ _ _ → Unit) Aᵢ _≈Aᵢ_ (L℧ Aₒ) ℧ θ _≈L℧Aₒ_
+    (BisimLAₒ.Properties.is-prop BisimErrorAₒ.is-prop-valued)
+    (BisimLAₒ.Properties.reflexive BisimErrorAₒ.is-refl)
+    symmetric
+    (λ x~ y~ → BisimLAₒ.Properties.θ-pres≈)
+    δ≈id
+
+  map-pres-≈ : ∀ f g →
+    TwoCell _≈Aᵢ_ _≈Aₒ_ f g →
+    TwoCell _≈L℧Aᵢ_ _≈L℧Aₒ_  (map f) (map g)
+  map-pres-≈ f g f≈g =
+    strong-ext-pres≈
+      (λ _ → η ∘ f)(λ _ → η ∘ g)
+      (λ _ _ _ a₁ a₂ a₁≈a₂ → BisimLAₒ.Properties.η-pres≈ (f≈g a₁ a₂ a₁≈a₂))
+      tt tt tt
+

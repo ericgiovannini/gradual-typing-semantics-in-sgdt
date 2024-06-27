@@ -3,6 +3,8 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
+{-# OPTIONS --lossy-unification #-}
+
 open import Common.Later
 
 module Semantics.Concrete.DoublePoset.FreeErrorDomain (k : Clock) where
@@ -111,7 +113,7 @@ module Counit (B : ErrorDomain ℓB ℓ≤B ℓ≈B) where
 -- domain B is bisimilar to the identity. This follows from the fact
 -- that for value types A, the delay morphism δᴬ = θ ∘ next is
 -- bisimilar to the identity on L℧ A
-
+{-
 module DelayBisimId (B : ErrorDomain ℓB ℓ≤B ℓ≈B) where
 
   module B = ErrorDomainStr (B .snd)
@@ -177,7 +179,7 @@ module DelayBisimId (B : ErrorDomain ℓB ℓ≤B ℓ≈B) where
   -- Need a lemma: If f is a predomain morphism, and g is a *function*, such that
   -- g is equal to the underlying function of f, then g is also a predomain morphism
 
-
+-}
 
 {-
 module ExtAsMorphism (A : PosetBisim ℓA ℓ≤A ℓ≈A) (B : ErrorDomain ℓB ℓ≤B ℓ≈B)  where
@@ -235,11 +237,15 @@ module LiftPredomain (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
   private module A = PosetBisimStr (A .snd)
   module LockStepA = LiftOrdHomogenous ⟨ A ⟩ (A._≤_)
   _≤LA_ = LockStepA._⊑_
-  module Bisim = LiftBisim (Error ⟨ A ⟩) (≈ErrorX A._≈_)
+  module BisimLift = LiftBisim (Error ⟨ A ⟩) (≈ErrorX A._≈_)
+
+  bisimErrorA : IsBisim (≈ErrorX A._≈_)
+  bisimErrorA = IsBisimErrorX A._≈_ A.isBisim
+  module BisimErrorA = IsBisim (bisimErrorA)
 
   𝕃 : PosetBisim ℓA (ℓ-max ℓA ℓ≤A) (ℓ-max ℓA ℓ≈A)
   𝕃 .fst = L℧ ⟨ A ⟩
-  𝕃 .snd = posetbisimstr (isSetL℧ _ A.is-set) _≤LA_ ordering Bisim._≈_ bisim
+  𝕃 .snd = posetbisimstr (isSetL℧ _ A.is-set) _≤LA_ ordering BisimLift._≈_ bisim
     where
       ordering : _
       ordering = isorderingrelation
@@ -250,15 +256,20 @@ module LiftPredomain (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
 
       bisim : _
       bisim = isbisim
-              (Bisim.Properties.reflexive {!!})
-              (Bisim.Properties.symmetric {!!})
-              (Bisim.Properties.is-prop {!!})
+              (BisimLift.Properties.reflexive BisimErrorA.is-refl)
+              (BisimLift.Properties.symmetric BisimErrorA.is-sym)
+              (BisimLift.Properties.is-prop BisimErrorA.is-prop-valued)
+
+
+module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} where
+
+  open LiftPredomain A
 
   -- η as a morphism of predomain from A to UFA
   η-mor : PBMor A 𝕃
   η-mor .PBMor.f = η
   η-mor .PBMor.isMon = LockStepA.Properties.η-monotone
-  η-mor .PBMor.pres≈ = {!η x!} -- Bisim.Properties.η-pres≈
+  η-mor .PBMor.pres≈ = BisimLift.Properties.η-pres≈
 
   -- ℧ as a morphism of predomains from any A' to UFA
   ℧-mor : {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} → PBMor A' 𝕃
@@ -268,17 +279,17 @@ module LiftPredomain (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
   θ-mor : PBMor (PB▹ 𝕃) 𝕃
   θ-mor .PBMor.f = θ
   θ-mor .PBMor.isMon = LockStepA.Properties.θ-monotone
-  θ-mor .PBMor.pres≈ = Bisim.Properties.θ-pres≈
+  θ-mor .PBMor.pres≈ = BisimLift.Properties.θ-pres≈
 
   -- δ as a morphism of *predomains* from UFA to UFA.
   δ-mor : PBMor 𝕃 𝕃
   δ-mor .PBMor.f = δ
   δ-mor .PBMor.isMon = LockStepA.Properties.δ-monotone
-  δ-mor .PBMor.pres≈ = Bisim.Properties.δ-pres≈
+  δ-mor .PBMor.pres≈ = BisimLift.Properties.δ-pres≈
 
   -- δ ≈ id
   -- δ≈id : δ-mor ≈mon Id
-  -- δ≈id = ≈mon-sym Id δ-mor Bisim.Properties.δ-closed-r
+  -- δ≈id = ≈mon-sym Id δ-mor BisimLift.Properties.δ-closed-r
 
 
 
@@ -301,8 +312,52 @@ module F-ob (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
 
   F-ob : ErrorDomain ℓA (ℓ-max ℓA ℓ≤A) (ℓ-max ℓA ℓ≈A)
   F-ob = MkErrorDomain.mkErrorDomain
-    (𝕃 A) ℧ (LockStepA.Properties.℧⊥ A) (θ-mor A)
-    (≈mon-sym Id (δ-mor A) (Bisim.Properties.δ-closed-r A))
+    (𝕃 A) ℧ (LockStepA.Properties.℧⊥ A) (θ-mor)
+    (≈mon-sym Id (δ-mor)
+      (BisimLift.Properties.δ-closed-r A (BisimErrorA.is-prop-valued A)))
+
+
+
+-- Monadic ext as a morphism of error domains
+
+module ExtAsEDMorphism
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
+
+  open F-ob
+  module A = PosetBisimStr (A .snd)
+  module B = ErrorDomainStr (B .snd)
+  
+  open CBPVExt ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f renaming (module Equations to Equations')
+  
+  open ExtMonotone ⟨ A ⟩ ⟨ A ⟩ A._≤_
+                   ⟨ B ⟩ B.℧ B.θ.f ⟨ B ⟩ B.℧ B.θ.f
+                   B._≤_ B.℧⊥
+                   (λ _ _ x~≤y~ → B.θ.isMon (λ t → x~≤y~ t))
+                   
+  open StrongExtPresBisim
+    Unit (λ _ _ → Unit)
+    ⟨ A ⟩ A._≈_
+    ⟨ B ⟩ B.℧ B.θ.f
+    B._≈_
+    B.is-prop-valued-Bisim
+    B.is-refl-Bisim
+    B.is-sym
+    (λ x~ y~ H~ → B.θ.pres≈ H~)
+    B.δ≈id
+
+  module Equations (f : PBMor A (U-ob B)) where
+
+    open Equations' (f .PBMor.f) public
+
+  Ext : PBMor A (U-ob B) → ErrorDomMor (F-ob A) B
+  Ext f .ErrorDomMor.f .PBMor.f = ext (f .PBMor.f)
+  Ext f .ErrorDomMor.f .PBMor.isMon =
+    ext-mon (f .PBMor.f) (f .PBMor.f) (≤mon→≤mon-het f f (≤mon-refl f)) _ _
+  Ext f .ErrorDomMor.f .PBMor.pres≈ =
+    strong-ext-pres≈ (λ _ → f .PBMor.f) (λ _ → f .PBMor.f) (λ _ _ _ → ≈mon-refl f) tt tt tt _ _
+  Ext f .ErrorDomMor.f℧ = Equations.ext-℧ f
+  Ext f .ErrorDomMor.fθ = Equations.ext-θ f
+
 
 
 ---------------------------------------
@@ -312,7 +367,7 @@ module F-ob (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
 module F-mor
   {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ}
   {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
-  (f : PBMor Aᵢ Aₒ)
+ 
   where
 
   module Aᵢ = PosetBisimStr (Aᵢ .snd)
@@ -321,20 +376,37 @@ module F-mor
   open F-ob
   open Map
   open MapProperties
-  open MapRelationalProps ⟨ Aᵢ ⟩ ⟨ Aᵢ ⟩ ⟨ Aₒ ⟩ ⟨ Aₒ ⟩ Aᵢ._≤_ Aₒ._≤_
-
-  F-mor : ErrorDomMor (F-ob Aᵢ) (F-ob Aₒ)
-  F-mor .ErrorDomMor.f .PBMor.f = map (f .PBMor.f)
-  F-mor .ErrorDomMor.f .PBMor.isMon = map-monotone (f .PBMor.f) (f .PBMor.f) {!!} _ _
-  F-mor .ErrorDomMor.f .PBMor.pres≈ = {!!}
-  F-mor .ErrorDomMor.f℧ = map-℧ (f .PBMor.f)
-  F-mor .ErrorDomMor.fθ = map-θ (f .PBMor.f)
-
-  -- Functoriality (identity and composition)
+  open MapMonotone ⟨ Aᵢ ⟩ ⟨ Aᵢ ⟩ ⟨ Aₒ ⟩ ⟨ Aₒ ⟩ Aᵢ._≤_ Aₒ._≤_
+  open MapPresBisim ⟨ Aᵢ ⟩ ⟨ Aₒ ⟩ Aᵢ._≈_ Aₒ._≈_
+                     Aₒ.is-prop-valued-Bisim Aₒ.is-refl-Bisim Aₒ.is-sym
 
 
+  F-mor : (f : PBMor Aᵢ Aₒ) → ErrorDomMor (F-ob Aᵢ) (F-ob Aₒ)
+  F-mor f .ErrorDomMor.f .PBMor.f = map (f .PBMor.f)
+  F-mor f .ErrorDomMor.f .PBMor.isMon =
+    map-monotone (f .PBMor.f) (f .PBMor.f) (≤mon→≤mon-het f f (≤mon-refl f)) _ _
+  F-mor f .ErrorDomMor.f .PBMor.pres≈ =
+    map-pres-≈ (λ z → f .PBMor.f z) (λ z → f .PBMor.f z) (λ x y x≈y → f .PBMor.pres≈ x≈y) _ _
+  F-mor f .ErrorDomMor.f℧ = map-℧ (f .PBMor.f)
+  F-mor f .ErrorDomMor.fθ = map-θ (f .PBMor.f)
 
+-- Functoriality (identity and composition)
+open F-mor
 
+F-mor-pres-id : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+  F-mor (Id {X = A}) ≡ IdE
+F-mor-pres-id = eqEDMor (F-mor Id) IdE pres-id
+  where open MapProperties
+
+F-mor-pres-comp :
+  {A₁ : PosetBisim ℓA₁  ℓ≤A₁  ℓ≈A₁}
+  {A₂ : PosetBisim ℓA₂  ℓ≤A₂  ℓ≈A₂}
+  {A₃ : PosetBisim ℓA₃  ℓ≤A₃  ℓ≈A₃} →
+  (g : PBMor A₂ A₃) (f : PBMor A₁ A₂) →
+  F-mor (g ∘p f) ≡ (F-mor g) ∘ed (F-mor f)
+F-mor-pres-comp g f =
+  eqEDMor (F-mor (g ∘p f)) ((F-mor g) ∘ed (F-mor f)) (pres-comp (f .PBMor.f) (g .PBMor.f))
+  where open MapProperties
 
 
 -- Given: f : Aᵢ → Aₒ morphism
@@ -432,7 +504,7 @@ module F-sq
   module cᵢ = PBRel cᵢ
   module cₒ = PBRel cₒ
 
-  open MapRelationalProps ⟨ Aᵢ ⟩ ⟨ Aᵢ' ⟩ ⟨ Aₒ ⟩ ⟨ Aₒ' ⟩ cᵢ.R cₒ.R
+  open MapMonotone ⟨ Aᵢ ⟩ ⟨ Aᵢ' ⟩ ⟨ Aₒ ⟩ ⟨ Aₒ' ⟩ cᵢ.R cₒ.R
 
   F-sq : PBSq cᵢ cₒ f g →
     ErrorDomSq (F-rel cᵢ) (F-rel cₒ) (F-mor f) (F-mor g)

@@ -203,10 +203,7 @@ _⊙_ {A₁ = A₁} {A₂ = A₂} {A₃ = A₃} c₁ c₂ = record {
       comp-monotone (y , xc₁y , yc₂z) z≤z' = y , xc₁y , (PBRel.is-monotone c₂ yc₂z z≤z')
 
 
--- Identity and associativity laws for composition
--- TODO
--- PredomainRel-Comp-IdL : {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
---   (c : PBRel A₁ A₂ ℓc) → ((idPRel A₁) ⊙ c) ≡ {!c!}
+
 
 
 -- Exponential of relations
