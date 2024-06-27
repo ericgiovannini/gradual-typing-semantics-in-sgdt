@@ -355,10 +355,8 @@ inj-θL' : {X : Type ℓ} (lx~ ly~ : ▹ (L X)) →
   lx~ ≡ ly~
 inj-θL' lx~ ly~ H = later-ext (λ t → inj-θL lx~ ly~ H t)
 
-
-inj-η x y H = λ i -> η-inv (H i) x -- also works:  η-inv (H i) y
-
-
+-- This is broken
+-- inj-η x y H = λ i -> η-inv (H i) x -- also works:  η-inv (H i) y
 
 -----------------------
 -- Monadic structure --
