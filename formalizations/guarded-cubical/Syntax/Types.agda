@@ -1,6 +1,3 @@
-{-# OPTIONS --cubical -W noUnsupportedIndexedMatch #-}
- -- to allow opening this module in other files while there are still holes
--- {-# OPTIONS --allow-unsolved-metas #-}
 module Syntax.Types  where
 
 open import Cubical.Foundations.Prelude renaming (comp to compose)
@@ -17,45 +14,26 @@ data Ty : Type where
   dyn : Ty
   _⇀_ : Ty -> Ty -> Ty
 
-private -- should we make this public???
+private
  variable
    R R' S S' T T' U U' : Ty
 
 data _⊑_ : Ty → Ty → Type where
+  refl-⊑ : S ⊑ S
+  trans-⊑ : S ⊑ T → T ⊑ U → S ⊑ U
   nat : nat ⊑ nat
   dyn : dyn ⊑ dyn
   _⇀_ : R ⊑ R' → S ⊑ S' → (R ⇀ S) ⊑ (R' ⇀ S')
   inj-nat : nat ⊑ dyn
-  inj-arr : S ⊑ (dyn ⇀ dyn) → S ⊑ dyn
-
-refl-⊑ : ∀ S → S ⊑ S
-refl-⊑ nat = nat
-refl-⊑ dyn = dyn
-refl-⊑ (S ⇀ T) = refl-⊑ S ⇀ refl-⊑ T
-
-trans-⊑ : S ⊑ T → T ⊑ U → S ⊑ U
-trans-⊑ nat nat = nat
-trans-⊑ dyn dyn = dyn
-trans-⊑ inj-nat dyn = inj-nat
-trans-⊑ (inj-arr c) dyn = inj-arr c
-trans-⊑ (c ⇀ c') (d ⇀ d') = trans-⊑ c d ⇀ trans-⊑ c' d'
-trans-⊑ nat inj-nat = inj-nat
-trans-⊑ (c ⇀ c') (inj-arr d) = inj-arr (trans-⊑ (c ⇀ c') d)
+  inj-arr : (dyn ⇀ dyn) ⊑ dyn
 
 _∘⊑_ : S ⊑ T → T ⊑ U → S ⊑ U
 _∘⊑_ = trans-⊑
 
-isPropTy⊑ : isProp (S ⊑ T)
-isPropTy⊑ nat nat = refl
-isPropTy⊑ dyn dyn = refl
-isPropTy⊑ (c ⇀ c') (d ⇀ d') = cong₂ _⇀_ (isPropTy⊑ c d) (isPropTy⊑ c' d')
-isPropTy⊑ inj-nat inj-nat = refl
-isPropTy⊑ (inj-arr c) (inj-arr d) = cong inj-arr (isPropTy⊑ c d)
-
 dyn-⊤ : S ⊑ dyn
 dyn-⊤ {nat} = inj-nat
 dyn-⊤ {dyn} = dyn
-dyn-⊤ {S ⇀ S₁} = inj-arr (dyn-⊤ ⇀ dyn-⊤)
+dyn-⊤ {S ⇀ S₁} = trans-⊑ (dyn-⊤ ⇀ dyn-⊤) inj-arr
 
 record TyPrec : Type where
   field
@@ -68,7 +46,7 @@ mkTyPrec : S ⊑ T → TyPrec
 mkTyPrec p = record { ty-left = _ ; ty-right = _ ; ty-prec = p }
 
 refl-TP : ∀ (S : Ty) → TyPrec
-refl-TP S = record { ty-left = S ; ty-right = S ; ty-prec = refl-⊑ S }
+refl-TP S = record { ty-left = S ; ty-right = S ; ty-prec = refl-⊑ }
 
 _⇀TP_ : TyPrec → TyPrec → TyPrec
 (c ⇀TP d) .ty-left = ty-left c ⇀ ty-left d
@@ -79,6 +57,7 @@ Ctx = List Ty
 private
   variable
     Γ Γ' Δ Δ' Θ Θ' : Ctx
+    c c' d d' : S ⊑ T
 
 -- Couldn't find anything in the stdlib. Data.List.Dependent is close
 -- but only works for one parameter
@@ -88,7 +67,7 @@ data _⊑ctx_ : Ctx → Ctx → Type where
 
 refl-⊑ctx : ∀ Γ → Γ ⊑ctx Γ
 refl-⊑ctx [] = []
-refl-⊑ctx (S ∷ Γ) = (refl-⊑ S) ∷ (refl-⊑ctx Γ)
+refl-⊑ctx (S ∷ Γ) = refl-⊑ ∷ (refl-⊑ctx Γ)
 
 trans-⊑ctx : Γ ⊑ctx Δ → Δ ⊑ctx Θ → Γ ⊑ctx Θ
 trans-⊑ctx [] [] = []
@@ -116,6 +95,7 @@ refl-CP [] = nil
 refl-CP (S ∷ Γ) = cons (refl-TP S) (refl-CP Γ)
 
 module _ where
+  -- this probably isn't necessary for anything
   open import Cubical.Foundations.HLevels
   open import Cubical.Data.W.Indexed
   open import Cubical.Data.Sum
@@ -153,3 +133,10 @@ module _ where
 
   isSetTy : isSet Ty
   isSetTy = isSetRetract Ty→W W→Ty rtr (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit)) tt)
+
+-- data _≈_ : (S ⊑ T) → (S ⊑ T) → Type where
+--   sym≈ : c ≈ d → d ≈ c
+--   refl-trans : trans-⊑ refl-⊑ c ≈ c 
+--   trans-refl : trans-⊑ c refl-⊑ ≈ c 
+--   assoc : trans-⊑ c (trans-⊑ d d') ≈ trans-⊑ (trans-⊑ c d) d'
+--   ⇀-refl : 

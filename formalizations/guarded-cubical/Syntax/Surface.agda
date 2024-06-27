@@ -1,3 +1,12 @@
+{-
+
+  Our "surface" language, a typical gradual cast calculus, with a term
+  precision ordering based on the original
+  Siek-Vitousek-Cimini-Boyland formulation.
+
+  TODO: add products
+
+-}
 module Syntax.Surface where
 
 open import Cubical.Foundations.Prelude
@@ -19,8 +28,6 @@ private
     B B' C C' D D' : Γ ⊑ctx Γ'
     b b' c c' d d' : S ⊑ S'
 
-
-
 -- "Contains" relation stating that a context Γ contains a type T
 
 data _∋_ : Ctx -> Ty -> Type where
@@ -31,13 +38,6 @@ data _∋_ : Ctx -> Ty -> Type where
 data _∋prec_ : CtxPrec -> TyPrec -> Type where
   vz : ∀ {C c} -> (cons c C) ∋prec c
   vs : ∀ {C c d} (x : C ∋prec d) -> (cons c C) ∋prec d
-
-
-{-
-data _∋prec_ : (C : Γ ⊑ctx Γ') -> (c : S ⊑ S') -> Type where
-  vz : (c ∷ C) ∋prec c
-  vs : (x : C ∋prec d) -> (c ∷ C) ∋prec d
--}
 
 ∋prec→∋-l : (C : CtxPrec) (S⊑T : TyPrec) ->
   C ∋prec S⊑T ->
@@ -56,8 +56,6 @@ data _∋prec_ : (C : Γ ⊑ctx Γ') -> (c : S ⊑ S') -> Type where
 infix 4 _∋_
 infix 4 _∋prec_
 
--- Extensional cast calculus "surface" syntax, *not* quotiented
--- by order equivalence
 data Tm : Ctx -> Ty -> Set where
   var : Γ ∋ T -> Tm Γ T
   lda : Tm (S ∷ Γ) T -> Tm Γ (S ⇀ T)
@@ -68,8 +66,6 @@ data Tm : Ctx -> Ty -> Set where
   zro : Tm Γ nat
   suc : Tm Γ nat -> Tm Γ nat
   matchNat : Tm Γ nat -> Tm Γ S -> Tm (nat ∷ Γ) S -> Tm Γ S
---  matchNat : Tm Γ S -> Tm (nat ∷ Γ) S -> Tm (nat ∷ Γ) S
-
 
 -- Term precision for the surface syntax
 data TmPrec : (C : Γ ⊑ctx Γ') (c : S ⊑ S') (M : Tm Γ S) (M' : Tm Γ' S') ->
