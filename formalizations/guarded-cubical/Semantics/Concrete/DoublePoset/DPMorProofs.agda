@@ -111,13 +111,13 @@ mon-transport-domain-≈ eq f {b1} {b2} b1≤b2 =
 
 
 module ClockedProofs (k : Clock) where
-  open import Semantics.Lift k
-  open import Semantics.LockStepErrorOrdering k
-  open import Semantics.WeakBisimilarity k
-  open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
-  open LiftPosetBisim
+  -- open import Semantics.Lift k
+  -- open import Semantics.LockStepErrorOrdering k
+  --open import Semantics.WeakBisimilarity k
+  --open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
+  --open LiftPosetBisim
   
-
+{-
   private
     ▹_ : Type ℓ → Type ℓ
     ▹_ A = ▹_,_ k A
@@ -409,3 +409,4 @@ module ClockedProofs (k : Clock) where
     rel-≈ (𝕃 B) (bind la (PBMor.f f)) (bind la' (PBMor.f f))
   monotone-bind-mon-≈ f la≈la' = bind-monotone-≈ (PBMor.f f) (PBMor.f f) la≈la'
     (≈mon-refl f)
+-}

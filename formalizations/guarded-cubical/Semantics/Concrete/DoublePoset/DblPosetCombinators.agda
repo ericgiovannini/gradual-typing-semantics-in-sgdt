@@ -338,15 +338,15 @@ module ClockedCombinators (k : Clock) where
     ▹_ : Type ℓ → Type ℓ
     ▹_ A = ▹_,_ k A
 
-  open import Semantics.Lift k
+  -- open import Semantics.Lift k
   -- open ClockedConstructions k
   -- open import Semantics.Concrete.MonotonicityProofs
   -- open import Semantics.LockStepErrorOrdering k
-  open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
-  open import Semantics.WeakBisimilarity k
+  -- open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
+  -- open import Semantics.WeakBisimilarity k
 
 
-  open LiftPosetBisim
+  -- open LiftPosetBisim
   open ClockedProofs k
   open Clocked k
 
@@ -389,6 +389,7 @@ module ClockedCombinators (k : Clock) where
     isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 ;
     pres≈ = λ {a1} {a2} a1≈a2 t → a1≈a2 }
 
+{-
   mθ : {A : PosetBisim ℓ ℓ' ℓ''} ->
     ⟨ (PB▹ (𝕃 A)) ==> 𝕃 A ⟩
   mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone A ; pres≈ = λ x → {!!} }
@@ -468,4 +469,4 @@ module ClockedCombinators (k : Clock) where
      ⟨ (A' ==> 𝕃 B') ==> 𝕃 (A ==> 𝕃 B) ⟩
   mFunProj A A' B B' fAA' fB'LB = {!!}
     -- mRet' (mExt' (K fB'LB) ∘m Id ∘m (K fAA'))
-
+-}
