@@ -1,4 +1,4 @@
 name: gradual-typing-sgdt
 include: .
 depend: cubical cubical-categorical-logic
-flags: --cubical -WnoUnsupportedIndexedMatch
+flags: --cubical -WnoUnsupportedIndexedMatch --guarded

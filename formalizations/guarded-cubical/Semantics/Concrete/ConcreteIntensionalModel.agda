@@ -232,33 +232,16 @@ module _  where
 -- vertical morphisms of the underlying predomain, there is actually
 -- no difference.
 
-record CompTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (B : Type ℓ) :
-  Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM))) where
-
-  no-eta-equality
-  
-  field
-    is-error-domain : ErrorDomainStr ℓ≤ ℓ≈ B
-
-  open ErrorDomainStr is-error-domain public
-  errordom : ErrorDomain ℓ ℓ≤ ℓ≈
-  errordom = B , is-error-domain
-
-  field
-    PtbC : Monoid ℓM
-    --interpC : MonoidHom PtbC (CEndo errordom)
-
-    -- The abstract definition of a model requires that for all A, the
-    -- monoid PtbC (F A) contains an element that maps to the delay
-    -- morphism δ^* : F A -o F A.  This is not something that we
-    -- specify in the record; rather, it will be true of our
-    -- construction.
-
-
-{-
+CompTypeStr : ∀ {ℓ} ℓ≤ ℓ≈ ℓM → (B : Type ℓ) → Type _
+CompTypeStr ℓ≤ ℓ≈ ℓM B =
+  Σ[ B-err-dom ∈ ErrorDomainStr ℓ≤ ℓ≈ B ]
+  Σ[ PtbC ∈ Monoid ℓM ]
+  MonoidHom PtbC (CEndo (B , B-err-dom))
 
 CompType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
 CompType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (CompTypeStr ℓ≤ ℓ≈ ℓM)
+
+{-
 
 CompType→ErrorDom : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
   CompType ℓ ℓ≤ ℓ≈ ℓM → ErrorDomain ℓ ℓ≤ ℓ≈
