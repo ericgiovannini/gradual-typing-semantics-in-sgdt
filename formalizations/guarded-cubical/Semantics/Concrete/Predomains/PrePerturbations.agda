@@ -48,6 +48,9 @@ private
     ℓMA₁ ℓMA₂ ℓMA₃ : Level
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
 
+    A : PosetBisim ℓA ℓ≤A ℓ≈A
+    A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'
+
 open PBMor
 
 
@@ -82,7 +85,6 @@ EqEndomor→EqPrePtb : {A : PosetBisim ℓ ℓ' ℓ''} →
   (f1 f2 : PrePtb A) →
   f1 .fst ≡ f2 .fst → f1 ≡ f2
 EqEndomor→EqPrePtb f1 f2 eq = Σ≡Prop (λ h → ≈mon-prop h Id) eq
-
 
 -- The pre-perturbations on A form a monoid under composition.
 
@@ -219,8 +221,6 @@ CEndo-B→Endo-UB .fst = U-PrePtb
 CEndo-B→Endo-UB .snd .IsMonoidHom.presε = refl
 CEndo-B→Endo-UB .snd .IsMonoidHom.pres· ϕ ϕ' = refl
 
-
-
 -- Action of F on pre-perturbations
 
 open F-ob
@@ -269,7 +269,18 @@ Endo-A→CEndo-FA .snd .IsMonoidHom.presε =
 Endo-A→CEndo-FA .snd .IsMonoidHom.pres· f g =
   EqEndomor→EqCPrePtb _ _ (F-mor-pres-comp (f .fst) (g .fst))
 
+-- Actions of A×_ and _×A on pre-perturbations
+×A-PrePtb : MonoidHom (Endo A) (Endo (A ×dp A'))
+×A-PrePtb .fst p .fst = ×-intro (p .fst ∘p π1 ) π2
+×A-PrePtb .fst p .snd x y x≈y = (p .snd _ _ (x≈y .fst)) , (x≈y .snd)
+×A-PrePtb .snd .IsMonoidHom.presε = refl
+×A-PrePtb .snd .IsMonoidHom.pres· x y = refl
 
+A×-PrePtb : MonoidHom (Endo A') (Endo (A ×dp A'))
+A×-PrePtb .fst p .fst = ×-intro π1 (p .fst ∘p π2 )
+A×-PrePtb .fst p .snd x y x≈y = x≈y .fst , (p .snd _ _ (x≈y .snd))
+A×-PrePtb .snd .IsMonoidHom.presε = refl
+A×-PrePtb .snd .IsMonoidHom.pres· x y = refl
 
 -- Iterated composition of pre-perturbations
 -- Leaving in case it is needed...

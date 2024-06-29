@@ -35,6 +35,7 @@ private
     ℓ ℓ' ℓ'' : Level
     ℓX ℓ'X ℓ''X : Level
     ℓY ℓ'Y ℓ''Y : Level
+    ℓZ ℓ'Z ℓ''Z : Level
     ℓ1 ℓ'1 ℓ''1 : Level
     ℓ2 ℓ'2 ℓ''2 : Level
     ℓA ℓ'A ℓ''A : Level
@@ -42,6 +43,7 @@ private
 
     X : PosetBisim ℓX ℓ'X ℓ''X
     Y : PosetBisim ℓY ℓ'Y ℓ''Y
+    Z : PosetBisim ℓZ ℓ'Z ℓ''Z
 
 
 -- Constructions not involving later
@@ -144,7 +146,7 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
   where
     module A = PosetBisimStr (A .snd)
     module B = PosetBisimStr (B .snd)
-    
+
     order : ⟨ A ⟩ × ⟨ B ⟩ -> ⟨ A ⟩ × ⟨ B ⟩ -> Type (ℓ-max ℓ'A ℓ'B)
     order (a1 , b1) (a2 , b2) = (a1 A.≤ a2) × (b1 B.≤ b2)
 
@@ -168,7 +170,7 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
 
     bisim : ⟨ A ⟩ × ⟨ B ⟩ -> ⟨ A ⟩ × ⟨ B ⟩ -> Type (ℓ-max ℓ''A ℓ''B)
     bisim (a1 , b1) (a2 , b2) = (a1 A.≈ a2) × (b1 B.≈ b2)
-    
+
     bisim-refl : isRefl bisim
     bisim-refl = λ (a , b) → (reflexive-≈ A a) , reflexive-≈ B b
 
@@ -210,6 +212,14 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
     g-bisim : {p1 p2 : ⟨ A ×dp B ⟩} → rel-≈ (A ×dp B) p1 p2 → rel-≈ B (g p1) (g p2)
     g-bisim {γ1 , a1} {γ2 , a2} (a1≈a2 , b1≈b2) = b1≈b2
 
+×-intro : PBMor X Y → PBMor X Z → PBMor X (Y ×dp Z)
+×-intro g h = record {
+  f = λ x → g.f x , h.f x
+  ; isMon = λ x≤y → (g.isMon x≤y) , (h.isMon x≤y)
+  ; pres≈ = λ x≈y → (g.pres≈ x≈y) , (h.pres≈ x≈y)
+  } where
+  module g = PBMor g
+  module h = PBMor h
 
 PBMorCurry' : {X Y Z : PosetBisim ℓ ℓ' ℓ''} ->
   PBMor (Z ×dp X) Y -> ⟨ Z ⟩ -> PBMor X Y
@@ -282,7 +292,7 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
     bisim-prop-valued : isPropValued bisim
     bisim-prop-valued (inl a1) (inl a2) = isOfHLevelLift 1 (prop-valued-≈ A a1 a2)
     bisim-prop-valued (inr b1) (inr b2) = isOfHLevelLift 1 (prop-valued-≈ B b1 b2)
-    
+
 
 σ1 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> ⟨ A ==> (A ⊎p B) ⟩
 σ1 = record {
@@ -317,9 +327,9 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
 
       bisim : ((k : Clock) → ⟨ A k ⟩) -> ((k : Clock) → ⟨ A k ⟩) -> Type ℓ''
       bisim a a' = ∀ k -> rel-≈ (A k) (a k) (a' k)
-    
 
-    
+
+
 -- Contructions involving later
 module Clocked (k : Clock) where
 
@@ -426,5 +436,3 @@ UnitP-×L-equiv .snd = makeIsPosetEquiv Unit-×L is-mon is-mon-inv
 
 UnitP-×L : {X : Poset ℓ ℓ'} -> (UnitP ×p X) ≡ X
 UnitP-×L {X = X} = equivFun (PosetPath (UnitP ×p X) X) UnitP-×L-equiv-}
-
-

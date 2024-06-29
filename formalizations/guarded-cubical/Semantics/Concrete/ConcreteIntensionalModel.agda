@@ -56,7 +56,7 @@ private
     ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  ℓMAₒ  : Level
     ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' ℓMAₒ' : Level
     ℓcᵢ ℓcₒ                : Level
-    
+
     ℓBᵢ  ℓ≤Bᵢ  ℓ≈Bᵢ  ℓMBᵢ  : Level
     ℓBᵢ' ℓ≤Bᵢ' ℓ≈Bᵢ' ℓMBᵢ' : Level
     ℓBₒ  ℓ≤Bₒ  ℓ≈Bₒ  ℓMBₒ  : Level
@@ -79,7 +79,7 @@ record ValTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (A : Type ℓ) :
   Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM))) where
 
   no-eta-equality
-  
+
   constructor valtypestr
 
   field
@@ -93,11 +93,9 @@ record ValTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (A : Type ℓ) :
     PtbV : Monoid ℓM
     interpV : MonoidHom PtbV (Endo predomain)
 
- 
+
   ι : ⟨ PtbV ⟩ → PBMor predomain predomain
   ι p = interpV .fst p .fst
-
-  
 
 ValType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
 ValType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (ValTypeStr ℓ≤ ℓ≈ ℓM)
@@ -107,6 +105,12 @@ ValType→Predomain A = ⟨ A ⟩ , (A .snd .is-poset-with-bisim)
   where open ValTypeStr
 
 
+mkValType :
+  (A : PosetBisim ℓ ℓ≤ ℓ≈)
+  → (PtbV : Monoid ℓM)
+  → MonoidHom PtbV (Endo A)
+  → ValType ℓ ℓ≤ ℓ≈ ℓM
+mkValType A P ι = ⟨ A ⟩ , (valtypestr (A .snd) P ι)
 
 -- Vertical morphisms of value types
 -------------------------------------
@@ -114,7 +118,7 @@ ValType→Predomain A = ⟨ A ⟩ , (A .snd .is-poset-with-bisim)
 -- A vertical morphism of value types is simply a morphism of the
 -- underlying predomain structures.
 
-ValTypeMor : 
+ValTypeMor :
   (Aᵢ : ValType ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓMAᵢ)
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) →
   Type ((ℓ-max (ℓ-max ℓAᵢ (ℓ-max ℓ≤Aᵢ ℓ≈Aᵢ)) (ℓ-max ℓAₒ (ℓ-max ℓ≤Aₒ ℓ≈Aₒ))))
@@ -201,7 +205,7 @@ module _  where
 
 
 -- That means we get the following:
--- 
+--
 -- Vertical Identity squares (id ⊑ id)
 -- Horizontal identity squares (f ⊑ f)
 -- Veritcal composition of squares
@@ -241,6 +245,17 @@ CompTypeStr ℓ≤ ℓ≈ ℓM B =
 CompType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
 CompType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (CompTypeStr ℓ≤ ℓ≈ ℓM)
 
+mkCompType
+  : (B : ErrorDomain ℓ ℓ≤ ℓ≈)
+  → (PtbC : Monoid ℓM)
+  → MonoidHom PtbC (CEndo B)
+  → CompType ℓ ℓ≤ ℓ≈ ℓM
+mkCompType B PtbC ι = ⟨ B ⟩ , ((B .snd) , (PtbC , ι))
+
+CompType→ErrorDomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
+  CompType ℓ ℓ≤ ℓ≈ ℓM → ErrorDomain ℓ ℓ≤ ℓ≈
+CompType→ErrorDomain B = ⟨ B ⟩ , B .snd .fst
+
 {-
 
 CompType→ErrorDom : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
@@ -263,7 +278,7 @@ CompType→ValType B = {!!}
 -- A vertical morphism of computation types is simply a morphism of the
 -- underlying error domain structures.
 
-CompTypeMor : 
+CompTypeMor :
   (Bᵢ : CompType ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ ℓMBᵢ)
   (Bₒ : CompType ℓBₒ ℓ≤Bₒ ℓ≈Bₒ ℓMBₒ) →
   Type ((ℓ-max (ℓ-max ℓBᵢ (ℓ-max ℓ≤Bᵢ ℓ≈Bᵢ)) (ℓ-max ℓBₒ (ℓ-max ℓ≤Bₒ ℓ≈Bₒ))))
@@ -299,7 +314,7 @@ record CompTypeRel
 
   -- module Ptb-UB = U-Ptb MB iB
   -- module Ptb-UB' = U-Ptb MB' iB'
- 
+
   field
     d  : ErrorDomRel 𝔹 𝔹' ℓd
     Πd : PushPullC 𝔹 MB iB 𝔹' MB' iB' d
@@ -418,7 +433,7 @@ module _ {k : Clock} where
       ·AssocM = M.·Assoc
       ·IdRM = M.·IdR
       ·IdLM = M.·IdL
-      
+
     Monoid▸ :  Monoid ℓM
     Monoid▸ = makeMonoid
       {M = ▸ (λ t → ⟨ M~ t ⟩)}
@@ -500,7 +515,7 @@ record PushPullV
 
   module A  = ValTypeStr (A  .snd)
   module A' = ValTypeStr (A' .snd)
-  
+
   𝔸  = ValType→PosetBisim A
   𝔸' = ValType→PosetBisim A'
 

@@ -223,10 +223,17 @@ module U-Ptb
 
 module ×-Ptb
   {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  (MA₁ : Monoid ℓMA₁)
+  (iA₁ : MonoidHom MA₁ (Endo A₁))
   {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  (MA₂ : Monoid ℓMA₂)
+  (iA₂ : MonoidHom MA₂ (Endo A₂))
   where
 
+  M-× = MA₁ ⊕ MA₂
 
+  i× : MonoidHom M-× (Endo (A₁ ×dp A₂))
+  i× = [ ×A-PrePtb ∘hom iA₁ ,hom A×-PrePtb ∘hom iA₂ ]
 
 -- Kleisli arrow "actions" on perturbations.
 
