@@ -96,7 +96,8 @@ data Val where
 
   injectN   : Val [ nat ] dyn
   injectArr : Val [ dyn ⇀ dyn ] dyn
-  mapDyn : Val [ nat ] nat → Val [ dyn ⇀ dyn ] (dyn ⇀ dyn) → Val [ dyn ] dyn
+  -- TODO: do we need this?
+  -- mapDyn : Val [ nat ] nat → Val [ dyn ⇀ dyn ] (dyn ⇀ dyn) → Val [ dyn ] dyn
   -- TODO: add products
 
   up : (S⊑T : TyPrec) -> Val [ ty-left S⊑T ] (ty-right S⊑T)

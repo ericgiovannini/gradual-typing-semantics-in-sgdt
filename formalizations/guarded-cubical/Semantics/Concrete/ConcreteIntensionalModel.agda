@@ -256,21 +256,6 @@ CompType→ErrorDomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
   CompType ℓ ℓ≤ ℓ≈ ℓM → ErrorDomain ℓ ℓ≤ ℓ≈
 CompType→ErrorDomain B = ⟨ B ⟩ , B .snd .fst
 
-{-
-
-CompType→ErrorDom : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
-  CompType ℓ ℓ≤ ℓ≈ ℓM → ErrorDomain ℓ ℓ≤ ℓ≈
-CompType→ErrorDom B = ⟨ B ⟩ , (B .snd .is-error-domain)
-  where open CompTypeStr
-
-
--- The U functor on objects
-CompType→ValType : {ℓ ℓ≤ ℓ≈ ℓM : Level} → CompType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
-CompType→ValType B = {!!}
-  where open CompTypeStr
-
-
-
 
 -- Vertical morphisms of computation types
 -------------------------------------------
@@ -282,7 +267,10 @@ CompTypeMor :
   (Bᵢ : CompType ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ ℓMBᵢ)
   (Bₒ : CompType ℓBₒ ℓ≤Bₒ ℓ≈Bₒ ℓMBₒ) →
   Type ((ℓ-max (ℓ-max ℓBᵢ (ℓ-max ℓ≤Bᵢ ℓ≈Bᵢ)) (ℓ-max ℓBₒ (ℓ-max ℓ≤Bₒ ℓ≈Bₒ))))
-CompTypeMor Bᵢ Bₒ = ErrorDomMor (CompType→ErrorDom Bᵢ) (CompType→ErrorDom Bₒ)
+CompTypeMor Bᵢ Bₒ =
+  ErrorDomMor (CompType→ErrorDomain Bᵢ) (CompType→ErrorDomain Bₒ)
+{-
+
 
 
 -- Horizontal morphisms of computation types

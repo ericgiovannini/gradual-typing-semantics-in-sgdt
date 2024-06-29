@@ -1,7 +1,7 @@
 {-
   Denotational semantics of gradual types as error predomains
 -}
-{-# OPTIONS --rewriting --lossy-unification #-}
+{-# OPTIONS --rewriting --lossy-unification --allow-unsolved-metas #-}
 open import Common.Later
 module Syntax.FineGrained.Denotation.Types (k : Clock) where
 
@@ -10,11 +10,6 @@ open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 open import Syntax.Types
 open import Semantics.Concrete.ConcreteIntensionalModel k
--- open import Semantics.Concrete.DoublePoset.Base
--- open import Semantics.Concrete.DoublePoset.Constructions
--- open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
--- open import Semantics.Concrete.DoublePoset.ErrorDomain k
--- open import Semantics.Concrete.Dyn k
 open import Semantics.Concrete.ValType.Constructions k
 open import Semantics.Concrete.CompType.Constructions k
 

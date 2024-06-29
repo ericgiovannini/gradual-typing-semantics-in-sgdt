@@ -1,0 +1,92 @@
+{-
+  Denotational semantics of gradual types as error predomains
+-}
+{-# OPTIONS --rewriting --allow-unsolved-metas --lossy-unification #-}
+open import Common.Later
+module Syntax.FineGrained.Denotation.Terms (k : Clock) where
+
+open import Cubical.Foundations.Prelude renaming (comp to compose)
+open import Cubical.Foundations.Structure
+open import Cubical.Data.List
+
+open import Semantics.Concrete.ConcreteIntensionalModel k
+open import Semantics.Concrete.ValType.Constructions k
+open import Semantics.Concrete.CompType.Constructions k
+
+open import Syntax.Types
+open import Syntax.FineGrained.Terms
+open import Syntax.FineGrained.Denotation.Types k
+
+private
+ variable
+   Δ Γ Θ Z Δ' Γ' Θ' Z' : Ctx
+   R S T R' S' T' : Ty
+   b b' c c' d d' : S ⊑ S'
+
+⟦_⟧S : Subst Δ Γ → ValTypeMor ⟦ Δ ⟧ctx ⟦ Γ ⟧ctx
+⟦_⟧V : Val Γ S → ValTypeMor ⟦ Γ ⟧ctx ⟦ S ⟧ty
+-- TODO: consider alternatives
+⟦_⟧C : Comp Γ S → ValTypeMor ⟦ Γ ⟧ctx (U (F ⟦ S ⟧ty))
+-- TODO: consider alternatives such as S × Γ → UF T
+⟦_⟧E : EvCtx Γ S T → CompTypeMor (F ⟦ S ⟧ty) (⟦ Γ ⟧ctx ⟶ F ⟦ T ⟧ty)
+
+⟦ ids ⟧S = {!!}
+⟦ γ ∘s δ ⟧S = {!!}
+⟦ ∘IdL i ⟧S = {!!}
+⟦ ∘IdR i ⟧S = {!!}
+⟦ ∘Assoc i ⟧S = {!!}
+⟦ !s ⟧S = {!!}
+⟦ []η i ⟧S = {!!}
+⟦ γ₁ ,s γ₂ ⟧S = {!!}
+⟦ wk ⟧S = {!!}
+⟦ wkβ i ⟧S = {!!}
+⟦ ,sη i ⟧S = {!!}
+
+⟦ V [ x ]v ⟧V = {!!}
+⟦ substId i ⟧V = {!!}
+⟦ substAssoc i ⟧V = {!!}
+⟦ var ⟧V = {!!}
+⟦ varβ i ⟧V = {!!}
+⟦ zro ⟧V = {!!}
+⟦ suc ⟧V = {!!}
+⟦ lda M ⟧V = {!!}
+⟦ fun-η i ⟧V = {!!}
+⟦ injectN ⟧V = {!!}
+⟦ injectArr ⟧V = {!!}
+⟦ up S⊑T ⟧V = {!!}
+
+⟦ E [ M ]∙ ⟧C = {!!}
+⟦ plugId i ⟧C = {!!}
+⟦ plugAssoc i ⟧C = {!!}
+⟦ M [ γ ]c ⟧C = {!!}
+⟦ substId i ⟧C = {!!}
+⟦ substAssoc i ⟧C = {!!}
+⟦ substPlugDist i ⟧C = {!!}
+⟦ err ⟧C = {!!}
+⟦ strictness i ⟧C = {!!}
+⟦ ret ⟧C = {!!}
+⟦ ret-β i ⟧C = {!!}
+⟦ app ⟧C = {!!}
+⟦ fun-β i ⟧C = {!!}
+⟦ matchNat Mz Ms ⟧C = {!!}
+⟦ matchNatβz Mz Ms i ⟧C = {!!}
+⟦ matchNatβs Mz Ms i ⟧C = {!!}
+⟦ matchNatη i ⟧C = {!!}
+⟦ matchDyn Mn Mf ⟧C = {!!}
+⟦ matchDynβn Mn Mf V i ⟧C = {!!}
+⟦ matchDynβf Mn Mf V i ⟧C = {!!}
+⟦ matchDynSubst Mn Mf γ i ⟧C = {!!}
+
+⟦ ∙E ⟧E = {!!}
+⟦ E ∘E E' ⟧E = {!!}
+⟦ ∘IdL i ⟧E = {!!}
+⟦ ∘IdR i ⟧E = {!!}
+⟦ ∘Assoc i ⟧E = {!!}
+⟦ E [ γ ]e ⟧E = {!!}
+⟦ substId i ⟧E = {!!}
+⟦ substAssoc i ⟧E = {!!}
+⟦ ∙substDist i ⟧E = {!!}
+⟦ ∘substDist i ⟧E = {!!}
+⟦ bind ⟨x⟩M ⟧E = {!!}
+⟦ ret-η i ⟧E = {!!}
+⟦ dn S⊑T ⟧E = {!!}
