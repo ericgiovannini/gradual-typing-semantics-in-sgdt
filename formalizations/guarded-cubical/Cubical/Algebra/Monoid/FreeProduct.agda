@@ -13,7 +13,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 
-open import Cubical.Data.Sum
+open import Cubical.Data.Sum hiding (rec)
 open import Cubical.Data.Sigma
 
 
@@ -140,7 +140,6 @@ module Rec {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
     ⟦_⟧₁* ⟦_⟧₂* ε* _·*_ id₁* id₂* comp₁* comp₂*
     identityᵣ* identityₗ* assoc* (λ _ -> trunc*)
 
-  
 _⊕_ : Monoid ℓ -> Monoid ℓ' -> Monoid (ℓ-max ℓ ℓ')
 M ⊕ N = makeMonoid {M = FreeMonoidProd M N} ε _·_ trunc assoc identityᵣ identityₗ
 
@@ -223,7 +222,14 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
   --   where
   --     module P = MonoidStr (P .snd)
   -- [_,hom_] {P = P} f g  .snd = monoidequiv refl (λ x y -> refl)
+  rec : ∀ {P : Monoid ℓ''} (ϕ : MonoidHom M P) (ψ : MonoidHom N P) → MonoidHom (M ⊕ N) P
+  rec ϕ ψ = UMP.case-hom _ ϕ ψ
 
+  rec-is-uniq : ∀ {P : Monoid ℓ''} {ϕM ϕN ψ}
+    → (ϕM ≡ ψ ∘hom i₁)
+    → (ϕN ≡ ψ ∘hom i₂)
+    → rec {P = P} ϕM ϕN ≡ ψ
+  rec-is-uniq ψ₁≡ ψ₂≡ = UMP.unique _ _ _ _ ψ₁≡ ψ₂≡
 
 -- Eliminating from M ⊕ N into a type A parameterized by elements of
 -- M ⊕ N and elements of an arbitrary monoid P.
