@@ -21,18 +21,17 @@ private
 data _⊑_ : Ty → Ty → Type where
   refl-⊑ : S ⊑ S
   trans-⊑ : S ⊑ T → T ⊑ U → S ⊑ U
-  nat : nat ⊑ nat
-  dyn : dyn ⊑ dyn
   _⇀_ : R ⊑ R' → S ⊑ S' → (R ⇀ S) ⊑ (R' ⇀ S')
   inj-nat : nat ⊑ dyn
   inj-arr : (dyn ⇀ dyn) ⊑ dyn
+  -- TODO: add products
 
 _∘⊑_ : S ⊑ T → T ⊑ U → S ⊑ U
 _∘⊑_ = trans-⊑
 
 dyn-⊤ : S ⊑ dyn
 dyn-⊤ {nat} = inj-nat
-dyn-⊤ {dyn} = dyn
+dyn-⊤ {dyn} = refl-⊑
 dyn-⊤ {S ⇀ S₁} = trans-⊑ (dyn-⊤ ⇀ dyn-⊤) inj-arr
 
 record TyPrec : Type where
@@ -134,9 +133,12 @@ module _ where
   isSetTy : isSet Ty
   isSetTy = isSetRetract Ty→W W→Ty rtr (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit)) tt)
 
--- data _≈_ : (S ⊑ T) → (S ⊑ T) → Type where
---   sym≈ : c ≈ d → d ≈ c
---   refl-trans : trans-⊑ refl-⊑ c ≈ c 
---   trans-refl : trans-⊑ c refl-⊑ ≈ c 
---   assoc : trans-⊑ c (trans-⊑ d d') ≈ trans-⊑ (trans-⊑ c d) d'
---   ⇀-refl : 
+
+data _≈_ : (S ⊑ T) → (S ⊑ T) → Type where
+  sym≈ : c ≈ d → d ≈ c
+  refl-trans : trans-⊑ refl-⊑ c ≈ c 
+  trans-refl : trans-⊑ c refl-⊑ ≈ c 
+  assoc : trans-⊑ c (trans-⊑ d d') ≈ trans-⊑ (trans-⊑ c d) d'
+  ⇀-refl : refl-⊑ ≈ (refl-⊑ {S} ⇀ refl-⊑ {T})
+  ⇀-trans : trans-⊑ (c ⇀ d) (c' ⇀ d') ≈ (trans-⊑ c c' ⇀ trans-⊑ d d')
+  -- TODO: add products

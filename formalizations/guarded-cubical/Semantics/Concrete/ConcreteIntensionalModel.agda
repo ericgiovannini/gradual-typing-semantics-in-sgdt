@@ -124,96 +124,6 @@ ValTypeMor :
   Type ((ℓ-max (ℓ-max ℓAᵢ (ℓ-max ℓ≤Aᵢ ℓ≈Aᵢ)) (ℓ-max ℓAₒ (ℓ-max ℓ≤Aₒ ℓ≈Aₒ))))
 ValTypeMor Aᵢ Aₒ = PBMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
 
-
-
-
--- Horizontal morphisms of value types
----------------------------------------
-
--- Horizontal morphisms of value types are monotone relations between
--- the underlying predomains that are additionally quasi-representable
--- and have a push-pull structure.
-
-
-open F-ob
-
-record ValTypeRel
-  (A  : ValType ℓA  ℓ≤A  ℓ≈A  ℓMA)
-  (A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA')
-  (ℓc : Level) : Type
-    (ℓ-max (ℓ-max (ℓ-max ℓA ℓ≤A) (ℓ-max ℓ≈A ℓMA))
-    (ℓ-max (ℓ-max ℓA' ℓ≤A') (ℓ-max (ℓ-max ℓ≈A' ℓMA') (ℓ-suc ℓc)))) where
-
-  no-eta-equality
-
-  module A  = ValTypeStr (A  .snd)
-  module A' = ValTypeStr (A' .snd)
-
-  𝔸  = ValType→Predomain A
-  𝔸' = ValType→Predomain A'
-
-  MA  = A.PtbV
-  MA' = A'.PtbV
-  iA  = A.interpV
-  iA' = A'.interpV
-
-  open F-ob
-  open F-mor
-  open F-rel
-
-  module Ptb-FA  = F-Ptb MA  iA
-  module Ptb-FA' = F-Ptb MA' iA'
-
-  field
-    c  : PBRel 𝔸 𝔸' ℓc
-    Πc : PushPullV 𝔸 MA iA 𝔸' MA' iA' c
-
-  field
-    ρᴸ : LeftRepV 𝔸 MA iA 𝔸' MA' iA' c Πc
-    -- ρᴿ : RightRepC (F-ob 𝔸)  Ptb-FA.M-FA   Ptb-FA.iFA
-    --                (F-ob 𝔸') Ptb-FA'.M-FA  Ptb-FA'.iFA
-    --                (F-rel c) {!!}
-
-
-
--- Identity horizontal morphism
-
-
--- Composition of horizontal morphisms
-
-
-
--- Squares for value types
---------------------------
-
--- The squares for value types are simply predomain squares involving
--- the respective predomain morphisms and relations.
-
-module _  where
-  ValTypeSq :
-    {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ}
-    {Aᵢ' : ValType ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ'}
-    {Aₒ  : ValType ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  ℓMAₒ}
-    {Aₒ' : ValType ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' ℓMAₒ'} →
-    (cᵢ  : ValTypeRel Aᵢ Aᵢ' ℓcᵢ) →
-    (cₒ  : ValTypeRel Aₒ Aₒ' ℓcₒ) →
-    (f   : ValTypeMor Aᵢ  Aₒ) →
-    (g   : ValTypeMor Aᵢ' Aₒ') →
-    Type (ℓ-max (ℓ-max ℓAᵢ ℓAᵢ') (ℓ-max ℓcᵢ ℓcₒ))
-  ValTypeSq cᵢ cₒ f g = PBSq (cᵢ .ValTypeRel.c) (cₒ .ValTypeRel.c) f g
-
-
-
--- That means we get the following:
---
--- Vertical Identity squares (id ⊑ id)
--- Horizontal identity squares (f ⊑ f)
--- Veritcal composition of squares
--- Horizontal composition of squares
--- A notion of Quasi-order-equivalence of two horizontal morphisms
-
-
-
 ---------------------------------------------------------------
 -- Computation Types
 ---------------------------------------------------------------
@@ -269,6 +179,92 @@ CompTypeMor :
   Type ((ℓ-max (ℓ-max ℓBᵢ (ℓ-max ℓ≤Bᵢ ℓ≈Bᵢ)) (ℓ-max ℓBₒ (ℓ-max ℓ≤Bₒ ℓ≈Bₒ))))
 CompTypeMor Bᵢ Bₒ =
   ErrorDomMor (CompType→ErrorDomain Bᵢ) (CompType→ErrorDomain Bₒ)
+
+-- Horizontal morphisms of value types
+---------------------------------------
+
+-- Horizontal morphisms of value types are monotone relations between
+-- the underlying predomains that are additionally quasi-representable
+-- and have a push-pull structure.
+
+
+open F-ob
+
+module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A  ℓMA)
+  (A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA')
+  (ℓc : Level) where
+  
+  ValTypeRel : Type _
+  ValTypeRel =
+    Σ[ c ∈ PBRel 𝔸 𝔸' ℓc ]
+    Σ[ Πc ∈ PushPullV 𝔸 MA iA 𝔸' MA' iA' c ]
+    Σ[ ρᴸ ∈ LeftRepV 𝔸  MA iA 𝔸' MA' iA' c Πc ]
+    RightRepC (F-ob 𝔸) Ptb-FA.M-FA Ptb-FA.iFA
+              (F-ob 𝔸') Ptb-FA'.M-FA  Ptb-FA'.iFA
+              (F-rel c) let open F-PushPull c Πc in F-PushPull
+    where
+    module A = ValTypeStr (A .snd)
+    module A' = ValTypeStr (A' .snd)
+    𝔸 = ValType→Predomain A
+    𝔸' = ValType→Predomain A'
+    MA  = A.PtbV
+    MA' = A'.PtbV
+    iA  = A.interpV
+    iA' = A'.interpV
+
+    open F-ob
+    open F-mor
+    open F-rel
+
+    module Ptb-FA  = F-Ptb MA  iA
+    module Ptb-FA' = F-Ptb MA' iA'
+
+module _ {A  : ValType ℓA  ℓ≤A  ℓ≈A  ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'} where
+
+  emb : ∀ {ℓc} → ValTypeRel A A' ℓc → ValTypeMor A A'
+  emb R = R .snd .snd .fst .LeftRepV.e
+
+  ValTypeRel≈ : ∀ {ℓc ℓc'} → ValTypeRel A A' ℓc → ValTypeRel A A' ℓc' → Type _
+  ValTypeRel≈ R R' =
+    (emb R ≡ emb R')
+    × (R .snd .snd .snd .RightRepC.p ≡ R' .snd .snd .snd .RightRepC.p)
+
+-- Identity horizontal morphism
+
+
+-- Composition of horizontal morphisms
+
+
+
+-- Squares for value types
+--------------------------
+
+-- The squares for value types are simply predomain squares involving
+-- the respective predomain morphisms and relations.
+
+-- module _  where
+--   ValTypeSq :
+--     {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ}
+--     {Aᵢ' : ValType ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ'}
+--     {Aₒ  : ValType ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  ℓMAₒ}
+--     {Aₒ' : ValType ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' ℓMAₒ'} →
+--     (cᵢ  : ValTypeRel Aᵢ Aᵢ' ℓcᵢ) →
+--     (cₒ  : ValTypeRel Aₒ Aₒ' ℓcₒ) →
+--     (f   : ValTypeMor Aᵢ  Aₒ) →
+--     (g   : ValTypeMor Aᵢ' Aₒ') →
+--     Type (ℓ-max (ℓ-max ℓAᵢ ℓAᵢ') (ℓ-max ℓcᵢ ℓcₒ))
+--   ValTypeSq cᵢ cₒ f g = PBSq (cᵢ .ValTypeRel.c) (cₒ .ValTypeRel.c) f g
+
+
+
+-- That means we get the following:
+--
+-- Vertical Identity squares (id ⊑ id)
+-- Horizontal identity squares (f ⊑ f)
+-- Veritcal composition of squares
+-- Horizontal composition of squares
+-- A notion of Quasi-order-equivalence of two horizontal morphisms
+
 {-
 
 

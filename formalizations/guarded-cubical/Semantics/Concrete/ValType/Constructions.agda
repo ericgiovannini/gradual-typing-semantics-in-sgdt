@@ -24,7 +24,7 @@ open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct
-open import Cubical.Algebra.Monoid.Instances.Trivial
+open import Cubical.Algebra.Monoid.Instances.Trivial as Trivial
 
 open import Cubical.Data.Sigma hiding (_×_)
 import Cubical.Data.Unit as Unit
@@ -42,6 +42,7 @@ open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.Dyn k
+open import Semantics.Concrete.DynPerturb k as PtbD
 
 open import Semantics.Concrete.Predomains.PrePerturbations k
 open import Semantics.Concrete.Predomains.Perturbations k
@@ -76,7 +77,7 @@ open PBMor
 open ValTypeStr
 
 flat : hSet ℓ → ValType ℓ ℓ ℓ ℓ-zero
-flat X = mkValType (flatDP X) TrivialMonoid rec
+flat X = mkValType (flatDP X) TrivialMonoid Trivial.rec
 
 ℕ : ValType _ _ _ _
 ℕ = flat (Nat.ℕ , Nat.isSetℕ)
@@ -96,4 +97,6 @@ A × A' = mkValType (ValType→Predomain A ×dp ValType→Predomain A')
   i× where
   open ×-Ptb _ (A .snd .interpV) _ (A' .snd .interpV)
 
--- TODO: dyn
+dyn : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
+dyn = mkValType Dyn PtbD ι-dyn where
+  open DynDef

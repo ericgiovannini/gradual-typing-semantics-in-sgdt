@@ -9,6 +9,8 @@ open import Cubical.Foundations.Prelude renaming (comp to compose)
 open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 
+open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.DoublePoset.Morphism renaming (Comp to Compose)
 open import Semantics.Concrete.ConcreteIntensionalModel k
 open import Semantics.Concrete.ValType.Constructions k
 open import Semantics.Concrete.CompType.Constructions k
@@ -30,16 +32,17 @@ private
 -- TODO: consider alternatives such as S × Γ → UF T
 ⟦_⟧E : EvCtx Γ S T → CompTypeMor (F ⟦ S ⟧ty) (⟦ Γ ⟧ctx ⟶ F ⟦ T ⟧ty)
 
-⟦ ids ⟧S = {!!}
-⟦ γ ∘s δ ⟧S = {!!}
-⟦ ∘IdL i ⟧S = {!!}
-⟦ ∘IdR i ⟧S = {!!}
-⟦ ∘Assoc i ⟧S = {!!}
+⟦ ids ⟧S = Id
+⟦ γ ∘s δ ⟧S = ⟦ γ ⟧S ∘p ⟦ δ ⟧S
+⟦ ∘IdL {γ = γ} i ⟧S = CompPD-IdL ⟦ γ ⟧S i
+⟦ ∘IdR {γ = γ} i ⟧S = CompPD-IdR ⟦ γ ⟧S i
+⟦ ∘Assoc {γ = γ}{δ = δ}{θ = θ} i ⟧S = CompPD-Assoc ⟦ θ ⟧S ⟦ δ ⟧S ⟦ γ ⟧S i
 ⟦ !s ⟧S = {!!}
 ⟦ []η i ⟧S = {!!}
-⟦ γ₁ ,s γ₂ ⟧S = {!!}
-⟦ wk ⟧S = {!!}
-⟦ wkβ i ⟧S = {!!}
+⟦ γ ,s V ⟧S = ×-intro ⟦ γ ⟧S ⟦ V ⟧V
+⟦ wk ⟧S = π1
+⟦ wkβ {δ = δ}{V = V} i ⟧S =
+  eqPBMor ((Compose (×-intro ⟦ δ ⟧S ⟦ V ⟧V) π1)) ⟦ δ ⟧S refl i
 ⟦ ,sη i ⟧S = {!!}
 
 ⟦ V [ x ]v ⟧V = {!!}
