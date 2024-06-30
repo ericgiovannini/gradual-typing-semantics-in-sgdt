@@ -9,14 +9,17 @@ module Semantics.Concrete.LockStepErrorOrdering (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
-open import Cubical.Data.Nat hiding (_^_)
+open import Cubical.Data.Sum
+open import Cubical.Data.Nat hiding (_^_ ; _+_)
+open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Relation.Binary.Base
 open import Cubical.HITs.PropositionalTruncation
 
 
 open import Common.Common
 open import Semantics.Concrete.GuardedLiftError k
--- open import Semantics.Concrete.GuardedLift k
+open import Semantics.Concrete.GuardedLift k
+  using () renaming (η to ηL)
 
 
 private
@@ -220,3 +223,89 @@ module LiftOrdHomogenous (X : Type ℓX) (R : X → X → Type ℓR) where
         aux IH .℧ ly lz (LiftOrd.⊑℧⊥ .ly) ly≤lz = LiftOrd.⊑℧⊥ lz
         aux IH .(θ lx~) .(θ ly~) .(θ lz~) (LiftOrd.⊑θθ lx~ ly~ H1~) (LiftOrd.⊑θθ .ly~ lz~ H2~) =
           ⊑θθ lx~ lz~ (λ t → IH t (lx~ t) (ly~ t) (lz~ t) (H1~ t) (H2~ t)) -- auto solved this!
+
+
+
+
+
+-- Clocked lock-step error ordering as a sum-type.
+
+ret : {X : Type ℓ} → X → L (X ⊎ ⊤)
+ret x = L.η (inl x)
+
+err : {X : Type ℓ} → L (X ⊎ ⊤)
+err = L.η (inr tt)
+
+
+module AsSum (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR) where
+
+  private
+    _+_ : {ℓ ℓ' : Level} → Type ℓ → Type ℓ' → Type (ℓ-max ℓ ℓ')
+    _+_ = _⊎_
+    infixr 20 _+_
+
+  module Rec (rec : (▹ (L (X ⊎ ⊤) → L (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)))) where
+
+    _⊑S'_ :  L (X ⊎ ⊤) → L (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
+    _⊑S'_ l1 l2 =
+        (Σ[ x ∈ X ] Σ[ y ∈ Y ] (l1 ≡ ret x) × (l2 ≡ ret y) × R x y)
+      + (l1 ≡ err)
+      + (Σ[ l1~ ∈ ▹ L (X ⊎ ⊤) ] Σ[ l2~ ∈ ▹ L (Y ⊎ ⊤) ]
+          (l1 ≡ θ l1~) × (l2 ≡ θ l2~) × (▸ (λ t → rec t (l1~ t) (l2~ t))))
+
+  _⊑S_ : L (X ⊎ ⊤) → L (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
+  _⊑S_ = fix Rec._⊑S'_
+
+  unfold-⊑S : _⊑S_ ≡ Rec._⊑S'_ (next _⊑S_)
+  unfold-⊑S = fix-eq Rec._⊑S'_
+
+  open Rec (next _⊑S_)
+
+  ⊑S'→⊑S : (l : L (X ⊎ ⊤)) (l' : L (Y ⊎ ⊤)) -> l ⊑S' l' -> l ⊑S l'
+  ⊑S'→⊑S l l' l⊑S'l' = transport (sym (λ i -> unfold-⊑S i l l')) l⊑S'l'
+
+  ⊑S→⊑S' : (l : L (X ⊎ ⊤)) (l' : L (Y ⊎ ⊤)) -> l ⊑S l' -> l ⊑S' l'
+  ⊑S→⊑S' l l' l⊑Sl' = transport (λ i -> unfold-⊑S i l l') l⊑Sl'
+
+
+module _ {X : Type ℓ} where
+
+  module Rec (rec : ▹ (L℧ X → L (X ⊎ ⊤))) where
+
+    L-ErrorX→L-X⊎⊤' : (L℧ X → L (X ⊎ ⊤))
+    L-ErrorX→L-X⊎⊤' (η x) = L.η (inl x)
+    L-ErrorX→L-X⊎⊤' ℧ = L.η (inr tt)
+    L-ErrorX→L-X⊎⊤' (θ lx~) = θ (λ t → rec t (lx~ t))
+
+  L-ErrorX→L-X⊎⊤ = fix Rec.L-ErrorX→L-X⊎⊤'
+  
+  unfold : L-ErrorX→L-X⊎⊤ ≡ Rec.L-ErrorX→L-X⊎⊤' (next L-ErrorX→L-X⊎⊤)
+  unfold = fix-eq _
+
+-- The original definition of lock-step error ordering implies the
+-- definition as a sum-type.
+module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR) (k : Clock) where
+
+  open module LR = LiftOrd X Y R
+  open module Sum = AsSum X Y R hiding (module Rec)
+  open Sum.Rec (next _⊑S_)
+  LError→LSumX  = L-ErrorX→L-X⊎⊤ {X = X}
+  LError→LSumX' = Rec.L-ErrorX→L-X⊎⊤' {X = X} (next L-ErrorX→L-X⊎⊤)
+  LError→LSumY  = L-ErrorX→L-X⊎⊤ {X = Y}
+  LError→LSumY' = Rec.L-ErrorX→L-X⊎⊤' {X = Y} (next L-ErrorX→L-X⊎⊤)
+
+  
+  ⊑→⊑S : (l : L℧ X) (l' : L℧ Y) → l ⊑ l' →
+    L-ErrorX→L-X⊎⊤ l ⊑S L-ErrorX→L-X⊎⊤ l' -- l ⊑S l'
+  ⊑→⊑S l l' l⊑l' =
+    transport (sym (λ i → funExt⁻ unfold l i ⊑S funExt⁻ unfold l' i)) (⊑S'→⊑S _ _ (fix lem l l' l⊑l'))
+    where
+      lem : ▹ ((l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l') →
+               (l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l'
+      lem _ .(η x) .(η y) (⊑ηη x y xRy) = inl (x , y , refl , refl , xRy)
+      lem _ .(℧) ly (⊑℧⊥ ly) = inr (inl refl)
+      lem IH .(θ lx~) .(θ ly~) (⊑θθ lx~ ly~ H~) =
+        inr (inr (map▹ LError→LSumX lx~ , map▹ LError→LSumY ly~ , refl , refl ,
+                  (λ t → transport (sym (λ i → funExt⁻ unfold (lx~ t) i ⊑S funExt⁻ unfold (ly~ t) i))
+                    (⊑S'→⊑S (LError→LSumX' (lx~ t)) (LError→LSumY' (ly~ t)) (IH t (lx~ t) (ly~ t) (H~ t))))))
+                    

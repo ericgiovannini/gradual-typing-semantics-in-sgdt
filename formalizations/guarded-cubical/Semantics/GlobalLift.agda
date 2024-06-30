@@ -34,7 +34,7 @@ open import Cubical.Data.Equality.Conversion hiding (Iso ; funExt)
 open import Common.Later
 open import Common.Common
 open import Common.ClockProperties
-open import Semantics.Lift
+open import Semantics.Concrete.GuardedLift
 
 private
   variable
@@ -52,7 +52,7 @@ L^gl X = ∀ (k : Clock) -> L k X
 
 -- Global δ
 δL^gl : {X : Type ℓ} -> L^gl X -> L^gl X
-δL^gl l = λ k -> δL k (l k)
+δL^gl l = λ k -> δ k (l k)
 
 delay-n : {X : Type ℓ} → L^gl X → ℕ → L^gl X
 delay-n l zero = l
@@ -133,54 +133,7 @@ iso-fun-θ {X = X} H l = refl -- congS inr lem
 
     transpVar : _
     transpVar = (transp (λ j → (k : Clock) → Tick k → L k X) i0 var)
-{-
-    lem :
-      force' (transp (λ i → (x : Clock) → Tick x → L x X) i0 transpVar) ≡ l
-    lem = (λ i -> force' (transportRefl transpVar i)) ∙
-          (λ i -> force' (transportRefl var i)) ∙
-          (λ i -> force' λ k -> transp (λ j →  {!bool2ty ? ? ?!}) i0 {!!}) ∙
-          {!!} ∙
-          --(λ i -> force' (λ k -> transp (λ j -> bool2ty X (▹ k , L k X) (path-clock-irrel-bool-1 {k = k} {k' = k0} false i j)) i0 (transportRefl (next (l k)) i)))
-          (λ i -> force' (λ k -> transportRefl (next (l k)) i)) ∙
-          force'-beta l
--}
-{-
-    lem = (λ i -> force' (transportRefl transpVar i)) ∙
-          (λ i -> force'
-            (transportRefl (λ k -> transp
-                                     (λ j -> bool2ty X (▹ k , L k X) (bool-clock-irrel (λ _ -> false) k k0 j))
-                                     i0 (transportRefl (λ _ -> l k) i))
-                           i)) ∙
-          (λ i -> force' (λ k -> transp (λ j -> bool2ty X (▹ k , L k X) (path-clock-irrel-bool-1 {k = k} {k' = k0} false i j)) i0 (next (l k)))) ∙
-          (λ i -> force' (λ k -> transportRefl (next (l k)) i)) ∙
-          force'-beta l
--}
 
-
-{-
-force'
-      (λ k →
-         transp
-         (λ i' →
-            bool2ty X (▹ k , L k X) (bool-clock-irrel (λ _ → false) k k0 i'))
-         i0 (λ _ → l k))
-      ≡ force' (λ k → next (l k))
-
--}
-
-
-{-
-force'
-      (transp (λ i → (x : Clock) → Tick x → L x X) i0
-       (transp (λ j → (k : Clock) → Tick k → L k X) i0
-        (λ a →
-           transp
-           (λ i →
-              bool2ty X (Tick a → L a X) (bool-clock-irrel (λ x → false) a k0 i))
-           i0 (transp (λ j → Tick a → L a X) i0 (λ _ → l a)))))
-      ≡ l
-
--}
 
 iso-fun-eq-inl : {X : Type ℓ} (H : clock-irrel X) (l : L^gl X) (x : X) ->
   Iso.fun (L^gl-iso H) l ≡ inl x ->
@@ -314,17 +267,6 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
   bigStep-η-suc : ∀ l x n → (l ≡ ηL^gl x) → toFun H l (suc n) ≡ inr tt
   bigStep-η-suc l x n eq = (λ i → toFun H (eq i) (suc n)) ∙ refl
 
-  bigStep-unique : ∀ l x x' n m →
-    (l ≡ (δL^gl ^ n) (ηL^gl x)) →
-    toFun H l m ≡ inl x' →
-    (n ≡ m) × (x ≡ x')
-  bigStep-unique l x x' zero zero eq1 eq2 = {!!}
-  bigStep-unique l x x' zero (suc m) eq1 eq2 = {!!}
-    where
-      aux : toFun H l zero ≡ {!!}
-      aux = {!!}
-  bigStep-unique l x x' (suc n) zero eq1 eq2 = {!!}
-  bigStep-unique l x x' (suc n) (suc m) eq1 eq2 = {!!}
 
 
   -- The function given by the big-step semantics is defined at most once.
@@ -426,6 +368,7 @@ module PartialFunctions {X : Type ℓ} where
 
 
 
+
 module Test where
 
   -- The global lift element that delays for two steps and then returns 50.
@@ -436,10 +379,10 @@ module Test where
   fun1 = toFun nat-clock-irrel lift1
 
   _ : fun1 0 ≡ inr tt
-  _ = {!!} -- refl
+  _ = refl
 
   _ : fun1 2 ≡ inl 50
-  _ = {!!} -- refl
+  _ = refl
 
   fun1-0 : ℕ ⊎ ⊤
   fun1-0 = fun1 0

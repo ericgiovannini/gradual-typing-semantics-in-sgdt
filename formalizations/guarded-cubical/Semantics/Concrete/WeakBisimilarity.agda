@@ -318,7 +318,6 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
 -- globalize)
 
 
-{-
 
 
 module BisimSum (X : Type ℓ) (R : X -> X -> Type ℓR) where
@@ -347,29 +346,31 @@ module BisimSum (X : Type ℓ) (R : X -> X -> Type ℓR) where
   ≈→≈' l l' l≈l' = transport (λ i -> unfold-≈ i l l') l≈l'
 
 
--- Equivalence between the two definitions
+
+-- The original definition implies the sum-type definition.
+
 module _ (X : Type ℓ) (R : X -> X -> Type ℓR) where
 
-  open module B = Bisim X R
+  open module Bisim = LiftBisim X R
   open module BSum = BisimSum X R renaming (_≈_ to _≈S_)
 
-  open B.Inductive (next _≈_)
+
   open BSum.Inductive (next _≈S_) renaming (_≈'_ to _≈S'_)
 
   ≈→≈Sum : (l l' : L X) -> l ≈ l' -> l ≈S l'
-  ≈→≈Sum l l' l≈l' = BSum.≈'→≈ _ _(fix lem l l' (B.≈→≈' _ _ l≈l'))
+  ≈→≈Sum l l' l≈l' = BSum.≈'→≈ _ _ (fix lem l l' l≈l')
       where
-        lem : ▹ ((l l' : L X) -> l ≈' l' -> l ≈S' l') ->
-                 (l l' : L X) -> l ≈' l' -> l ≈S' l'
-        lem _ (η x) (η y) H = inl (x , (y , (refl , (refl , (lower H)))))
-        lem _ (η x) (θ ly~) H = inr (inl (x , refl , H))
-        lem _ (θ lx~) (η y) H = inr (inr (inl (y , refl , H)))
-        lem IH (θ lx~) (θ ly~) H =
+        lem : ▹ ((l l' : L X) -> l ≈ l' -> l ≈S' l') ->
+                 (l l' : L X) -> l ≈ l' -> l ≈S' l'
+        lem _ (η x) (η y) (≈ηη x y xRy) = inl (x , (y , (refl , (refl , xRy))))
+        lem _ .(η x) .ly (≈ηθ x ly H) =
+          inr (inl (x , refl , PTmap (λ {(n , y , eq , xRy) → suc n , y , eq , xRy}) H))
+        lem _ .lx .(η y) (≈θη lx y H) =
+          inr (inr (inl (y , refl , PTmap (λ {(n , x , eq , xRy) → suc n , x , eq , xRy} ) H)))
+        lem IH (θ lx~) (θ ly~) (≈θθ .(lx~) (.ly~) H~) =
           inr (inr (inr (lx~ , ly~ , refl , refl ,
-                         λ t -> BSum.≈'→≈ (lx~ t) (ly~ t) (IH t (lx~ t) (ly~ t) (B.≈→≈' _ _ (H t))))))
+                         λ t -> BSum.≈'→≈ (lx~ t) (ly~ t) (IH t (lx~ t) (ly~ t) (H~ t)))))
 
-
--}
 {-
   ≈Sum→≈ : (l l' : L X) -> l ≈S l' -> l ≈ l'
   ≈Sum→≈ l l' l≈Sl' = {!!}

@@ -15,7 +15,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Functions.Embedding
 open import Cubical.Data.Sigma
-open import Cubical.Data.Sum
+open import Cubical.Data.Sum hiding (map)
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Nat hiding (_^_ ; _+_)
@@ -30,7 +30,13 @@ open import Common.Common
 open import Common.Later
 open import Common.ClockProperties
 
-open import Semantics.Lift hiding (ret)
+open import Semantics.Concrete.DoublePoset.Error
+
+open import Semantics.Concrete.GuardedLift
+open import Semantics.Concrete.GuardedLiftError hiding (L ; η ; θ)
+open import Semantics.Concrete.LockStepErrorOrdering hiding (ret ; err)
+open import Semantics.Concrete.DoublePoset.Monad
+
 open import Semantics.GlobalLift
 
 
@@ -63,36 +69,24 @@ module _ {X : Type ℓ} where
   err^gl = ηL^gl (inr tt)
   
 
--- Clocked lock-step error ordering as a sum-type.
-module Clocked (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR) (k : Clock) where
 
-  _⊑S'_ : (▹ k , (L k (X ⊎ ⊤) → L k (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR))) →
-                 L k (X ⊎ ⊤) → L k (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
-  _⊑S'_ rec l1 l2 =
-      (Σ[ x ∈ X ] Σ[ y ∈ Y ] (l1 ≡ ret x) × (l2 ≡ ret y) × R x y)
-    + (l1 ≡ err)
-    + (Σ[ l1~ ∈ ▹ k , L k (X ⊎ ⊤) ] Σ[ l2~ ∈ ▹ k , L k (Y ⊎ ⊤) ] (l1 ≡ θ l1~) × (l2 ≡ θ l2~) × (▸ (λ t → rec t (l1~ t) (l2~ t))))
-
-  _⊑S_ : L k (X ⊎ ⊤) → L k (Y ⊎ ⊤) → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
-  _⊑S_ = fix _⊑S'_
-
-  unfold-⊑S : _⊑S_ ≡ _⊑S'_ (next _⊑S_)
-  unfold-⊑S = fix-eq _⊑S'_
-
-
-module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
+module Adequacy (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
          (X-clk-irrel : clock-irrel X)
          (Y-clk-irrel : clock-irrel Y)
          (R-clk-irrel : ∀ x y → clock-irrel (R x y)) where
 
-  open Clocked X Y R
 
   -- Some convenience definitions and syntax.
-  X? = X ⊎ ⊤
-  Y? = Y ⊎ ⊤
+  private
+    X? = X ⊎ ⊤
+    Y? = Y ⊎ ⊤
+
+  module AsSum' (k : Clock) = AsSum k X Y R
 
   ⊑S : (k : Clock) → L k X? → L k Y? → Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
-  ⊑S k = _⊑S_ k
+  ⊑S k = _⊑S_
+    where open AsSum' k
+
 
   syntax ⊑S k l1 l2 = l1 ⊑[ k ] l2
 
@@ -103,6 +97,8 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
 
   -- The three cases of clocked lock-step error ordering.
   module ClockedCases {k : Clock} (l1 : L k X?) (l2 : L k Y?) where
+
+    open AsSum k
 
     ret-ret : Type (ℓ-max (ℓ-max ℓ ℓ') ℓR)
     ret-ret = Σ[ x ∈ X ] Σ[ y ∈ Y ] (l1 ≡ ret x) × (l2 ≡ ret y) × R x y
@@ -191,7 +187,7 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     Iso (lg1 ⊑g lg2) (⊑g-unfolded lg1 lg2)
   ⊑g-iso lg1 lg2 =
     (lg1 ⊑g lg2)
-      Iso⟨ pathToIso (λ i → ∀ k → unfold-⊑S k i (lg1 k) (lg2 k)) ⟩
+      Iso⟨ pathToIso (λ i → ∀ k → AsSum'.unfold-⊑S k i (lg1 k) (lg2 k)) ⟩
     -- (∀ k → ret-ret (lg1 k) (lg2 k) + err-bot (lg1 k) (lg2 k) + theta-theta (lg1 k) (lg2 k))
     --   Iso⟨ compIso Iso-Π-⊎-clk (⊎Iso idIso {!Iso-Π-⊎-clk!}) ⟩
       --compIso Iso-Π-⊎-clk (⊎Iso idIso (compIso {!Iso-Π-⊎-clk!} idIso))
@@ -207,7 +203,7 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
   unfold-⊑g {lg1 = lg1} {lg2 = lg2} = Iso.fun (⊑g-iso lg1 lg2)
 
 
-  module Adequacy where
+  module _ where
 
     open PartialFunctions
 
