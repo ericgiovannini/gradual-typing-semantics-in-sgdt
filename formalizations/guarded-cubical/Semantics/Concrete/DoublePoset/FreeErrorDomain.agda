@@ -10,6 +10,7 @@ open import Common.Later
 module Semantics.Concrete.DoublePoset.FreeErrorDomain (k : Clock) where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat hiding (_^_)
 open import Cubical.Relation.Binary.Base
@@ -46,12 +47,13 @@ private
     ℓA  ℓ≤A  ℓ≈A  : Level
     ℓA' ℓ≤A' ℓ≈A' : Level
     ℓB  ℓ≤B  ℓ≈B  : Level
+    ℓB' ℓ≤B' ℓ≈B' : Level
     ℓA₁ ℓ≤A₁ ℓ≈A₁ : Level
     ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
     ℓΓ ℓ≤Γ ℓ≈Γ : Level
     ℓC : Level
-    ℓc ℓc' ℓR : Level
+    ℓc ℓc' ℓd ℓR : Level
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' : Level
     ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  : Level
@@ -83,10 +85,6 @@ open Clocked k -- brings in definition of later on predomains
 -- In the below, "UF X" will be sometimes be written in place of the monad L℧ X.
 
 --------------------------------------------------------------------------------
-
-
-
------------------------------------------------------------------------
 
 
 
@@ -324,8 +322,10 @@ module ExtAsEDMorphism
   {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
 
   open F-ob
-  module A = PosetBisimStr (A .snd)
-  module B = ErrorDomainStr (B .snd)
+
+  private
+    module A = PosetBisimStr (A .snd)
+    module B = ErrorDomainStr (B .snd)
   
   open CBPVExt ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f renaming (module Equations to Equations')
   
@@ -510,3 +510,38 @@ module F-sq
     ErrorDomSq (F-rel cᵢ) (F-rel cₒ) (F-mor f) (F-mor g)
   F-sq α = map-monotone (f .PBMor.f) (g .PBMor.f) α
 
+
+module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
+
+  private module B = ErrorDomainStr (B .snd)
+  open CBPVExt ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f
+
+  ext-unique :
+    (ϕ : ErrorDomMor (F-ob.F-ob A) B) →
+    ∃![ f ∈ PBMor A (U-ob B) ] ϕ .ErrorDomMor.fun ≡ ext (f .PBMor.f)
+  ext-unique ϕ .fst .fst = U-mor ϕ ∘p η-mor
+  ext-unique ϕ .fst .snd = funExt (fix aux)
+    where
+      module ϕ = ErrorDomMor ϕ
+      aux : ▹ _ → _
+      aux _ (η x) = sym (Equations.ext-η _ x)
+      aux _ ℧ = ϕ.f℧ ∙ sym (Equations.ext-℧ _)
+      aux IH (θ lx~) = ϕ.fθ lx~ ∙ sym (Equations.ext-θ _ lx~ ∙ cong B.θ.f (later-ext (λ t → sym (IH t (lx~ t)))))
+  ext-unique ϕ .snd (g , eq) =
+    ΣPathPProp (λ g → isSet→ B.is-set _ _) (eqPBMor _ _ (funExt aux))
+    where
+      aux : _
+      aux x = (λ i → eq i (η x)) ∙ (Equations.ext-η _ x)
+      -- know : ϕ ≡ ext g
+      -- NTS: Uϕ ∘ η ≡ g
+
+-- module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} where
+
+--   ϕ-η : (ϕ : ErrorDomMor (F-ob.F-ob A) (F-ob.F-ob A')) →
+--     ∀ x → ϕ .ErrorDomMor.fun (η x) ≡ {!!}
+--   ϕ-η ϕ x = {!!}
+--     where
+--       open LiftPredomain
+--       open CBPVExt ⟨ A ⟩ (L℧ ⟨ A' ⟩) ℧ θ
+--       eq : Σ[ h ∈ PBMor A (𝕃 A') ] ϕ .ErrorDomMor.fun ≡ {!ext (h .PBMor.f)!} 
+  

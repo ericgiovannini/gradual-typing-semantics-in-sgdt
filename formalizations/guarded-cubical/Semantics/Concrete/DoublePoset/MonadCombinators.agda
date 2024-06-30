@@ -20,6 +20,8 @@ open import Common.Common
 open import Semantics.Concrete.GuardedLiftError k
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.DPMorRelation
+open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.Constructions
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 
@@ -34,23 +36,26 @@ open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
 
 
+
 private
   variable
     ℓ ℓ' : Level
     ℓA  ℓ≤A  ℓ≈A  : Level
     ℓA' ℓ≤A' ℓ≈A' : Level
     ℓB  ℓ≤B  ℓ≈B  : Level
+    ℓB' ℓ≤B' ℓ≈B' : Level
     ℓA₁ ℓ≤A₁ ℓ≈A₁ : Level
     ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
     ℓΓ ℓ≤Γ ℓ≈Γ : Level
     ℓC : Level
-    ℓc ℓc' ℓR : Level
+    ℓc ℓc' ℓd ℓR : Level
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' : Level
     ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  : Level
     ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' : Level
     ℓcᵢ ℓcₒ : Level
+    
    
 
 private
@@ -210,4 +215,6 @@ module _ {A : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} where
   -- where δ = θ ∘ next : UFA → UFA.
   -- Since δ ≈ Id and η ≈ η, the result follows by the fact that composition
   -- preserves bisimilarity.
+
+
 

@@ -117,8 +117,8 @@ Case' f g = record {
   pres≈ = λ { {inl a1} {inl a2} a1≤a2 → pres≈ f (lower a1≤a2) ;
               {inr b1} {inr b2} b1≤b2 → pres≈ g (lower b1≤b2) } }
 
-×mor : ⟨ A ==> B ⟩ → ⟨ C ==> D ⟩ → ⟨ A ×dp C ==> B ×dp D ⟩
-×mor f g = PairFun (f ∘p π1) (g ∘p π2)
+_×mor_ : ⟨ A ==> B ⟩ → ⟨ C ==> D ⟩ → ⟨ A ×dp C ==> B ×dp D ⟩
+_×mor_ f g = PairFun (f ∘p π1) (g ∘p π2)
 
 Case : ⟨ (A ==> C) ==> (B ==> C) ==> ((A ⊎p B) ==> C) ⟩
 Case {C = C} = record {
