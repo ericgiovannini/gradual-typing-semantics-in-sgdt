@@ -236,277 +236,34 @@ module _ {A  : ValType ℓA  ℓ≤A  ℓ≈A  ℓMA} {A' : ValType ℓA' ℓ≤
 
 
 
--- Squares for value types
---------------------------
-
--- The squares for value types are simply predomain squares involving
--- the respective predomain morphisms and relations.
-
--- module _  where
---   ValTypeSq :
---     {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ}
---     {Aᵢ' : ValType ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ'}
---     {Aₒ  : ValType ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  ℓMAₒ}
---     {Aₒ' : ValType ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' ℓMAₒ'} →
---     (cᵢ  : ValTypeRel Aᵢ Aᵢ' ℓcᵢ) →
---     (cₒ  : ValTypeRel Aₒ Aₒ' ℓcₒ) →
---     (f   : ValTypeMor Aᵢ  Aₒ) →
---     (g   : ValTypeMor Aᵢ' Aₒ') →
---     Type (ℓ-max (ℓ-max ℓAᵢ ℓAᵢ') (ℓ-max ℓcᵢ ℓcₒ))
---   ValTypeSq cᵢ cₒ f g = PBSq (cᵢ .ValTypeRel.c) (cₒ .ValTypeRel.c) f g
-
-
-
--- That means we get the following:
---
--- Vertical Identity squares (id ⊑ id)
--- Horizontal identity squares (f ⊑ f)
--- Veritcal composition of squares
--- Horizontal composition of squares
--- A notion of Quasi-order-equivalence of two horizontal morphisms
-
-{-
-
-
-
 -- Horizontal morphisms of computation types
 ---------------------------------------------
 
 -- Horizontal morphisms of computation types are error domain relations between
 -- the underlying error domains that are additionally quasi-representable
 -- and have a push-pull structure.
-
-record CompTypeRel
-  (B  : CompType ℓB  ℓ≤B  ℓ≈B  ℓMB)
+module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B  ℓMB)
   (B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB')
-  (ℓd : Level) : Type
-    (ℓ-max (ℓ-max (ℓ-max ℓB ℓ≤B) (ℓ-max ℓ≈B ℓMB))
-    (ℓ-max (ℓ-max ℓB' ℓ≤B') (ℓ-max (ℓ-max ℓ≈B' ℓMB') (ℓ-suc ℓd)))) where
-
-  no-eta-equality
-
-  module B  = CompTypeStr (B  .snd)
-  module B' = CompTypeStr (B' .snd)
-
-  𝔹  = CompType→ErrorDom B
-  𝔹' = CompType→ErrorDom B'
-
-  MB  = B.PtbC
-  MB' = B'.PtbC
-  iB  = B.interpC
-  iB' = B'.interpC
-
-  -- module Ptb-UB = U-Ptb MB iB
-  -- module Ptb-UB' = U-Ptb MB' iB'
-
-  field
-    d  : ErrorDomRel 𝔹 𝔹' ℓd
-    Πd : PushPullC 𝔹 MB iB 𝔹' MB' iB' d
-
-  open U-PushPull d Πd
-
-  field
-    ρᴿ : RightRepC 𝔹 MB iB 𝔹' MB' iB' d Πd
-    ρᴸ : LeftRepV (U-ob 𝔹)  M-UB  iUB
-                  (U-ob 𝔹') M-UB' iUB'
-                  (U-rel d) U-PushPull
-    -- ρᴸ : LeftRepV (U-ob 𝔹) Ptb-UB.M-UB Ptb-UB.iUB (U-ob 𝔹') Ptb-UB'.M-UB Ptb-UB'.iUB (U-rel d) U-PushPull
-
-
--- Identity horizontal morphism
-
--- Composition of horizontal morphisms
-
--- Computation squares
--}
-
----------------------------------------------------------------
--- Functors
----------------------------------------------------------------
-
------------
--- Arrow
------------
-
-
---------
--- F
---------
-
-
-
---------
--- U
---------
-
-
-
---------
--- Times
---------
-
-
-
--- Lax functoriality of F, U, arrow, and times
-
-
-
--- Kleisli Functors
-
-
-
-
----------------------------------------------------------------
--- The dynamic type + horizontal morphisms
----------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- record ValType (ℓ ℓ' ℓ'' ℓ''' : Level) :
---   Type (ℓ-max (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ')) (ℓ-max (ℓ-suc ℓ'') (ℓ-suc ℓ'''))) where
-
---   field
---     X       : PosetBisim ℓ ℓ' ℓ''
---     Perturb : Monoid  ℓ'''
---     perturb : MonoidHom Perturb (Endo X)
-
---   open PosetBisimStr (X .snd) public
-
--- open ValType
-
-
-{-
--- Later for value types
-
-module _ {k : Clock} where
+  (ℓc : Level) where
 
   private
-    ▹_ : Type ℓ -> Type ℓ
-    ▹ A = ▹_,_ k A
 
-  open ValTypeStr
+    𝔹  = CompType→ErrorDomain B
+    𝔹' = CompType→ErrorDomain B'
 
--}
+    MB  = B .snd .snd .fst
+    MB' = B' .snd .snd .fst
+    iB  = B .snd .snd .snd
+    iB' = B' .snd .snd .snd
 
-{-
-  -- Theta for monoids
-  module _ (M~ : ▹ Monoid ℓM) where
+    module Ptb-UB = U-Ptb MB iB
+    module Ptb-UB' = U-Ptb MB' iB'
 
-    module _ (@tick t : Tick k) where
-      module M = MonoidStr (M~ t .snd)
-      M = M~ t
-
-      ε : ⟨ M ⟩
-      ε = M.ε
-
-      compose : ⟨ M ⟩ → ⟨ M ⟩ → ⟨ M ⟩
-      compose m1 m2 = M._·_ m1 m2
-
-      isSetM = M.is-set
-      ·AssocM = M.·Assoc
-      ·IdRM = M.·IdR
-      ·IdLM = M.·IdL
-
-    Monoid▸ :  Monoid ℓM
-    Monoid▸ = makeMonoid
-      {M = ▸ (λ t → ⟨ M~ t ⟩)}
-      ε
-      (λ m1~ m2~ t → compose t (m1~ t) (m2~ t))
-      (isSet▸ (λ t → isSetM t))
-      (λ m1~ m2~ m3~ → later-ext λ t → ·AssocM t (m1~ t) (m2~ t) (m3~ t))
-      (λ m → later-ext (λ t → ·IdRM t (m t)))
-      (λ m → later-ext (λ t → ·IdLM t (m t)))
-
-  open IsMonoidHom
-
-  -- Turning a "later" homomorphism of monoids h : (▸_t (M~ t) → (N~ t))
-  -- into a homomorphism ▸h : (Monoid▸ M~) (Monoid▸ N~)
-  hom▸ : {M~ : ▹ Monoid ℓ} {N~ : ▹ Monoid ℓ'}
-    (f~ : ▸ (λ t -> MonoidHom (M~ t) (N~ t))) ->
-    MonoidHom (Monoid▸ M~) (Monoid▸ N~)
-  hom▸ {M~ = M~} {N~ = N~} f~ .fst = λ m~ -> λ t -> (f~ t .fst) (m~ t)
-  hom▸ {M~ = M~} {N~ = N~} f~ .snd .presε =
-    later-ext (λ t -> f~ t .snd .presε)
-  hom▸ {M~ = M~} {N~ = N~} f~ .snd .pres· x~ y~ =
-    later-ext (λ t -> f~ t .snd .pres· (x~ t) (y~ t))
-
-  open Clocked k
-
-  -- We can turn a "later" pre-perturbation f : ▸_t (PrePtb (X~ t))
-  -- into a pre-perturbation ▸f : PrePtb (PB▸ X~).
-  -- Moreover, the transformation is a homomorphism of monoids.
-  ▸Endo : {X~ : ▹ PosetBisim ℓ ℓ≤ ℓ≈} ->
-    MonoidHom (Monoid▸ (λ t -> (Endo (X~ t)))) (Endo (PB▸ X~))
-
-  -- First we contruct the underlying morphism using PBMor▸
-  ▸Endo {X~ = X~} .fst f~ .fst = PBMor▸ (λ t → f~ t .fst)
-
-  -- Now we show that the resulting morphism is bisimilar to the identity
-  -- on (PB▸ X~).
-  ▸Endo {X~ = X~} .fst f~ .snd =
-    λ x1~ x2~ x1~≈x2~ → (λ t → (f~ t .snd) (x1~ t) (x2~ t) (x1~≈x2~ t))
-
-  -- So far we've constructed an element in Endo (PB▸ X~), i.e., a morphism
-  -- bisimilar to the identity.
-  -- Now we need to show this process preserves identity and multiplication.
-  ▸Endo {X~ = X~} .snd .presε = refl
-  ▸Endo {X~ = X~} .snd .pres· f~ g~ = refl
-
-
-  -- Theta for value types
-  P▸ : ▹ ValType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
-  P▸ X~ .fst = ▸ (λ t → ⟨ X~ t ⟩)
-  P▸ X~ .snd .is-poset-with-bisim = {!!}
-  P▸ X~ .snd .PtbV = Monoid▸ (λ t → X~ t .snd .PtbV)
-  P▸ X~ .snd .interpV = {!!}
-
-  -- Later for value types
-  P▹ : ValType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
-  P▹ A = P▸ (next A)
-
--}
--- (▸ (λ t → ⟨ X t ⟩)) ,
---             (valtypestr
---               is-set-later ord
---               (isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym)
---               bisim
---               (isper bisim-refl bisim-sym bisim-prop-valued))
-
-
-
-
-
-
-
--- Push-pull structures
-
-{-
-record PushPullV
-  (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) (A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA')
-  (c : PBRel (ValType→PosetBisim A) (ValType→PosetBisim A') ℓc) :
-  Type (ℓ-max (ℓ-max (ℓ-max ℓA ℓA') (ℓ-max ℓMA ℓMA')) ℓc) where
-
-  module A  = ValTypeStr (A  .snd)
-  module A' = ValTypeStr (A' .snd)
-
-  𝔸  = ValType→PosetBisim A
-  𝔸' = ValType→PosetBisim A'
-
-  field
-    push : (pᴸ : ⟨ A.PtbV ⟩) →
-      Σ[ pᴿ ∈ ⟨ A'.PtbV ⟩ ] PBSq c c (A.ι pᴸ) (A'.ι pᴿ)
-    pull : (pᴿ : ⟨ A'.PtbV ⟩) →
-      Σ[ pᴸ ∈ ⟨ A.PtbV ⟩ ] PBSq c c (A.ι pᴸ) (A'.ι pᴿ)
-
--}
+  CompTypeRel : Type _
+  CompTypeRel =
+    Σ[ d ∈ ErrorDomRel 𝔹 𝔹' ℓc ]
+    Σ[ Πd ∈ PushPullC 𝔹 MB iB 𝔹' MB' iB' d ]
+    Σ[ ρᴿ ∈ RightRepC 𝔹 MB iB 𝔹' MB' iB' d Πd ]
+    LeftRepV (U-ob 𝔹) Ptb-UB.M-UB Ptb-UB.iUB (U-ob 𝔹') Ptb-UB'.M-UB Ptb-UB'.iUB
+      (U-rel d)
+      (let open U-PushPull d Πd in U-PushPull)

@@ -22,5 +22,8 @@ open import Semantics.Concrete.CompType.Constructions k
 ⟦_⟧ty⊑ : ∀ {S T} → S ⊑ T → ValTypeRel ⟦ S ⟧ty ⟦ T ⟧ty ℓ-zero
 ⟦_⟧ty⊑ = {!!}
 
+⟦_⟧ctx⊑ : ∀ {Γ Δ} → Γ ⊑ctx Δ → ValTypeRel ⟦ Γ ⟧ctx ⟦ Δ ⟧ctx ℓ-zero
+⟦_⟧ctx⊑ = {!!}
+
 ⟦_⟧ty⊑-≈ : ∀ {S T} {c d : S ⊑ T} → c ≈ d → ValTypeRel≈ ⟦ c ⟧ty⊑ ⟦ d ⟧ty⊑
 ⟦_⟧ty⊑-≈ = {!!}

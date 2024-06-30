@@ -45,11 +45,11 @@ data Subst⊑ where
   wk : Subst⊑ (c ∷ C) C wk wk
 
 data Val⊑ where
-  reflexive : Val⊑ (refl-⊑ctx Γ) (refl-⊑ S) V V
+  reflexive : Val⊑ (refl-⊑ctx Γ) refl-⊑ V V
   _[_]v : Val⊑ C c V V' → Subst⊑ B C γ γ' → Val⊑ B c (V [ γ ]v) (V' [ γ' ]v)
   var : Val⊑ (c ∷ C) c var var
-  zro : Val⊑ [] nat zro zro
-  suc : Val⊑ (nat ∷ []) nat suc suc
+  zro : Val⊑ [] refl-⊑ zro zro
+  suc : Val⊑ (refl-⊑ ∷ []) refl-⊑ suc suc
   -- lda may be admissible
   lda : ∀ {M M'} -> Comp⊑ (c ∷ C) d M M' → Val⊑ C (c ⇀ d) (lda M) (lda M')
 
@@ -57,7 +57,7 @@ data Val⊑ where
 -- -- Cast rules are admissible
 
   -- up x <= x
-  up-L : ∀ R R' (c : R ⊑ R') → Val⊑ (c ∷ []) (refl-⊑ R') (up (mkTyPrec c)) var
+  up-L : ∀ R R' (c : R ⊑ R') → Val⊑ (c ∷ []) refl-⊑ (up (mkTyPrec c)) var
 
 -- -- if x <= y then δl x <= e y
 -- up-R : ∀ R R' (c : R ⊑ R') → Val⊑ ((refl-⊑ R) ∷ []) c (δl-e c) (emb c)
@@ -66,7 +66,7 @@ data Val⊑ where
 -- dn-R : ∀ R R' (c : R ⊑ R') → EvCtx⊑ [] c (refl-⊑ R) (δl-p c) (proj c)
 
 data EvCtx⊑ where
-  reflexive : EvCtx⊑ (refl-⊑ctx Γ) (refl-⊑ S) (refl-⊑ S) E E
+  reflexive : EvCtx⊑ (refl-⊑ctx Γ) refl-⊑ refl-⊑ E E
   ∙E : EvCtx⊑ C c c ∙E ∙E
   _∘E_ : EvCtx⊑ C c d E E' → EvCtx⊑ C b c F F' → EvCtx⊑ C b d (E ∘E F) (E' ∘E F')
   _[_]e : EvCtx⊑ C c d E E' → Subst⊑ B C γ γ' → EvCtx⊑  B c d (E [ γ ]e) (E' [ γ' ]e)
@@ -74,12 +74,12 @@ data EvCtx⊑ where
 
   -- TODO: DnL/DnR laws
   -- The other direction of retraction is admissible
-  retraction : ∀ S⊑T → EvCtx⊑ [] (refl-⊑ (ty-right S⊑T)) (refl-⊑ (ty-right S⊑T))
+  retraction : ∀ S⊑T → EvCtx⊑ [] refl-⊑ refl-⊑
     ∙E
     (vToE (up S⊑T) ∘E dn S⊑T)
 
 data Comp⊑ where
-  reflexive : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) M M
+  reflexive : Comp⊑ (refl-⊑ctx Γ) refl-⊑ M M
   _[_]∙ : EvCtx⊑ C c d E E' → Comp⊑ C c M M' → Comp⊑ C d (E [ M ]∙) (E' [ M' ]∙)
   _[_]c : Comp⊑ C c M M' → Subst⊑ D C γ γ' → Comp⊑ D c (M [ γ ]c) (M' [ γ' ]c)
   err : Comp⊑ [] c err err
@@ -87,7 +87,7 @@ data Comp⊑ where
   app : Comp⊑ (c ∷ c ⇀ d ∷ []) d app app
   matchNat : ∀ {Kz Kz' Ks Ks'} →
     Comp⊑ C c Kz Kz' →
-    Comp⊑ (nat ∷ C) c Ks Ks' →
-    Comp⊑ (nat ∷ C) c (matchNat Kz Ks) (matchNat Kz' Ks')
+    Comp⊑ (refl-⊑ ∷ C) c Ks Ks' →
+    Comp⊑ (refl-⊑ ∷ C) c (matchNat Kz Ks) (matchNat Kz' Ks')
 
-  err⊥ : Comp⊑ (refl-⊑ctx Γ) (refl-⊑ S) err' M
+  err⊥ : Comp⊑ (refl-⊑ctx Γ) refl-⊑ err' M
