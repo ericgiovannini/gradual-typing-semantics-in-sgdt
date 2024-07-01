@@ -18,6 +18,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Transport
 open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Monoid.More
+import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Algebra.Semigroup
 
 open import Cubical.Data.Nat hiding (_·_ ; ℕ)
@@ -32,12 +33,8 @@ open import Semantics.Concrete.Predomains.PrePerturbations k
 
 
 private variable
-  ℓ : Level
+  ℓ ℓ' : Level
   A : Type ℓ
-
-private
-  ▹_ : {ℓ : Level} → Type ℓ → Type ℓ
-  ▹_ A = ▹_,_ k A
 
 -------------------------
 -- Perturbations for Dyn
@@ -133,7 +130,124 @@ module _
   rec .snd .presε = refl
   rec .snd .pres· x y = refl
 
+-- case split
+module _
+  {M : Monoid ℓ}
+  (×-case : MonoidHom (PtbD FP.⊕ PtbD) M)
+  (⇀-case : MonoidHom (NatM FP.⊕ ((PtbD ^op) FP.⊕ (NatM FP.⊕ PtbD))) M)
+  where
+  private
+    module M = MonoidStr (M .snd)
+    open IsSemigroup
+    open IsMonoidHom
+    |cases| : |PtbD| → ⟨ M ⟩
+    |cases| |PtbD|.ε = M.ε
+    |cases| (p |PtbD|.· q) = |cases| p M.· |cases| q
+    |cases| (identityᵣ p i) = M.·IdR (|cases| p) i
+    |cases| (identityₗ p i) = M.·IdL (|cases| p) i
+    |cases| (assoc p q r i) = M.isSemigroup .·Assoc (|cases| p) (|cases| q) (|cases| r) i
+    |cases| (trunc p q p≡q p≡q' i j) =
+      M.isSemigroup .is-set (|cases| p) (|cases| q) (cong |cases| p≡q) (cong |cases| p≡q') i j
+    |cases| ⟦ p ⟧×-left = (×-case ∘hom FP.i₁) .fst p
+    |cases| (id-×-left i) = (×-case ∘hom FP.i₁) .snd .presε i
+    |cases| (comp-×-left p q i) = (×-case ∘hom FP.i₁) .snd .pres· p q i
+    |cases| ⟦ p ⟧×-right = (×-case ∘hom FP.i₂) .fst p
+    |cases| (id-×-right i) = (×-case ∘hom FP.i₂) .snd .presε i
+    |cases| (comp-×-right p q i) = (×-case ∘hom FP.i₂) .snd .pres· p q i
+    |cases| ⟦_⟧arr-U = (⇀-case ∘hom FP.i₁) .fst 1
+    |cases| ⟦ p ⟧arr-left = (⇀-case ∘hom FP.i₂ ∘hom FP.i₁) .fst p
+    |cases| (id-arr-left i) = (⇀-case ∘hom FP.i₂ ∘hom FP.i₁) .snd .presε i
+    |cases| (comp-arr-left p q i) = (⇀-case ∘hom FP.i₂ ∘hom FP.i₁) .snd .pres· q p i
+    |cases| ⟦_⟧arr-F = (⇀-case ∘hom FP.i₂ ∘hom FP.i₂ ∘hom FP.i₁) .fst 1
+    |cases| ⟦ p ⟧arr-right = (⇀-case ∘hom FP.i₂ ∘hom FP.i₂ ∘hom FP.i₂) .fst p
+    |cases| (id-arr-right i) = (⇀-case ∘hom FP.i₂ ∘hom FP.i₂ ∘hom FP.i₂) .snd .presε i
+    |cases| (comp-arr-right p q i) = (⇀-case ∘hom FP.i₂ ∘hom FP.i₂ ∘hom FP.i₂) .snd .pres· p q i
 
+  cases : MonoidHom PtbD M
+  cases .fst = |cases|
+  cases .snd .presε = refl
+  cases .snd .pres· _ _ = refl
+
+inj-arr : MonoidHom (NatM FP.⊕ ((PtbD ^op) FP.⊕ (NatM FP.⊕ PtbD))) PtbD
+inj-arr =
+  FP.rec (h _ ⟦_⟧arr-U)
+  (FP.rec (⟦_⟧arr-left , (monoidequiv id-arr-left (λ p q → comp-arr-left q p)))
+  (FP.rec (h _ ⟦_⟧arr-F)
+  (⟦_⟧arr-right , monoidequiv id-arr-right comp-arr-right)))
+  where
+    open NatM→
+inj-times : MonoidHom (PtbD FP.⊕ PtbD) PtbD
+inj-times = FP.rec
+  (⟦_⟧×-left , (monoidequiv id-×-left comp-×-left))
+  (⟦_⟧×-right , (monoidequiv id-×-right comp-×-right))
+
+-- induction for case split
+module _
+  {M : Monoid ℓ}
+  {ϕ ψ : MonoidHom PtbD M}
+  (agree-times : ϕ ∘hom inj-times ≡ ψ ∘hom inj-times)
+  (agree-arr : ϕ ∘hom inj-arr ≡ ψ ∘hom inj-arr)
+  where
+  private
+    open IsMonoid
+    open IsSemigroup
+    module M = MonoidStr (M .snd)
+    isSetM = M.isMonoid .isSemigroup .is-set
+    
+    open IsMonoidHom
+    |ind| : ∀ p → ϕ .fst p ≡ ψ .fst p
+    |ind| |PtbD|.ε = ϕ .snd .presε ∙ sym (ψ .snd .presε)
+    |ind| (p |PtbD|.· q) =
+      ϕ .snd .pres· _ _
+      ∙ cong₂ M._·_ (|ind| p) (|ind| q)
+      ∙ sym (ψ .snd .pres· _ _)
+    |ind| ⟦ p ⟧×-left = funExt⁻ (cong fst agree-times) (FP.i₁ .fst p)
+    |ind| ⟦ p ⟧×-right = funExt⁻ (cong fst agree-times) (FP.i₂ .fst p)
+    |ind| ⟦_⟧arr-U =
+      cong (ϕ .fst) (sym (identityᵣ ⟦_⟧arr-U))
+      ∙ funExt⁻ (cong fst agree-arr) (FP.i₁ .fst 1)
+      ∙ cong (ψ .fst) (identityᵣ ⟦_⟧arr-U)
+    |ind| ⟦ p ⟧arr-left = funExt⁻ (cong fst agree-arr) ((FP.i₂ ∘hom FP.i₁) .fst p)
+    |ind| ⟦_⟧arr-F =
+      cong (ϕ .fst) (sym (identityᵣ ⟦_⟧arr-F))
+      ∙ funExt⁻ (cong fst agree-arr) ((FP.i₂ ∘hom FP.i₂ ∘hom FP.i₁) .fst 1)
+      ∙ cong (ψ .fst) (identityᵣ ⟦_⟧arr-F)
+    |ind| ⟦ p ⟧arr-right = funExt⁻ (cong fst agree-arr) ((FP.i₂ ∘hom FP.i₂ ∘hom FP.i₂) .fst p)
+    -- These are all just by isSet fillers...
+    |ind| (identityᵣ p i) = isSet→SquareP (λ _ _ → isSetM) _ _ _ _ i 
+      -- isSet→SquareP (λ _ _ → isSetM) {!!} {!!} {!!} {!!} {!!}
+    |ind| (identityₗ p i) = {!!}
+    |ind| (assoc p p₁ p₂ i) = {!!}
+    |ind| (trunc p p₁ x y i i₁) = {!!}
+    |ind| (id-×-left i) = {!!}
+    |ind| (id-×-right i) = {!!}
+    |ind| (id-arr-left i) = {!!}
+    |ind| (id-arr-right i) = {!!}
+    |ind| (comp-×-left p p₁ i) = {!!}
+    |ind| (comp-×-right p p₁ i) = {!!}
+    |ind| (comp-arr-left p p₁ i) = {!!}
+    |ind| (comp-arr-right p p₁ i) = {!!}
+
+  ind : ϕ ≡ ψ
+  ind = eqMonoidHom _ _ (funExt |ind|)
+
+elimFact : {P₁ : Monoid ℓ}{P₂ : Monoid ℓ'}
+  (π : MonoidHom P₁ P₂)
+  (ϕ : MonoidHom PtbD P₂)
+  (lift-times : factorization π (ϕ ∘hom inj-times))
+  (lift-arr : factorization π (ϕ ∘hom inj-arr))
+  → factorization π ϕ
+elimFact {P₁ = P₁} π ϕ lift-times lift-arr =
+  (cases (lift-times .fst) (lift-arr .fst))
+  , (ind (FP.ind (eqMonoidHom _ _ refl) (eqMonoidHom _ _ refl) ∙ lift-times .snd)
+         (FP.ind (NatM-ind _ _ (cong (π .fst) (P₁ .snd .isMonoid .·IdR _)))
+         (FP.ind (eqMonoidHom _ _ refl)
+         (FP.ind (NatM-ind _ _ (cong (π .fst) (P₁ .snd .isMonoid .·IdR _)))
+         (eqMonoidHom _ _ refl))) ∙ lift-arr .snd))
+  where
+    open NatM→
+    open IsMonoid
+  
 open DynDef {ℓ-zero}
 open LiftPredomain
 open Guarded (next Dyn)

@@ -71,7 +71,7 @@ eqMonoidHom f g eq = Σ≡Prop (λ f → isPropIsMonoidHom _ _ _) eq
 ε-hom : {M : Monoid ℓ} {N : Monoid ℓ'} →
   MonoidHom M N
 ε-hom {N = N} .fst _ = N.ε
-  where module N = MonoidStr (N .snd) 
+  where module N = MonoidStr (N .snd)
 ε-hom .snd .presε = refl
 ε-hom {N = N} .snd .pres· = λ _ _ → sym (N.·IdR N.ε)
   where module N = MonoidStr (N .snd)
@@ -115,7 +115,7 @@ infixr 9 _∘hom_
 ∘hom-Assoc : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''}{Q : Monoid ℓ'''} ->
   (f : MonoidHom M N) (g : MonoidHom N P) (h : MonoidHom P Q)
   -> (h ∘hom g) ∘hom f ≡ h ∘hom (g ∘hom f)
-∘hom-Assoc f g h = eqMonoidHom _ _ refl 
+∘hom-Assoc f g h = eqMonoidHom _ _ refl
 
 isSetMonoid : (M : Monoid ℓ) -> isSet ⟨ M ⟩
 isSetMonoid M = M .snd .isMonoid .isSemigroup .is-set
@@ -237,26 +237,26 @@ _·hom_[_] {M = M} {N = N} f g commutes =
 
     pres-mult : (x y : fst M) →
                 (fst f ((M .snd · x) y) ·N fst g ((M .snd · x) y)) ≡
-                (N .snd · (fst f x ·N fst g x)) (fst f y ·N fst g y)           
+                (N .snd · (fst f x ·N fst g x)) (fst f y ·N fst g y)
     pres-mult x y =
            (f-fun (x ·M y) ·N g-fun (x ·M y))
            ≡⟨ (λ i → f .snd .pres· x y i ·N g .snd .pres· x y i) ⟩
-    
+
            ((f-fun x ·N f-fun y) ·N (g-fun x ·N g-fun y))
            ≡⟨ (N-assoc (f-fun x ·N f-fun y) (g-fun x) (g-fun y)) ⟩
-           
+
            (((f-fun x ·N f-fun y) ·N g-fun x) ·N g-fun y)
            ≡⟨ (λ i -> (sym (N-assoc (f-fun x) (f-fun y) (g-fun x)) i) ·N g-fun y) ⟩
-           
+
            ((f-fun x ·N ((f-fun y ·N g-fun x))) ·N g-fun y)
            ≡⟨ ((λ i -> (f-fun x ·N commutes x y i) ·N g-fun y)) ⟩
-           
+
            ((f-fun x ·N ((g-fun x ·N f-fun y))) ·N g-fun y)
            ≡⟨ ((λ i -> (N-assoc (f-fun x) (g-fun x) (f-fun y) i) ·N g-fun y)) ⟩
-           
+
            (((f-fun x ·N g-fun x) ·N f-fun y) ·N g-fun y)
            ≡⟨ sym (N-assoc (f-fun x ·N g-fun x) (f-fun y) (g-fun y)) ⟩
-           
+
            ((f-fun x ·N g-fun x)) ·N (f-fun y ·N g-fun y) ∎
 
 
@@ -295,7 +295,6 @@ NatM : Monoid ℓ-zero
 NatM = makeMonoid {M = ℕ} zero _+_ isSetℕ +-assoc +-zero (λ _ → refl)
 
 
-
 -- Universal property of the additive monoid of natural numbers.
 module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
 
@@ -317,7 +316,7 @@ module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
       aux : (n₁ n₂ : ℕ) → _
       aux zero n₂ = sym (M.·IdL _)
       aux (suc n₁) n₂ = (cong₂ M._·_ refl (aux n₁ n₂)) ∙ (M.·Assoc _ _ _)
-      
+
 
   -- Uniqueness: A homomorphism out of NatM is determined by where it
   -- sends the element 1.  That is, any other homomorphism of monoids
@@ -332,7 +331,9 @@ module NatM→ {ℓM : Level} (M : Monoid ℓM) (x : ⟨ M ⟩) where
       aux zero = h'.presε
       aux (suc n) = (h'.pres· 1 n) ∙ (cong₂ M._·_ eq (aux n))
 
-
+NatM-ind : {M : Monoid ℓ} (h h' : MonoidHom NatM M) → (h .fst 1 ≡ h' .fst 1) → h ≡ h'
+NatM-ind {M = M} h h' h1≡h'1 = NM.uniqueness h refl ∙ sym (NM.uniqueness h' (sym h1≡h'1)) where
+  module NM = NatM→ M (h .fst 1)
 
 𝟙M* : {ℓM : Level} → Monoid ℓM
 𝟙M* = makeMonoid tt* (λ _ _ → tt*) isSetUnit* (λ _ _ _ → refl) (λ _ → refl) (λ _ → refl)
@@ -381,4 +382,3 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'} where
 
   sectionHom : MonoidHom M N → Type _
   sectionHom π = factorization π (idMon _)
-
