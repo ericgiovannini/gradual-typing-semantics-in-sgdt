@@ -361,3 +361,13 @@ trivial-monoid-hom M .fst tt = ε
 trivial-monoid-hom M .snd .presε = refl
 trivial-monoid-hom M .snd .pres· tt tt = sym (·IdR ε)
   where open MonoidStr (M .snd)
+
+-- sections and factorizations
+module _ {M : Monoid ℓ}{N : Monoid ℓ'} where
+  module _ {P : Monoid ℓ''} where
+    factorization : MonoidHom M N → MonoidHom P N → Type _
+    factorization π ϕ = Σ[ ϕ^ ∈ MonoidHom P M ] π ∘hom ϕ^ ≡ ϕ
+
+  sectionHom : MonoidHom M N → Type _
+  sectionHom π = factorization π (idMon _)
+

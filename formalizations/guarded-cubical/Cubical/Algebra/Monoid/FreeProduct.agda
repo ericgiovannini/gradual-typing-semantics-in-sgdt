@@ -240,10 +240,9 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
   elim : {P₁ : Monoid ℓ''}{P₂ : Monoid ℓ'''}
     (p : MonoidHom P₁ P₂)
     (ϕ : MonoidHom (M ⊕ N) P₂)
-    (liftM : Σ[ ϕM^ ∈ MonoidHom M P₁ ] p ∘hom ϕM^ ≡ ϕ ∘hom i₁)
-    (liftN : Σ[ ϕN^ ∈ MonoidHom N P₁ ] p ∘hom ϕN^ ≡ ϕ ∘hom i₂)
-    → Σ[ ϕ^ ∈ MonoidHom (M ⊕ N) P₁ ]
-      p ∘hom ϕ^ ≡ ϕ
+    (liftM : factorization p (ϕ ∘hom i₁))
+    (liftN : factorization p (ϕ ∘hom i₂))
+    → factorization p ϕ
   elim p ϕ liftM liftN .fst = rec (liftM .fst) (liftN .fst)
   elim p ϕ liftM liftN .snd = ind
     (eqMonoidHom _ _ refl ∙ liftM .snd)

@@ -1,3 +1,13 @@
+{-
+   TODO: rename "preperturbations" to "semantic perturbations".
+
+   A (semantic) perturbation of a type is an endomorphism that is
+   bisimilar to the identity, i.e., it "perturbs" the element but
+   essentially does nothing.
+
+-}
+
+
 {-# OPTIONS --rewriting --guarded #-}
 
 {-# OPTIONS --lossy-unification #-}
@@ -53,8 +63,6 @@ private
     A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'
 
 open PBMor
-
-
 
 ---------------------------
 -- Value pre-perturbations
@@ -187,24 +195,11 @@ ptbC M iB m = iB .fst m .fst
 
 
 -- Convenience: action of ⟶ on pre-perturbations
-
-_⟶PrePtb_ :
-  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
-  (f : PrePtb A) (ϕ : CPrePtb B) → CPrePtb (A ⟶ob B)
-(f ⟶PrePtb ϕ) .fst = (f .fst) ⟶mor (ϕ .fst) --  : ErrorDomMor (A ⟶ob B) (A ⟶ob B)
-(f ⟶PrePtb ϕ) .snd g₁ g₂ g₁≈g₂ x y x≈y = ϕ .snd _ _ (g₁≈g₂ _ _ (f .snd _ _ x≈y))
-
-    -- There is also a "point-free" proof using the fact that
-    -- composition preserves bisimilarity but in this case it's easier
-    -- to just inline that proof here.
-    
-    -- aux : ((U-mor (ϕ .fst)) ∘p g₁ ∘p (f .fst)) ≈mon (Id ∘p g₁ ∘p Id)
-    -- aux = ≈comp {!!} {!!} {!!} {!!} (f .snd) (≈comp {!!} {!!} {!!} {!!} g₁≈g₂ (ϕ .snd))
-
-    -- Given g₁, g₂ : A → UB where g₁ ≈ g₂
-    -- NTS : (ϕ ∘ g₁ ∘ f) ≈ g₂
-    -- Have : (ϕ ∘ g₁ ∘ f) ≈ (id ∘ g₂ ∘ id) = g₂
-
+module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
+  _⟶PrePtb_ :
+    (f : PrePtb A) (ϕ : CPrePtb B) → CPrePtb (A ⟶ob B)
+  (f ⟶PrePtb ϕ) .fst = (f .fst) ⟶mor (ϕ .fst) --  : ErrorDomMor (A ⟶ob B) (A ⟶ob B)
+  (f ⟶PrePtb ϕ) .snd g₁ g₂ g₁≈g₂ x y x≈y = ϕ .snd _ _ (g₁≈g₂ _ _ (f .snd _ _ x≈y))
 
 -- The above function defines two homomorphisms
 -- (Endo A)^op → CEndo (A ⟶ B) and (CEndo B) → CEndo (A ⟶ B).

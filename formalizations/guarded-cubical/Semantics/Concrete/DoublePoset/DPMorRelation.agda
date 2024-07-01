@@ -45,7 +45,9 @@ private
     ℓA  ℓ≤A  ℓ≈A  : Level
     ℓA' ℓ≤A' ℓ≈A' : Level
     ℓA₁ ℓ≤A₁ ℓ≈A₁ : Level
+    ℓA₁' ℓ≤A₁' ℓ≈A₁' : Level
     ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
+    ℓA₂' ℓ≤A₂' ℓ≈A₂' : Level
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
     ℓc₁ ℓc₂ : Level
 
@@ -223,6 +225,16 @@ cᵢ ==>pbmonrel cₒ = record {
   is-monotone = λ {f} {g1} {g2} f≤g1 g1≤g2 a b aRb →
     cₒ .PBRel.is-monotone (f≤g1 a b aRb) (g1≤g2 b) }
 
+_×pbmonrel_ :   {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'} ->
+  PBRel A₁ A₁' ℓc₁ ->
+  PBRel A₂ A₂' ℓc₂ ->
+  PBRel (A₁ ×dp A₂) (A₁' ×dp A₂') _
+c₁ ×pbmonrel c₂ = record
+  { R = λ p q → c₁ .R (p .fst) (q .fst) × c₂ .R (p .snd) (q .snd)
+  ; is-prop-valued = λ _ _ → isProp× (c₁ .is-prop-valued _ _) (c₂ .is-prop-valued _ _)
+  ; is-antitone = λ x x₁ → (c₁ .is-antitone (x .fst) (x₁ .fst)) , c₂ .is-antitone (x .snd) (x₁ .snd)
+  ; is-monotone = λ x x₁ → (c₁ .is-monotone (x .fst) (x₁ .fst)) , c₂ .is-monotone (x .snd) (x₁ .snd) }
 
 -- Composing with vertical morphisms on either side
 
