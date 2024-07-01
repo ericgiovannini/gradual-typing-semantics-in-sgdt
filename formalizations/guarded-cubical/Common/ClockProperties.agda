@@ -128,6 +128,10 @@ Unit-clock-irrel : clock-irrel Unit
 Unit-clock-irrel M k k' with M k | M k'
 ...  | tt | tt = refl
 
+Unit*-clock-irrel : clock-irrel (Unit* {ℓ = ℓ})
+Unit*-clock-irrel M k k' with M k | M k'
+... | tt* | tt* = refl
+
 -- The empty type is clock-irrelevant.
 ⊥-clock-irrel : clock-irrel ⊥
 ⊥-clock-irrel M k k' = isProp⊥ (M k) (M k')

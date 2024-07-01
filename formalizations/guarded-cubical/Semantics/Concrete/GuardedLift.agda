@@ -111,6 +111,7 @@ L-fix-eq = fix L-fix-eq'
 L-fix-iso : {X : Type ℓ} -> Iso (L-fix X) (L X)
 L-fix-iso = pathToIso L-fix-eq
 
+{-
 -- Action of the above isomorphism
 L-fix-iso-η : {X : Type ℓ} (x : X) ->
   transport L-fix-unfold (transport⁻ L-fix-eq (η x)) ≡ inl x
@@ -157,7 +158,7 @@ L-fix-iso-η {X = X} x =
     ≡⟨ {!!} ⟩
     
   inl x ∎
-
+-}
 
 -- Similar to caseNat,
 -- defined at https://agda.github.io/cubical/Cubical.Data.Nat.Base.html#487
@@ -254,3 +255,31 @@ extL-delay f la (suc n) =
     ≡⟨ ((λ i -> θ λ t -> extL-delay f la n i)) ⟩
   δ ((δ ^ n) (extL f la)) ∎
 
+
+
+module _ {X : Type ℓ} {Y : Type ℓ'} (f : X → Y) where
+  module MapLRec (rec : ▹ (L X → L Y)) where
+
+    mapL' : L X → L Y
+    mapL' (η x) = η (f x)
+    mapL' (θ lx~) = θ (λ t → rec t (lx~ t))
+
+  mapL = fix MapLRec.mapL'
+
+  open MapLRec (next mapL) public
+
+  unfold-mapL : mapL ≡ MapLRec.mapL' (next mapL)
+  unfold-mapL = fix-eq MapLRec.mapL'
+
+  mapL-η : ∀ x → mapL (η x) ≡ η (f x)
+  mapL-η x = funExt⁻ unfold-mapL (η x)
+
+  mapL-θ : ∀ lx~ → mapL (θ lx~) ≡ θ (λ t → mapL (lx~ t))
+  mapL-θ lx~ = funExt⁻ unfold-mapL (θ lx~)
+
+  mapL-δ : ∀ lx → mapL (δ lx) ≡ δ (mapL lx)
+  mapL-δ lx = mapL-θ (next lx)
+
+  mapL-δ^n : ∀ n lx → mapL ((δ ^ n) lx) ≡ (δ ^ n) (mapL lx)
+  mapL-δ^n zero lx = refl
+  mapL-δ^n (suc n) lx = mapL-δ _ ∙ cong δ (mapL-δ^n n lx)

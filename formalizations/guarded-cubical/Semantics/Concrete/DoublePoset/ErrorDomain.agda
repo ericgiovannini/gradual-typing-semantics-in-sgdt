@@ -814,8 +814,12 @@ module _ where
     (ϕ' : ErrorDomMor B₂ B₂) →
     (ErrorDomSq d d ϕ ϕ') →
     (n : ℕ) → ErrorDomSq d d (ϕ ^ed n) (ϕ' ^ed n)
-  ED-CompSqV-iterate = {!!}
-  -- TODO
+  ED-CompSqV-iterate d ϕ ϕ' α zero = ED-IdSqV d
+  ED-CompSqV-iterate d ϕ ϕ' α (suc n) =
+    ED-CompSqV {d₁ = d} {d₂ = d} {d₃ = d}
+          {ϕ₁ = ϕ ^ed n} {ϕ₁' = ϕ' ^ed n} {ϕ₂ = ϕ} {ϕ₂' = ϕ'}
+          (ED-CompSqV-iterate d ϕ ϕ' α n) α
+
 
   ED-CompSqH :
     {Bᵢ₁ : ErrorDomain ℓBᵢ₁ ℓ≤Bᵢ₁ ℓ≈Bᵢ₁}
@@ -1098,3 +1102,11 @@ module _ where
     --   PBSq (cᵢ₁ ==>pbmonrel cᵢ₂) (cₒ₁ ==>pbmonrel cₒ₂) (f₁ ~-> f₂) (g₁ ~-> g₂)
     -- α ==>psq β = λ q q' γ → λ x y xRy → β _ _ (γ _ _ (α _ _ xRy))
 
+
+  sqArrowId₁ : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+    ErrorDomSq ((idPRel A) ⟶rel (idEDRel B)) (idEDRel (A ⟶ob B)) IdE IdE
+  sqArrowId₁ {A = A} f g f≤g x = f≤g x x (A .snd .PosetBisimStr.is-refl x)
+
+  sqArrowId₂ : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+    ErrorDomSq  (idEDRel (A ⟶ob B)) ((idPRel A) ⟶rel (idEDRel B)) IdE IdE
+  sqArrowId₂ f g f≤g x y x≤y = ≤mon→≤mon-het f g f≤g x y x≤y

@@ -23,6 +23,8 @@ open import Cubical.Data.Sigma
 open import Common.Common
 open import Common.LaterProperties
 
+open import Semantics.Concrete.DoublePoset.Error
+
 open import Semantics.Concrete.GuardedLift k renaming (η to ηL) public
 
 private
@@ -39,39 +41,6 @@ private
 
 -- The guarded Lift + Error monad
 
--- Error monad
-data Error (X : Type ℓ) : Type ℓ where
-  ok : X -> Error X
-  error : Error X
-
-Iso-Error : {X : Type ℓ} -> Iso (Error X) (X ⊎ ⊤)
-Iso-Error {X = X} = iso to inv sec retr
-  where
-    to : Error X → X ⊎ ⊤
-    to (ok x) = inl x
-    to error = inr tt
-
-    inv : X ⊎ ⊤ → Error X
-    inv (inl x) = ok x
-    inv (inr tt) = error
-
-    sec : section to inv
-    sec (inl x) = refl
-    sec (inr tt) = refl
-
-    retr : retract to inv
-    retr (ok x) = refl
-    retr error = refl
-
-
-isSetError : (X : Type ℓ) → isSet X → isSet (Error X)
-isSetError X isSetX =
-  isSetRetract (Iso.fun Iso-Error) (Iso.inv Iso-Error) (Iso.leftInv Iso-Error) (isSet⊎ isSetX isSetUnit)
-
-
-extError : (X → Error Y) → (Error X → Error Y)
-extError f (ok x) = f x
-extError f error = error
 
 
 -- Commutativity of the lift monad with the error monad

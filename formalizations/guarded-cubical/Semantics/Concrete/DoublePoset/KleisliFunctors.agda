@@ -30,7 +30,7 @@ open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.LockStepErrorOrdering k
 open import Semantics.Concrete.WeakBisimilarity k
 
-open import Semantics.Concrete.DoublePoset.Error k
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
@@ -77,31 +77,31 @@ open LiftPredomain
 open PBMor
 
 
-Pair' :
-  {ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
-  {A : PosetBisim ℓA ℓ≤A ℓ≈A}
-  {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
-  {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
-  PBMor A Aₒ₁ → PBMor A Aₒ₂ → PBMor A (Aₒ₁ ×dp Aₒ₂)
-Pair' = {!PairFun!}
+-- Pair' :
+--   {ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
+--   {A : PosetBisim ℓA ℓ≤A ℓ≈A}
+--   {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
+--   {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
+--   PBMor A Aₒ₁ → PBMor A Aₒ₂ → PBMor A (Aₒ₁ ×dp Aₒ₂)
+-- Pair' = {!PairFun!}
 
-Times :
-  {ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁ ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂
-   ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
-  {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁}
-  {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂}
-  {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
-  {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
-  PBMor Aᵢ₁ Aₒ₁ → PBMor Aᵢ₂ Aₒ₂ → PBMor (Aᵢ₁ ×dp Aᵢ₂) (Aₒ₁ ×dp Aₒ₂)
-Times f g = Pair' (f ∘p π1) (g ∘p π2)
+-- Times :
+--   {ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁ ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂
+--    ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
+--   {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁}
+--   {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂}
+--   {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
+--   {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
+--   PBMor Aᵢ₁ Aₒ₁ → PBMor Aᵢ₂ Aₒ₂ → PBMor (Aᵢ₁ ×dp Aᵢ₂) (Aₒ₁ ×dp Aₒ₂)
+-- Times f g = Pair' (f ∘p π1) (g ∘p π2)
 
-Comp' :
-    {Γ : PosetBisim ℓΓ ℓ≤Γ ℓ≈Γ}
-    {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
-    {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
-    {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} →
-    ⟨ (Γ ×dp A₂ ==> A₃) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₂) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₃) ⟩
-Comp' {Γ = Γ} g f = g ∘p Pair' π1 f
+-- Comp' :
+--     {Γ : PosetBisim ℓΓ ℓ≤Γ ℓ≈Γ}
+--     {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
+--     {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+--     {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} →
+--     ⟨ (Γ ×dp A₂ ==> A₃) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₂) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₃) ⟩
+-- Comp' {Γ = Γ} g f = g ∘p Pair' π1 f
 -- record {
 --   f = λ { (γ , a) → PBMor.f f (γ , (PBMor.f g (γ , a))) } ;
 --   isMon = λ { {γ1 , a1} {γ2 , a2} (γ1≤γ2 , a1≤a2) →
@@ -265,8 +265,24 @@ KlArrowMorphismᴿ-id :
   A ⟶Kᴿ (Id-KC B) ≡ Id
 KlArrowMorphismᴿ-id B = eqPBMor _ _ (funExt (λ x → eqPBMor _ _ refl))
 
-KlArrowMorphismᴸ-comp : {!!}
-KlArrowMorphismᴸ-comp = {!!}
+-- Not needed as of now...
+KlArrowMorphismᴸ-comp :
+  {A₁ : PosetBisim  ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim  ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} →
+  (ϕ : KlMorV A₃ A₂) (ϕ' : KlMorV A₂ A₁) (B : ErrorDomain ℓB ℓ≤B ℓ≈B) →
+  (ϕ' ∘ed ϕ) ⟶Kᴸ B ≡ (ϕ ⟶Kᴸ B) ∘p (ϕ' ⟶Kᴸ B)
+KlArrowMorphismᴸ-comp ϕ ϕ' B =
+  eqPBMor _ _ (funExt (λ h → eqPBMor _ _ (funExt (λ x → {!!}))))
+-- KlArrowMorphismᴸ-comp = {!!}
+  where
+    open MonadLaws.Ext-Assoc
+    open CBPVExt
+
+
+-- LHS:
+--       η           Uϕ         Uϕ'         UFg          Uε
+--  A₃ -----> UFA₃ -----> UFA₂ -----> UFA₁ -----> UFUB -----> UB
+
+
 
 
 KlArrowMorphismᴿ-comp :
@@ -279,13 +295,6 @@ KlArrowMorphismᴿ-comp :
 KlArrowMorphismᴿ-comp A f g =
   eqPBMor _ _ (funExt (λ h → eqPBMor _ _ (funExt (λ x → refl))))
 
-
------------------------------------------------------------------
--- Action on horizontal morphisms
-
-
-
--- KlArrowRelationᴸ : 
 
 
 
@@ -405,12 +414,14 @@ KlProdMorphismᴸ :
 KlProdMorphismᴸ {A₁ = A₁} {A₁' = A₁'} ϕ A₂ = Ext (pt2 ∘p pt1)
   where
     pt1 : PBMor (A₁ ×dp A₂) ((U-ob (F-ob A₁')) ×dp A₂)
-    pt1 = ×mor (U-mor ϕ ∘p η-mor) Id
+    pt1 = (U-mor ϕ ∘p η-mor) ×mor Id
 
     pt2 : PBMor ((U-ob (F-ob A₁')) ×dp A₂) (U-ob (F-ob (A₁' ×dp A₂)))
     pt2 = (Uncurry (StrongExt .f (Curry (η-mor ∘p SwapPair)))) ∘p SwapPair
 
   -- (U-mor (Ext (? ×mor ?))) ∘p (U-mor ϕ) ∘p η-mor
+
+_×Kᴸ_ = KlArrowMorphismᴸ
 
 test : {A₁ : Type ℓA₁} {A₁' : Type ℓA₁'} →
     (ϕ : (L℧ A₁ → L℧ A₁')) (A₂ : Type ℓA₂) →
@@ -423,8 +434,25 @@ test ϕ A₂ lp =
     lp
   where open CBPVExt
 
--- Separate functoriality
 
+KlProdMorphismᴿ :
+    {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+    (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) (ϕ : KlMorV A₂ A₂') →
+    KlMorV (A₁ ×kob A₂) (A₁ ×kob A₂')
+KlProdMorphismᴿ {A₂ = A₂} {A₂' = A₂'} A₁ ϕ = Ext (pt2 ∘p pt1)
+  where
+    pt1 : PBMor (A₁ ×dp A₂) (A₁ ×dp (U-ob (F-ob A₂')))
+    pt1 = Id ×mor (U-mor ϕ ∘p η-mor)
+
+    pt2 : PBMor (A₁ ×dp (U-ob (F-ob A₂'))) (U-ob (F-ob (A₁ ×dp A₂')))
+    pt2 = Uncurry (StrongExt .f (Curry η-mor))
+
+_×Kᴿ_ = KlArrowMorphismᴿ
+
+
+-- Separate functoriality
+--
+-- Not needed as of now.
 
 
 

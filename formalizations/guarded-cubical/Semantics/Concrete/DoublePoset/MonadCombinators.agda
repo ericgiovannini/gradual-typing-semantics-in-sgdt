@@ -31,7 +31,7 @@ open import Semantics.Concrete.WeakBisimilarity k
 
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.Error k
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
 
@@ -185,7 +185,6 @@ module _ {A : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} where
   open F-ob
   open ErrorDomainStr (F-ob A .snd) using (δ≈id) -- brings in δ≈id for L℧ A
   
-  -- open StrongExtCombinator {Γ = UnitPB} {A = A} {B = F-ob A}
   open ExtAsEDMorphism {A = A} {B = F-ob A} using () renaming (Ext to Ext-ErrorDom)
   open ExtCombinator {A = A} {B = F-ob A} renaming (Ext to ExtCombinator)
   open CBPVExt ⟨ A ⟩ (L℧ ⟨ A ⟩) ℧ θ
@@ -217,4 +216,15 @@ module _ {A : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} where
   -- preserves bisimilarity.
 
 
+
+δ*Sq : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  (c : PBRel A A' ℓc) → ErrorDomSq (F-rel.F-rel c) (F-rel.F-rel c) δ* δ*
+δ*Sq {A = A} {A' = A'} c = ext-mon _ _ (λ a a' caa' →
+  Lc.Properties.δ-monotone (Lc.Properties.η-monotone caa'))
+  where
+    open F-ob
+    open F-rel c
+    
+    open ExtMonotone ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R) (L℧ ⟨ A ⟩) ℧ θ (L℧ ⟨ A' ⟩) ℧ θ (Lc._⊑_)
+      (Lc.Properties.℧⊥) (λ _ _ → Lc.Properties.θ-monotone)
 

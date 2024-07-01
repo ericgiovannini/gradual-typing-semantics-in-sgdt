@@ -21,7 +21,7 @@ open import Cubical.Relation.Binary
 open import Common.Later
 open import Common.ClockProperties
 
-
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.GlobalLift
 
 open import Semantics.GlobalLockStepErrorOrdering
@@ -37,22 +37,9 @@ private
     ℓ≈X ℓ≈Y ℓ⊑ : Level
 
 
-module _ (X : Type ℓ) (_≈X_ : X → X → Type ℓ≈X) where
 
-  Sum≈ : (X ⊎ ⊤) → (X ⊎ ⊤) → Type ℓ≈X
-  Sum≈ (inl x) (inl x') = x ≈X x'
-  Sum≈ (inr tt) (inr tt) = ⊤*
-  Sum≈ _ _ = ⊥*
 
-  module _ (H : ∀ x x' → clock-irrel (x ≈X x')) where
-
-    Sum≈-clk-irrel : ∀ x? x'? → clock-irrel (Sum≈ x? x'?)
-    Sum≈-clk-irrel (inl x) (inl x') = H x x'
-    Sum≈-clk-irrel (inl x) (inr tt) = ⊥*-clock-irrel
-    Sum≈-clk-irrel (inr tt) (inl x') = ⊥*-clock-irrel
-    Sum≈-clk-irrel (inr tt) (inr tt) = Unit*-clock-irrel
-
-module _
+module Result
   (X : Type ℓ) (isSetX : isSet X) (X-clk-irrel : clock-irrel X)
   (Y : Type ℓ) (isSetY : isSet Y) (Y-clk-irrel : clock-irrel Y)
   (_≈X_ : X → X → Type ℓ≈X) (≈X-prop-valued : isPropValued _≈X_) (≈X-clk-irrel : ∀ x x' → clock-irrel (x ≈X x'))
@@ -60,21 +47,23 @@ module _
   (_⊑XY_ : X → Y → Type ℓ⊑) (⊑XY-clk-irrel : ∀ x y → clock-irrel (x ⊑XY y))
   where
 
-  open AdequacyLockStep X Y _⊑XY_ X-clk-irrel Y-clk-irrel ⊑XY-clk-irrel
+  open module LS = AdequacyLockStep X Y _⊑XY_ X-clk-irrel Y-clk-irrel ⊑XY-clk-irrel
   
-  module AdequacyBisimX = AdequacyBisim
+  module BX = AdequacyBisim
     (X ⊎ ⊤) (Sum≈ X _≈X_) (isSet⊎ isSetX isSetUnit)
-    (⊎-clock-irrel X-clk-irrel Unit-clock-irrel) {!!} (Sum≈-clk-irrel X _≈X_ ≈X-clk-irrel)
+    (⊎-clock-irrel X-clk-irrel Unit-clock-irrel) (Sum≈-prop-valued X _≈X_ ≈X-prop-valued)
+    (Sum≈-clk-irrel X _≈X_ ≈X-clk-irrel)
     
-  module AdequacyBisimY = AdequacyBisim
+  module BY = AdequacyBisim
    (Y ⊎ ⊤) (Sum≈ Y _≈Y_) (isSet⊎ isSetY isSetUnit)
-   (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel) {!!} (Sum≈-clk-irrel Y _≈Y_ ≈Y-clk-irrel)
+   (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel) (Sum≈-prop-valued Y _≈Y_ ≈Y-prop-valued)
+   (Sum≈-clk-irrel Y _≈Y_ ≈Y-clk-irrel)
 
-  open AdequacyBisimX renaming (_≈fun[_]_ to _≈funX?[_]_)
-  open AdequacyBisimY renaming (_≈fun[_]_ to _≈funY?[_]_)
+  open BX renaming (_≈fun[_]_ to _≈funX?[_]_)
+  open BY renaming (_≈fun[_]_ to _≈funY?[_]_)
 
-  -- Definition of extensional error ordering
   open PartialFunctions
+  open BigStepLemmas
 
   X? = X ⊎ ⊤
   Y? = Y ⊎ ⊤
@@ -108,6 +97,7 @@ module _
     (∀ n → (f ≈funX?[ n ] f')) × (∀ n → (f' ⊑fun[ n ] g')) × (∀ n → (g' ≈funY?[ n ] g))
 
 
+  -- Lemmas used in the proof
   deconstruct-lem-1 :
    ∀ x (x'? : (X ⊎ ⊤)) → ∀ f' j → (H1 : (f' ↓fun[ j ] x'?)) (H2 : ((inl x) ≈X? x'?)) →
      Σ[ x' ∈ X ] ((f' ↓fun[ j ] (inl x')) × (x ≈X x'))
@@ -125,6 +115,8 @@ module _
   ≤res→⊑res n m (inr x) y? _ = tt*
 
 
+  -- The adequacy result: the closure of ⊑XY under bisimilarity on each side
+  -- implies the extensional error ordering.
   combined-adequacy : ∀ f g → f ⊑fun-cl g → f ≾ g
   combined-adequacy f g (f' , g' , f≈f' , f'⊑g' , g'≈g) .fst x (n , eq) =
     y , (n'' , g↓y) , (inl x' , inl y' , x≈x' , x'⊑y' , y'≈y)
@@ -195,8 +187,63 @@ module _
       x? = f↓ .snd .fst
       f↓[n'''] = f↓ .snd .snd .fst
       x?≈x'? = f↓ .snd .snd .snd
-      
-      
+
+
+  ---------------------------------------------------------------------------------
+
+  module _
+    (lx lx' : L^gl (X ⊎ ⊤)) (ly' ly : L^gl (Y ⊎ ⊤))
+    (lx≈lx' : lx BX.≈g lx') (lx'⊑ly' : lx' ⊑g ly') (ly'≈ly : ly' BY.≈g ly) where
+
+    -- Instantiating the individual adequacy results:
+
+    unique-X : ∀ l → ↓-unique ⟦ l ⟧x
+    unique-X l n m x? x'? p q =
+          bigStep-unique' (⊎-clock-irrel X-clk-irrel Unit-clock-irrel) l x? x'? n m p q
+
+    unique-Y : ∀ l → ↓-unique ⟦ l ⟧y
+    unique-Y l n m y? y'? p q =
+          bigStep-unique' (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel) l y? y'? n m p q
+
+    bisim-X-pt1 : (n : ℕ) → BX.bisimFun BX.⟦ lx ⟧ BX.⟦ lx' ⟧ n
+    bisim-X-pt1 = BX.adequacy-pt1 lx lx' lx≈lx'
+
+    bisim-X-pt2 : (n : ℕ) → BX.bisimFun ⟦ lx ⟧x ⟦ lx' ⟧x n → ⟦ lx ⟧x ≈funX?[ n ] ⟦ lx' ⟧x
+    bisim-X-pt2 = BX.adequacy-pt2 ⟦ lx ⟧x ⟦ lx' ⟧x (unique-X lx) (unique-X lx')
+
+    lock-step-pt1 : (n : ℕ) → ⟦ lx' ⟧x ⊑fun1[ n ] ⟦ ly' ⟧y
+    lock-step-pt1 = LS.adequacy-pt1 lx' ly' lx'⊑ly'
+
+    lock-step-pt2 : (n : ℕ) → ⟦ lx' ⟧x ⊑fun1[ n ] ⟦ ly' ⟧y → ⟦ lx' ⟧x ⊑fun[ n ] ⟦ ly' ⟧y               
+    lock-step-pt2 = LS.adequacy-pt2 ⟦ lx' ⟧x ⟦ ly' ⟧y (unique-X lx') (unique-Y ly')
+
+    bisim-Y-pt1 : (n : ℕ) → BY.bisimFun BY.⟦ ly' ⟧ BY.⟦ ly ⟧ n
+    bisim-Y-pt1 = BY.adequacy-pt1 ly' ly ly'≈ly
+
+    bisim-Y-pt2 : (n : ℕ) → BY.bisimFun ⟦ ly' ⟧y ⟦ ly ⟧y n → ⟦ ly' ⟧y ≈funY?[ n ] ⟦ ly ⟧y
+    bisim-Y-pt2 = BY.adequacy-pt2 ⟦ ly' ⟧y ⟦ ly ⟧y (unique-Y ly') (unique-Y ly)
+
+
+    -- **************************************************************************
+    -- Finally, we combine everything, showing that the denotations of lx and ly
+    -- are related in the expected manner.
+    -- **************************************************************************
+    
+    final-adequacy-theorem : ⟦ lx ⟧x ≾ ⟦ ly ⟧y
+    final-adequacy-theorem = combined-adequacy ⟦ lx ⟧x ⟦ ly ⟧y
+      (⟦ lx' ⟧x , ⟦ ly' ⟧y
+      , (λ n m m≤n → bisim-X-pt2 n (bisim-X-pt1 n) m m≤n)
+      , (λ n m m≤n → lock-step-pt2 n (lock-step-pt1 n) m m≤n)
+      , (λ n m m≤n → bisim-Y-pt2 n (bisim-Y-pt1 n) m m≤n))
+    
+
+
+
+
+
+
+
+
 
 
 

@@ -152,3 +152,36 @@ InjectiveMonoidHom : {ℓm ℓn : Level} ->
 InjectiveMonoidHom M N =
   Σ[ f ∈ MonoidHom M N ] isSplitMono (fst f)
 
+
+
+TwoCell-iterated : {X : Type ℓ'} {Y : Type ℓ''} →
+  (R : X → Y → Type ℓR) →
+  (f : X → X) (g : Y → Y) →
+  (TwoCell R R f g) →
+  (n : Nat) → TwoCell R R (f ^ n) (g ^ n)
+TwoCell-iterated R f g α zero = λ _ _ → id
+TwoCell-iterated R f g α (suc n) = λ x y Rxy →
+  α ((f ^ n) x)
+    ((g ^ n) y)
+    (TwoCell-iterated R f g α n x y Rxy)
+
+id^n≡id : {X : Type ℓ'} →
+  ∀ n → (id {A = X}) ^ n ≡ id
+id^n≡id zero = refl
+id^n≡id (suc n) = id^n≡id n
+
+TwoCell-iterated-idL : {X : Type ℓ'} →
+  (R : X → X → Type ℓR) →
+  (g : X → X) →
+  (TwoCell R R id g) →
+  (n : Nat) → TwoCell R R id (g ^ n)
+TwoCell-iterated-idL R g α n =
+  transport (λ i → TwoCell R R (id^n≡id n i) (g ^ n)) (TwoCell-iterated R id g α n)
+
+TwoCell-iterated-idR : {X : Type ℓ'} →
+  (R : X → X → Type ℓ'') →
+  (f : X → X) →
+  (TwoCell R R f id) →
+  (n : Nat) → TwoCell R R (f ^ n) id
+TwoCell-iterated-idR R f α n =
+  transport (λ i → TwoCell R R (f ^ n) (id^n≡id n i)) (TwoCell-iterated R f id α n)

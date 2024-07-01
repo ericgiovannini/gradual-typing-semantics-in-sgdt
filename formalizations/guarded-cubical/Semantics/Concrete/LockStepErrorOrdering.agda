@@ -17,6 +17,7 @@ open import Cubical.HITs.PropositionalTruncation
 
 
 open import Common.Common
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.Concrete.GuardedLiftError k
 open import Semantics.Concrete.GuardedLift k
   using () renaming (η to ηL)
@@ -114,7 +115,7 @@ module HetTransitivity
   module LR = LiftOrd X Y R
   module LS = LiftOrd Y Z S
 
-  RS : X → Z → Type {!!}
+  RS : X → Z → Type (ℓ-max (ℓ-max ℓY ℓR) ℓS)
   RS x z =  ∥ compRel R S x z ∥₁
 
   module LRS = LiftOrd X Z RS
@@ -210,7 +211,13 @@ module LiftOrdHomogenous (X : Type ℓX) (R : X → X → Type ℓR) where
 
     -- anti-symmetric
     ⊑-antisym : isAntisym R → (isAntisym _⊑_)
-    ⊑-antisym = {!!}
+    ⊑-antisym isAntisymR = fix aux
+      where
+        aux : ▹ (isAntisym _⊑_) → isAntisym _⊑_
+        aux IH .(η x) .(η y) (⊑ηη x y xRy) (⊑ηη y x yRx) = cong η (isAntisymR x y xRy yRx)
+        aux IH .℧ .℧ (⊑℧⊥ x) (⊑℧⊥ y) = refl
+        aux IH .(θ lx~) .(θ ly~) (⊑θθ lx~ ly~ lx~⊑ly~) (⊑θθ ly~ lx~ ly~⊑lx~) =
+          cong θ (later-ext (λ t → IH t (lx~ t) (ly~ t) (lx~⊑ly~ t) (ly~⊑lx~ t)))
 
 
     -- transitive
@@ -294,18 +301,33 @@ module _ (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR) (k : Clock) 
   LError→LSumY  = L-ErrorX→L-X⊎⊤ {X = Y}
   LError→LSumY' = Rec.L-ErrorX→L-X⊎⊤' {X = Y} (next L-ErrorX→L-X⊎⊤)
 
-  
-  ⊑→⊑S : (l : L℧ X) (l' : L℧ Y) → l ⊑ l' →
-    L-ErrorX→L-X⊎⊤ l ⊑S L-ErrorX→L-X⊎⊤ l' -- l ⊑S l'
+
+  ⊑→⊑S : (l : L℧ X) (l' : L℧ Y) → l ⊑ l' → mapL ErrorX→X⊎⊤ l ⊑S mapL ErrorX→X⊎⊤ l'
   ⊑→⊑S l l' l⊑l' =
-    transport (sym (λ i → funExt⁻ unfold l i ⊑S funExt⁻ unfold l' i)) (⊑S'→⊑S _ _ (fix lem l l' l⊑l'))
+    transport (sym (λ i → funExt⁻ (unfold-mapL ErrorX→X⊎⊤) l i ⊑S funExt⁻ (unfold-mapL ErrorX→X⊎⊤) l' i))
+      (⊑S'→⊑S _ _ (fix lem l l' l⊑l'))
     where
-      lem : ▹ ((l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l') →
-               (l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l'
-      lem _ .(η x) .(η y) (⊑ηη x y xRy) = inl (x , y , refl , refl , xRy)
+      lem : ▹ ((l : L℧ X) (l' : L℧ Y) → l ⊑ l' → mapL' ErrorX→X⊎⊤ l ⊑S' mapL' ErrorX→X⊎⊤ l') →
+               (l : L℧ X) (l' : L℧ Y) → l ⊑ l' → mapL' ErrorX→X⊎⊤ l ⊑S' mapL' ErrorX→X⊎⊤ l'
+      lem _ .(η x) .(η y) (⊑ηη x y xRy) = inl (x , y , refl , refl , xRy) 
       lem _ .(℧) ly (⊑℧⊥ ly) = inr (inl refl)
-      lem IH .(θ lx~) .(θ ly~) (⊑θθ lx~ ly~ H~) =
-        inr (inr (map▹ LError→LSumX lx~ , map▹ LError→LSumY ly~ , refl , refl ,
-                  (λ t → transport (sym (λ i → funExt⁻ unfold (lx~ t) i ⊑S funExt⁻ unfold (ly~ t) i))
-                    (⊑S'→⊑S (LError→LSumX' (lx~ t)) (LError→LSumY' (ly~ t)) (IH t (lx~ t) (ly~ t) (H~ t))))))
+      lem IH .(θ lx~) .(θ ly~) (⊑θθ lx~ ly~ H~) = inr (inr (map▹ (mapL ErrorX→X⊎⊤) lx~ , map▹ (mapL ErrorX→X⊎⊤) ly~ , refl , refl ,
+        λ t → transport
+          ((sym (λ i → funExt⁻ (unfold-mapL ErrorX→X⊎⊤) (lx~ t) i ⊑S  funExt⁻ (unfold-mapL ErrorX→X⊎⊤) (ly~ t) i)))
+          ((⊑S'→⊑S (mapL' ErrorX→X⊎⊤ (lx~ t)) (mapL' ErrorX→X⊎⊤ (ly~ t)) (IH t (lx~ t) (ly~ t) (H~ t))))))       
+
+  
+  -- ⊑→⊑S : (l : L℧ X) (l' : L℧ Y) → l ⊑ l' →
+  --   L-ErrorX→L-X⊎⊤ l ⊑S L-ErrorX→L-X⊎⊤ l' -- l ⊑S l'
+  -- ⊑→⊑S l l' l⊑l' =
+  --   transport (sym (λ i → funExt⁻ unfold l i ⊑S funExt⁻ unfold l' i)) (⊑S'→⊑S _ _ (fix lem l l' l⊑l'))
+  --   where
+  --     lem : ▹ ((l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l') →
+  --              (l : L℧ X) (l' : L℧ Y) → l ⊑ l' → LError→LSumX' l ⊑S' LError→LSumY' l'
+  --     lem _ .(η x) .(η y) (⊑ηη x y xRy) = inl (x , y , refl , refl , xRy)
+  --     lem _ .(℧) ly (⊑℧⊥ ly) = inr (inl refl)
+  --     lem IH .(θ lx~) .(θ ly~) (⊑θθ lx~ ly~ H~) =
+  --       inr (inr (map▹ LError→LSumX lx~ , map▹ LError→LSumY ly~ , refl , refl ,
+  --                 (λ t → transport (sym (λ i → funExt⁻ unfold (lx~ t) i ⊑S funExt⁻ unfold (ly~ t) i))
+  --                   (⊑S'→⊑S (LError→LSumX' (lx~ t)) (LError→LSumY' (ly~ t)) (IH t (lx~ t) (ly~ t) (H~ t))))))
                     

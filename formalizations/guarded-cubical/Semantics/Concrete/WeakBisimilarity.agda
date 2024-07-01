@@ -30,7 +30,7 @@ open import Semantics.Concrete.GuardedLift k
 
 private
   variable
-    ℓ ℓ' ℓR : Level
+    ℓ ℓ' ℓR ℓS : Level
 
   ▹_ : Type ℓ → Type ℓ
   ▹_ A = ▹_,_ k A
@@ -220,7 +220,7 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
         aux IH .(η x) .(η y) (≈ηθ x .(η y) H1) (≈θη .(η x) y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
         aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηη x .y H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1)
         aux IH .(η x) .(η y) (≈θη .(η x) y H1) (≈ηθ x .(η y) H2) = ⊥.rec (PTrec isProp⊥ (λ (n , z , eq , _) → Lη≠Lθ eq) H1) -- could also use H2 for a contradiction
-        aux IH lx .(η y) (≈θη .lx y H1) (≈θη .lx .y H2) = {!!}
+        aux IH lx .(η y) (≈θη .lx y H1) (≈θη .lx .y H2) = λ i → ≈θη lx y ((isPropPropTrunc H1 H2) i)
         aux IH .(θ lx~) .(θ ly~) (≈θθ lx~ ly~ H1~) (≈θθ .lx~ .ly~ H2~) =
           λ i → ≈θθ lx~ ly~ (later-ext eq i)
           where
@@ -314,11 +314,59 @@ module LiftBisim (X : Type ℓ) (R : X → X → Type ℓR) where
     δ-pres≈ lx≈ly = θ-pres≈ (next lx≈ly)
 
 
--- TODO equivalence with sum type (needed for adequacy proof where we
--- globalize)
 
 
 
+module _
+  (X : Type ℓ)  (R : X → X → Type ℓR)
+  (Y : Type ℓ') (S : Y → Y → Type ℓS)
+  (isSymS : isSym S)
+  (isPropValuedS : isPropValued S)
+  (f : X → Y)
+  where
+
+  module LX = LiftBisim X R
+  module LY = LiftBisim Y S
+
+  private
+    id≈δ : TwoCell LY._≈_ LY._≈_ id δ
+    id≈δ x y x≈y = LY.Properties.δ-closed-r isPropValuedS (id x) y x≈y
+
+    δ≈id : TwoCell LY._≈_ LY._≈_ δ id
+    δ≈id x y x≈y = LY.Properties.symmetric isSymS (id y) (δ x) (id≈δ y x (LY.Properties.symmetric isSymS x y x≈y))
+
+  L-map-preserves-bisim : ((x x' : X) → R x x' → S (f x) (f x')) →
+     (lx lx' : L X) → lx LX.≈ lx' → (mapL f lx) LY.≈ (mapL f lx')
+  L-map-preserves-bisim R→S = fix aux
+    where
+      aux :
+        ▹ ((lx lx' : L X) → lx LX.≈ lx' → mapL f lx LY.≈ mapL f lx') →
+           (lx lx' : L X) → lx LX.≈ lx' → mapL f lx LY.≈ mapL f lx'
+      aux IH .(η x) .(η y) (LiftBisim.≈ηη x y xRy) =
+        transport
+          (sym (λ i → funExt⁻ (unfold-mapL f) (η x) i LY.≈ funExt⁻ (unfold-mapL f) (η y) i))
+          (LiftBisim.≈ηη (f x) (f y) (R→S x y xRy))
+      aux IH .(η x) lx' (LiftBisim.≈ηθ x .lx' H) =
+        PTrec
+          (LY.Properties.is-prop isPropValuedS _ _)
+          (λ {(n , y , eq , Rxy) →
+            transport (sym (λ i →
+                    (mapL-η f x i) LY.≈
+                    ((λ j → mapL f (eq j)) ∙ mapL-δ^n f (suc n) (η y) ∙ cong (δ ^ (suc n)) (mapL-η f y)) i))
+              (TwoCell-iterated-idL LY._≈_ δ id≈δ (suc n) (η (f x)) (η (f y)) (LiftBisim.≈ηη (f x) (f y) (R→S x y Rxy)))})
+          H
+      aux IH lx .(η y) (LiftBisim.≈θη .lx y H) =
+        PTrec
+          (LY.Properties.is-prop isPropValuedS _ _)
+          (λ {(n , x , eq , Rxy) → transport (sym (λ i →
+            (((λ j → mapL f (eq j)) ∙ mapL-δ^n f (suc n) (η x) ∙ cong (δ ^ (suc n)) (mapL-η f x)) i) LY.≈ (mapL-η f y i)))
+            (TwoCell-iterated-idR LY._≈_ δ δ≈id (suc n) (η (f x)) (η (f y)) (LiftBisim.≈ηη (f x) (f y) (R→S x y Rxy)))})
+          H
+      aux IH .(θ lx~) .(θ ly~) (LiftBisim.≈θθ lx~ ly~ H~) =
+        transport
+          (sym (λ i → funExt⁻ (unfold-mapL f) (θ lx~) i LY.≈ funExt⁻ (unfold-mapL f) (θ ly~) i))
+          (LiftBisim.≈θθ _ _ (λ t → IH t (lx~ t) (ly~ t) (H~ t)))
+    
 
 module BisimSum (X : Type ℓ) (R : X -> X -> Type ℓR) where
 

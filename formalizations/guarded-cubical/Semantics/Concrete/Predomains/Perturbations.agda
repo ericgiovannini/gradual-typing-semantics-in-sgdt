@@ -52,6 +52,7 @@ open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.KleisliFunctors k
+open import Semantics.Concrete.DoublePoset.MonadCombinators k
 
 open import Semantics.Concrete.Predomains.PrePerturbations k
 
@@ -310,26 +311,26 @@ record PushPullC
 -- Push-pull structures for the identity relation
 --
 module PushPullV-Id
-  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {ℓM : Level} where
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A} where
 
   open PushPullV
 
-  idPPV : PushPullV {ℓMA = ℓM} A 𝟙M* (𝟙M*→ (Endo A)) A 𝟙M* (𝟙M*→ (Endo A)) (idPRel A)
-  idPPV .push = idMon 𝟙M*
+  idPPV : PushPullV {ℓMA = ℓ-zero} A 𝟙M (𝟙M→ (Endo A)) A 𝟙M (𝟙M→ (Endo A)) (idPRel A)
+  idPPV .push = idMon 𝟙M
   idPPV .pushSq pᴸ = Predom-IdSqV (idPRel A)
-  idPPV .pull = idMon 𝟙M*
+  idPPV .pull = idMon 𝟙M
   idPPV .pullSq pᴿ = Predom-IdSqV (idPRel A)
 
 
 module PushPullC-Id
-  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {ℓM : Level} where
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
 
   open PushPullC
 
-  idPPC : PushPullC {ℓMB = ℓM} B 𝟙M* (𝟙M*→ (CEndo B)) B 𝟙M* (𝟙M*→ (CEndo B)) (idEDRel B)
-  idPPC .push = idMon 𝟙M*
+  idPPC : PushPullC {ℓMB = ℓ-zero} B 𝟙M (𝟙M→ (CEndo B)) B 𝟙M (𝟙M→ (CEndo B)) (idEDRel B)
+  idPPC .push = idMon 𝟙M
   idPPC .pushSq pᴸ = ED-IdSqV (idEDRel B)
-  idPPC .pull = idMon 𝟙M*
+  idPPC .pull = idMon 𝟙M
   idPPC .pullSq pᴿ = ED-IdSqV (idEDRel B)
 
 
@@ -526,28 +527,45 @@ module F-PushPull
   module Push = Elim2 NatM MA M-FA'
     (λ pFA pFA' → ErrorDomSq
       (F-rel c) (F-rel c) (ptbC M-FA iFA pFA) (ptbC M-FA' iFA' pFA'))
-    (isPropErrorDomSq _ _ _ _)
-    i₁
-    (i₂ ∘hom Πc.push)
+    (isPropErrorDomSq _ _ _ _) i₁ (i₂ ∘hom Πc.push)
 
   -- Eliminating from (NatP ⊕ MB') to (NatP ⊕ MB)
   module Pull = Elim2 NatM MA' M-FA
     (λ pFA' pFA → ErrorDomSq
       (F-rel c) (F-rel c) (ptbC M-FA iFA pFA) (ptbC M-FA' iFA' pFA'))
-    (isPropErrorDomSq _ _ _ _)
-    i₁
-    (i₂ ∘hom Πc.pull)
+    (isPropErrorDomSq _ _ _ _) i₁ (i₂ ∘hom Πc.pull)
 
-  open F-sq
+
+  sq-δFA-δFA' : ErrorDomSq (F-rel c) (F-rel c) δ* δ*
+  sq-δFA-δFA' la la' laRla' = δ*Sq c la la' laRla'
+
+  sq-δFA^n-δFA'^n : ∀ (n : Nat) →
+    ErrorDomSq (F-rel c) (F-rel c) (δ* ^ed n) (δ* ^ed n)
+  sq-δFA^n-δFA'^n n = ED-CompSqV-iterate (F-rel c)  δ*  δ*  sq-δFA-δFA' n
+
+  open ErrorDomMor
+
+  lem1 : ∀ n → (ptbC M-FA iFA ⟦ n ⟧₁) ≡ (δ* ^ed n)
+  lem1 zero = eqEDMor _ _ refl
+  lem1 (suc n) = eqEDMor _ _ (
+    fun (ptbC M-FA iFA ⟦ suc n ⟧₁)
+      ≡⟨ refl ⟩
+    fun δ* ∘ fun (ptbC M-FA iFA ⟦ n ⟧₁)
+      ≡⟨ (λ i → (fun δ*) ∘ (fun (lem1 n i))) ⟩
+    fun (δ* ^ed (suc n)) ∎)
+
+  lem2 : ∀ n → (ptbC M-FA' iFA' (Push.h ⟦ n ⟧₁)) ≡ (δ* ^ed n)
+  lem2 zero = eqEDMor _ _ refl
+  lem2 (suc n) = eqEDMor _ _ (λ i → (fun δ*) ∘ (fun (lem2 n i)))
 
   F-PushPull : PushPullC (F-ob A) M-FA iFA (F-ob A') M-FA' iFA' (F-rel c)
   F-PushPull .PPC.push = Push.hom -- [ i₁ ,hom (i₂ ∘hom Πc.push) ]
-  F-PushPull .PPC.pushSq =  Push.elim2 {!!}
-      -- (λ n → transport
-      --   (λ i → PBSq (U-rel d) (U-rel d) (sym (lem1 n) i) (sym (lem2 n) i))
-      --   (sq-δB^n-δB'^n n))  -- NTS: VSq Ud Ud (δB ^ n) (δB' ^ n)
+  F-PushPull .PPC.pushSq =  Push.elim2
+      (λ n → transport
+        (λ i → ErrorDomSq (F-rel c) (F-rel c) (sym (lem1 n) i) (sym (lem2 n) i))
+        (sq-δFA^n-δFA'^n n))
 
-      (λ ma → F-sq c c (ptbV MA iA ma) (ptbV MA' iA' (Πc.push .fst ma)) (Πc.pushSq ma))
+      (λ ma → F-sq.F-sq c c (ptbV MA iA ma) (ptbV MA' iA' (Πc.push .fst ma)) (Πc.pushSq ma))
 
       (ED-IdSqV (F-rel c))
 

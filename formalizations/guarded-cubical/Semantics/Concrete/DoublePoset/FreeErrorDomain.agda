@@ -19,7 +19,7 @@ open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.HITs.PropositionalTruncation hiding (map) renaming (rec to PTrec)
 open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
 open import Cubical.Data.Empty
-
+open import Cubical.Foundations.HLevels
 
 open import Common.Common
 -- open import Semantics.Concrete.GuardedLift k renaming (η to Lη ; θ to Lθ)
@@ -35,7 +35,7 @@ open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.LockStepErrorOrdering k
 open import Semantics.Concrete.WeakBisimilarity k
 
-open import Semantics.Concrete.DoublePoset.Error k
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
 

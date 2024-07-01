@@ -25,7 +25,7 @@ open import Semantics.Concrete.GuardedLiftError k
 open import Semantics.Concrete.LockStepErrorOrdering k
 open import Semantics.Concrete.WeakBisimilarity k
 open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Error k
+open import Semantics.Concrete.DoublePoset.Error
 open import Semantics.Concrete.DoublePoset.Monad k
 
 
@@ -152,37 +152,7 @@ module presθ→presδ {X : Type ℓ} {Y : Type ℓ'}
     (h-pres-δ ((δ ^ n) x)) ∙ (cong δY (h-pres-δ^n n x))
 
 
-TwoCell-iterated : {X : Type ℓ'} {Y : Type ℓ''} →
-  (R : X → Y → Type ℓR) →
-  (f : X → X) (g : Y → Y) →
-  (TwoCell R R f g) →
-  (n : ℕ) → TwoCell R R (f ^ n) (g ^ n)
-TwoCell-iterated R f g α zero = λ _ _ → id
-TwoCell-iterated R f g α (suc n) = λ x y Rxy →
-  α ((f ^ n) x)
-    ((g ^ n) y)
-    (TwoCell-iterated R f g α n x y Rxy)
 
-id^n≡id : {X : Type ℓ'} →
-  ∀ n → (id {A = X}) ^ n ≡ id
-id^n≡id zero = refl
-id^n≡id (suc n) = id^n≡id n
-
-TwoCell-iterated-idL : {X : Type ℓ'} →
-  (R : X → X → Type ℓR) →
-  (g : X → X) →
-  (TwoCell R R id g) →
-  (n : ℕ) → TwoCell R R id (g ^ n)
-TwoCell-iterated-idL R g α n =
-  transport (λ i → TwoCell R R (id^n≡id n i) (g ^ n)) (TwoCell-iterated R id g α n)
-
-TwoCell-iterated-idR : {X : Type ℓ'} →
-  (R : X → X → Type ℓ'') →
-  (f : X → X) →
-  (TwoCell R R f id) →
-  (n : ℕ) → TwoCell R R (f ^ n) id
-TwoCell-iterated-idR R f α n =
-  transport (λ i → TwoCell R R (f ^ n) (id^n≡id n i)) (TwoCell-iterated R f id α n)
 
 
 -- The goal of the next module is to show that the monadic ext function
@@ -268,10 +238,33 @@ module Preserve-Bisim-Lemma
             lem2 = sym ((cong g eq) ∙ (h-pres-δ^n g g-pres-θ (suc n) ℧))
 
     -- case θ η
-    ≈lem' _ α lx .(η y) (≈θη .lx (ok y) H) = {!sym!}
+    ≈lem' _ α lx .(η y) (≈θη .lx (ok y) H) = PTrec (isProp≈B _ _) aux H
+      where
+        aux : _ → (f lx) ≈B (g (η y))
+        aux (n , (ok x) , eq , p) =
+          transport (λ i → lem2 i ≈B (g (η y))) lem1
+          where
+            lem1 : ((δB ^ (suc n)) (f (η x))) ≈B (g (η y))
+            lem1 = TwoCell-iterated-idR _≈B_ δB δB≈id (suc n) (f (η x)) (g (η y)) (α x y p)
+
+            lem2 : (δB ^ (suc n)) (f (η x)) ≡ f lx
+            lem2 = sym ((cong f eq) ∙ (h-pres-δ^n f f-pres-θ (suc n) (η x)))
 
     -- case θ ℧
-    ≈lem' _ α lx .℧ (≈θη .lx error H) = {!!}
+    ≈lem' _ α lx .℧ (≈θη .lx error H) = PTrec (isProp≈B _ _) aux H
+      where
+        aux : _ → (f lx) ≈B g ℧
+        aux (n , error , eq , p) =
+          transport (λ i → lem2 i ≈B (g ℧)) lem1
+           where
+            lem1 : ((δB ^ (suc n)) (f ℧)) ≈B (g ℧)
+            lem1 = TwoCell-iterated-idR _≈B_ δB δB≈id (suc n) (f ℧) (g ℧)
+              (transport (sym (λ i → (f-pres-℧ i) ≈B (g-pres-℧ i)))
+                          (isRefl≈B ℧B))
+
+            lem2 : (δB ^ (suc n)) (f ℧) ≡ f lx
+            lem2 = sym ((cong f eq) ∙ (h-pres-δ^n f f-pres-θ (suc n) ℧))
+          
 
     -- case θ θ : use the fact that f and g preserve θ, then use the
     -- fact that ≈B is a θ-congruence, and then use Lob-induction
