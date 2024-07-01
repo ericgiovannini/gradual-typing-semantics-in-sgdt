@@ -63,7 +63,9 @@ module DynDef {ℓ : Level} where
     nat : ℕ → DynTy X
     prod : DynTy X → DynTy X → DynTy X
     fun : X → DynTy X
+    -- set : isSet (DynTy X)
     -- TODO should we add is-set?
+
 
   nat-injective : ∀ {X : Type ℓ} n m →
     (nat {X = X} n ≡ nat m) → n ≡ m
@@ -91,7 +93,7 @@ module DynDef {ℓ : Level} where
       aux (nat n) = x
       aux (prod d₁ d₂) = x
       aux (fun x') = x'
-      
+
 
   DynTyIso : ∀ X → Iso (DynTy X) ((ℕ ⊎ (DynTy X × DynTy X)) ⊎ X)
   DynTyIso X = iso
@@ -124,7 +126,7 @@ module DynDef {ℓ : Level} where
       ⊑-fun : ∀ {f~ g~} → f~ Fun.≤ g~ → (fun f~) ⊑d (fun g~)
 
     ⊑d-prop : isPropValued _⊑d_
-    ⊑d-prop .(nat n) .(nat m) (⊑-nat {n} {m} p) (⊑-nat .{n} .{m} q) =
+    ⊑d-prop .(nat n) .(nat m) (⊑-nat {n} {m} p) (⊑-nat q) =
       λ i → ⊑-nat (isSetℕ n m p q i)
     ⊑d-prop .(prod d₁ d₂) .(prod d₁' d₂')
       (⊑-prod {d₁} {d₂} {d₁'} {d₂'} p q) (⊑-prod .{d₁} .{d₂} .{d₁'} .{d₂'} p' q') =
@@ -197,10 +199,9 @@ module DynDef {ℓ : Level} where
     Dyn' .fst = DynTy ⟨ PB▸ (λ t → (D~ t) ==> 𝕃 (D~ t)) ⟩
     Dyn' .snd = posetbisimstr {!!} _⊑d_ {!!} _≈d_ {!!}
     -- posetbisimstr set ord isOrd bisim isBisim
-      where
 
-        set : isSet (DynTy Fun)
-        set = {!!}
+        -- set : isSet (DynTy Fun)
+        -- set = {!!}
         -- set (nat n) (nat m) p q = {!!}
         -- set (nat n) (prod d₂ d₃) p q = {!!}
         -- set (nat n) (fun g~) p q = {!!}
@@ -210,40 +211,7 @@ module DynDef {ℓ : Level} where
         -- set (fun x) d₂ p q = {!!}
 
         -- Ordering relation and properties
-{-
-        ord : DynTy Fun → DynTy Fun → Type ℓ
-        ord (nat n) (nat m) = Lift (n ≡ m)
-        ord (prod d₁ d₂) (prod d₁' d₂') = (ord d₁ d₁') × (ord d₂ d₂')
-        ord (fun f~) (fun g~) = f~ Fun.≤ g~
-        ord _ _ = ⊥*
-
-        ord-refl : isRefl ord
-        ord-refl (nat n) = lift refl
-        ord-refl (prod d₁ d₂) = (ord-refl d₁) , (ord-refl d₂)
-        ord-refl (fun f~) = Fun.is-refl f~
-
-        ord-prop-valued : isPropValued ord
-        ord-prop-valued (nat n) (nat m) p q =
-          let is-prop = isOfHLevelLift 1 (isSetℕ n m) in is-prop p q
-          -- also works:
-          -- λ i → lift (isSetℕ n m (lower p) (lower q) i)
-        ord-prop-valued (prod d₁ d₂) (prod d₁' d₂') =
-          isProp× (ord-prop-valued d₁ d₁') (ord-prop-valued d₂ d₂')
-        ord-prop-valued (fun f~) (fun g~) = Fun.is-prop-valued f~ g~
-
-        ord-trans : isTrans ord
-        ord-trans (nat n) (nat m) (nat p) (lift eq1) (lift eq2) = lift (eq1 ∙ eq2)
-        ord-trans (prod d₁ d₂) (prod d₁' d₂') (prod d₁'' d₂'')
-                  (d₁≤d₁' , d₂≤d₂') (d₁'≤d₁'' , d₂'≤d₂'') =
-                  ord-trans d₁ d₁' d₁'' d₁≤d₁' d₁'≤d₁'' ,
-                  ord-trans d₂ d₂' d₂'' d₂≤d₂' d₂'≤d₂''
-        ord-trans (fun f~) (fun g~) (fun h~) = Fun.is-trans f~ g~ h~
-
-        ord-antisym : isAntisym ord
-        ord-antisym (nat n) (nat m) p q = cong nat (lower p)
-        ord-antisym (prod d₁ d₂) (prod d₁' d₂') p q = {!!}
-        ord-antisym (fun f~) (fun g~) f~≤g~ g~≤f~ =
-          cong fun (Fun.is-antisym f~ g~ f~≤g~ g~≤f~)
+{-    
 
         isOrd : IsOrderingRelation ord
         isOrd .is-prop-valued = ord-prop-valued
@@ -251,32 +219,8 @@ module DynDef {ℓ : Level} where
         isOrd .is-trans = ord-trans
         isOrd .is-antisym = ord-antisym
 
-
-        -- Bisimilarity relation and properties
-
-        bisim : DynTy Fun → DynTy Fun → Type ℓ
-        bisim (nat n) (nat m) = Lift (n ≡ m)
-        bisim (prod d₁ d₂) (prod d₁' d₂') = (bisim d₁ d₁') × (bisim d₂ d₂')
-        bisim (fun f~) (fun g~) = f~ Fun.≈ g~
-        bisim _ _ = ⊥*
-
-        bisim-refl : isRefl bisim
-        bisim-refl (nat n) = lift refl
-        bisim-refl (prod d₁ d₂) = (bisim-refl d₁) , (bisim-refl d₂)
-        bisim-refl (fun f~) = Fun.is-refl-Bisim f~
-
-        bisim-sym : isSym bisim
-        bisim-sym = {!!}
-
-        bisim-prop : isPropValued bisim
-        bisim-prop = {!!}
-
-        isBisim : IsBisim bisim
-        isBisim .IsBisim.is-refl = bisim-refl
-        isBisim .IsBisim.is-sym = bisim-sym
-        isBisim .IsBisim.is-prop-valued = bisim-prop
-
 -}
+
 
 
   -- We define the predomain Dyn using guarded fixpoint:
@@ -307,6 +251,33 @@ module DynDef {ℓ : Level} where
 
   -- But we can't easily show that Dyn is isomorphic *as a predomain*
   -- to (ℕ + (Dyn × Dyn) + ▹ (Dyn -> 𝕃 Dyn)).
+
+
+  module DynRel where
+
+    open Guarded (next Dyn)
+
+    _Dyn⊑_ : ⟨ Dyn ⟩ → ⟨ Dyn ⟩ → Type ℓ
+    _Dyn⊑_ = Dyn .snd .PosetBisimStr._≤_
+
+    _Dyn≈_ : ⟨ Dyn ⟩ → ⟨ Dyn ⟩ → Type ℓ
+    _Dyn≈_ = Dyn .snd .PosetBisimStr._≈_
+
+    Dyn'⊑→Dyn⊑ : {d d' : ⟨ Dyn' ⟩} →
+      d ⊑d d' → (Dyn'→Dyn $ d) Dyn⊑ (Dyn'→Dyn $ d')
+    Dyn'⊑→Dyn⊑ H = {!!}
+
+    Dyn⊑→Dyn'⊑ : {d d' : ⟨ Dyn ⟩} →
+      d Dyn⊑ d' → (Dyn→Dyn' $ d) ⊑d (Dyn→Dyn' $ d')
+    Dyn⊑→Dyn'⊑ H = {!!}
+
+    Dyn'≈→Dyn≈ : {d d' : ⟨ Dyn' ⟩} →
+      d ≈d d' → (Dyn'→Dyn $ d) Dyn≈ (Dyn'→Dyn $ d')
+    Dyn'≈→Dyn≈ H = {!!}
+
+    Dyn≈→Dyn'≈ : {d d' : ⟨ Dyn ⟩} →
+      d Dyn≈ d' → (Dyn→Dyn' $ d) ≈d (Dyn→Dyn' $ d')
+    Dyn≈→Dyn'≈ H = {!!}
   
 
   ----------------------
@@ -317,15 +288,6 @@ module DynDef {ℓ : Level} where
     open PBMor
 
     open Guarded (next Dyn)
-
-    -- emb-nat' : ℕ → ⟨ Dyn' ⟩
-    -- emb-nat' n = nat n
-
-    -- emb-prod' : ⟨ Dyn' ⟩ → ⟨ Dyn' ⟩ → ⟨ Dyn' ⟩
-    -- emb-prod' d₁ d₂ = prod d₁ d₂
-
-    -- emb-fun' : (▹ (PBMor Dyn (𝕃 Dyn))) → ⟨ Dyn' ⟩
-    -- emb-fun' = fun
 
     emb-nat' : PBMor NatP Dyn'
     emb-nat' .f = nat
@@ -343,6 +305,24 @@ module DynDef {ℓ : Level} where
     emb-arr' .f g = fun (next g)
     emb-arr' .isMon g₁≤g₂ = ⊑-fun (λ t → g₁≤g₂)
     emb-arr' .pres≈ g₁≈g₂ = ≈-fun (λ t → g₁≈g₂)
+
+    emb-▹arr' : PBMor (PB▹ (Dyn ==> 𝕃 Dyn)) Dyn'
+    emb-▹arr' .f g~ = fun g~
+    emb-▹arr' .isMon g₁~≤g₂~ = ⊑-fun g₁~≤g₂~
+    emb-▹arr' .pres≈ g₁~≈g₂~ = ≈-fun g₁~≈g₂~
+    
+
+    emb-nat : PBMor NatP Dyn
+    emb-nat = Dyn'→Dyn ∘p emb-nat'
+
+    emb-times : PBMor (Dyn ×dp Dyn) Dyn
+    emb-times = Dyn'→Dyn ∘p emb-times' ∘p (Dyn→Dyn' ×mor Dyn→Dyn')
+
+    emb-arr : PBMor (Dyn ==> 𝕃 Dyn) Dyn
+    emb-arr = Dyn'→Dyn ∘p emb-arr'
+
+    emb-▹arr : PBMor (PB▹ (Dyn ==> 𝕃 Dyn)) Dyn
+    emb-▹arr = Dyn'→Dyn ∘p emb-▹arr'
 
 
   -----------------------------------
@@ -370,16 +350,18 @@ module DynDef {ℓ : Level} where
        aux (fun f~) = caseFun f~
 
 
-  module RecDyn where
+  -- For defining morphisms out of Dyn', and where the product case
+  -- involves the unfolded Dyn'.
+  module _ where
     open Guarded (next (Dyn))
     open PBMor
 
-    recDyn : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    recDyn' : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
        (caseNat  : PBMor NatP A) →
        (caseProd : PBMor (Dyn' ×dp Dyn') A) →
        (caseFun  : PBMor (PB▹ (Dyn ==> 𝕃 Dyn)) A) →
        PBMor Dyn' A
-    recDyn {A = A} caseNat caseProd caseFun = aux
+    recDyn' {A = A} caseNat caseProd caseFun = aux
       where
         module caseNat  = PBMor caseNat
         module caseProd = PBMor caseProd
@@ -399,6 +381,40 @@ module DynDef {ℓ : Level} where
         aux .pres≈ (Guarded.≈-fun p)    = caseFun.pres≈ p
 
 
+  -- For defining morphisms out of the folded Dyn, and where the
+  -- product case involves the folded Dyn.
+  module _ where
+    open Guarded (next (Dyn))
+    open PBMor
+
+    recDyn : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+       (caseNat  : PBMor NatP A) →
+       (caseProd : PBMor (Dyn ×dp Dyn) A) →
+       (caseFun  : PBMor (PB▹ (Dyn ==> 𝕃 Dyn)) A) →
+       PBMor Dyn A
+    recDyn {A = A} caseNat caseProd caseFun =
+      recDyn' caseNat (caseProd ∘p (Dyn'→Dyn ×mor Dyn'→Dyn)) caseFun ∘p Dyn→Dyn'
+      where
+        module caseNat  = PBMor caseNat
+        module caseProd = PBMor caseProd
+        module caseFun  = PBMor caseFun
+
+        aux : PBMor Dyn' A
+        aux .f (nat n) = caseNat $ n
+        aux .f (prod d₁ d₂) = (caseProd ∘p (Dyn'→Dyn ×mor Dyn'→Dyn)) $ (d₁ , d₂)
+        aux .f (fun f~) = caseFun $ f~
+
+        aux .isMon (Guarded.⊑-nat eq)   = caseNat.isMon eq
+        aux .isMon (Guarded.⊑-prod p q) = caseProd.isMon ((Dyn'→Dyn ×mor Dyn'→Dyn) .isMon (p , q))
+        aux .isMon (Guarded.⊑-fun p)    = caseFun.isMon p
+
+        aux .pres≈ (Guarded.≈-nat eq)   = caseNat.pres≈ eq
+        aux .pres≈ (Guarded.≈-prod p q) = caseProd.pres≈ ((Dyn'→Dyn ×mor Dyn'→Dyn) .pres≈ (p , q))
+        aux .pres≈ (Guarded.≈-fun p)    = caseFun.pres≈ p
+
+
+
+
 ----------------
 -- Projections
 ---------------
@@ -406,17 +422,16 @@ module DynDef {ℓ : Level} where
   module Projections where
 
     open Guarded (next Dyn)
-    open RecDyn
     open ClockedCombinators k
 
     proj-nat : PBMor Dyn' (𝕃 NatP)
-    proj-nat = recDyn (η-mor) (K _ ℧) (K _ ℧)
+    proj-nat = recDyn' (η-mor) (K _ ℧) (K _ ℧)
 
     proj-times : PBMor Dyn' (𝕃 (Dyn' ×dp Dyn'))
-    proj-times = recDyn (K _ ℧) (η-mor) (K _ ℧)
+    proj-times = recDyn' (K _ ℧) (η-mor) (K _ ℧)
 
     proj-arr : PBMor Dyn' (𝕃 (Dyn ==> 𝕃 Dyn))
-    proj-arr = recDyn (K _ ℧) (K _ ℧) ((θ-mor) ∘p (Map▹ (η-mor)))
+    proj-arr = recDyn' (K _ ℧) (K _ ℧) ((θ-mor) ∘p (Map▹ (η-mor)))
     --
     -- To project in the case of a later-function g~, we return
     -- θ (λ t → η (g~ t)), which can also be written as θ (Map▹ η g~).
@@ -443,3 +458,38 @@ module DynDef {ℓ : Level} where
 
     inj-arr : PBRel (Dyn ==> 𝕃 Dyn) Dyn' ℓ
     inj-arr = functionalRel emb-arr' Id (idPRel Dyn')
+
+
+
+  -- Elimination principles for the relations on dyn
+
+  open DynRel
+  open Guarded (next Dyn)
+  
+  module _ {B : ∀ d d' → d Dyn⊑ d' → Type ℓ'}
+    (⊑-nat* : ∀ {n m} → (eq : n ≡ m) →
+      B (Dyn'→Dyn $ (nat n)) (Dyn'→Dyn $ nat m) (Dyn'⊑→Dyn⊑ (⊑-nat eq)))
+      
+    (⊑-prod* : ∀ {d₁ d₂ d₁' d₂'} → (p : d₁ Dyn⊑ d₁') → (q : d₂ Dyn⊑ d₂') →
+      B d₁ d₁' p →
+      B d₂ d₂' q →
+      B (Dyn'→Dyn $ (prod (Dyn→Dyn' $ d₁)  (Dyn→Dyn' $ d₂)))
+        (Dyn'→Dyn $ (prod (Dyn→Dyn' $ d₁') (Dyn→Dyn' $ d₂')))
+        (Dyn'⊑→Dyn⊑ (⊑-prod (Dyn⊑→Dyn'⊑ p) (Dyn⊑→Dyn'⊑ q))))
+        
+    (⊑-fun* : ∀ {f~ g~} →
+      (p : (PB▹ (Dyn ==> 𝕃 Dyn)) .snd .PosetBisimStr._≤_ f~ g~) →
+      B (Dyn'→Dyn $ (fun f~)) (Dyn'→Dyn $ (fun g~)) (Dyn'⊑→Dyn⊑ (⊑-fun p))) where
+      
+    
+    Dyn⊑-rec : (d d' : ⟨ Dyn ⟩) → (H : d Dyn⊑ d') → B d d' H
+    Dyn⊑-rec d d' H = {!!}
+
+ -- data _⊑d_ : DynTy Fun → DynTy Fun → Type ℓ where
+ --      ⊑-nat : ∀ {n m} → n ≡ m → (nat n) ⊑d (nat m)
+ --      ⊑-prod : ∀ {d₁ d₂ d₁' d₂'} → (d₁ ⊑d d₁') → (d₂ ⊑d d₂') →
+ --        (prod d₁ d₂) ⊑d (prod d₁' d₂')
+ --      ⊑-fun : ∀ {f~ g~} → f~ Fun.≤ g~ → (fun f~) ⊑d (fun g~)
+
+
+

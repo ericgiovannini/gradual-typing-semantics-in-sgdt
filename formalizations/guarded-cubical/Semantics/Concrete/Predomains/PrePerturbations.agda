@@ -44,6 +44,7 @@ private
     ℓ≤ ℓ≈ ℓM : Level
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
     ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
+    ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
 
     ℓMA₁ ℓMA₂ ℓMA₃ : Level
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
@@ -205,6 +206,40 @@ _⟶PrePtb_ :
     -- Have : (ϕ ∘ g₁ ∘ f) ≈ (id ∘ g₂ ∘ id) = g₂
 
 
+-- The above function defines two homomorphisms
+-- (Endo A)^op → CEndo (A ⟶ B) and (CEndo B) → CEndo (A ⟶ B).
+
+A⟶-PrePtb : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+  MonoidHom ((Endo A) ^op) (CEndo (A ⟶ob B))
+A⟶-PrePtb .fst g = g ⟶PrePtb CPrePtbId
+A⟶-PrePtb .snd .IsMonoidHom.presε =
+  EqEndomor→EqCPrePtb _ _ arrowPresIdVert
+A⟶-PrePtb .snd .IsMonoidHom.pres· g h =
+  EqEndomor→EqCPrePtb _ _
+    (arrowPresCompVertLeft (h .fst) (g .fst) (CPrePtbId .fst))
+
+⟶B-PrePtb : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+  MonoidHom (CEndo B) (CEndo (A ⟶ob B))
+⟶B-PrePtb .fst ϕ = PrePtbId ⟶PrePtb ϕ
+⟶B-PrePtb .snd .IsMonoidHom.presε =
+  EqEndomor→EqCPrePtb _ _ arrowPresIdVert
+⟶B-PrePtb .snd .IsMonoidHom.pres· ϕ ϕ' =
+  EqEndomor→EqCPrePtb _ _
+    (arrowPresCompVertRight (PrePtbId .fst) (ϕ' .fst) (ϕ .fst))
+
+
+
+PrePtbRetract : (f : PBMor A A') → (g : PBMor A' A) → (f ∘p g ≡ Id) →
+  PrePtb A → PrePtb A'
+PrePtbRetract f g fg≡id h .fst = f ∘p (h .fst) ∘p g
+PrePtbRetract {A = A} {A' = A'} f g fg≡id (h , h≈id) .snd =
+  transport (λ i → (f ∘p h ∘p g) ≈mon fg≡id i) f∘h∘g≈f∘g
+  where
+    f∘h∘g≈f∘g : (f ∘p h ∘p g) ≈mon (f ∘p g)
+    f∘h∘g≈f∘g x y x≈y = f .pres≈ (h≈id (g $ x) (g $ y) (g .pres≈ x≈y))
+
+
+
 -- Action of the U functor on pre-perturbations
 
 U-PrePtb :
@@ -282,6 +317,20 @@ A×-PrePtb .fst p .snd x y x≈y = x≈y .fst , (p .snd _ _ (x≈y .snd))
 A×-PrePtb .snd .IsMonoidHom.presε = refl
 A×-PrePtb .snd .IsMonoidHom.pres· x y = refl
 
+
+
+module _ {k : Clock} where
+
+  open Clocked k
+  open ClockedCombinators k
+
+  Endo▹ : {ℓA ℓ≤A ℓ≈A : Level} {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    ⟨ Endo A ⟩ → ⟨ Endo (PB▹ A) ⟩
+  Endo▹ f .fst = Map▹ (f .fst)
+  Endo▹ f .snd x x' x≈x' t = f .snd (x t) (x' t) (x≈x' t)
+
+
+
 -- Iterated composition of pre-perturbations
 -- Leaving in case it is needed...
 {-
@@ -311,3 +360,6 @@ module NatMonoidHomomorphismFacts where
     NatM→.f (CEndo B) ≡ _^Cpreptb_
   h-eq-C = {!!}
 -}
+
+
+
