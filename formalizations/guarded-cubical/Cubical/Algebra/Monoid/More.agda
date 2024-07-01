@@ -13,7 +13,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Nat hiding (_·_ ; _^_)
 open import Cubical.Data.Unit
 
-open import Cubical.Algebra.Monoid.Base
+open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.CommMonoid.Base
 
@@ -26,11 +26,45 @@ open import Cubical.Reflection.RecordEquiv
 
 private
   variable
-    ℓ ℓ' ℓ'' : Level
+    ℓ ℓ' ℓ'' ℓ''' : Level
 
 
 open IsMonoidHom
 
+-- Isomorphism between IsMonoidHom and a sigma type
+unquoteDecl IsMonoidHomIsoΣ = declareRecordIsoΣ IsMonoidHomIsoΣ (quote (IsMonoidHom))
+
+isPropIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
+  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
+  isProp (IsMonoidHom M f N)
+isPropIsMonoidHom M f N =
+  isPropRetract
+    (Iso.fun IsMonoidHomIsoΣ) (Iso.inv IsMonoidHomIsoΣ) (Iso.leftInv IsMonoidHomIsoΣ)
+    (isProp× (N.is-set _ _) (isPropΠ2 (λ x y → N.is-set _ _)))
+  where
+    module N = MonoidStr N
+
+
+
+isSetIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
+  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
+  isSet (IsMonoidHom M f N)
+isSetIsMonoidHom M f N = isProp→isSet (isPropIsMonoidHom M f N)
+
+isSetMonoidHom : (M : Monoid ℓ) (N : Monoid ℓ') →
+  isSet (MonoidHom M N)
+isSetMonoidHom M N =
+  isSetΣ (isSet→ N.is-set) (λ h → isSetIsMonoidHom (M .snd) h (N .snd))
+  where
+    module N = MonoidStr (N .snd)
+
+-- Equality of monoid homomorphisms follows from equality of the
+-- underlying functions.
+
+eqMonoidHom : {M : Monoid ℓ} {N : Monoid ℓ'} ->
+  (f g : MonoidHom M N) ->
+  fst f ≡ fst g -> f ≡ g
+eqMonoidHom f g eq = Σ≡Prop (λ f → isPropIsMonoidHom _ _ _) eq
 
 -- Opposite of a monoid
 
@@ -65,46 +99,12 @@ g ∘hom f = fst g ∘ fst f  ,
              ((cong (fst g) (snd f .presε)) ∙ (snd g .presε))
              λ m m' -> cong (fst g) (snd f .pres· m m') ∙ snd g .pres· _ _
 
+infixr 9 _∘hom_
 
-
--- Isomorphism between IsMonoidHom and a sigma type
-unquoteDecl IsMonoidHomIsoΣ = declareRecordIsoΣ IsMonoidHomIsoΣ (quote (IsMonoidHom))
-
-isPropIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
-  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
-  isProp (IsMonoidHom M f N)
-isPropIsMonoidHom M f N =
-  isPropRetract
-    (Iso.fun IsMonoidHomIsoΣ) (Iso.inv IsMonoidHomIsoΣ) (Iso.leftInv IsMonoidHomIsoΣ)
-    (isProp× (N.is-set _ _) (isPropΠ2 (λ x y → N.is-set _ _)))
-  where
-    module N = MonoidStr N
-
-
-
-isSetIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
-  (M : MonoidStr A) (f : A → B) (N : MonoidStr B) →
-  isSet (IsMonoidHom M f N)
-isSetIsMonoidHom M f N = isProp→isSet (isPropIsMonoidHom M f N)
-
-isSetMonoidHom : (M : Monoid ℓ) (N : Monoid ℓ') →
-  isSet (MonoidHom M N)
-isSetMonoidHom M N =
-  isSetΣ (isSet→ N.is-set) (λ h → isSetIsMonoidHom (M .snd) h (N .snd))
-  where
-    module N = MonoidStr (N .snd)
-
-
--- Equality of monoid homomorphisms follows from equality of the
--- underlying functions.
-
-eqMonoidHom : {M : Monoid ℓ} {N : Monoid ℓ'} ->
-  (f g : MonoidHom M N) ->
-  fst f ≡ fst g -> f ≡ g
-eqMonoidHom f g eq = Σ≡Prop (λ f → isPropIsMonoidHom _ _ _) eq
-
-
-
+∘hom-Assoc : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''}{Q : Monoid ℓ'''} ->
+  (f : MonoidHom M N) (g : MonoidHom N P) (h : MonoidHom P Q)
+  -> (h ∘hom g) ∘hom f ≡ h ∘hom (g ∘hom f)
+∘hom-Assoc f g h = eqMonoidHom _ _ refl 
 
 isSetMonoid : (M : Monoid ℓ) -> isSet ⟨ M ⟩
 isSetMonoid M = M .snd .isMonoid .isSemigroup .is-set

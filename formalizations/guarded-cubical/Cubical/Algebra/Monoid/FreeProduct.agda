@@ -13,13 +13,13 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 
-open import Cubical.Data.Sum hiding (rec)
+open import Cubical.Data.Sum hiding (rec; elim)
 open import Cubical.Data.Sigma
 
 
 private
   variable
-    ℓ ℓ' ℓ'' : Level
+    ℓ ℓ' ℓ'' ℓ''' : Level
 
 
 open IsMonoidHom
@@ -231,6 +231,24 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
     → rec {P = P} ϕM ϕN ≡ ψ
   rec-is-uniq ψ₁≡ ψ₂≡ = UMP.unique _ _ _ _ ψ₁≡ ψ₂≡
 
+  ind : ∀ {P : Monoid ℓ''} {ϕ ψ : MonoidHom (M ⊕ N) P}
+      → (ϕ ∘hom i₁ ≡ ψ ∘hom i₁)
+      → (ϕ ∘hom i₂ ≡ ψ ∘hom i₂)
+      → ϕ ≡ ψ
+  ind ϕ≡ψ₁ ϕ≡ψ₂ = sym (rec-is-uniq refl refl) ∙ rec-is-uniq ϕ≡ψ₁ ϕ≡ψ₂
+
+  elim : {P₁ : Monoid ℓ''}{P₂ : Monoid ℓ'''}
+    (p : MonoidHom P₁ P₂)
+    (ϕ : MonoidHom (M ⊕ N) P₂)
+    (liftM : Σ[ ϕM^ ∈ MonoidHom M P₁ ] p ∘hom ϕM^ ≡ ϕ ∘hom i₁)
+    (liftN : Σ[ ϕN^ ∈ MonoidHom N P₁ ] p ∘hom ϕN^ ≡ ϕ ∘hom i₂)
+    → Σ[ ϕ^ ∈ MonoidHom (M ⊕ N) P₁ ]
+      p ∘hom ϕ^ ≡ ϕ
+  elim p ϕ liftM liftN .fst = rec (liftM .fst) (liftN .fst)
+  elim p ϕ liftM liftN .snd = ind
+    (eqMonoidHom _ _ refl ∙ liftM .snd)
+    (eqMonoidHom _ _ refl ∙ liftN .snd)
+
 -- Eliminating from M ⊕ N into a type A parameterized by elements of
 -- M ⊕ N and elements of an arbitrary monoid P.
 module Elim2
@@ -241,7 +259,6 @@ module Elim2
   (A : ⟨ M ⊕ N ⟩ → ⟨ P ⟩ → Type ℓA)
   (AProp : ∀ {x y} → isProp (A x y))
   (f : MonoidHom M P) (g : MonoidHom N P)
-  -- (isMon : MonoidStr (Σ[ x ∈ ⟨ M ⊕ N ⟩ ] A x ([ f ,hom g ] .fst x)))
   where
 
   module M = MonoidStr (M .snd)
