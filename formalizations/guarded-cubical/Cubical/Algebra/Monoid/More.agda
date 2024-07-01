@@ -66,6 +66,17 @@ eqMonoidHom : {M : Monoid ℓ} {N : Monoid ℓ'} ->
   fst f ≡ fst g -> f ≡ g
 eqMonoidHom f g eq = Σ≡Prop (λ f → isPropIsMonoidHom _ _ _) eq
 
+-- Constant homomorphism from M to N
+
+ε-hom : {M : Monoid ℓ} {N : Monoid ℓ'} →
+  MonoidHom M N
+ε-hom {N = N} .fst _ = N.ε
+  where module N = MonoidStr (N .snd) 
+ε-hom .snd .presε = refl
+ε-hom {N = N} .snd .pres· = λ _ _ → sym (N.·IdR N.ε)
+  where module N = MonoidStr (N .snd)
+
+
 -- Opposite of a monoid
 
 _^op : (M : Monoid ℓ) → Monoid ℓ
