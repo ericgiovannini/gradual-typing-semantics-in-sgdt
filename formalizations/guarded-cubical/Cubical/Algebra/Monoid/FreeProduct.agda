@@ -237,16 +237,26 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
       → ϕ ≡ ψ
   ind ϕ≡ψ₁ ϕ≡ψ₂ = sym (rec-is-uniq refl refl) ∙ rec-is-uniq ϕ≡ψ₁ ϕ≡ψ₂
 
-  elim : {P₁ : Monoid ℓ''}{P₂ : Monoid ℓ'''}
+  elimFact : {P₁ : Monoid ℓ''}{P₂ : Monoid ℓ'''}
     (p : MonoidHom P₁ P₂)
     (ϕ : MonoidHom (M ⊕ N) P₂)
     (liftM : factorization p (ϕ ∘hom i₁))
     (liftN : factorization p (ϕ ∘hom i₂))
     → factorization p ϕ
-  elim p ϕ liftM liftN .fst = rec (liftM .fst) (liftN .fst)
-  elim p ϕ liftM liftN .snd = ind
+  elimFact p ϕ liftM liftN .fst = rec (liftM .fst) (liftN .fst)
+  elimFact p ϕ liftM liftN .snd = ind
     (eqMonoidHom _ _ refl ∙ liftM .snd)
     (eqMonoidHom _ _ refl ∙ liftN .snd)
+
+  elimSection : {P : Monoid ℓ''}
+    (p : MonoidHom P (M ⊕ N))
+    (liftM : factorization p i₁)
+    (liftN : factorization p i₂)
+    → sectionHom p
+  elimSection p liftM liftN =
+    elimFact p _
+      ((liftM .fst) , eqMonoidHom _ _ (cong fst (liftM .snd)))
+      ((liftN .fst) , eqMonoidHom _ _ (cong fst (liftN .snd)))
 
 -- Eliminating from M ⊕ N into a type A parameterized by elements of
 -- M ⊕ N and elements of an arbitrary monoid P.

@@ -9,5 +9,5 @@ open import Common.Later
 
 module Semantics.Concrete.Types (k : Clock) where
 
-open import Semantics.Concrete.Types.Base public
-open import Semantics.Concrete.Types.Constructions public
+open import Semantics.Concrete.Types.Base k public
+open import Semantics.Concrete.Types.Constructions k public
