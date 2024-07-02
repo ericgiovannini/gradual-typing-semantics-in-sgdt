@@ -32,6 +32,9 @@ open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.Predomains.PrePerturbations k
 open import Semantics.Concrete.Types.Base k
 
+open import Semantics.Concrete.Dyn k
+open import Semantics.Concrete.DynPerturb k
+
 private
   variable
     ℓ ℓ' ℓ'' ℓ''' : Level
@@ -101,8 +104,13 @@ A ⟶ B =
     (A⟶-PrePtb ∘hom (A .snd .interpV ^opHom))
     (⟶B-PrePtb ∘hom (B .snd .snd .snd))
 
--- -- TODO: dyn
--- -- dyn : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
--- -- dyn = mkValType Dyn PtbD ι-dyn where
--- --   open DynDef
+-- TODO: dyn
+dyn' : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
+dyn' = mkValType Dyn' PtbD ι-dyn' where
+  open DynDef
+  open Guarded (next Dyn)
+
+dyn : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
+dyn = mkValType Dyn PtbD ι-dyn where
+  open DynDef
 
