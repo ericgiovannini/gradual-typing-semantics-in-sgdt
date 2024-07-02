@@ -41,7 +41,7 @@ private
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
     ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
     ℓc ℓc' ℓd ℓd' : Level
-  
+
     ℓA₁   ℓ≤A₁   ℓ≈A₁   : Level
     ℓA₁'  ℓ≤A₁'  ℓ≈A₁'  : Level
     ℓA₂   ℓ≤A₂   ℓ≈A₂   : Level
@@ -60,7 +60,7 @@ private
     ℓAₒ ℓ≤Aₒ ℓ≈Aₒ : Level
     ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ : Level
     ℓBₒ ℓ≤Bₒ ℓ≈Bₒ : Level
-   
+
     ℓc₁ ℓc₂ ℓc₃  : Level
 
     ℓMA₁ ℓMA₂ ℓMA₃ : Level
@@ -73,6 +73,7 @@ open MonoidStr
 open IsMonoidHom
 open IsSemigroup
 open IsMonoid
+
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM')
          (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
@@ -91,10 +92,9 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   |VRelPtb| : Type _
   |VRelPtb| = Σ[ pA ∈ ⟨ MA ⟩ ] Σ[ pA' ∈ ⟨ MA' ⟩ ] VRelPtbSq pA pA'
 
-  opaque 
+  opaque
     VRelPtb≡ : {sq1 sq2 : |VRelPtb|} → (sq1 .fst ≡ sq2 .fst) → (sq1 .snd .fst ≡ sq2 .snd .fst) → sq1 ≡ sq2
-    VRelPtb≡ {sq1} {sq2} pfst psnd = ΣPathP (pfst , (ΣPathPProp (λ pA' →
-      isPropPBSq c c (iA .fst (sq2 .fst) .fst) (iA' .fst pA' .fst)) psnd))
+    VRelPtb≡ {sq1} {sq2} pfst psnd = ΣPathP (pfst , (ΣPathPProp (isPropVRelPtbSq (sq2 .fst)) psnd))
 
   VRelPtb : Monoid _
   VRelPtb .fst = |VRelPtb|
@@ -102,8 +102,8 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   VRelPtb .snd .ε .snd .fst = MA' .snd .ε
   VRelPtb .snd .ε .snd .snd = subst2
     (PBSq c c)
-    (cong fst (sym (A .snd .interpV .snd .presε))) 
-    (cong fst (sym (A' .snd .interpV .snd .presε))) 
+    (cong fst (sym (iA .snd .presε)))
+    (cong fst (sym (iA' .snd .presε)))
     (Predom-IdSqV c)
   VRelPtb .snd ._·_ (pA , pA' , pSq) (qA , qA' , qSq) .fst      =
     MA .snd ._·_ pA qA
@@ -112,8 +112,8 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   VRelPtb .snd ._·_ (pA , pA' , pSq) (qA , qA' , qSq) .snd .snd =
     subst2
       (PBSq c c)
-      (cong fst (sym (A .snd .interpV .snd .pres· pA qA)))
-      (cong fst (sym (A' .snd .interpV .snd .pres· pA' qA')))
+      (cong fst (sym (iA .snd .pres· pA qA)))
+      (cong fst (sym (iA' .snd .pres· pA' qA')))
       (CompSqV {c₁ = c}{c₂ = c}{c₃ = c}
         {f₁ = iA .fst qA .fst}{g₁ = iA' .fst qA' .fst}
         {f₂ = iA .fst pA .fst}{g₂ = iA' .fst pA' .fst}
@@ -129,18 +129,18 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
     isSetΣ (MA' .snd .isSemigroup .is-set) λ pA' →
     isProp→isSet (isPropVRelPtbSq pA pA')
 
-  π1 : MonoidHom VRelPtb MA
-  π1 .fst sq = sq .fst
-  π1 .snd .presε = refl
-  π1 .snd .pres· x y = refl
+  π1V : MonoidHom VRelPtb MA
+  π1V .fst sq = sq .fst
+  π1V .snd .presε = refl
+  π1V .snd .pres· x y = refl
 
-  π2 : MonoidHom VRelPtb MA'
-  π2 .fst sq = sq .snd .fst
-  π2 .snd .presε = refl
-  π2 .snd .pres· x y = refl
+  π2V : MonoidHom VRelPtb MA'
+  π2V .fst sq = sq .snd .fst
+  π2V .snd .presε = refl
+  π2V .snd .pres· x y = refl
 
-  PushV = sectionHom π1
-  PullV = sectionHom π2
+  PushV = sectionHom π1V
+  PullV = sectionHom π2V
 
   module _ {M : Monoid ℓ''} where
     corec : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
@@ -152,22 +152,22 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
 
     corecFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
-        → factorization π1 ϕ
+        → factorization π1V ϕ
     corecFact1 {ϕ} ϕ' ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
     corecFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
-        → factorization π2 ϕ'
+        → factorization π2V ϕ'
     corecFact2 ϕ {ϕ'} ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
   corecPushV : (ϕ' : MonoidHom MA MA')
         → (∀ m → PBSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
-        → sectionHom π1
+        → sectionHom π1V
   corecPushV ϕ' ϕSq = corecFact1 ϕ' ϕSq
 
   corecPullV : (ϕ : MonoidHom MA' MA)
         → (∀ m' → PBSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
-        → sectionHom π2
+        → sectionHom π2V
   corecPullV ϕ ϕSq = corecFact2 ϕ ϕSq
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
@@ -175,21 +175,154 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   VRelPP ℓc = Σ[ c ∈ PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
     PushV A A' c
     × PullV A A' c
+
 module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈' ℓM'} {ℓc}
          (c : VRelPP A A' ℓc)
   where
-  pushV : MonoidHom (A .snd .PtbV) (A' .snd .PtbV)
-  pushV = π2 _ _ _ ∘hom c .snd .fst .fst
+
+  private
+    MA = A .snd .PtbV
+    iA = A .snd .interpV
+    MA' = A' .snd .PtbV
+    iA' = A' .snd .interpV
+
+  pushV : MonoidHom MA MA'
+  pushV = π2V _ _ _ ∘hom c .snd .fst .fst
 
   pushVSq : ∀ pA → VRelPtbSq A A' (c .fst) pA (pushV .fst pA)
   pushVSq pA = subst (λ pA' → VRelPtbSq A A' (c .fst) pA' (pushV .fst pA))
     (funExt⁻ (cong fst (c .snd .fst .snd)) pA)
     (c .snd .fst .fst .fst pA .snd .snd)
 
-  pullV : MonoidHom (A' .snd .PtbV) (A .snd .PtbV)
-  pullV = π1 _ _ _ ∘hom c .snd .snd .fst
+  pullV : MonoidHom MA' MA
+  pullV = π1V _ _ _ ∘hom c .snd .snd .fst
 
   pullVSq : ∀ pA' → VRelPtbSq A A' (c .fst) (pullV .fst pA') pA'
   pullVSq pA' = subst (λ pA → VRelPtbSq A A' (c .fst) (pullV .fst pA') pA)
     (funExt⁻ (cong fst (c .snd .snd .snd)) pA')
     (c .snd .snd .fst .fst pA' .snd .snd)
+
+module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ≈' ℓM') {ℓd}
+         (d : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd)
+  where
+  private
+    MB = B .snd .snd .fst
+    module MB = MonoidStr (MB .snd)
+    iB = B .snd .snd .snd
+    MB' = B' .snd .snd .fst
+    module MB' = MonoidStr (MB' .snd)
+    iB' = B' .snd .snd .snd
+
+  CRelPtbSq : ⟨ MB ⟩ → ⟨ MB' ⟩ → Type _
+  CRelPtbSq pB pB' = ErrorDomSq d d (iB .fst pB .fst) (iB' .fst pB' .fst)
+
+  isPropCRelPtbSq : ∀ pB pB' → isProp (CRelPtbSq pB pB')
+  isPropCRelPtbSq pB pB' = isPropErrorDomSq d d (iB .fst pB .fst) (iB' .fst pB' .fst)
+
+  |CRelPtb| : Type _
+  |CRelPtb| = Σ[ pB ∈ ⟨ MB ⟩ ] Σ[ pB' ∈ ⟨ MB' ⟩ ] CRelPtbSq pB pB'
+
+  opaque
+    CRelPtb≡ : {sq1 sq2 : |CRelPtb|} → (sq1 .fst ≡ sq2 .fst) → (sq1 .snd .fst ≡ sq2 .snd .fst) → sq1 ≡ sq2
+    CRelPtb≡ {sq1} {sq2} pfst psnd = ΣPathP (pfst , (ΣPathPProp (isPropCRelPtbSq (sq2 .fst)) psnd))
+
+  CRelPtb : Monoid _
+  CRelPtb .fst = |CRelPtb|
+  CRelPtb .snd .ε .fst      = MB .snd .ε
+  CRelPtb .snd .ε .snd .fst = MB' .snd .ε
+  CRelPtb .snd .ε .snd .snd = subst2 (ErrorDomSq d d)
+    (cong fst (sym (iB .snd .presε)))
+    (cong fst (sym (iB' .snd .presε)))
+    (ED-IdSqV d)
+  CRelPtb .snd ._·_ (pB , pB' , pSq) (qB , qB' , qSq) .fst      = pB MB.· qB
+  CRelPtb .snd ._·_ (pB , pB' , pSq) (qB , qB' , qSq) .snd .fst = pB' MB'.· qB'
+  CRelPtb .snd ._·_ (pB , pB' , pSq) (qB , qB' , qSq) .snd .snd =
+    subst2 (ErrorDomSq d d)
+      (cong fst (sym (iB .snd .pres· pB qB)))
+      (cong fst (sym (iB' .snd .pres· pB' qB')))
+      (ED-CompSqV {d₁ = d}{d₂ = d}{d₃ = d}
+        {ϕ₁ = iB .fst qB .fst}{ϕ₁' = iB' .fst qB' .fst}
+        {ϕ₂ = iB .fst pB .fst}{ϕ₂' = iB' .fst pB' .fst}
+        qSq pSq)
+  CRelPtb .snd .isMonoid .·IdR (pB , pB' , pSq) = CRelPtb≡ (MB .snd .isMonoid .·IdR pB) (MB' .snd .isMonoid .·IdR pB')
+  CRelPtb .snd .isMonoid .·IdL (pB , pB' , pSq) = CRelPtb≡ (MB .snd .isMonoid .·IdL pB) (MB' .snd .isMonoid .·IdL pB')
+  CRelPtb .snd .isMonoid .isSemigroup .·Assoc (pB , pB' , pSq) (qB , qB' , qSq) (rB , rB' , rSq) =
+    CRelPtb≡ (MB .snd .isMonoid .isSemigroup .·Assoc pB qB rB) (MB' .snd .isMonoid .isSemigroup .·Assoc pB' qB' rB')
+  CRelPtb .snd .isMonoid .isSemigroup .is-set =
+    isSetΣ (MB .snd .isSemigroup .is-set) λ pB →
+    isSetΣ (MB' .snd .isSemigroup .is-set) λ pB' →
+    isProp→isSet (isPropCRelPtbSq pB pB')
+
+  π1C : MonoidHom CRelPtb MB
+  π1C .fst sq = sq .fst
+  π1C .snd .presε = refl
+  π1C .snd .pres· x y = refl
+
+  π2C : MonoidHom CRelPtb MB'
+  π2C .fst sq = sq .snd .fst
+  π2C .snd .presε = refl
+  π2C .snd .pres· x y = refl
+
+  PushC = sectionHom π1C
+  PullC = sectionHom π2C
+
+-- --   module _ {M : Monoid ℓ''} where
+-- --     corec : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
+-- --           → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+-- --           → MonoidHom M VRelPtb
+-- --     corec ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
+-- --     corec ϕ ϕ' ϕSq .snd .presε = VRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
+-- --     corec ϕ ϕ' ϕSq .snd .pres· p q = VRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
+
+-- --     corecFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
+-- --         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+-- --         → factorization π1 ϕ
+-- --     corecFact1 {ϕ} ϕ' ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+
+-- --     corecFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
+-- --         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+-- --         → factorization π2 ϕ'
+-- --     corecFact2 ϕ {ϕ'} ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+
+-- --   corecPushV : (ϕ' : MonoidHom MA MA')
+-- --         → (∀ m → PBSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
+-- --         → sectionHom π1
+-- --   corecPushV ϕ' ϕSq = corecFact1 ϕ' ϕSq
+
+-- --   corecPullV : (ϕ : MonoidHom MA' MA)
+-- --         → (∀ m' → PBSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
+-- --         → sectionHom π2
+-- --   corecPullV ϕ ϕSq = corecFact2 ϕ ϕSq
+
+module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ≈' ℓM') where
+  CRelPP : ∀ (ℓd : Level) → Type _
+  CRelPP ℓd = Σ[ d ∈ ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd ]
+    PushC B B' d
+    × PullC B B' d
+
+module _ {B : CompType ℓ ℓ≤ ℓ≈ ℓM} {B' : CompType ℓ' ℓ≤' ℓ≈' ℓM'} {ℓd}
+         (d : CRelPP B B' ℓd)
+  where
+  private
+    MB = B .snd .snd .fst
+    module MB = MonoidStr (MB .snd)
+    iB = B .snd .snd .snd
+    MB' = B' .snd .snd .fst
+    module MB' = MonoidStr (MB' .snd)
+    iB' = B' .snd .snd .snd
+
+  pushC : MonoidHom MB MB'
+  pushC = π2C _ _ _ ∘hom d .snd .fst .fst
+
+  pushCSq : ∀ pB → CRelPtbSq B B' (d .fst) pB (pushC .fst pB)
+  pushCSq pB = subst (λ pB' → CRelPtbSq B B' (d .fst) pB' (pushC .fst pB))
+    (funExt⁻ (cong fst (d .snd .fst .snd)) pB)
+    (d .snd .fst .fst .fst pB .snd .snd)
+
+  pullC : MonoidHom MB' MB
+  pullC = π1C _ _ _ ∘hom d .snd .snd .fst
+
+  pullCSq : ∀ pB → CRelPtbSq B B' (d .fst) (pullC .fst pB) pB
+  pullCSq pB = subst (λ pB' → CRelPtbSq B B' (d .fst) (pullC .fst pB) pB')
+    (funExt⁻ (cong fst (d .snd .snd .snd)) pB)
+    (d .snd .snd .fst .fst pB .snd .snd)
