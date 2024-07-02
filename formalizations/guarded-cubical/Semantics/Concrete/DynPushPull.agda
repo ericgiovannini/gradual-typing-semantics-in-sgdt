@@ -1,12 +1,6 @@
 {-# OPTIONS --rewriting --guarded #-}
-
- -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
-
 {-# OPTIONS --lossy-unification #-}
-
-
-
 open import Common.Later
 
 module Semantics.Concrete.DynPushPull (k : Clock) where
@@ -18,7 +12,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.Instances.Trivial as Trivial
-open import Cubical.Algebra.Monoid.FreeProduct as FP
+open import Cubical.Algebra.Monoid.FreeProduct as FP hiding (elimFact)
 open import Cubical.Data.Nat hiding (_·_ ; ℕ)
 
 import Semantics.Concrete.DoublePoset.Constructions as PB
@@ -32,7 +26,6 @@ open import Semantics.Concrete.Dyn k
 import Semantics.Concrete.DynPerturb k as DP
 
 open import Semantics.Concrete.Types k as Types
--- open import Semantics.Concrete.Types.Constructions k
 open import Semantics.Concrete.Perturbation.Relation.Base k
 
 open PB using (_×dp_)
@@ -67,7 +60,23 @@ inj-nat .fst = Rel.inj-nat
 inj-nat .snd .fst = Trivial.rec , refl
 
 -- Pull
-inj-nat .snd .snd = {!!}
+-- δ : Ptb dyn
+--
+inj-nat .snd .snd = DP.elimFact _ _ (FP.elimFact _ _
+  (corecVFact2 _ _ _ Trivial.corec (λ pD → {!!}))
+  {!!})
+  (FP.elimFact _ _
+    -- U
+    {!!} -- (elimNat _ _ ((tt , (((DP.inj-arr ∘hom i₁) .fst 1) , {!!})) , refl))
+    (FP.elimFact _ _
+    -- domain
+    (corecVFact2 _ _ _ Trivial.corec {!!})
+    (FP.elimFact _ _
+      -- F
+      (elimNat _ _ {!!})
+      -- codomain
+      {!!})))
+-- corecPullV _ _ _ Trivial.corec {!!}
 
 
 --------------------------------------------
@@ -76,15 +85,21 @@ inj-times : VRelPP (dyn' × dyn') dyn' ℓ-zero
 inj-times .fst = Rel.inj-times
 
 -- Push
-inj-times .snd .fst = corecPushV _ _ _ DP.inj-times {!!}
+inj-times .snd .fst = FP.elimSection _
+  (corecVFact1 _ _ _ {!!} {!!})
+  {!!}
 -- elimSection _
 --   (corecFact1 (dyn' × dyn') dyn' (fst inj-times) {!!} {!!})
 --   {!!}
 
 -- Pull
-inj-times .snd .snd = corecPullV _ _ _
-  (DP.cases (idMon _) ε-hom)
-  λ {p (d₁ , d₂) (prod d₁' d₂') (⊑-prod d₁⊑d₁' d₂⊑d₂') → {!!}}
+inj-times .snd .snd = DP.elimFact _ _
+  (FP.elimFact _ _
+    (corecVFact2 _ _ _ i₁ {!!})
+    (corecVFact2 _ _ _ i₂ {!!}))
+  {!!}
+  -- (DP.cases (idMon _) ε-hom)
+  -- λ {p (d₁ , d₂) (prod d₁' d₂') (⊑-prod d₁⊑d₁' d₂⊑d₂') → {!!}}
 
 
 --------------------------------------------
@@ -96,7 +111,7 @@ inj-arr .fst = Rel.inj-arr
 -- Push
 inj-arr .snd .fst = {!!}
 
--- Pull 
+-- Pull
 inj-arr .snd .snd = {!!}
 
 

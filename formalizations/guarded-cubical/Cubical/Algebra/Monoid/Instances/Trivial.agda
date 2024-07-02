@@ -24,3 +24,8 @@ rec : ∀ {ℓ}{M : Monoid ℓ} → MonoidHom TrivialMonoid M
 rec {M = M} .fst x = M .snd .ε
 rec {M = M} .snd .IsMonoidHom.presε = refl
 rec {M = M} .snd .IsMonoidHom.pres· x y = sym (M .snd .isMonoid .IsMonoid.·IdR _)
+
+corec : ∀ {ℓ}{M : Monoid ℓ} → MonoidHom M TrivialMonoid
+corec .fst x = tt
+corec .snd .IsMonoidHom.presε = refl
+corec .snd .IsMonoidHom.pres· x y = refl
