@@ -256,6 +256,8 @@ module DynDef {ℓ : Level} where
   module DynRel where
 
     open Guarded (next Dyn)
+    module Dyn = PosetBisimStr (Dyn .snd)
+    module Dyn' = PosetBisimStr (Dyn' .snd)
 
     _Dyn⊑_ : ⟨ Dyn ⟩ → ⟨ Dyn ⟩ → Type ℓ
     _Dyn⊑_ = Dyn .snd .PosetBisimStr._≤_
@@ -263,21 +265,30 @@ module DynDef {ℓ : Level} where
     _Dyn≈_ : ⟨ Dyn ⟩ → ⟨ Dyn ⟩ → Type ℓ
     _Dyn≈_ = Dyn .snd .PosetBisimStr._≈_
 
+    _Dyn'⊑_ = _⊑d_
+    _Dyn'≈_ = _≈d_
+
     Dyn'⊑→Dyn⊑ : {d d' : ⟨ Dyn' ⟩} →
       d ⊑d d' → (Dyn'→Dyn $ d) Dyn⊑ (Dyn'→Dyn $ d')
-    Dyn'⊑→Dyn⊑ H = {!!}
+    Dyn'⊑→Dyn⊑ H = Dyn'→Dyn .PBMor.isMon H
+    
+    -- Dyn'⊑→Dyn⊑ {d = d} {d' = d'} H = transport
+    --   (λ i → PosetBisimStr._≤_ (snd (unfold-Dyn (~ i)))
+    --     (transport-filler (λ j → ⟨ unfold-Dyn (~ j) ⟩) d i)
+    --     (transport-filler (λ j → ⟨ unfold-Dyn (~ j) ⟩) d' i))
+    --   H
 
     Dyn⊑→Dyn'⊑ : {d d' : ⟨ Dyn ⟩} →
       d Dyn⊑ d' → (Dyn→Dyn' $ d) ⊑d (Dyn→Dyn' $ d')
-    Dyn⊑→Dyn'⊑ H = {!!}
+    Dyn⊑→Dyn'⊑ {d = d} {d' = d'} H = Dyn→Dyn' .PBMor.isMon H
 
     Dyn'≈→Dyn≈ : {d d' : ⟨ Dyn' ⟩} →
       d ≈d d' → (Dyn'→Dyn $ d) Dyn≈ (Dyn'→Dyn $ d')
-    Dyn'≈→Dyn≈ H = {!!}
+    Dyn'≈→Dyn≈ H = Dyn'→Dyn .PBMor.pres≈ H
 
     Dyn≈→Dyn'≈ : {d d' : ⟨ Dyn ⟩} →
       d Dyn≈ d' → (Dyn→Dyn' $ d) ≈d (Dyn→Dyn' $ d')
-    Dyn≈→Dyn'≈ H = {!!}
+    Dyn≈→Dyn'≈ H = Dyn→Dyn' .PBMor.pres≈ H
   
 
   ----------------------
@@ -480,10 +491,18 @@ module DynDef {ℓ : Level} where
     (⊑-fun* : ∀ {f~ g~} →
       (p : (PB▹ (Dyn ==> 𝕃 Dyn)) .snd .PosetBisimStr._≤_ f~ g~) →
       B (Dyn'→Dyn $ (fun f~)) (Dyn'→Dyn $ (fun g~)) (Dyn'⊑→Dyn⊑ (⊑-fun p))) where
-      
+
+    Dyn'⊑-rec : (d d' : ⟨ Dyn' ⟩) (H : d Dyn'⊑ d') →
+      B (Dyn'→Dyn $ d) (Dyn'→Dyn $ d') (Dyn'⊑→Dyn⊑ H)
+    Dyn'⊑-rec .(nat _) .(nat _) (Guarded.⊑-nat eq) = ⊑-nat* eq
+    Dyn'⊑-rec .(prod _ _) .(prod _ _) (Guarded.⊑-prod p q) = {!⊑-prod*!}
+    Dyn'⊑-rec .(fun _) .(fun _) (Guarded.⊑-fun H~) = ⊑-fun* H~
     
     Dyn⊑-rec : (d d' : ⟨ Dyn ⟩) → (H : d Dyn⊑ d') → B d d' H
-    Dyn⊑-rec d d' H = {!!}
+    Dyn⊑-rec d d' H = {!aux!}
+      where
+        aux : B (Dyn'→Dyn $ (Dyn→Dyn' $ d)) (Dyn'→Dyn $ (Dyn→Dyn' $ d')) (Dyn'⊑→Dyn⊑ (Dyn⊑→Dyn'⊑ H))
+        aux = Dyn'⊑-rec (Dyn→Dyn' $ d) (Dyn→Dyn' $ d') (Dyn⊑→Dyn'⊑ H)
 
  -- data _⊑d_ : DynTy Fun → DynTy Fun → Type ℓ where
  --      ⊑-nat : ∀ {n m} → n ≡ m → (nat n) ⊑d (nat m)

@@ -310,9 +310,32 @@ module _ {A : Monoid ℓ}
 
 
 
+open IsMonoidHom
+
+EndoDyn→EndoDyn' : MonoidHom (Endo Dyn) (Endo Dyn')
+EndoDyn→EndoDyn' .fst g = PrePtbRetract Dyn→Dyn' Dyn'→Dyn fold-unfold g
+EndoDyn→EndoDyn' .snd .presε = PrePtb≡ _ _ (cong PBMor.f fold-unfold)
+EndoDyn→EndoDyn' .snd .pres· g h =
+  let eq = (sym (funExt (λ x →
+        let y = h .fst .PBMor.f (transport (λ i → unfold-Dyn (~ i) .fst) x) in
+        λ i → transport (λ j → unfold-Dyn j .fst) (g .fst .PBMor.f (unfold-fold i .PBMor.f y))))) in
+  PrePtb≡ _ _ eq
+
+EndoDyn'→EndoDyn : MonoidHom (Endo Dyn') (Endo Dyn)
+EndoDyn'→EndoDyn .fst g = PrePtbRetract Dyn'→Dyn Dyn→Dyn' unfold-fold g 
+EndoDyn'→EndoDyn .snd .presε = PrePtb≡ _ _ (cong PBMor.f unfold-fold)
+EndoDyn'→EndoDyn .snd .pres· g h =
+  let eq = (sym (funExt (λ x →
+        let y = h .fst .PBMor.f (transport (λ i → unfold-Dyn i .fst) x) in
+        λ i → transport (λ j → unfold-Dyn (~ j) .fst) (g .fst .PBMor.f (fold-unfold i .PBMor.f y))))) in
+  PrePtb≡ _ _ eq
+
+
 -- Monoid homomorphism into the endomorphisms on Dyn
 ι-dyn : MonoidHom PtbD (Endo Dyn)
-ι-dyn = EndoDyn'→EndoDyn ∘hom rec
+
+ι-dyn' : MonoidHom PtbD (Endo Dyn')
+ι-dyn' = rec
   -- ×-l
   (mkEndoDynHom ε-hom ×A-PrePtb ε-hom)
   -- ×-r
@@ -329,26 +352,9 @@ module _ {A : Monoid ℓ}
   where
 
     open Embeddings
-    open IsMonoidHom
     open F-ob
 
-    EndoDyn→EndoDyn' : MonoidHom (Endo Dyn) (Endo Dyn')
-    EndoDyn→EndoDyn' .fst g = PrePtbRetract Dyn→Dyn' Dyn'→Dyn fold-unfold g
-    EndoDyn→EndoDyn' .snd .presε = PrePtb≡ _ _ (cong PBMor.f fold-unfold)
-    EndoDyn→EndoDyn' .snd .pres· g h =
-      let eq = (sym (funExt (λ x →
-            let y = h .fst .PBMor.f (transport (λ i → unfold-Dyn (~ i) .fst) x) in
-            λ i → transport (λ j → unfold-Dyn j .fst) (g .fst .PBMor.f (unfold-fold i .PBMor.f y))))) in
-      PrePtb≡ _ _ eq
-
-    EndoDyn'→EndoDyn : MonoidHom (Endo Dyn') (Endo Dyn)
-    EndoDyn'→EndoDyn .fst g = PrePtbRetract Dyn'→Dyn Dyn→Dyn' unfold-fold g 
-    EndoDyn'→EndoDyn .snd .presε = PrePtb≡ _ _ (cong PBMor.f unfold-fold)
-    EndoDyn'→EndoDyn .snd .pres· g h =
-      let eq = (sym (funExt (λ x →
-            let y = h .fst .PBMor.f (transport (λ i → unfold-Dyn i .fst) x) in
-            λ i → transport (λ j → unfold-Dyn (~ j) .fst) (g .fst .PBMor.f (fold-unfold i .PBMor.f y))))) in
-      PrePtb≡ _ _ eq
+    
        
 {-
 
@@ -391,13 +397,7 @@ Goal :
       ∘hom EndoDyn'→EndoDyn)
       
     
-
-
-
-
-
-
-
+ι-dyn = EndoDyn'→EndoDyn ∘hom ι-dyn'
 
 
 
