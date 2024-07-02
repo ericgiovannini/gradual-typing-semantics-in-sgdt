@@ -1,4 +1,11 @@
-{- Extension of pertubrations from types to relations, and push-pull -}
+{-
+   Extension of pertubrations from types to relations, and push-pull
+
+   In principle this construction could be abstracted to work on any
+   double category with perturbations but for now at least we copy the
+   construction for value relations and computation relations
+-}
+
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --allow-unsolved-metas #-}
@@ -74,6 +81,8 @@ open IsMonoidHom
 open IsSemigroup
 open IsMonoid
 
+
+
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM')
          (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
@@ -143,32 +152,32 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   PullV = sectionHom π2V
 
   module _ {M : Monoid ℓ''} where
-    corec : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
+    corecV : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
           → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
           → MonoidHom M VRelPtb
-    corec ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
-    corec ϕ ϕ' ϕSq .snd .presε = VRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
-    corec ϕ ϕ' ϕSq .snd .pres· p q = VRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
+    corecV ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
+    corecV ϕ ϕ' ϕSq .snd .presε = VRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
+    corecV ϕ ϕ' ϕSq .snd .pres· p q = VRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
 
-    corecFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
+    corecVFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
         → factorization π1V ϕ
-    corecFact1 {ϕ} ϕ' ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+    corecVFact1 {ϕ} ϕ' ϕSq = (corecV ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
-    corecFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
+    corecVFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
         → factorization π2V ϕ'
-    corecFact2 ϕ {ϕ'} ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+    corecVFact2 ϕ {ϕ'} ϕSq = (corecV ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
   corecPushV : (ϕ' : MonoidHom MA MA')
         → (∀ m → PBSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
         → sectionHom π1V
-  corecPushV ϕ' ϕSq = corecFact1 ϕ' ϕSq
+  corecPushV ϕ' ϕSq = corecVFact1 ϕ' ϕSq
 
   corecPullV : (ϕ : MonoidHom MA' MA)
         → (∀ m' → PBSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
         → sectionHom π2V
-  corecPullV ϕ ϕSq = corecFact2 ϕ ϕSq
+  corecPullV ϕ ϕSq = corecVFact2 ϕ ϕSq
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
   VRelPP : ∀ (ℓc : Level) → Type _
@@ -266,33 +275,33 @@ module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ�
   PushC = sectionHom π1C
   PullC = sectionHom π2C
 
--- --   module _ {M : Monoid ℓ''} where
--- --     corec : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
--- --           → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
--- --           → MonoidHom M VRelPtb
--- --     corec ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
--- --     corec ϕ ϕ' ϕSq .snd .presε = VRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
--- --     corec ϕ ϕ' ϕSq .snd .pres· p q = VRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
+  module _ {M : Monoid ℓ''} where
+    corecC : ∀ (ϕ : MonoidHom M MB) (ϕ' : MonoidHom M MB')
+          → (∀ m → ErrorDomSq d d (iB .fst (ϕ .fst m) .fst) (iB' .fst (ϕ' .fst m) .fst))
+          → MonoidHom M CRelPtb
+    corecC ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
+    corecC ϕ ϕ' ϕSq .snd .presε = CRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
+    corecC ϕ ϕ' ϕSq .snd .pres· p q = CRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
 
--- --     corecFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
--- --         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
--- --         → factorization π1 ϕ
--- --     corecFact1 {ϕ} ϕ' ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+    corecCFact1 : {ϕ : MonoidHom M MB} (ϕ' : MonoidHom M MB')
+        → (∀ m → ErrorDomSq d d (iB .fst (ϕ .fst m) .fst) (iB' .fst (ϕ' .fst m) .fst))
+        → factorization π1C ϕ
+    corecCFact1 {ϕ} ϕ' ϕSq = (corecC ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
--- --     corecFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
--- --         → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
--- --         → factorization π2 ϕ'
--- --     corecFact2 ϕ {ϕ'} ϕSq = (corec ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
+    corecCFact2 : (ϕ : MonoidHom M MB) {ϕ' : MonoidHom M MB'}
+        → (∀ m → ErrorDomSq d d (iB .fst (ϕ .fst m) .fst) (iB' .fst (ϕ' .fst m) .fst))
+        → factorization π2C ϕ'
+    corecCFact2 ϕ {ϕ'} ϕSq = (corecC ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
--- --   corecPushV : (ϕ' : MonoidHom MA MA')
--- --         → (∀ m → PBSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
--- --         → sectionHom π1
--- --   corecPushV ϕ' ϕSq = corecFact1 ϕ' ϕSq
+  corecPushC : (ϕ' : MonoidHom MB MB')
+        → (∀ m → ErrorDomSq d d (iB .fst m .fst) (iB' .fst (ϕ' .fst m) .fst))
+        → sectionHom π1C
+  corecPushC ϕ' ϕSq = corecCFact1 ϕ' ϕSq
 
--- --   corecPullV : (ϕ : MonoidHom MA' MA)
--- --         → (∀ m' → PBSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
--- --         → sectionHom π2
--- --   corecPullV ϕ ϕSq = corecFact2 ϕ ϕSq
+  corecPullC : (ϕ : MonoidHom MB' MB)
+        → (∀ m' → ErrorDomSq d d (iB .fst (ϕ .fst m') .fst) (iB' .fst m' .fst))
+        → sectionHom π2C
+  corecPullC ϕ ϕSq = corecCFact2 ϕ ϕSq
 
 module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ≈' ℓM') where
   CRelPP : ∀ (ℓd : Level) → Type _

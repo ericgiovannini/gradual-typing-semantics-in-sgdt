@@ -93,6 +93,17 @@ _^opHom : {M : Monoid ℓ} {N : Monoid ℓ'} →
 (h ^opHom) .snd .presε = h .snd .presε
 (h ^opHom) .snd .pres· x y = h .snd .pres· y x
 
+opRec : {M : Monoid ℓ} {N : Monoid ℓ'} →
+  MonoidHom M (N ^op) → MonoidHom (M ^op) N
+opRec ϕ^ .fst = ϕ^ .fst
+opRec ϕ^ .snd .presε = ϕ^ .snd .presε
+opRec ϕ^ .snd .pres· x y = ϕ^ .snd .pres· y x
+
+opCoRec : {M : Monoid ℓ} {N : Monoid ℓ'}
+  → MonoidHom (M ^op) N → MonoidHom M (N ^op)
+opCoRec ϕ^ .fst = ϕ^ .fst
+opCoRec ϕ^ .snd .presε = ϕ^ .snd .presε
+opCoRec ϕ^ .snd .pres· x y = ϕ^ .snd .pres· y x
 
 -- Identity monoid homomorphism
 
@@ -380,5 +391,24 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'} where
     factorization : MonoidHom M N → MonoidHom P N → Type _
     factorization π ϕ = Σ[ ϕ^ ∈ MonoidHom P M ] π ∘hom ϕ^ ≡ ϕ
 
+  module _ (π : MonoidHom M N) where
+    --elim Nat
+    module _ (ϕ : MonoidHom NatM N) where
+      elimNat : (Σ[ m ∈ ⟨ M ⟩ ] π .fst m ≡ ϕ .fst 1) → factorization π ϕ
+      elimNat lift1 .fst = NatM→.h M (lift1 .fst)
+      elimNat lift1 .snd = NatM-ind _ _ (cong (π .fst) (NatM→.f1≡x M _)
+        ∙ lift1 .snd)
+
   sectionHom : MonoidHom M N → Type _
   sectionHom π = factorization π (idMon _)
+
+
+module _ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoid ℓ''}
+  (π : MonoidHom M N)
+  (ϕ : MonoidHom (P ^op) N)
+  where
+  elimOp :
+    factorization (π ^opHom) (opCoRec {M = P}{N = N} ϕ)
+    → factorization π ϕ
+  elimOp opFact .fst = opRec (opFact .fst)
+  elimOp opFact .snd = eqMonoidHom _ _ (cong fst (opFact .snd))
