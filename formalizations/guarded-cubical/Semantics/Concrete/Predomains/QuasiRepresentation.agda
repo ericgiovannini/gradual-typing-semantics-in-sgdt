@@ -800,7 +800,7 @@ module ComposeRightRepC
 --    a. If c and c' are left representable, then F(c ⊙ c') is right representable
 --    b. If d and d' are right representable, then U(d ⊙ed d') is left representable
 
-module LeftRepC-Fc
+module LeftRepV-Fc
   (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
   (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
   (MA₁ : Monoid ℓMA₁)  (iA₁ : MonoidHom MA₁ (Endo A₁))
@@ -818,18 +818,43 @@ module LeftRepC-Fc
   d = d.F-rel
   Πd = push-pull-c.F-PushPull
   
-  open LeftRepC
+  open RightRepC
   module ρc = LeftRepV ρc
   
   
-  Fc : LeftRepC B₁ push-pull-c.M-FA push-pull-c.iFA B₂ push-pull-c.M-FA' push-pull-c.iFA' d Πd
-  Fc .e = d-mor.F-mor ρc.e
-    where
-      module d-mor = F-mor {Aᵢ = A₁} {Aₒ = A₂}
+  Fc : RightRepC B₁ push-pull-c.M-FA push-pull-c.iFA B₂ push-pull-c.M-FA' push-pull-c.iFA' d Πd
+  Fc .p = {!!}
   Fc .δl = {!!}
   Fc .δr = {!!}
-  Fc .UpL = {!!}
-  Fc .UpR = {!!}
+  Fc .DnL = {!!}
+  Fc .DnR = {!!}
+
+module RightRepC-Ud
+  (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁)
+  (B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂)
+  (MB₁ : Monoid ℓMB₁)  (iB₁ : MonoidHom MB₁ (CEndo B₁))
+  (MB₂ : Monoid ℓMB₂)  (iB₂ : MonoidHom MB₂ (CEndo B₂))
+  (d  : ErrorDomRel B₁ B₂ ℓd)  (Πd : PushPullC B₁ MB₁ iB₁ B₂ MB₂ iB₂ d)
+  (ρd : RightRepC B₁ MB₁ iB₁ B₂ MB₂ iB₂ d Πd)
+  where
+  A₁ = U-ob B₁
+  A₂ = U-ob B₂
+  c = U-rel d
+  
+  module push-pull-d = U-PushPull d Πd
+
+  Πc = push-pull-d.U-PushPull
+
+  open RightRepV
+  module ρd = RightRepC ρd
+
+  Ud : RightRepV A₁ push-pull-d.M-UB push-pull-d.iUB A₂ push-pull-d.M-UB' push-pull-d.iUB' c Πc
+  Ud .p = {!!}
+  Ud .δl = {!!}
+  Ud .δr = {!!}
+  Ud .DnL = {!!}
+  Ud .DnR = {!!}
+  
 
 module Fc⊙c'
   (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
@@ -853,10 +878,11 @@ module Fc⊙c'
   module push-pull-c' = F-PushPull c' Πc'
   module push-pull-composed-v = PushPullV-Compose MA₁ iA₁ MA₂ iA₂ MA₃ iA₃ c Πc c' Πc'
   module push-pull-compose-c = F-PushPull (c ⊙ c') push-pull-composed-v.compPPV
-  module ρd-m = LeftRepC-Fc A₁ A₂ MA₁ iA₁ MA₂ iA₂ c Πc ρc
-  module ρd'-m = LeftRepC-Fc A₂ A₃ MA₂ iA₂ MA₃ iA₃ c' Πc' ρc'
+  module ρd-m = LeftRepV-Fc A₁ A₂ MA₁ iA₁ MA₂ iA₂ c Πc ρc
+  module ρd'-m = LeftRepV-Fc A₂ A₃ MA₂ iA₂ MA₃ iA₃ c' Πc' ρc'
   
-
+  
+  
   open RightRepC
 
   B₁ = B₁.F-ob
@@ -877,15 +903,35 @@ module Fc⊙c'
   ρd = ρd-m.Fc
   ρd' = ρd'-m.Fc
 
-  module ρd = LeftRepC ρd
-  module ρd' = LeftRepC ρd'
+  module ρd = RightRepC ρd
+  module ρd' = RightRepC ρd'
+  module ρd⊙ρd'-m = ComposeRightRepC B₁ B₂ B₃ MB iB MB' iB' MB'' iB'' d Πd ρd d' Πd' ρd'
+  
+  ρd⊙ρd' = ρd⊙ρd'-m.compose
+
+  module ρd⊙ρd' = RightRepC ρd⊙ρd'
+  module MB = MonoidStr (MB .snd)
+  module MB' = MonoidStr (MB' .snd)
+  module MB'' = MonoidStr (MB'' .snd)
 
   lemma : RightRepC B₁ MB iB B₃ MB'' iB'' d⊙d' Πd∘Πd'
-  lemma .p = {!ρd'.e!} ∘ed {!!}
-  lemma .δl = {!!}
-  lemma .δr = {!!}
+  lemma .p = IdE ∘ed ρd⊙ρd'.p ∘ed ptbC MB'' iB'' ρd'.δr
+  lemma .δl = MB.ε MB.· ρd⊙ρd'.δl MB.· ρd.δl
+  lemma .δr = MB''.ε MB''.· ρd⊙ρd'.δr MB''.· ρd'.δr 
   lemma .DnL = {!!}
+    where
+      α1 : ErrorDomSq (idEDRel B₃) (idEDRel B₃)
+           (ptbC MB'' iB'' ρd⊙ρd'-m.ρd'.δr) (ptbC MB'' iB'' ρd⊙ρd'-m.ρd'.δr)
+      α1 = ED-IdSqH (ptbC MB'' iB'' ρd'.δr)
+
+      α2 : ErrorDomSq (idEDRel B₃) (d ⊙ed d') ρd⊙ρd'.p
+            (ptbC MB'' iB'' ρd⊙ρd'.δr)
+      α2 = ρd⊙ρd'.DnL
+
+      α3 : {!!}
+      α3 = {!!}
   lemma .DnR = {!!}
+
 
 {-
 module Ud⊙d'
@@ -900,7 +946,7 @@ module Ud⊙d'
   where
   module push-pull-c = PushPullC-Compose MB₁ iB₁ MB₂ iB₂ MB₃ iB₃ d Πd d' Πd'
   module push-pull-v = U-PushPull (d ⊙ed d') push-pull-c.compPPC
-{-
+
   module A₁ = U-ob B₁
   module A₂ = U-ob B₂
   module A₃ = U-ob B₃
@@ -911,7 +957,7 @@ module Ud⊙d'
 
   module push-pull-c = PushPullC-Compose MB₁ iB₁ MB₂ iB₂ MB₃ iB₃ d Πd d' Πd'
   module push-pull-v = U-PushPull (d ⊙ d') push-pull-c.compPPC
--}
+
   lemma : (ρd : RightRepC B₁ MB₁ iB₁ B₂ MB₂ iB₂ d Πd) (ρd' : RightRepC B₂ MB₂ iB₂ B₃ MB₃ iB₃ d' Πd') →
     LeftRepV (U-ob B₁) push-pull-v.M-UB push-pull-v.iUB (U-ob B₃) push-pull-v.M-UB' push-pull-v.iUB' (U-rel (d ⊙ed d')) push-pull-v.U-PushPull
   lemma ρd ρd' = {!!}
