@@ -368,6 +368,14 @@ module PartialFunctions {X : Type ℓ} where
 
 
 
+-- Notation for big-step term semantics
+module BigStep (X : Type ℓ) (X-clk-irrel : clock-irrel X) where
+
+  open PartialFunctions
+
+  ⟦_⟧ : L^gl X → Fun {X = X}
+  ⟦ lg ⟧ = toFun X-clk-irrel lg
+
 
 module Test where
 

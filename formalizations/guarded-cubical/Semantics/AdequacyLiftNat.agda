@@ -64,6 +64,10 @@ _⊑L℧ℕ^gl_ ln lm = ∀ (k : Clock) →
   LiftOrdHomogenous._⊑_ k ℕ _≡_ (ln k) (lm k)
 
 
+-- The big-step term semantics for L^gl (ℕ ⊎ ⊤)
+open BigStep (ℕ ⊎ ⊤) (⊎-clock-irrel nat-clock-irrel Unit-clock-irrel)
+
+
 module _
   (ln ln' lm' lm : L℧^gl ℕ)
   (ln≈ln'  : ln  ≈L℧ℕ^gl ln')
@@ -91,8 +95,8 @@ module _
   -- Lastly, when applying the adequacy theorem, we convert from the
   -- globalization of the original definitions of the relations to the
   -- globalization of the versions as sum types.
-  
-  nat-adequate : LS.⟦ l1 ⟧x ≾ LS.⟦ l2 ⟧y
+
+  nat-adequate : ⟦ l1 ⟧ ≾ ⟦ l2 ⟧
   nat-adequate = final-adequacy-theorem l1 l1' l2' l2
   
     (λ k → ≈→≈Sum k (ℕ ⊎ ⊤) (Sum≈ ℕ _≡_) (l1 k) (l1' k)
