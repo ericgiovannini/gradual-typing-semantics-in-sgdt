@@ -24,7 +24,7 @@ open import Cubical.Algebra.Monoid.Base
 open import Cubical.Data.Sigma
 
 open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.Morphism hiding (Id)
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.DPMorRelation
@@ -81,6 +81,10 @@ private
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
     ℓMAᵢ ℓMAₒ ℓMBᵢ ℓMBₒ : Level
     ℓMAᵢ' ℓMAₒ' ℓMBᵢ' ℓMBₒ' : Level
+
+IdV : ∀ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) → ValRel A A _
+IdV A .fst = IdRelV
+IdV A .snd = {!!}
 
 module _ {A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA} {A'  : ValType ℓA'  ℓ≤A'  ℓ≈A' ℓMA'} where
   F : ValRel A A' ℓc → CompRel (Types.F A) (Types.F A') _

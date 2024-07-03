@@ -50,7 +50,7 @@ open Result
 
   -- Ordering relation
   _≡_ (λ n m → path-clock-irrel nat-clock-irrel)
-
+  public
 
 -- The globalized definitions of weak bisimilarity and lock-step error
 -- ordering for ℕ:
@@ -65,7 +65,7 @@ _⊑L℧ℕ^gl_ ln lm = ∀ (k : Clock) →
 
 
 -- The big-step term semantics for L^gl (ℕ ⊎ ⊤)
-open BigStep (ℕ ⊎ ⊤) (⊎-clock-irrel nat-clock-irrel Unit-clock-irrel)
+open BigStep (ℕ ⊎ ⊤) (⊎-clock-irrel nat-clock-irrel Unit-clock-irrel) public
 
 
 module _
