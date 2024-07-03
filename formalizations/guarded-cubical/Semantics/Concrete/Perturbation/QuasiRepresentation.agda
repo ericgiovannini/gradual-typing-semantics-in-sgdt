@@ -5,8 +5,6 @@
    of identities.
 
 -}
-
-
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --allow-unsolved-metas #-}
@@ -87,12 +85,45 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
   where
   private
     MA = A .snd .PtbV
-    iA = A .snd .interpV
+    iA = A .snd .interpV .fst
     MA' = A' .snd .PtbV
-    iA' = A' .snd .interpV
+    iA' = A' .snd .interpV .fst
+
+    rA = idPRel (ValType→Predomain A)
+    rA' = idPRel (ValType→Predomain A')
   LeftRepV : Type _
   LeftRepV =
     Σ[ e ∈ ValTypeMor A A' ]
-    (Σ[ δl ∈ ⟨ MA ⟩ ] PBSq (idPRel (ValType→Predomain A)) c (iA .fst δl .fst) e)
-    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PBSq c (idPRel (ValType→Predomain A')) e (iA' .fst δr .fst))
-         
+    (Σ[ δl ∈ ⟨ MA ⟩ ] PBSq rA c (iA δl .fst) e)
+    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PBSq c rA' e (iA' δr .fst))
+
+
+  RightRepV : Type _
+  RightRepV =
+    Σ[ p ∈ ValTypeMor A' A ]
+    (Σ[ δl ∈ ⟨ MA ⟩ ] PBSq c rA (iA δl .fst) p)
+    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PBSq rA' c p (iA' δr .fst))
+
+module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ≤B'  ℓ≈B' ℓMB')
+         (d : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd)
+  where
+
+  private
+    MB = B .snd .snd .fst
+    iB = B .snd .snd .snd .fst
+    rB = idEDRel (CompType→ErrorDomain B)
+    MB' = B' .snd .snd .fst
+    iB' = B' .snd .snd .snd .fst
+    rB' = idEDRel (CompType→ErrorDomain B')
+
+  LeftRepC : Type _
+  LeftRepC =
+    Σ[ e ∈ CompTypeMor B B' ]
+    ((Σ[ δl ∈ ⟨ MB ⟩ ] ErrorDomSq rB d (iB δl .fst) e)
+    × (Σ[ δr ∈ ⟨ MB' ⟩ ] ErrorDomSq d rB' e (iB' δr .fst)))
+
+  RightRepC : Type _
+  RightRepC =
+    Σ[ p ∈ CompTypeMor B' B ]
+    (Σ[ δl ∈ ⟨ MB ⟩ ] ErrorDomSq d rB (iB δl .fst) p)
+    × (Σ[ δr ∈ ⟨ MB' ⟩ ] ErrorDomSq rB' d p (iB' δr .fst))

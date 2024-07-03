@@ -7,3 +7,4 @@ open import Common.Later
 module Semantics.Concrete.Perturbation.Relation (k : Clock) where
 
 open import Semantics.Concrete.Perturbation.Relation.Base k public
+open import Semantics.Concrete.Perturbation.Relation.Constructions k public
