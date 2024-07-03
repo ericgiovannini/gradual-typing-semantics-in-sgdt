@@ -104,7 +104,6 @@ A ⟶ B =
     (A⟶-PrePtb ∘hom (A .snd .interpV ^opHom))
     (⟶B-PrePtb ∘hom (B .snd .snd .snd))
 
--- TODO: dyn
 dyn' : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 dyn' = mkValType Dyn' PtbD ι-dyn' where
   open DynDef
@@ -113,4 +112,3 @@ dyn' = mkValType Dyn' PtbD ι-dyn' where
 dyn : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 dyn = mkValType Dyn PtbD ι-dyn where
   open DynDef
-

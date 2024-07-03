@@ -161,3 +161,10 @@ CompTypeMor :
   Type ((ℓ-max (ℓ-max ℓBᵢ (ℓ-max ℓ≤Bᵢ ℓ≈Bᵢ)) (ℓ-max ℓBₒ (ℓ-max ℓ≤Bₒ ℓ≈Bₒ))))
 CompTypeMor Bᵢ Bₒ =
   ErrorDomMor (CompType→ErrorDomain Bᵢ) (CompType→ErrorDomain Bₒ)
+
+
+ObliqueMor :
+  (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
+  (B : CompType ℓB ℓ≤B ℓ≈B ℓMB)
+  → Type _
+ObliqueMor A B = PBMor (ValType→Predomain A) (U-ob (CompType→ErrorDomain B))

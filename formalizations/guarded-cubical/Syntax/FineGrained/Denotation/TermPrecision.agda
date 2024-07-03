@@ -20,10 +20,8 @@ open import Syntax.FineGrained.Denotation.Terms k
 
 open import Semantics.Concrete.ExtensionalModel k
 open import Semantics.Concrete.ConcreteIntensionalModel k
-open import Semantics.Concrete.ValType.Constructions k
-open import Semantics.Concrete.CompType.Constructions k
-import Semantics.Concrete.ValRel.Constructions k as ValRel
-import Semantics.Concrete.CompRel.Constructions k as CompRel
+open import Semantics.Concrete.Types k as Type
+open import Semantics.Concrete.Relations k as Relation
 
 private
  variable
@@ -39,18 +37,19 @@ private
    E E' E'' : EvCtx Γ S T
 
 
-⟦_⟧S⊑ : Subst⊑ C D γ γ' → ValTypeSq ⟦ C ⟧ctx⊑ ⟦ D ⟧ctx⊑ ⟦ γ ⟧S ⟦ γ' ⟧S
-⟦_⟧V⊑ : Val⊑ C c V V' →  ValTypeSq ⟦ C ⟧ctx⊑ ⟦ c ⟧ty⊑ ⟦ V ⟧V ⟦ V' ⟧V
 ⟦_⟧C⊑ : Comp⊑ C c M M'
-  → ValTypeSq ⟦ C ⟧ctx⊑ (ValRel.U (CompRel.F ⟦ c ⟧ty⊑)) ⟦ M ⟧C ⟦ M' ⟧C
+  → ObliqueExtSq ⟦ C ⟧ctx⊑ (Relation.F ⟦ c ⟧ty⊑) ⟦ M ⟧C ⟦ M' ⟧C
+⟦_⟧C⊑ = {!!}
 
-⟦_⟧E⊑ : EvCtx⊑ C c d E E'
-  → CompTypeSq (CompRel.F ⟦ c ⟧ty⊑)
-               (⟦ C ⟧ctx⊑ CompRel.⟶ CompRel.F ⟦ d ⟧ty⊑)
-               ⟦ E ⟧E
-               ⟦ E' ⟧E
+-- ⟦_⟧S⊑ : Subst⊑ C D γ γ' → ValTypeSq ⟦ C ⟧ctx⊑ ⟦ D ⟧ctx⊑ ⟦ γ ⟧S ⟦ γ' ⟧S
+-- ⟦_⟧V⊑ : Val⊑ C c V V' →  ValTypeSq ⟦ C ⟧ctx⊑ ⟦ c ⟧ty⊑ ⟦ V ⟧V ⟦ V' ⟧V
+-- ⟦_⟧E⊑ : EvCtx⊑ C c d E E'
+--   → CompTypeSq (CompRel.F ⟦ c ⟧ty⊑)
+--                (⟦ C ⟧ctx⊑ CompRel.⟶ CompRel.F ⟦ d ⟧ty⊑)
+--                ⟦ E ⟧E
+--                ⟦ E' ⟧E
 
-⟦_⟧S⊑ = {!!}
-⟦_⟧V⊑ = {!!}
-⟦_⟧C⊑ = ?
-⟦_⟧E⊑ = {!!}
+-- ⟦_⟧S⊑ = {!!}
+-- ⟦_⟧V⊑ = {!!}
+-- ⟦_⟧C⊑ = ?
+-- ⟦_⟧E⊑ = {!!}

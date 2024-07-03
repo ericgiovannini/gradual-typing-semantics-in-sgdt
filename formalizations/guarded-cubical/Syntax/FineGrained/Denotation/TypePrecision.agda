@@ -14,16 +14,13 @@ open import Cubical.Data.List
 
 open import Syntax.Types
 open import Syntax.FineGrained.Denotation.Types k
+open import Semantics.Concrete.Relations.Base k
 
-open import Semantics.Concrete.ConcreteIntensionalModel k
-open import Semantics.Concrete.ValType.Constructions k
-open import Semantics.Concrete.CompType.Constructions k
-
-⟦_⟧ty⊑ : ∀ {S T} → S ⊑ T → ValTypeRel ⟦ S ⟧ty ⟦ T ⟧ty ℓ-zero
+⟦_⟧ty⊑ : ∀ {S T} → S ⊑ T → ValRel ⟦ S ⟧ty ⟦ T ⟧ty ℓ-zero
 ⟦_⟧ty⊑ = {!!}
 
-⟦_⟧ctx⊑ : ∀ {Γ Δ} → Γ ⊑ctx Δ → ValTypeRel ⟦ Γ ⟧ctx ⟦ Δ ⟧ctx ℓ-zero
+⟦_⟧ctx⊑ : ∀ {Γ Δ} → Γ ⊑ctx Δ → ValRel ⟦ Γ ⟧ctx ⟦ Δ ⟧ctx ℓ-zero
 ⟦_⟧ctx⊑ = {!!}
 
-⟦_⟧ty⊑-≈ : ∀ {S T} {c d : S ⊑ T} → c ≈ d → ValTypeRel≈ ⟦ c ⟧ty⊑ ⟦ d ⟧ty⊑
+⟦_⟧ty⊑-≈ : ∀ {S T} {c d : S ⊑ T} → c ≈ d → ValRel≈ ⟦ c ⟧ty⊑ ⟦ d ⟧ty⊑
 ⟦_⟧ty⊑-≈ = {!!}
