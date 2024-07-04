@@ -511,6 +511,37 @@ module F-sq
   F-sq α = map-monotone (f .PBMor.f) (g .PBMor.f) α
 
 
+
+
+-- Ext lifts to squares
+
+module _
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'}
+  (c : PBRel A A' ℓc) (d : ErrorDomRel B B' ℓd)
+  (f : PBMor A (U-ob B)) (g : PBMor A' (U-ob B'))
+  where
+
+  private
+    module B = ErrorDomainStr (B .snd)
+    module B' = ErrorDomainStr (B' .snd)
+    module d = ErrorDomRel d
+
+  open ExtAsEDMorphism
+  open ExtMonotone
+    ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R)
+    ⟨ B ⟩ B.℧ B.θ.f ⟨ B' ⟩ B'.℧ B'.θ.f
+    (d .ErrorDomRel.R)
+    d.R℧
+    d.Rθ
+  open F-ob
+  open F-rel
+
+  Ext-sq : PBSq c (U-rel d) f g → ErrorDomSq (F-rel c) d (Ext f) (Ext g)
+  Ext-sq α = ext-mon (f .PBMor.f) (g .PBMor.f) α
+
+
+
 module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
 
   private module B = ErrorDomainStr (B .snd)
