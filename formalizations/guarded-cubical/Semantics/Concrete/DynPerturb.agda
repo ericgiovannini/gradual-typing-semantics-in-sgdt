@@ -181,6 +181,25 @@ inj-times = FP.rec
   (⟦_⟧×-left , (monoidequiv id-×-left comp-×-left))
   (⟦_⟧×-right , (monoidequiv id-×-right comp-×-right))
 
+
+inj-times-left : MonoidHom PtbD PtbD
+inj-times-left = ⟦_⟧×-left , monoidequiv id-×-left comp-×-left
+
+inj-times-right : MonoidHom PtbD PtbD
+inj-times-right = ⟦_⟧×-right , monoidequiv id-×-right comp-×-right
+
+inj-arr-U : MonoidHom NatM PtbD
+inj-arr-U = NatM→.h _ ⟦_⟧arr-U
+
+inj-arr-dom : MonoidHom (PtbD ^op) PtbD
+inj-arr-dom = (⟦_⟧arr-left , (monoidequiv id-arr-left (λ p q → comp-arr-left q p)))
+
+inj-arr-F : MonoidHom NatM PtbD
+inj-arr-F = NatM→.h _ ⟦_⟧arr-F
+
+inj-arr-cod : MonoidHom PtbD PtbD
+inj-arr-cod = (⟦_⟧arr-right , monoidequiv id-arr-right comp-arr-right)
+
 -- induction for case split
 module _
   {M : Monoid ℓ}
