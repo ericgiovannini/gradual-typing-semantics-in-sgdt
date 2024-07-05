@@ -329,7 +329,7 @@ From Reviewer 1:
 
 
 * line 1728, missing application of F on vertical arrows
-** TODO
+** DONE
 
 
 

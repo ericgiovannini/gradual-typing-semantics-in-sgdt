@@ -279,18 +279,18 @@ of the model.
 
   Then we need to build the following square:
 
-  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJGQSJdLFsxLDAsIkZBJyJdLFswLDEsIkZBIl0sWzEsMSwiRkEnIl0sWzIsMywiRmMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCIoXFxkZWx0YV97RkF9XiopXm4gXFxjaXJjIFxccHRiX0EoYSkiLDJdLFsxLDMsIihcXGRlbHRhX3tGQSd9XiopXm4gXFxjaXJjIFxccHRiX3tBJ30oXFxwdXNoX2MoYSkpIl1d
+  % https://q.uiver.app/#q=WzAsNCxbMCwwLCJGQSJdLFsxLDAsIkZBJyJdLFswLDEsIkZBIl0sWzEsMSwiRkEnIl0sWzIsMywiRmMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCIoXFxkZWx0YV97RkF9XiopXm4gXFxjaXJjIEYoXFxwdGJfQShhKSkiLDJdLFsxLDMsIihcXGRlbHRhX3tGQSd9XiopXm4gXFxjaXJjIEYoXFxwdGJfe0EnfShcXHB1c2hfYyhhKSkpIl1d
   \[\begin{tikzcd}[ampersand replacement=\&]
     FA \& {FA'} \\
     FA \& {FA'}
     \arrow["Fc", "\shortmid"{marking}, no head, from=2-1, to=2-2]
     \arrow["Fc", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-    \arrow["{(\delta_{FA}^*)^n \circ \ptb_A(a)}"', from=1-1, to=2-1]
-    \arrow["{(\delta_{FA'}^*)^n \circ \ptb_{A'}(\push_c(a))}", from=1-2, to=2-2]
+    \arrow["{(\delta_{FA}^*)^n \circ F(\ptb_A(a))}"', from=1-1, to=2-1]
+    \arrow["{(\delta_{FA'}^*)^n \circ F(\ptb_{A'}(\push_c(a)))}", from=1-2, to=2-2]
   \end{tikzcd}\]
 
   This is obtained by pasting $n$ copies of the square $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$
-  on top of the square corresponding to the push property for $c$.
+  on top of the square obtained by lifting via $F$ the square corresponding to the push property for $c$.
 
   % Given $n \in \mathbb{N}$ we define the push to be $n$.
   % Then the required square is $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$,
