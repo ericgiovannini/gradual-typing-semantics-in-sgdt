@@ -293,10 +293,10 @@ dynamic type. We explain how to \emph{globalize} this model to obtain a model in
 the usual (non-guarded) dependent type theory. In the end, we obtain a
 \emph{big-step semantics} for closed terms of type $\nat$:
 %
-\[ \sem{\cdot} \colon (\cdot \vdash M : \nat) \to (\mathbb{N} \to (\sem{nat} + 1)) \] 
+\[ \sem{\cdot} \colon (\cdot \vdash M : \nat) \to (\mathbb{N} \to (\sem{\nat} + 1)) \] 
 %
 where a closed term $M$ of type $\nat$ denotes a \emph{function} from
-$\mathbb{N}$ to $\sem{nat} + 1$ which given input $i$ returns $\inl\, m$ if $M$
+$\mathbb{N}$ to $\sem{\nat} + 1$ which given input $i$ returns $\inl\, m$ if $M$
 terminates with value $m$ in $i$ or fewer steps, and returns $\inr\, *$ if $M$
 fails to terminate in $i$ or fewer steps. This is already a significant result,
 as it serves to verify the $\beta$ and $\eta$ laws of the equational theory.
