@@ -4,8 +4,8 @@
 The principal goal of the next two sections is to ground the refined notions of
 abstract model of gradual typing described in Section \ref{sec:abstract-models}
 in a concrete setting. We aim to introduce the key issues whose resolutions in
-the concrete setting inspire the refined definitions of abstract model.
-
+the concrete setting will inform the refined definitions of abstract model.
+%
 In the present section, we use the techniques of SGDT to give a set-theoretic
 denotational semantics to the terms of the gradually-typed lambda calculus
 introduced in Section \ref{sec:GTLC}. This serves two important purposes: First,
@@ -18,11 +18,11 @@ the gradually-typed lambda calculus.
 %
 % In Section \ref{sec:towards-relational-model}, we will discuss how to extend the
 % denotational semantics to accommodate the type and term precision orderings. 
-
+%
 %necessitate the abstract components that are found in the definition of the model.
-
+%
 %\subsection{Semantic Constructions}\label{sec:domain-theory}
-
+%
 We begin by discussing the objects of the model into which we will embed the
 types and terms of the gradually-typed lambda calculus. Recall that we are
 working informally in a guarded type theory with clocks and ticks (see Section
@@ -108,7 +108,7 @@ take a step (via $\theta$).
 %
 Notice there is a computation $\fix\, \theta$ of type $\li A$. This represents a
 computation that runs forever and never returns a value.
-
+%
 Since we claimed that $\li A$ is a monad, we need to define the monadic
 operations and show that they respect the monadic laws. The return is just
 $\eta$, and the monadic extension is defined via guarded recursion by cases on
@@ -119,7 +119,7 @@ the input.
 %
 %
 Verifying that the monadic laws hold uses \lob-induction and is straightforward.
-
+%
 % TODO mention that error domains are algebras of the lift monad?
 We observe that the guarded lift monad constructs the free error domain on a set
 $A$, i.e., we have $\li = UF$ where $F : \Set \to \errdom$ and $U : \errdom \to
@@ -132,15 +132,15 @@ morphisms $FA \to B$.
 
 \subsection{Modeling the Dynamic Type}\label{sec:dynamic-type}
 
-We discuss how to model the dynamic type $\dyn$.
+We now discuss how to model the dynamic type $\dyn$.
 % For simplicity, we omit the
 % case of products in the dynamic type, as from a semantic viewpoint it is the
 % function case that is problematic.
-We will define a semantic object $D$ that satisfies the isomorphism
-
+We will define a set $D$ that satisfies the isomorphism
+%
 % TODO make sure we deal with the product correctly
 \[ D \cong \Nat + (D \times D) + (D \to \li D). \]
-
+%
 where the $\li D$ represents the fact that in the case where the value of type
 $\dyn$ is a function, the function when called may return an error or take a
 step of computation. Unfortunately, this equation does not have inductive or
@@ -170,82 +170,94 @@ Finally, define
 \[ D := \fix f. \]
 %
 % TODO refer to technical background?
-Observe that the unfolding equality of the guarded fixpoint implies that $D = D'
-(\later D \to \li D)$, and by the definition of $D'$ as a least fixpoint we see
-that this is equal to $\Nat + (D \times D) + \later (D \to \li D)$.
+Observe that the unfolding equality characterizing the guarded fixpoint implies
+that $D = D' (\later D \to \li D)$, and by the definition of $D'$ as a least
+fixpoint we see that this is equal to $\Nat + (D \times D) + \later (D \to \li
+D)$.
 
 
 \subsection{Term Semantics}\label{sec:term-interpretation}
 
-We can now give a semantics to the terms of the gradually-typed lambda calculus.
-The definition of the interpretation of types and cast terms is given in Figure
-\ref{fig:term-semantics}.
+We can now give a semantics to the types and terms of the gradually-typed lambda
+calculus. 
 %
 Much of the semantics is similar to a normal call-by-value denotational
-semantics: We interpret types as sets, and terms as functions. Contexts $\Gamma
-= x_1 \colon A_1, \dots, x_n \colon A_n$ are interpreted as the product
-$\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic type
-$\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The product
-type $A \times A'$ is interpreted as the product of the denotations of $A$ and
-$A'$. The function type $A \ra A'$ is interpreted as the set of functions from
-$\sem{A}$ to $\li (\sem {A'})$.
-
+semantics, so we focus only on the cast semantics. We interpret types as sets;
+the interpretation of types is given in Figure \ref{fig:type-interpretation}.
+Contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$ are interpreted as the
+product $\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic
+type $\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The
+product type $A \times A'$ is interpreted as the Cartesian product of the
+denotations of $A$ and $A'$. The function type $A \ra A'$ is interpreted as the
+set of functions from $\sem{A}$ to $\li (\sem {A'})$.
+%
 The interpretation of a value $\hasty {\Gamma} V A$ is a function from
 $\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\hasty {\Gamma} M {{A}}$ is
 interpreted as a function from $\sem{\Gamma}$ to $\li \sem{A}$.
 
-Upcasts are pure, so an upcast $\upc c$ where $c : A \ltdyn A'$ denotes an
-ordinary function from $\sem{A}$ to $\sem{A'}$. Downcasts are effectful, so a
-downcast $\dnc c$ is interpreted as a morphism of error domains between
-$F\sem{A'}$ and $F\sem{A}$, which by definition of the adjunction is
-equivalently an ordinary function between $\sem{A'}$ and $UF\sem{A}$, i.e.,
-$\sem{A'} \to \li \sem{A}$.
+We now discuss the semantics of the cast terms, shown in Figure
+\ref{fig:term-semantics}. Upcasts are pure, so the upcast ${\upc c}$, where $c :
+A \ltdyn A'$, denotes an ordinary function from $\sem{A}$ to $\sem{A'}$.
+Downcasts are effectful, so a downcast ${\dnc c}$ is interpreted as a morphism
+of error domains between $F\sem{A'}$ and $F\sem{A}$. By definition of the
+adjunction this is equivalent to an ordinary function between $\sem{A'}$ and
+$UF\sem{A}$, i.e., $\sem{A'} \to \li \sem{A}$.
 
-The semantics of the casts for a type precision derivation $c$ are defined by
-induction on $c$. The interesting cases are $\inat$, $\itimes$, and $\iarr$.
-Recall that $D$ is isomorphic to $\Nat\, + (D \times D)\, + \laterhs (D \to \li
-D)$ (say that the sum is left-associative).
+Recall the definition of type precision derivations given in Figure
+\ref{fig:typrec}. The semantics of the up- and downcasts for a type precision
+derivation $c$ are defined by induction on $c$. For $r(A)$ the up- and downcasts
+are simply the identity function. For the composition $c \comp c'$ we simply
+compose the cast for $c$ and the cast for $c'$ as functions. For $c_i \ra c_o$
+we apply the casts for $c_i$ and $c_o$ in the domain and codomain respectively.
+More concretely, for the upcast we are given a function $V_f : A_i \to \li A_o$
+and we must define a function $A_i' \to \li A_o'$. The function first downcasts
+its argument according to $c_i$, resulting in an element of $\li A_i$. It then
+applies $\ext{V_f}{}$ to this value to obtain an element of $\li A_o$. Finally, it
+maps the upcast of $c_o$ over the lift monad, obtaining an element of $\li A_o'$
+as needed. For the downcast from $A_i' \to \li A_o'$ to $A_i \to \li A_o$, the
+resulting function first applies the upcast by $c_i$ to its argument, then
+applies the original function, and finally applies the downcast by $c_o$ to the
+result. Likewise, for $c_1 \times c_2$, we apply the cast for $c_1$ on the left
+and the cast for $c_2$ on the right.
+
+The ``base cases" for the casts are  $\inat$, $\itimes$, and $\iarr$. Recall
+that $D$ is isomorphic to $\Nat\, + (D \times D)\, + \laterhs (D \to \li D)$
+(say that the sum is left-associative).
 %
 For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $D
 \to \li D$ and performs a case inspection on the sum type. If it is a natural
 number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
 the fact that a run-time error occurs.
 %
-For $\itimes$, the upcast is $\inr \circ \inl$, and the downcast performs a case
+For $\itimes$, the upcast is $\inl \circ \inr$, and the downcast performs a case
 inspection analogously to the natural number downcast.
 %
 % TODO explain this further
 For $\iarr$, the upcast is given by $\inr \circ \nxt$. The downcast performs a
 case inspection, and in the $\inr$ case, it uses a $\theta$ in order to gain
 access to the function under the $\later$.
+
+
 %
 % TODO write this out explicitly?
 
 % TODO should we include function casts?
 
-% The interpretation of $\lda{x}{M}$ works as follows. Recall by the typing rule
-% for lambda that $\phasty {\Gamma, x : A_i} M {{A_o}}$, so the interpretation of
-% $M$ has type $(\sem{\Gamma} \times \sem{A_i})$ to $\li \sem{A_o}$. The
-% interpretation of lambda is thus a function (in the ambient type theory) that
-% takes a value $a$ representing the argument and applies it (along with $\gamma$)
-% as argument to the interpretation of $M$.
-
-
-
-
 \begin{figure*}
-  \noindent Types:
   \begin{align*}
     \sem{\nat} &= \Nat \\
     \sem{\dyn} &= D \\
     \sem{A \times A'} &= \sem{A} \times \sem{A'} \\ 
     \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
   \end{align*}
-
-  % Contexts:
-
+  \caption{Interpretation of types}
+  \label{fig:type-interpretation}
+\end{figure*}
+  
+\begin{figure*}
+  \eric{Check this}
+  
   % TODO check these
-  \noindent Casts:
   \begin{align*}
     % \sem{\zro}         &= \lambda \gamma . 0 \\
     % \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
@@ -255,44 +267,42 @@ access to the function under the $\later$.
     % \sem{\err_B}       &= \lambda \gamma . \mho \\
     %
     % upcasts
-    \sem{\upc{\inat{V_n}}} &= \lambda \gamma . \inl\, \inl\, (\sem{V_n}\, \gamma) \\
-    \sem{\upc{\itimes{V_1, V_2}}} &= \lambda \gamma . \inl\, \inr\, (\sem{V_1}\, \gamma, \sem{V_2}\, \gamma) \\
-    \sem{\upc{\iarr{V_f}}} &= \lambda \gamma . \inr\, \nxt (\sem{V_f}\, \gamma) \\[2ex]
+    \sem{\upc{r(A)}} &= \id \\
+    \sem{\upc{c \comp c'}(V)} &= \sem{\upc{c'}} \circ \sem{\upc{c}} \\
+    \sem{\upc{c_i \ra c_o}} &=
+      \lambda V_f . \text{map } \upc{c_o} \circ \ext{V_f}{} \circ \dnc{c_i} \\
+    \sem{\upc{c_1 \times c_2}} &= 
+      \lambda (V_1, V_2) . ((\sem{\upc{c_1} V_1}) , 
+                            (\sem{\upc{c_2} V_2})) \\
+    \sem{\upc{\inat}} &= 
+      \lambda V_n . \inl\, \inl\, V_n \\
+    \sem{\upc{\itimes}} &= 
+      \lambda (V_1, V_2) . \inl\, \inr\, (V_1 , V_2) \\
+    \sem{\upc{\iarr}} &= 
+      \lambda V_f . \inr\, \nxt V_f \\[2ex]
     %
     % downcasts
-    \sem{\dnc{\inat V_d}} &=
-      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+    \sem{\dnc{\inat}} &=
+      \lambda V_d . \text{case $({V_d})$ of}
       \{ \inl\, (\inl\, n) \to \eta\, n
          \alt \text{otherwise} \to \mho \} \\
-    \sem{\dnc{\itimes V_d}} &=
-      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+    \sem{\dnc{\itimes}} &=
+      \lambda V_d . \text{case $({V_d})$ of}
       \{ \inl\, (\inr\, (d_1, d_2)) \to \eta\, (d_1, d_2)
          \alt \text{otherwise} \to \mho \} \\
-    \sem{\dnc{\iarr V_d}} &=
-      \lambda \delta . \text{case $(\sem{V_d}\, \gamma)$ of}
+    \sem{\dnc{\iarr}} &=
+      \lambda V_d . \text{case $({V_d})$ of}
       \{ \inr\, \tilde{f} \to \theta\, (\lambda t. \eta (\tilde{f}_t))
          \alt \text{otherwise} \to \mho \} \\
-    %
-    % TODO product and function
-    %
-    % \sem{\casedyn{V}{n} {M_{nat}} {\tilde{f}}{M_{fun}}} &=
-    % \lambda \delta . \text{case $(\sem{V}\, \delta)$ of} \\ 
-    % &\quad\quad\quad\quad \alt \inl(n) \to \sem{M_{nat}}(n) \\
-    % &\quad\quad\quad\quad \alt \inr(\tilde{f}) \to \sem{M_{fun}}(\tilde{f})
-    %
-    %
     % \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
     % \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
   \end{align*}
 
-  \caption{Term semantics for the gradually-typed lambda calculus.}
+  \caption{Semantics of casts.}
   \label{fig:term-semantics}
 \end{figure*}
 
 
-\eric{TODO: big-step semantics via clock quantification}
-
-\subsection{A Big-Step Term Semantics}
 
 
 
