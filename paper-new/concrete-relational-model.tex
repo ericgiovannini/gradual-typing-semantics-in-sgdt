@@ -1,9 +1,17 @@
 \section{Towards a Full Relational Model}\label{sec:towards-relational-model}
 
+
+% In the previous section, we gave a denotational semantics to the terms of the
+% gradually-typed lambda calculus using the tools of SGDT. We defined a big-step
+% semantics for closed terms of type $\nat$, as functions from $\mathbb{N} \to
+% ((\mathbb{N} + 1) + 1)$.
+
 \eric{Wording?}
-In this section, we build on the ideas used in defining a term model with the
-goal of defining a model of the full gradually-typed lambda calculus, i.e., one
-that has constructs that model type and term precision.
+In the previous section, we gave a denotational semantics to the terms of the
+gradually-typed lambda calculus using the tools of SGDT. In this section, we
+build on the ideas used in defining a term model with the goal of defining a
+model of the full gradually-typed lambda calculus, i.e., one that has constructs
+that model type and term precision.
 %
 % The purpose of this section is to motivate the need for many of the
 % seemingly complicated features of the abstract model introduced in
@@ -216,7 +224,7 @@ development.
 % transitive reasoning and push the parts involving stepping to the margins of the
 % development.
 
-\subsection{Solution: Splitting into Two Relations}
+\subsection{Solution: Splitting into Two Relations}\label{sec:lock-step-and-weak-bisim}
 
 As mentioned, to recover transitive reasoning we will decompose the error
 ordering on the guarded lift monad into two separate relations. The first is the
