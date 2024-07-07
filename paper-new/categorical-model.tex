@@ -1,16 +1,113 @@
 \section{Revised Categorical Models of Graduality}\label{sec:abstract-models}
 
-Next, we develop our appropriate weakened notions of models of
-graduality, which we divide into \emph{extensional} models, where
-ordering is up to weak bisimilarity, and \emph{intensional} models,
-where ordering relates terms that considers computational steps to be
-observable. We develop the notion of intensional model of gradual
-typing in stages and show how to develop one from a base model of
-effectful functions and relations.
+\eric{This section may need to be revised in light of the previous sections on the concrete model.}
+
+\subsection{Weakening the Double Category Semantics}
+
+While the double categorical semantics introduced in Section \ref{sec:cbpv} can
+be satisfied with classical domain theoretic models, we have seen in the
+previous section that there are obstructions to developing a concrete model in
+\emph{guarded} type theory. While guarded type theory makes the construction of
+arbitrary guarded recursive definitions possible, it comes at a significant cost
+to reasoning: unfolding of recursive definitions is explicit. In a denotational
+semantics, this means that non-well-founded recursion must perform a kind of
+\emph{observable step}. This presents a difficulty in proving graduality, which
+is a property that is oblivious to the number of steps that a program takes.
+
+Therefore, to prove graduality, we must be able to relate terms that take
+different numbers of steps. In the previous section we have examined two ways of
+doing this: in the first approach by defining an ordering $\semltbad$ that is
+closed under delays, and in the second by decomposing this ordering into a
+lock-step error ordering and a weak bisimilarity relation. But either way, we
+cannot escape the confines of Theorem \ref{thm:no-go}, which tells us that
+neither of these fomulations is transitive.
+
+With this fundamental constraint in mind, we develop an abstract notion of
+\emph{extensional} model where intuitively, ordering is up to weak bisimilarity.
+Transitivity of term precision does not hold here, so the definition of
+extensional model weakens the idealized notion of model from double categories
+to reflexive graph categories. In particular, the definition drops the operation
+of horizontal pasting of squares, but it maintains a form of representability of
+relations crucial for graduality. An extensional model is sufficient for
+interpreting the terms and inequational theory of gradual typing. Unfortunately,
+as was mentioned in the previous section, constructing such a model directly is
+difficult: since we lack transitvity, we must take as primitive more complicated
+versions of the cast rules and verify them ``from scratch'' in the model.
+
+However, the story does not end here. The approach of decomposing the ordering
+into the lock-step ordering and weak bisimilarity has the advantage that we can
+employ transitive reasoning when working with the lock-step ordering. The caveat
+is that we can no longer model casts as representable morphisms when reasoning
+with observable computation steps.
+%
+To axiomatize this situation abstractly, we introduce an intermediate notion of
+\emph{intensional} model, where intuitively, the ordering considers computational
+steps to be observable. Intensional models are based on double categories, but
+representability must be weakened to ``quasi-representability'', a kind of
+representability \emph{up to} observable steps. To reason up to observable steps
+without using weak bisimilarity, we develop a more refined notion we call
+\emph{perturbations}, certain terms that are bisimilar to the identity but can
+be manipulated explicitly in constructions. We then show that the compositional
+construction of casts from domain theoretic models can be adapted to this
+intensional setting by incorporating some explicit manipulation of
+perturbations. Finally, we show that taking an ``extensional collapse'' by weak
+bisimilarity provides a model of the extensional theory, which can then be used
+to model the global graduality property.
+
+% However, here we arrive at the fundamental issue with double categorical
+% semantics using representable relations:
+
+% \begin{enumerate}
+% \item When reasoning up to weak bisimilarity, transitive reasoning is not
+%   possible, and so horizontal pasting of squares is not a valid reasoning
+%   principle.
+% \item When reasoning with observable computation steps, certain casts take
+%   observable steps, and can no longer be modeled using representable morphisms.
+% \end{enumerate}
+
+% Our solution to this dilemma comes in two parts. Since graduality ignores
+% computational steps, the syntactic theory of graduality must be modeled up to
+% weak bisimilarity, where transitive reasoning is not valid. For this purpose we
+% develop a notion of \emph{extensional} model which weakens from double
+% categories to reflexive graph categories, dropping the operation of horizontal
+% pasting of squares, but still maintaining a form of representability of
+% relations.
+
+
+\begin{comment}
+In the previous section, we saw what goes wrong when one tries to define a
+partial ordering relation on the guarded lift monad that is closed under delays.
+In particular, such a relation is not transitive. The solution we adopted was to
+give up on closure under delay, taking the partial ordering on the guarded lift
+monad to be the lock-step error ordering, 
+%to give up on closure under delay and define two separate relations, a lock-step error ordering and a weak bisimilarity relation. 
+The denotation of term precision for closed terms was then defined to be the
+closure of the lock-step ordering under weak bisimilarity. With the lock-step
+error ordering as our poset structure, we encountered complications when
+attempting to model the cast rules of gradual typing.
+% Furthermore, we saw that defining the partial ordering on the guarded lift
+% monad as the lock-step error ordering introduces complications for modeling
+% the cast rules of gradual typing.
+The basic issue was that casts may involve ``stepping'' (i.e., a cast may
+introduce a $\theta$ constructor), and in such cases we need to insert delays
+artificially in order to keep both sides of the desired inequality in lock-step.
+\end{comment}
+
+In the remainder of this section, we define the notions of extensional and
+intensional models. We develop the notion of intensional model in stages and show how
+to develop one from a base model of effectful functions and relations.
+
+% In the remainder of this section, we develop our appropriate weakened notions of
+% models of graduality, which we divide into \emph{extensional} models, where
+% ordering is up to weak bisimilarity, and \emph{intensional} models, where the
+% ordering considers computational steps to be observable. 
+% %Our ultimate notion of abstract model of gradual typing will be the extensional model.
+% We develop the notion of intensional model of gradual typing in stages and show
+% how to develop one from a base model of effectful functions and relations.
 
 \subsection{Extensional Models of Gradual Typing}
 
-Since we lack transitivity of ordering when reasoning in guarded type
+Since we lack transitivity of ordering when reasoning extensionally in guarded type
 theory, our weakened notion of extensional model is based on reflexive
 graph categories rather than double categories. This means we lose the
 reasoning principle of horizontal pasting of squares. We will still
@@ -18,7 +115,7 @@ require a notion of \emph{composition} of relations, to model the
 transitivity of type precision. We note that without horizontal
 pasting of squares, the notion of left/right representability of
 squares is not sufficient to interpret the cast rules of gradual
-typing. Instead we generalize the notion of representability to match
+typing. Instead, we generalize the notion of representability to match
 the syntactic rules in Section~\ref{sec:GTLC}.
 
 Let $c : A \rel A'$ and $f : A \to A'$ in a reflexive graph category
@@ -398,7 +495,7 @@ that for any $\phi \in \ef(B, B')$ we have $U\phi \circ \delta_{UB_1}^* = \delta
 Given the existence of the morphisms $\delta_{UB}^*$, we can define a computation morphism
 $\delta_{FA}^* \in \ef(FA, FA)$ for all $A$ by composing the unit $\eta_A \in \vf(A, UFA)$ with
 the morphism $\delta_{UFA}^* \in \vf(UFA, UFA)$, and then by the adjunction
-we get a computation morphism $\delta_{FA}^ \in \ef(FA, FA)$. Moreover, we get a square
+we get a computation morphism $\delta_{FA}^* \in \ef(FA, FA)$. Moreover, we get a square
 $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$ for all $c : A \rel A$.
 
 
@@ -455,10 +552,10 @@ The perturbations must be preserved by $\times$ $\timesk$, $\arr$, $\tok$, $U$, 
 %
 Perturbations must also satisfy a property that we call the ``push-pull'' property,
 which is formulated as follows. Let $c : A \rel A'$.
-Given a perturbation $\delta \in P_A$, there is a corresponding perturbation
+Given a perturbation $\delta \in P_A$, we require a corresponding perturbation
 $\push_c(\delta) \in P_{A'}$. % making the following square commute:
 %
-Likewise, given $\delta' \in P_{A'}$ there is a perturbation $\pull_c(\delta') \in P_A$.
+Likewise, given $\delta' \in P_{A'}$ we require a perturbation $\pull_c(\delta') \in P_A$.
 % making the following square commute:
 %
 Moreover, push-pull states that there are squares 
