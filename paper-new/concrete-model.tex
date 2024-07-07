@@ -1,10 +1,10 @@
 \section{Constructing a Concrete Model}\label{sec:concrete-model}
 
-In this section, we build a concrete extensional model of gradual typing.
-We begin by defining a step-1 intensional model, and then
-apply the abstract constructions outlined in the previous section
-to obtain an extensional model.
-We begin with some definitions:
+In this section, we return to the construction of a concrete model of gradual
+typing begun in Section \ref{sec:towards-relational-model}. We begin by constructing
+a step-1 intensional model, and then apply the abstract constructions outlined
+in the previous section to obtain an extensional model. We begin with some
+definitions:
 \begin{definition}
 A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 \begin{itemize}
@@ -14,16 +14,16 @@ A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 \end{definition}
 
 % TODO: later of a predomain
-Given a predomain $A$, we can form the predomain $\later A$.
-The underlying set is $\later |A|$ and the relation is defined in the obvious way,
-i.e., $\tilde{x} \le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
+Given a predomain $A$, we can form the predomain $\later A$. The underlying set
+is $\later |A|$ and the relation is defined in the obvious way, i.e., $\tilde{x}
+\le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
 Likewise for bisimilarity.
 %
-We also give a predomain structure to the natural numbers $\mathbb{N}$, where both the
-ordering and the bisimilarity relation are equality.
+We also give a predomain structure to the natural numbers $\mathbb{N}$, where
+both the ordering and the bisimilarity relation are equality.
 %
-Morphisms of predomains are functions between the underlying sets that preserve the ordering
-and the bisimilarity relation. More formally:
+Morphisms of predomains are functions between the underlying sets that preserve
+the ordering and the bisimilarity relation. More formally:
 %
 \begin{definition}
 Let $A$ and $A'$ be predomains.
@@ -39,10 +39,11 @@ An \textbf{error domain} $B$ consists of a predomain $B$ along with the followin
 \end{itemize}
 \end{definition}
 %
-For an error domain $B$, we define the predomain morphism $\delta_B := \theta_B \circ \nxt$.
+For an error domain $B$, we define the predomain morphism $\delta_B := \theta_B
+\circ \nxt$.
 %
-Morphisms of error domains are morphisms of the underlying predomains that preserve the
-algebraic structure. More formally:
+Morphisms of error domains are morphisms of the underlying predomains that
+preserve the algebraic structure. More formally:
 %
 \begin{definition}
 Let $B$ and $B'$ be error domains.
@@ -53,9 +54,9 @@ A morphism $\phi : B \wand B'$ is a morphism between the underlying predomains s
 \end{enumerate}
 \end{definition}
 %
-We define a (monotone) relation on predomains $A$ and $A'$ to be a relation on the
-underlying sets that is downward-closed under $\le_A$ and upward-closed under $\le_{A'}$.
-More formally:
+We define a (monotone) relation on predomains $A$ and $A'$ to be a relation on
+the underlying sets that is downward-closed under $\le_A$ and upward-closed
+under $\le_{A'}$. More formally:
 %
 \begin{definition}
 Let $A$ and $A'$ be predomains. A \emph{predomain relation} between $A$ and $A'$
@@ -68,9 +69,10 @@ is a relation $R$ between the underlying sets such that:
 \end{enumerate}
 \end{definition}
 %
-Composition of relations on predomains is the usual relational composition.
-Similarly, we define a (monotone) relation on error domains to be a relation on the
-underlying predomains that respects error and preserves $\theta$.
+Composition of relations on predomains is the usual relational composition
+(which is truncated to be propositional). Similarly, we define a (monotone)
+relation on error domains to be a relation on the underlying predomains that
+respects error and preserves $\theta$:
 %
 \begin{definition}
     Let $B$ and $B'$ be error domains. An \emph{error domain relation} between
@@ -83,15 +85,27 @@ underlying predomains that respects error and preserves $\theta$.
     \end{enumerate}
 \end{definition}
 %
-We define composition of error domain relations $R$ on $B_1$ and $B_2$ and $S$
-on $B_2$ and $B_3$ to be the least relation containing $R$ and $S$ that respects
-error and preserves $\theta$.
+Because of a technical limitation involving the interaction between
+propositional truncation and the later modality, we cannot define the
+composition of error domain relations as simply the composition of their
+underlying predomain relations. Instead, we define composition of error domain
+relations $R$ on $B_1$ and $B_2$ and $S$ on $B_2$ and $B_3$ to be the least
+relation containing $R$ and $S$ that is downward closed under $\le_{B_1}$,
+upward-closed under $\le_{B_3}$, respects error, and preserves $\theta$.
 Specifically, it is defined inductively by the following rules:
 %
 \begin{mathpar}
     \inferrule*[right = Comp]
     {b_1 \mathbin{R} b_2 \and b_2 \mathbin{S} b_3}
     {b_1 \mathbin{R \relcomp S} b_3}
+
+    \inferrule*[right = DnClosed]
+    {b_1' \le_{B_1} b_1 \and b_1 \mathbin{R \relcomp S} b_3}
+    {b_1' \mathbin{R \relcomp S} b_3}
+
+    \inferrule*[right = UpClosed]
+    {b_1 \mathbin{R \relcomp S} b_3 \and b_3 \le_{B_3} b_3'}
+    {b_1 \mathbin{R \relcomp S} b_3'}
 
     \inferrule*[right = PresErr]
     { }
@@ -104,47 +118,50 @@ Specifically, it is defined inductively by the following rules:
 %
 % We note that this composition has the following universal property.
 %
-We now describe the ``commuting squares".
-Suppose we are given predomains $A_i, A_o, A_i'$, and $A_o'$,
-relations $R_i : A_i \rel A_i'$ and $R_o : A_o \rel A_o'$, and morphisms $f : A_i \to A_o, f' : A_i' \to A_o'$
-Given a square with these morphisms and relations, we say that the square commutes, written $f \le f'$, if for all
-$x \in A_i$ and $x' \in A_i'$ with $x \mathbin{R_i} x'$, we have
-$f(x) \mathbin{R_o} f'(x')$.
-We make the analogous definition for error domains.
+We now describe the squares. Suppose we are given predomains $A_i,
+A_o, A_i'$, and $A_o'$, relations $R_i : A_i \rel A_i'$ and $R_o : A_o \rel
+A_o'$, and morphisms $f : A_i \to A_o, f' : A_i' \to A_o'$ Given a square with
+these morphisms and relations, we say that the square commutes, written $f \le
+f'$, if for all $x \in A_i$ and $x' \in A_i'$ with $x \mathbin{R_i} x'$, we have
+$f(x) \mathbin{R_o} f'(x')$. We make the analogous definition for error domains.
 
-\subsection{Guarded Lift Monad}\label{sec:guarded-lift-monad}
+\subsection{Guarded Lift Monad and Free-Forgetful Adjunction}\label{sec:guarded-lift-monad}
 
 % Lift monad
-The guarded error-lift monad $\li$ takes a predomain $A$ to the error domain $\li A$.
-It is defined \footnote{Formally, the lift monad $\li A$ is defined as the solution to
-the guarded recursive type equation $\li A \cong A + 1 + \later \li A$.} as follows :
-%
-\begin{align*}
-  \li A :=
-  \alt \eta \colon A \to \li A
-  \alt \mho \colon \li A
-  \alt \theta \colon \later (\li A) \to \li A
-\end{align*}
-%
+The guarded error-lift monad $\li$ takes a predomain $A$ to the error domain
+$\li A$. A similar construct was already introduced in Section
+$\ref{sec:lift-monad}$; here we extend it to a monad on \emph{predomains} rather
+than on sets. Given a predomain $A$, the underlying set of $\li A$ is simply the
+guarded lift monad on sets applied to the underlying set of $A$. Recall that
+this has three constructors $\eta : A \to \li A$, $\mho : \li A$, and $\theta :
+\laterhs (\li A) \to \li A$.
 
-This captures the intuition that a program may either return a value,
-fail at run-time, or take one or more observable steps of computation.
-Previous work has studied such a similar construct, called the guarded lift
-monad \cite{mogelberg-paviotti2016}; our version here augments it with the notion of error.
-Since we claimed that $\li A$ is a monad, we need to define the monadic operations
-and show that they respect the monadic laws. The return is just $\eta$, and the monadic extend
-is defined via guarded recursion by cases on the input.
-Verifying that the monadic laws hold uses \lob-induction and is straightforward.
+The ordering relation $\le_{\li A}$ is defined to be the \emph{lock-step error
+ordering} defined in Section \ref{sec:lock-step-and-weak-bisim}. The
+bisimilarity relation $\bisim_{\li A}$ is defined to be the \emph{weak
+bisimilarity relation} also defined in Section
+\ref{sec:lock-step-and-weak-bisim}. With these relations on $\li
+A$, the constructors $\eta$ and $\theta$ are in fact morphisms of predomains,
+i.e., they are monotone and preserve bisimilarity.
 
-% \eric{Check}
-% We can also show that $\li A$ is the free error- and -later algebra on $A$, in that
-% for any morphism of predomains $f : A \to UB$, there is a unique morphism of error domains
-% $f^* : \li A \to \li A$ extending $f$.
+The monad $\li$ decomposes into a free-forgetful adjunction $F \dashv U$. Given
+a predomain $A$, we define the error domain $FA$ whose underlying predomain is
+$\li A$, whose error element is $\mho$, and whose $\theta$ map is the
+constructor $\theta$. The functor $U$ from error domains to predomains simply
+returns the underlying predomain. On morphisms, it returns the underlying
+morphism of predomains.
 
-There is a functor $U$ from error domains to predomains that on objects simply returns the
-underlying predomain, and on morphisms returns the underlying morphism of predomains.
-It is easily verified that $\li A$ is the free error- and later-algebra on the predomain $A$,
-so we have that $\li$ is left-adjoint to $U$.
+The monadic bind operation takes a predomain morphism $f : A \to UB$ to an error
+domain morphism $FA \to B$; with this we define the action of $F$ on morphisms:
+Given $f : A \to A'$ we observe that $\eta \circ f : A \to UFA'$ and so we define
+$Ff = \ext{\eta \circ f}{} : FA \to FA'$.
+
+It is easily verified that $\li A$ is the free error- and later-algebra on the
+predomain $A$, so we have that $\li$ is left-adjoint to $U$.
+
+ 
+
+
 % i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
 % predomain morphisms from $A$ to $UB$.
 
@@ -154,71 +171,15 @@ so we have that $\li$ is left-adjoint to $U$.
 
 %\subsubsection{Lock-Step Error Ordering}\label{sec:lock-step}
 
-The partial order $\le_{\li A}$ is the lock-step error ordering defined by guarded recursion as follows:
-%
-\begin{itemize}
-    \item 	$\eta\, x \le_{\li A} \eta\, y$ if $x \le_A y$.
-    \item 	$\mho \le_{\li A} l$ for all $l$ 
-    \item   $\theta\, \tilde{r} \le_{\li A} \theta\, \tilde{r'}$ if
-            $\later_t (\tilde{r}_t \le_{\li A} \tilde{r'}_t)$
-  \end{itemize}
-%
-The idea is that two computations $l$ and $l'$ are related if they are in
-lock-step with regard to their intensional behavior, up to $l$ erroring.
-Given a relation $R : A \rel A'$, we define in an analogous manner a heterogeneous
-version of the lock-step error ordering between $\li R : \li A \rel \li A'$.
+
 % We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
 % ``heterogeneous" version of the lock-step error ordering.
 
 % TODO action of \li on commuting squares
 
-%\subsubsection{Weak Bisimilarity}\label{sec:weak-bisimilarity}
-%
-For a predomain $A$, we define a relation on $\li A$, called ``weak bisimilarity",
-written $l \bisim l'$. Intuitively, we say $l \bisim l'$ if they are equivalent ``up to delay''.
-The weak bisimilarity relation is defined by guarded recursion as follows:
-%
-\begin{align*}
-  &\mho \bisim \mho \\
-%
-  &\eta\, x \bisim \eta\, y \text{ if } 
-    x \bisim_A y \\
-%		
-  &\theta\, \tilde{x} \bisim \theta\, \tilde{y} \text{ if } 
-    \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
-%	
-  &\theta\, \tilde{x} \bisim \mho \text{ if } 
-    \theta\, \tilde{x} = \delta^n(\mho) \text { for some $n$ } \\
-%	
-  &\theta\, \tilde{x} \bisim \eta\, y \text{ if }
-    (\theta\, \tilde{x} = \delta^n(\eta\, x))
-  \text { for some $n$ and $x \in A$ such that $x \bisim_A y$ } \\
-%
-  &\mho \bisim \theta\, \tilde{y} \text { if } 
-    \theta\, \tilde{y} = \delta^n(\mho) \text { for some $n$ } \\
-%	
-  &\eta\, x \bisim \theta\, \tilde{y} \text { if }
-    (\theta\, \tilde{y} = \delta^n (\eta\, y))
-  \text { for some $n$ and $y \in A$ such that $x \bisim_A y$ }
-\end{align*}
-%
-When both sides are $\eta$, then we ensure that the underlying values are related
-by the bisimilarity relation on $A$.
-When one side is a $\theta$ and the other is $\eta x$ (i.e., one side steps),
-we stipulate that the $\theta$-term runs to $\eta y$ where $x$ is bisimilar to $y$.
-Similarly when one side is $\theta$ and the other $\mho$.
-If both sides step, then we allow one time step to pass and compare the resulting terms.
-In this way, the definition captures the intuition of terms being equivalent up to
-delays.
-
-% It can be shown (by \lob-induction) that the step-sensitive relation is symmetric.
-% However, it can also be shown that this relation is \emph{not} transitive:
-% The argument is the same as that used to show that the step-insensitive error
-% ordering $\semltbad$ described above is not transitive. Namely, we show that
-% if it were transitive, then it would have to be trivial in that $l \bisim l'$ for all $l, l'$.
-% that if this relation were transitive, then it would relate all values of type $\li A$.
 
 
+\subsection{Other Constructions}
 % internal hom for predomains and error domains
 Given predomains $A$ and $A'$, we can form the predomain of
 predomain morphisms from $A$ to $A'$, denoted $A \To A'$.
@@ -330,7 +291,7 @@ We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
  \ptb_D(p_{\text{times}}, p_{\text{fun}}) &= \lambda d.\text{case $d$ of}  \\
  &\alt \tnat(m) \mapsto \tnat(m) \\
     &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_{D \times D}(p_\text{times})(d_1, d_2))} \\
-    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. \ptb_{U(D \to FD)}()(\tilde{f}_t))} \\
+    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. \ptb_{U(D \to FD)}()(\tilde{f}_t))}
 \end{align*}
     % \item $\ptb_D(1)$
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has
@@ -347,12 +308,12 @@ We claim that the three relations $\inat$, $\itimes$, and $\iarr$
 %and their lifted versions 
 satisfy the push-pull property.
 As an illustrative case, we establish the push-pull property for the relation $\iarr$.
-We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by\( \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \)
+We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by \( \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \)
 % (recall that $P_{U(D \arr FD)} = \mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D$).
 %
 i.e., we simply forget the other perturbation.
 %
-We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by \( \push{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}) \).
+We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by \( \push_{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}) \).
 %
 Showing that the relevant squares commute is straightforward.
 %
