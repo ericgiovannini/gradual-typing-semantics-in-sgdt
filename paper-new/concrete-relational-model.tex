@@ -6,64 +6,178 @@
 % semantics for closed terms of type $\nat$, as functions from $\mathbb{N} \to
 % ((\mathbb{N} + 1) + 1)$.
 
-\eric{Wording?}
-In the previous section, we gave a denotational semantics to the terms of the
-gradually-typed lambda calculus using the tools of SGDT. In this section, we
-build on the ideas used in defining a term model with the goal of defining a
-model of the full gradually-typed lambda calculus, i.e., one that has constructs
-that model type and term precision.
+\eric{Review this section}
+
+In the previous section, we gave a denotational call-by-push-value model for the
+terms of the gradually-typed lambda calculus using the tools of SGDT. In this
+section, we build on the ideas used in defining a term model with the goal of
+defining a model of the full gradually-typed lambda calculus, i.e., one that has
+constructs that model type and term precision.
+
+Recall that the cast calculus introduced in Section \ref{sec:GTLC} has not only
+terms but also an \emph{inequational theory} with axioms for type precision and
+term precision that constitute an abstract formulation of the graduality
+property. Thus, our goal now is to build a denotational model interpreting these
+axioms.
 %
-% The purpose of this section is to motivate the need for many of the
-% seemingly complicated features of the abstract model introduced in
-% Section \ref{sec:abstract-models}.
 
-We will not give the complete description of the concrete model in this section;
-rather we seek to develop just enough to motivate the need for the non-standard
-aspects in the definitions of abstract model introduced in Section
-\ref{sec:abstract-models}. After defining the notion of abstract model and
-describing a modular way of constructing such a model, we will return in Section
-\ref{sec:concrete-model} to the complete construction of a concrete model.  
+\subsection{Modeling Type and Term Precision}
 
-\subsection{A First Attempt}
+% We will model type precision $c : A \ltdyn A'$ as a relation between the sets
+% $\sem{A}$ and $\sem{A'}$. 
 
-% TODO should we frame this in terms of the idealized categorical models
-% i.e. say what the vertical and horizontal morphisms and squares are
-% introduced previously? What is the proper denotation of values versus terms?
-% We don't distinguish between value types and computation types in the syntax
-
-As a first attempt at giving a semantics to the term precision relation, we
-could try to model types as sets equipped with an ordering that models term
-precision. Since term precision is reflexive and transitive, and since we
-identify terms that are equi-precise, we could model value types as
+To model term precision, we begin by equipping the denotation of every type with
+an ordering relation. Since term precision is reflexive and transitive, and
+since we identify terms that are equi-precise, we model value types as
 partially-ordered sets and values $\Gamma \vdash V : A$ as \emph{monotone}
 functions. Analogously, every error domain is now equipped with a partial
-ordering for which the error element is the bottom, and the map $\theta_B
-\laterhs B \to B$ is now required to be monotone. 
+ordering for which the error element is the bottom element, and the map
+$\theta_B \laterhs B \to B$ is now required to be monotone. 
 %
 \footnote{This requires us to define a notion of ``later'' for partially-ordered
-sets $X$, but this can be done. The elements are simply ``later''-elements of
-$X$, and the ordering is the obvious one, i.e., two later-elements are related
-if after one time step, the elements they step to are related.}
-%
-% \eric{What about computation
-% types? We need to extend the error domains mentioned in the term model section
-% to also have an ordering such that the error element is the least element and
-% the theta morphism is monotone. Is this best introduced here, or should we wait
-% until after we have introduced the revised notions of abstract model?}
-%
-We model type precision $c : A \ltdyn B$ as a \emph{montone relation}, i.e., a
-relation $R$ that is upward-closed under the relation on $B$ and downward-closed
-under the relation on $A$. We could then model the term precision ordering $M
-\ltdyn N : A \ltdyn B$ as an ordering relation between the monotone functions
-denoted by $M$ and $N$.
+sets $X$. The elements are simply ``later''-elements of $X$, and the ordering is
+the obvious one, i.e., two later-elements are related if after one time step,
+the elements they step to are related.}
 
-However, it turns out that modeling term precision is not as straightforward as
-one might hope. A first attempt might be to define an ordering $\semltbad$
-between $\li X$ and $\li Y$ that allows for computations that may take different
-numbers of steps to be related. We call this the \emph{step-insensitive error
-ordering}. The ordering is parameterized by an ordering relation $\le$ between
-$X$ and $Y$. The definition is by guarded recursion and is shown in Figure
-\ref{fig:step-insensitive-error-ordering}.
+We model type precision $c : A \ltdyn A'$ as a \emph{monotone relation}, i.e., a
+relation $c$ that is upward-closed under the relation on $A'$ and
+downward-closed under the relation on $A$. The relation on the poset $A$ is
+denoted $r(A)$.
+% This extends to products $c_1 \times c_2$ in the obvious way.
+%
+Likewise, we define a notion of \emph{computation relation} on computation types
+$B$ and $B'$. A computation relation $d : B \rel B'$ is a monotone relation on
+the underlying sets that preserves error and respects $\theta$. That is, $\mho_B
+\mathbin{d} y$ for all $y : B'$ and if $\laterhs_t (\tilde{x}_t \mathbin{d}
+\tilde{y}_t)$, then $\theta_B (\tilde{x}) \mathbin{d} \theta_{B'} (\tilde{y})$.
+The functors $U$ and $F$ introduced in the previous section extend to relations,
+The functor $U$ simply takes the underlying monotone relation of a computation
+relation; we will give the definition of $F$ on relations later in this section.
+
+Before moving on, we introduce the notion of \emph{square}, which specifies
+a relation between two monotone functions. The definition is as follows. Let
+$A_i, A_o, A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$ and
+$c_o : A_o \rel A_o'$ be monotone relations, and let $f : A_i \to A_o$ and $g :
+A_i' \to A_o'$ be monotone functions. We say that $f \ltsq{c_i}{c_o} g$ if for
+all $x : A_i$ and $y : A_i'$ with $x \binrel{c_i} y$, we have $f(x) \binrel{c_o}
+g(y)$. We visualize this situation as the following square:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMCwxLCJBX28iXSxbMSwwLCJBX2knIl0sWzEsMSwiQV9vJyJdLFsyLDMsImciXSxbMCwxLCJmIiwyXSxbMCwyLCJjX2kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImNfbyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_i} \& {A_i'} \\
+	{A_o} \& {A_o'}
+	\arrow["{c_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["f"', from=1-1, to=2-1]
+	\arrow["g", from=1-2, to=2-2]
+	\arrow["{c_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+We note that for any $c$, there is a ``vertical identity'' square $\id
+\ltsq{c}{c} \id$, as can be seen by unfolding the definition. Similarly, for any
+montone function $f : A_i \to A_o$, there is a ``horizontal identity'' square $f
+\ltsq{r(A_i)}{r(A_o)}$ by the definition of monotone function.
+
+The cast rules UpL/UpR/DnL/DnR specify a relationship between the semantics of
+type precision and the corresponding casts (see Section \ref{sec:GTLC}). In
+particular, they specify that the relations are \emph{representable} by the
+casts. The UpL and UpR rules refer to upcasts, and since upcasts are pure, these
+rules apply to \emph{value} relations $c$. The DnL and DnR rules refer to
+downcasts, and since downcasts are effectful, these rules apply to
+\emph{computation} relations $d$.
+
+As an example, consider the UpL rule. It states that if $c : A_1 \ltdyn A_2$ and
+$c' : A_2 \ltdyn A_3$ and $x : A_1$ is related to $y : A_3$ via the composition
+$c \comp c'$, then the upcast $\upc{c} x$ is related to $y$ via $c'$. This is
+equivalent to the existence of the following square:
+
+% https://q.uiver.app/#q=WzAsNSxbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMyw0LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiXFx1cGN7Y30iLDJdLFsyLDQsIlxcaWQiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_1} \& {A_2} \& {A_3} \\
+	{A_2} \&\& {A_3}
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\upc{c}}"', from=1-1, to=2-1]
+	\arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+	\arrow["\id", from=1-3, to=2-3]
+	\arrow["{c'}"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+\end{tikzcd}\]
+
+The three squares corresponding to the other rules are analogous. Observe that
+although this is really a fact about the relationship between $c$ and $\upc{c}$,
+we must universally quantify over all relations $c'$. This means we cannot
+require the existence of this square as part of the definition of a monotone
+relation, as it is self-referential. This would seem to imply that we cannot
+give a syntax-independent semantic model for gradual typing. However, the key
+observation is that through compositionality, we can \emph{derive} the above
+squares from simpler ones that do not involve composition of relations. For
+example, below is the simpler square corresponding to UpL:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJyKEFfMikiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcdXBje2N9IiwyXSxbMiwzLCJcXGlkIl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_1} \& {A_2} \\
+	{A_2} \& {A_2}
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\upc{c}}"', from=1-1, to=2-1]
+	\arrow["\id", from=1-2, to=2-2]
+	\arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+We can use this to derive the original UpL square by composing this square with
+the identity square for $c'$:
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwicihBXzIpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNSw0LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiXFx1cGN7Y30iLDJdLFsyLDQsIlxcaWQiXSxbMSw1LCJcXGlkIiwyXV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_1} \& {A_2} \& {A_3} \\
+	{A_2} \& {A_2} \& {A_3}
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\upc{c}}"', from=1-1, to=2-1]
+	\arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+	\arrow["\id"', from=1-2, to=2-2]
+	\arrow["\id", from=1-3, to=2-3]
+	\arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+\end{tikzcd}\]
+
+The existence of these simpler squares for a relation can be stated without
+reference to other relations. Thus we can require that these squares exist in
+the definition of relation without running into the circularity issue we faced
+with the original rules.
+
+Finally, we model the term precision ordering $\Gamma \ltdyn \Gamma' \vdash M \ltdyn
+N : A \ltdyn A'$ as an ordering relation between the monotone functions denoted
+by $M$ and $N$, as shown below:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXEdhbW1hIl0sWzAsMSwiVUYgQSJdLFsxLDAsIlxcR2FtbWEnIl0sWzEsMSwiVUZBJyJdLFsyLDMsIlxcc2Vte059Il0sWzAsMSwiXFxzZW17TX0iLDJdLFswLDIsIlxcR2FtbWFee1xcbHRkeW59IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJVRmMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\Gamma \& {\Gamma'} \\
+	{UF A} \& {UFA'}
+	\arrow["{\Gamma^{\ltdyn}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\sem{M}}"', from=1-1, to=2-1]
+	\arrow["{\sem{N}}", from=1-2, to=2-2]
+	\arrow["UFc"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+where $\Gamma = \{A_1, A_2, \dots\}$ and $\Gamma' = \{A_1' , A_2', \dots\}$ and for
+each $j$, $c_j : A_j \ltdyn A_j'$, and the relation $\Gamma^{\ltdyn}$ is simply
+the product of the $c_i$.
+
+It remains to define $Fc$, i.e., the action of $F$ on relations.
+%
+% However, lifting a relation between $A$ and $A'$ to a relation between $\li A$
+% and $\li A'$ proves problematic if we allow computations that take different
+% numbers of steps to be related. To illustrate the issue, let us define an
+% ordering $\semltbad$ between $\li A$ and $\li A'$; we call this the
+% \emph{step-insensitive error ordering}. 
+%
+We note that the graduality property and the axioms of the inequational theory
+are independent of the intensional stepping behavior of terms, so our ultimate
+notion that interprets term precision will need to be oblivious to stepping as
+well.
+%
+To that end, let us define a \emph{step-insensitive error ordering} $\semltbad$
+between $\li A$ and $\li A'$; The ordering is parameterized by an ordering
+relation $\le$ between $A$ and $A'$. The definition is by guarded recursion and
+is shown in Figure \ref{fig:step-insensitive-error-ordering}. Recall that
+$\delta : \li A \to \li A$ is defined by $\delta = \theta_A \circ \nxt$.
 
 \begin{figure*}
     \begin{align*}
@@ -80,14 +194,14 @@ $X$ and $Y$. The definition is by guarded recursion and is shown in Figure
         %	
         &\theta\, \tilde{l} \semltbad \eta\, y \text{ if }
             (\theta\, \tilde{l} = \delta^n(\eta\, x))
-        \text { for some $n$ and $x : \ty{X}$ such that $x \le y$ } \\
+        \text { for some $n$ and $x : A$ such that $x \le y$ } \\
         %
-        &\mho \semltbad \theta\, \tilde{l'} \text { if } 
-            \theta\, \tilde{l'} = \delta^n(\mho) \text { for some $n$ } \\
+        &\theta\, \tilde{l} \semltbad \mho \text { if } 
+            \theta\, \tilde{l} = \delta^n(\mho) \text { for some $n$ } \\
         %	
         &\eta\, x \semltbad \theta\, \tilde{l'} \text { if }
             (\theta\, \tilde{l'} = \delta^n (\eta\, y))
-        \text { for some $n$ and $y : \ty{Y}$ such that $x \le y$ }
+        \text { for some $n$ and $y : A'$ such that $x \le y$ }
     \end{align*}
     \caption{The step-insensitive error ordering.}
     \label{fig:step-insensitive-error-ordering}
@@ -102,15 +216,16 @@ guarded recursion to define the relation).
 %
 Lastly, if one side steps and the other immediately returns a value, then in
 order for these terms to be related, the side that steps must terminate with a
-value in some finite number of steps $n$, and that value must be related to
-the value returned by the other side. Likewise, if the LHS steps and the RHS
-immediately errors, then the LHS must eventually terminate with error.
+value in some finite number of steps $n$, and that value must be related to the
+value returned by the other side. Likewise, if the LHS steps and the RHS
+immediately errors, then in order to be related, the LHS must eventually
+terminate with error.
 
 \subsection{Problem: Failure of Transitivity}
 
-The problem with the above definition is that the relation is \emph{not}
-transitive, which we explain below. We begin with a general ``no-go'' theorem
-about relations defined on the guarded lift monad:
+The key issue with the above ordering is it is \emph{not} transitive, as we will
+show below. We begin with a general ``no-go'' theorem about relations defined on
+the guarded lift monad:
 
 \begin{theorem}[No-go theorem for relations on $\li X$]\label{thm:no-go}
     Let $R$ be a relation on the guarded lift monad satisfying the following
@@ -150,41 +265,36 @@ it were transitive, then by the theorem, it would be trivial, a contradiction.
 Thus, we are able to refute transitivity of $\semltbad$ provided the underlying
 relation is non-trivial.
 
-% It can be shown (in Clocked Cubical Type
-% Theory) that if $R$ is a relation on $\li X$ satisfying three specific
-% properties, one of which is transitivity, then that relation is trivial. The
-% other two properties are that the relation is a congruence with respect to
-% $\theta$, and that the relation is closed under delays $\delta = \theta \circ
-% \nxt$ on either side. Since the above relation \emph{does} satisfy the other
-% two properties, we conclude that it must not be transitive.
 
-\eric{I'm not sure that this is a satisfactory explanation...}
-At this point, we could give up on transitivity and instead of requiring types
-to be modeled by partially-ordered sets, we could model types as sets equipped
-with a reflexive, anti-symmetric ordering relation. However, this is not
-convenient for carrying out the constructions necessary for proving graduality.
-For example, in order to model the UpL/UpR/DnL/DnR rules for casts, in the
-presence of transitivity it suffices to model simpler rules that do not build in
-composition. We can then use transitivity to derive the actual, more complicated
-rules we need to show.
-% For example, in order to model the UpL/UpR/DnL/DnR rules for casts, prior work
-% has taken as primitive simpler rules that do not involve composition, and then
-% uses transitivity to establish the more complicated versions that have
-% composition ``built in''.
-Without transitivity, however, this is not possible, and so we must instead take as
-primitive the more complicated versions of the cast rules. Then in the model, we
-must verify that those rules hold ``from scratch''. So, although this approach
-would suffice for proving graduality, it lacks the compositionality that we seek
-in a reusable framework for the semantics of gradual typing.
+\eric{Read this}
+The lack of transitivity presents a major barrier towards giving a compositional
+semantics to gradual typing: if our relations are not transitive, then we cannot
+compose squares horizontally. But we have argued above that horizontal
+composition is essential for modelling the axioms of gradual typing in a
+syntax-independent manner.
+
+% In particular, to model the UpL/UpR/DnL/DnR rules
+% for casts in the presence of transitivity, it is sufficient to establish the
+% validity of simpler rules that do not ``build in'' composition. We can then use
+% transitivity to derive the original versions of the rules. On the other hand,
+% without transitivity we must instead validate the cast rules in the model ``from
+% scratch''. In fact, we cannot even define the semantic interpretation of type
+% precision in a syntax-independent manner. The issue is that in the definition of
+% relation, the requirement that it be representable now involves quantifying over
+% all other relations, which is circular.
+ 
+% So, although this approach would suffice for proving graduality, it lacks the
+% compositionality that we seek in a reusable framework for the semantics of
+% gradual typing.
 
 %Because it is convenient to make use of transitive reasoning in proving graduality, ...
-We are therefore led to wonder whether we can formulate an ordering
-relation on $\li X \times \li Y$ that \emph{is} transitive. The theorem above
-tells us, however, that any such relation must either not be a congruence with
-respect to $\theta$, or must not be closed under delay.
+We therefore seek to formulate an ordering relation on $\li A \times \li A'$
+that \emph{is} transitive. The theorem above tells us, however, that any such
+relation must either not be a congruence with respect to $\theta$, or must not
+be closed under delay.
 \footnote{Technically, we only need to give up closure under delay on \emph{one}
 side, as the above theorem requires $R$ to be closed on both sides. We could
-define two separate ``step-semi-sensitive'' relations on $\li X \times \li Y$,
+define two separate ``step-semi-sensitive'' relations on $\li A \times \li A'$,
 each closed under delays on the left and right respectively. The denotation of
 term precision would then involve the conjunction of those relations. We do not
 pursue this approach in this paper, because (1) it is not clear if the
@@ -193,8 +303,8 @@ reason about the two ordering relations separately for every pair of terms.}
 %
 We cannot forego the property of being a $\theta$-congruence, as without this we
 would not be able to prove properties of the relation using \lob-induction,
-e.g., that the monadic bind for the guarded lift monad is a \emph{monotone}
-function with respect to the ordering.
+e.g., that $\ext{f}{}$ is a \emph{monotone} function with respect to the
+ordering.
 %and moreover this would mean that $\theta$ would not be a monotone function.
 
 Thus, we choose to sacrifice closure under delays. That is, we will define an
@@ -326,18 +436,29 @@ $\nat$ as follows:
 \[ l_1 \leq l_2 := 
   \Sigma_{l_1', l_2' \in \li \mathbb{N}}. l_1 \bisim l_1' \ltls l_2' \bisim l_2. \]
 
-\eric{Does this belong in the next section?}
 Importantly, we note that as with the original ordering $\semltbad$ defined at
 the beginning of this section, the relation just defined is not transitive
 (again as a result of the above no-go theorem). It may therefore seem that we
-have not solved the original issue we faced. In a sense, this is true. Indeed,
-we will need to weaken our abstract notion of categorical model to no longer
-require transitivity of term precision. On the other hand, we now have the
-ability to apply transitive reasoning when working with the lock-step ordering.
-This allows us to carry out complex proofs compositionally, a key goal of our
-framework.
+have not solved the original issue we faced. In a sense, this is true. The model
+of gradual typing that we end up with will not support compositional reasoning.
+However, by decomposing the denotation of term precision in the above manner, we
+can employ compositional reasoning provided we work only with the
+\emph{lock-step error ordering}. Thus, the tentative plan going forward will be
+to carry out the proofs compositionally using the lock-step ordering. We will
+then apply the closure under weak bisimilarity in the denotation of term
+precision given above to handle the aspects involving stepping.
 
-\subsection{Failure of the Cast Rules}
+% ...to carry out the proofs using the lock-step ordering and handle the stepping
+% behavior separately via weak bisimilarity. In the end we combine everything
+% together using the above denotation for term precision
+
+% Indeed, we will need to weaken our abstract notion of categorical model to no
+% longer require transitivity of term precision. On the other hand, we now have
+% the ability to apply transitive reasoning when working with the lock-step
+% ordering. This allows us to carry out complex proofs compositionally, a key goal
+% of our framework.
+
+\subsection{Adjusting the Cast Rules}
 
 We have seen how we can recover transitive reasoning by working with the
 lock-step error ordering. However, we cannot completely isolate the reasoning
@@ -347,29 +468,42 @@ about steps from the reasoning about the ordering.
 In particular, the cast rules required for proving graduality no longer hold if
 interpreted using the lock-step ordering. The source of the problem is that the
 downcast from the dynamic type to a function takes a step, i.e., involves a
-$\theta$. Consider a simplified version of the DnL rule shown below (see Section
-\ref{sec:GTLC} for background):
+$\theta$. Consider the DnL rule shown below:
 %
 \begin{mathpar}
-  \inferrule*{c : A \ltdyn B \and M \ltdyn_i N : B}
-             {\dnc{c}{M} \ltdyn_i N : c}
+  \inferrule*{c : A \ltdyn A' \and M \ltdyn N : A'}
+             {\dnc{c}{M} \ltdyn N : c}
 \end{mathpar}
 %
 Suppose that $c$ is $\iarr \colon \dyntodyn \ltdyn\, \dyn$, and recall the
 definition of the semantics of a downcast given in Section
-\ref{sec:term-interpretation}. When we downcast $M$ from $dyn$ to $\dyntodyn$,
-semantically this will involve a $\theta$ because the value of type $D$ in the
-model will be a \emph{later} function $\tilde{f}$.
+\ref{sec:term-interpretation}. The DnL rule corresponds to the following square:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJGRCJdLFswLDEsIkZVKEQgXFxhcnIgRkQpIl0sWzEsMCwiRkQiXSxbMSwxLCJGRCJdLFswLDIsInIoRkQpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJGXFxpYXJyIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXGRuY3tcXGlhcnJ9IiwyXSxbMiwzLCJcXGlkIl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	FD \& FD \\
+	{FU(D \arr FD)} \& FD
+	\arrow["{r(FD)}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\dnc{\iarr}}"', from=1-1, to=2-1]
+	\arrow["\id", from=1-2, to=2-2]
+	\arrow["F\iarr"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+The downcast on the left will insert a $\theta$ in the case where the value of
+type $D$ is a later-function $\tilde{f}$.
 %
-Thus, in order for the downcast to be related to the term $N$ in the lock-step
-error ordering on $\li (D \to \li D)$, the right-hand side must be of the form
-$\theta(\dots)$, and moreover, after one time step, the argument to $\theta$ on
-the LHS must be related to the argument of $\theta$ on the RHS. We can achieve
-this by inserting a ``delay'' on the right, i.e., wrapping the RHS in $\delta =
-\theta \circ \nxt$. Notice that this delay function is weakly bisimlar to the
-identity, and thus it will disappear when we apply the bisimilarity-closure
-construction described above. That is, this delay makes no difference in the
-extensional setting, but its presence is crucial in the intensional setting.
+Thus, in order for the downcast to be related to the RHS in the lock-step error
+ordering on $\li (D \to \li D)$, the RHS must be of the form $\theta(\dots)$,
+and moreover, after one time step, the argument to $\theta$ on the LHS must be
+related to the argument of $\theta$ on the RHS. As it stands now, this need not
+be the case. Thus, we conclude that the DnL rule does not in general hold under
+the lock-step error ordering. However, observe that we can remedy this
+particular situation by inserting a ``delay'' on the right, i.e., wrapping the
+RHS in $\delta = \theta \circ \nxt$. Notice that this delay function is weakly
+bisimlar to the identity, and thus it will disappear when we apply the
+bisimilarity-closure construction described above. That is, this delay makes no
+difference in the extensional setting, but its presence is crucial in the
+intensional setting.
 
 % TODO Maybe show the correct form of the rule in the special case $c = inj-arr$.
 
@@ -389,15 +523,16 @@ equip every object with a structured set of delays that can be inserted to
 ensure the appropriate cast rules hold at all higher-order types. For example,
 the upcast for a derivation $c \ra d$ involves the downcast corresponding to $c$
 and an upcast corresponding to $d$. We must be able to insert delays in a
-functorial manner to mimic the structure of the casts.
+functorial manner to mimic the structure of the casts. In the next section, we
+will make the necessary definitions and describe the relevant constructions.
 
-For the sake of reusability and modularity, rather than carry out this
-construction in the concrete setting developed here, we will instead return to
-the abstract setting and adjust our definition of model to account for these
-requirements. We will break the construction into smaller steps and isolate the
-pieces that require the techniques of SGDT from those that do not. Then with
-this framework at our disposal, we will return to the construction of a concrete
-model in Section \ref{sec:concrete-model}.
+% For the sake of reusability and modularity, rather than carry out this
+% construction in the concrete setting developed here, we will instead return to
+% the abstract setting and adjust our definition of model to account for these
+% requirements. We will break the construction into smaller steps and isolate the
+% pieces that require the techniques of SGDT from those that do not. Then with
+% this framework at our disposal, we will return to the construction of a concrete
+% model in Section \ref{sec:concrete-model}.
 % , taking as a starting point the definitions introduced in the current section.
 
 % Thus in the next section we define revised notions of a model of

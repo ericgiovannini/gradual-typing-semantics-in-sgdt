@@ -191,13 +191,16 @@ input value of type $\li A$.
 %
 %
 Verifying that the monadic laws hold uses \lob-induction and is straightforward.
-%
+
 % TODO mention that error domains are algebras of the lift monad?
 We observe that the guarded lift monad applied to a set $A$ is the underlying
 set of the free error domain on $A$ $A$, i.e., we have $\li = UF$ where $F :
 \Set \to \errdom$ and $U : \errdom \to \Set$ and $F \dashv U$. Given a set $A$
 and an error domain $B$, the set of functions $A \to UB$ is naturally isomorphic
 to the set of error domain morphisms $FA \to B$.
+
+Lastly, we define the function $\delta : \li A \to \li A$ by $\delta = \theta_A
+\circ \nxt$.
 
 % The function type A \ra A' will be modeled as \sem{A} \to \li \sem{A'}
 
