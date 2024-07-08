@@ -2,7 +2,7 @@
   
 % gradual typing, graduality
 \subsection{Gradual Typing and Graduality}
-In modern programming language design, there is a tension between \emph{static} typing
+In programming language design, there is a tension between \emph{static} typing
 and \emph{dynamic} typing disciplines.
 With static typing, the code is type-checked at compile time, while in dynamic typing,
 the type checking is deferred to run-time. Both approaches have benefits: with static 
@@ -36,13 +36,17 @@ Moreover, gradually-typed languages should support the smooth migration from
 dynamic typing to static typing, in that the programmer can initially leave off the
 typing annotations and provide them later without altering the meaning of the program.
 % Sound gradual typing
-Furthermore, the parts of the program that are written in a dynamic style should soundly
-interoperate with the parts that are written in a static style.
-That is, the interaction between the static and dynamic components of the codebase
-should preserve the guarantees made by the static types.
-In particular, while statically-typed code can error at runtime in a gradually-typed language,
-such an error can always be traced back to a dynamically-typed term that
-violated the typing contract imposed by statically typed code.
+Furthermore, the parts of the program that are written in a dynamic
+style should soundly interoperate with the parts that are written in a
+static style.  That is, the interaction between the static and dynamic
+components of the codebase should preserve, to the extent possible,
+the guarantees made by the static types.  In particular, while
+statically-typed code can error at runtime in a gradually-typed
+language, such an error can always be traced back to a
+dynamically-typed term that violated the typing contract imposed by
+statically typed code. Further, static type assertions are sound in
+the static portion, and should enable type-based reasoning and
+optimization.
 
 % Moreover, gradually-typed languages should allow for
 % different parts of the codebase to be in different places along the spectrum from
@@ -51,17 +55,25 @@ violated the typing contract imposed by statically typed code.
 % this interaction should respect the guarantees made by the static types.
 
 % Graduality property
-One of the fundamental theorems for gradually typed languages is 
-\emph{dynamic gradual guarantee}, originally defined by Siek, Vitousek, Cimini,
-and Boyland \cite{siek_et_al:LIPIcs:2015:5031}, also called \emph{graduality} \cite{new-ahmed2018},
-by analogy with parametricity.
-Informally, graduality says that going from a dynamic to static style should only allow for the introduction of static or dynamic type errors, and not otherwise change the meaning of the program.
+One of the fundamental theorems for gradually typed languages is
+\emph{graduality}, also known as the \emph{dynamic gradual guarantee}
+\emph{dynamic gradual guarantee}, originally defined by Siek,
+Vitousek, Cimini, and Boyland \cite{siek_et_al:LIPIcs:2015:5031,
+  new-ahmed2018}.
+%
+Informally, graduality says that going from a dynamic to static style should only allow for the introduction of static or dynamic type errors, and not otherwise change the behavior of the program.
 %
 This is a way to capture programmer intuition that increasing type
-precision corresponds to a generalized form assertions at runtime
-only, and so they can trust that prior observed behavior of their
-dynamically typed code will remain unchanged as long as it satisfies
-the new stricter typing discipline.
+precision corresponds to a generalized form of runtime assertions in
+that there are no observable behavioral changes up to the point of the
+first dynamic type error\footnote{once a dynamic type error is raised,
+in languages where the type error can be caught, program behavior may
+then further diverge, but this is typically not modeled in gradual
+calculi.}.
+%
+Fundamentally, this property comes down to the behavior of
+\emph{runtime type casts}\max{TODO: introduce casts more thoroughly as
+  they are important}.
 
 Additionally, gradually typed languages should offer some of the
 benefits of static typing. While classical type soundness, that
@@ -74,9 +86,185 @@ properties that ensure that functions are determined by their behavior
 under application and that pattern matching on data types
 is safe and exhaustive.
 
-Our goal in this work is to provide a reusable semantic framework for
-gradually typed languages that can be used to prove the aforementioned
-properties: graduality and type-based reasoning.
+More concretely, consider a gradually typed language whose only
+effects are gradual type errors and divergence. Then if we fix a
+result type of natural numbers, a whole program semantics is a partial
+function from closed programs to either natural numbers or errors:
+\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \natty \} \rightharpoonup \mathbb{N} \union {\mho} \]
+where $\mho$ is notation for a runtime type error. We write $M
+\Downarrow n$ and $M\Downarrow \mho$ to mean this semantics is defined
+as a number or error, and $M\Uparrow$ to mean the semantics is
+undefined, representing divergence.
+%
+A well-behaved semantics should then satisfy several properties. First, it
+should be adequate: natural number constants should step to
+themselves. Second it should validate type based reasoning. To
+formalize type based reasoning we give a typed equational theory for
+terms of the language $M \cong N$ for when two terms should be
+considered equivalent. Then we want to verify that the big step
+semantics respects this equational theory: if closed programs $M \cong
+N$ are equivalent in the equational theory then they have the same
+semantics, $M \Downarrow n \iff N \downarrow n$ and $M\Uparrow \iff N
+\Uparrow$ and $M \Downarrow \mho \iff N \Downarrow \mho$.
+%
+Lastly, the graduality property is defined by giving an
+\emph{inequational} theory called term precision, where $M \ltdyn N$
+roughly means that $M$ and $N$ have the same type erasure and $M$ has
+at each point in the program a more precise/static type than $N$.
+%
+Then, the graduality property states that if $M \ltdyn N$ are whole
+programs then $M$ must either have the same behavior as $N$ or error:
+Either $M\Downarrow \mho$ or $M \Downarrow n $ and $N \Downarrow n$ or
+$M \Uparrow $ and $N \Uparrow$\footnote{we use a slightly more complex
+definition of this relation in our technical development below that is
+classically equivalent but constructively weaker}.
+
+\subsection{Denotational Semantics in Guarded Domain Theory}
+
+Our goal in this work is to provide an \emph{expressive},
+\emph{reusable}, \emph{compositional} semantic framework for defining
+such well-behaved semantics of programs.
+%
+Our approach to achieving this goal is to provide a compositional
+\emph{denotational semantics}, mapping types to a kind of semantic
+domain, terms to functions and relations such as term precision to
+proofs of semantic relations between the denoted functions.
+%
+Since the denotational constructions are all syntax-independent, the
+constructions we provide may be reused for similar languages. Since it
+is compositional, components can be mixed and matched depending on
+what source language features are present.
+%
+Providing this semantics for gradual typing is inherently complicated
+in that it involves: (1) recursion and recursive types through the
+presence of dynamic types, (2) effects in the form of divergence and
+errors (3) relational models in capturing the graduality
+property. Recursion and recursive types must be handled using some
+flavor of domain theory. Effects can be modeled using monads in the
+style of Moggi, or adjunctions in the style of Levy. Relational
+properties and their verification lead naturally to the use of
+reflexive graph categories or double categories.
+
+The only prior denotational semantics for gradual typing was given by
+New and Licata and is based on \emph{domain theory}
+\cite{newlicata2019}. The fundamental idea is to equip $\omega$-CPOs
+with an additional ``error ordering'' $\ltdyn$ which models the
+graduality ordering, and for casts to arise from
+\emph{embedding-projection pairs}. Then the graduality property
+follows as long as all language constructs can be interpreted using
+constructions that are monotone with respect to the error ordering.
+%
+This framework has the benefit of being compositional, and was
+expressive enough to be extended to model dependently typed gradual
+typing \cite{dependentgradualtyping}.
+%
+However, an approach based on classical domain theory has fundamental
+limitations: domain theory is incapable of modeling certain ``highly
+recursive'' features of programming languages such as dynamic type tag
+generation and higher-order references, which are commonplace in
+real-world gradually typed systems as well as gradual calculi
+\cite{examples-of-gradual-stuff}. Our goal in this work is to develop
+an approach that will eventually scale up to these advanced features,
+though for a first work we focus on adapting their results for a more
+basic semantics.
+
+The main denotational alternative to classical domain theory that can
+successfully model these advanced features is \emph{guarded domain
+theory}, which we adopt in this work. While classical domain theory is
+based on modeling types as ordered sets with certain joins, guarded
+domain theory is based on an entirely different foundations, sometimes
+(ultra)metric spaces but more commonly as ``step-indexed sets'', i.e.,
+objects in the ``topos of trees'', i.e., presheaves on the poset of
+natural numbers. We think of these as modeling a kind of ``sequence of
+approximations'' to the domain being modeled.
+%
+Key to guarded domain theory is that there is a ``later'' operator
+$\triangleright$ on types. Thinking of types as a sequence of
+approximations, the later operator delays the approximation by one
+step. Then the crucial axiom of guarded domain theory is that any
+guarded equation $X \cong F(\triangleright X)$ has a unique
+solution. This allows guarded domain theory to model essentially
+\emph{any} recursive concept, with the caveat that it is guarded by a
+later.
+%
+This caveat is the main source of difficulty in adapting a semantic
+approach based on classical domain theory to guarded domain theory:
+classical domain theory has limitations in what it can model, but it
+provides \emph{exact} solutions to domain equations when it
+applies. When adapting the New-Licata approach to guarded domain
+theory, this means we must work with an \emph{intensional} semantics,
+one where unfolding the dynamic type takes an observable runtime step.
+
+\subsection{Synthetic Guarded Domain Theory}
+
+While guarded domain theory can be presented analytically using
+ultrametric spaces or the topos of trees, in practice it is
+considerably simpler to work \emph{synthetically} by working in a
+non-standard foundation such as guarded type theory where the later
+modality is simply an operation on our basic notion of type, and we
+take as an axiom that guarded domain equations have a (necessarily
+unique) solution. This has the added benefit that providing a
+denotational semantics of gradually typed terms is as simple as an
+semantics of an effectful language using a monad on the category of
+sets. Not only does this make on-paper reasoning about guarded domain
+theory easier, it also enables a simpler avenue to verification in a
+proof assistant. Whereas formalizing analytic guarded domain theory
+would require significant theory of presheaves and making sure that
+all constructions are functors on categories of presheaves,
+formalizing synthetic guarded domain theory can be done by directly
+adding the later modality and the guarded fixed point property
+axiomatically.
+
+\max{TODO: more here}
+
+\subsection{Contributions}
+
+The main contribution of this work is a compositional denotational
+semantics for gradually typed languages that validates $\beta\eta$
+equality and satisfies a graduality theorem. A great deal of the work
+has further been verified in guarded cubical Agda, demonstrating that
+the semantics is readily mechanizable.
+
+\begin{enumerate}
+\item First, we give a simple concrete term semantics where we show
+  how to model the dynamic type as a solution to a guarded domain equation
+
+\item Next, we identify where prior work on classical domain theoretic
+  semantics of gradual typing breaks down when using guarded semantics
+  of recursive types.
+
+\item We develop a key new concept of \emph{syntactic perturbations},
+  which allow us to recover enough extensional reasoning to model the
+  graduality property compositionally
+
+\item We combine this insight together with an abstract categorical
+  model of gradual typing using reflexive graph categories and
+  call-by-push-value to give a compositional construction of our
+  denotational model.
+\item We prove that the resulting denotational model provides a
+  well-behaved semantics as defined above by proving \emph{adequacy},
+  respect for an equational theory and the graduality property.
+\end{enumerate}
+
+The paper is laid out as follows:
+\begin{enumerate}
+\item In Section\ref{sec:syntax} we fix our input language, a fairly
+  typical gradually typed cast calculus.
+\item In Section\ref{sec:concrete-terms} we develop a first
+  denotational semantics in synthetic guarded domain theory that
+  satisfies adequacy and respects the equational theory, but does not
+  validate graduality. We use this to introduce some of our main
+  technical tools: modeling recursive types in guarded type theory and
+  modeling effects using call-by-push-value.
+\item In Section\ref{sec:relational-issues} we show where the
+  New-Licata classical domain theoretic approach fails to adapt
+  cleanly to the guarded setting and explore the difficulties of
+  proving graduality in an intensional model.
+\item In Section\ref{sec:relational-semantics} we
+\item In Section\ref{sec:discussion} we discuss prior work on proving
+  graduality, our partial mechanization of these results and discuss
+  future directions for denotational semantics of gradual typing.
+\end{enumerate}
 
 \subsection{Limitations of Prior Work}
 

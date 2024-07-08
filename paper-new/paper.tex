@@ -68,23 +68,25 @@
   memory locations and dynamic type tags. Further, the desired
   metatheoretic properties of gradually typed languages have become
   increasingly sophisticated: validity of type based equational
-  reasoning as well as the relational property known as the gradual
-  guarantee or graduality. Many recent works have tackled verifying
-  these properties, but the resulting mathematical developments are
-  highly repetitive and tedious, with few reusable theorems persisting
-  across different developments.
+  reasoning as well as the relational property known as
+  graduality. Many recent works have tackled verifying these
+  properties, but the resulting mathematical developments are highly
+  repetitive and tedious, with few reusable theorems persisting across
+  different developments.
 
-  In this work, we present a new denotational account of gradual
-  typing semantics developed using guarded domain theory. Guarded
-  domain theory combines the expressive power of step-indexed logical
-  relations for modeling recursive features with the modularity and
-  reusability of denotational semantics. Further, recent extensions to
-  cubical Agda mean that synthetic guarded domain theory is readily
-  mechanized in a proof assistant. We demonstrate the feasibility of
-  this approach with a model of gradually typed lambda calculus and
-  prove the validity of beta-eta equality and the graduality theorem
-  for the denotational model. This model should provide the basis for
-  a reusable mathematical theory of gradually typed program semantics.
+  In this work, we present a new denotational semantics for gradual
+  typing developed using guarded domain theory. Guarded domain theory
+  combines the generality of step-indexed logical relations for
+  modeling advanced programming features with the modularity and
+  reusability of denotational semantics. We demonstrate the
+  feasibility of this approach with a model of gradually typed lambda
+  calculus and prove the validity of beta-eta equality and the
+  graduality theorem for the denotational model. This model should
+  provide the basis for a reusable mathematical theory of gradually
+  typed program semantics. Finally, a recent extension to Agda allows
+  synthetic guarded domain theory to be readily mechanized in a proof
+  assistant, and we formalize many of the core theorems of our
+  development.
 %%     We develop a denotational semantics for a simple gradually typed language
 %%     that is adequate and proves the graduality theorem.
 %%     %
