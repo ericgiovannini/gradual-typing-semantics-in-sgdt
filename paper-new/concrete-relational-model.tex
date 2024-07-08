@@ -440,13 +440,14 @@ Importantly, we note that as with the original ordering $\semltbad$ defined at
 the beginning of this section, the relation just defined is not transitive
 (again as a result of the above no-go theorem). It may therefore seem that we
 have not solved the original issue we faced. In a sense, this is true. The model
-of gradual typing that we end up with will not support compositional reasoning.
-However, by decomposing the denotation of term precision in the above manner, we
-can employ compositional reasoning provided we work only with the
-\emph{lock-step error ordering}. Thus, the tentative plan going forward will be
-to carry out the proofs compositionally using the lock-step ordering. We will
-then apply the closure under weak bisimilarity in the denotation of term
-precision given above to handle the aspects involving stepping.
+of gradual typing that we end up with will not support \emph{extensional}
+compositional reasoning. However, by decomposing the denotation of term
+precision in the above manner, we can employ \emph{intensional} compositional
+reasoning by working with the lock-step error ordering. Thus, the tentative plan
+going forward will be to carry out the proofs compositionally using the
+lock-step ordering. We will then apply the closure under weak bisimilarity in
+the denotation of term precision given above to handle the aspects involving
+stepping.
 
 % ...to carry out the proofs using the lock-step ordering and handle the stepping
 % behavior separately via weak bisimilarity. In the end we combine everything
@@ -461,8 +462,8 @@ precision given above to handle the aspects involving stepping.
 \subsection{Adjusting the Cast Rules}
 
 We have seen how we can recover transitive reasoning by working with the
-lock-step error ordering. However, we cannot completely isolate the reasoning
-about steps from the reasoning about the ordering.
+lock-step error ordering. However, it turns out that we cannot completely
+isolate the reasoning about steps from the reasoning about the ordering.
 % Unfortunately, by defining the partial order on the guarded lift monad to be
 % the lock-step error ordering, we introduce a new issue.
 In particular, the cast rules required for proving graduality no longer hold if
