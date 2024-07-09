@@ -90,7 +90,7 @@ More concretely, consider a gradually typed language whose only
 effects are gradual type errors and divergence. Then if we fix a
 result type of natural numbers, a whole program semantics is a partial
 function from closed programs to either natural numbers or errors:
-\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} \cup {\mho} \]
+\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} \cup \{\mho\} \]
 where $\mho$ is notation for a runtime type error. We write $M
 \Downarrow n$ and $M\Downarrow \mho$ to mean this semantics is defined
 as a number or error, and $M\Uparrow$ to mean the semantics is
@@ -100,9 +100,9 @@ A well-behaved semantics should then satisfy several properties. First, it
 should be adequate: natural number constants should step to
 themselves. Second it should validate type based reasoning. To
 formalize type based reasoning we give a typed equational theory for
-terms of the language $M \cong N$ for when two terms should be
+terms of the language $M \equiv N$ for when two terms should be
 considered equivalent. Then we want to verify that the big step
-semantics respects this equational theory: if closed programs $M \cong
+semantics respects this equational theory: if closed programs $M \equiv
 N$ are equivalent in the equational theory then they have the same
 semantics, $M \Downarrow n \iff N \downarrow n$ and $M\Uparrow \iff N
 \Uparrow$ and $M \Downarrow \mho \iff N \Downarrow \mho$.
@@ -146,10 +146,10 @@ properties and their verification lead naturally to the use of
 reflexive graph categories or double categories.
 
 The only prior denotational semantics for gradual typing was given by
-New and Licata and is based on \emph{domain theory}
-\cite{newlicata2019}. The fundamental idea is to equip $\omega$-CPOs
-with an additional ``error ordering'' $\ltdyn$ which models the
-graduality ordering, and for casts to arise from
+New and Licata and is based on a classical Scott-style \emph{domain
+theory} \cite{newlicata2019}. The fundamental idea is to equip
+$\omega$-CPOs with an additional ``error ordering'' $\ltdyn$ which
+models the graduality ordering, and for casts to arise from
 \emph{embedding-projection pairs}. Then the graduality property
 follows as long as all language constructs can be interpreted using
 constructions that are monotone with respect to the error ordering.
@@ -159,14 +159,13 @@ expressive enough to be extended to model dependently typed gradual
 typing \cite{dependentgradualtyping}.
 %
 However, an approach based on classical domain theory has fundamental
-limitations: domain theory is incapable of modeling certain ``highly
-recursive'' features of programming languages such as dynamic type tag
+limitations: domain theory is incapable of modeling certain perversely
+recursive features of programming languages such as dynamic type tag
 generation and higher-order references, which are commonplace in
 real-world gradually typed systems as well as gradual calculi
-\cite{examples-of-gradual-stuff}. Our goal in this work is to develop
-an approach that will eventually scale up to these advanced features,
-though for a first work we focus on adapting their results for a more
-basic semantics.
+\cite{examples-of-gradual-stuff}. Our long-term goal is to develop a
+semantics that will scale up to these advanced features, and so we
+begin with this work by departing from classical domain theory.
 
 The main denotational alternative to classical domain theory that can
 successfully model these advanced features is \emph{guarded domain
@@ -174,9 +173,10 @@ theory}, which we adopt in this work. While classical domain theory is
 based on modeling types as ordered sets with certain joins, guarded
 domain theory is based on an entirely different foundations, sometimes
 (ultra)metric spaces but more commonly as ``step-indexed sets'', i.e.,
-objects in the ``topos of trees'', i.e., presheaves on the poset of
-natural numbers. We think of these as modeling a kind of ``sequence of
-approximations'' to the domain being modeled.
+objects in the \emph{topos of trees}, i.e., presheaves on the poset of
+natural numbers\cite{topos-of-trees}. We think of such a
+$\mathbb{N}$-indexed set as modeling a kind of ``sequence of
+approximations'' to the true type being modeled.
 %
 Key to guarded domain theory is that there is a ``later'' operator
 $\triangleright$ on types. Thinking of types as a sequence of
@@ -193,7 +193,21 @@ classical domain theory has limitations in what it can model, but it
 provides \emph{exact} solutions to domain equations when it
 applies. When adapting the New-Licata approach to guarded domain
 theory, this means we must work with an \emph{intensional} semantics,
-one where unfolding the dynamic type takes an observable runtime step.
+one where unfolding the dynamic type requires an observable
+computational step: e.g., a function that pattern matches on an
+element of the dynamic type and then returns it unchanged is
+\emph{not} equal to the identity function, because it ``costs'' a step
+to perform the pattern match.
+%
+This leads to the main departure of our semantics from the New-Licata
+approach: while the New-Licata semantics equips $\omega$-CPOs with an
+error ordering, we work with types equipped with not just an error
+ordering but also a \emph{bisimilarity} relation that reflects when
+elements differ only in the number of abstract computational steps
+that they take.
+%
+Because bisimilarity, unlike equality, is not transitive this
+necessitates further changes to the core concepts of our semantics.
 
 \subsection{Synthetic Guarded Domain Theory}
 
@@ -201,21 +215,20 @@ While guarded domain theory can be presented analytically using
 ultrametric spaces or the topos of trees, in practice it is
 considerably simpler to work \emph{synthetically} by working in a
 non-standard foundation such as guarded type theory where the later
-modality is simply an operation on our basic notion of type, and we
-take as an axiom that guarded domain equations have a (necessarily
-unique) solution. This has the added benefit that providing a
-denotational semantics of gradually typed terms is as simple as an
-semantics of an effectful language using a monad on the category of
-sets. Not only does this make on-paper reasoning about guarded domain
-theory easier, it also enables a simpler avenue to verification in a
-proof assistant. Whereas formalizing analytic guarded domain theory
-would require significant theory of presheaves and making sure that
-all constructions are functors on categories of presheaves,
-formalizing synthetic guarded domain theory can be done by directly
-adding the later modality and the guarded fixed point property
-axiomatically.
-
-\max{TODO: more here}
+modality is taken as a primitive operation on types, and we take as an
+axiom that guarded domain equations have a (necessarily unique)
+solution. This has the added benefit that providing a denotational
+semantics of gradually typed terms is as simple as an semantics of an
+effectful language using a monad on the category of sets. Not only
+does this make on-paper reasoning about guarded domain theory easier,
+it also enables a simpler avenue to verification in a proof
+assistant. Whereas formalizing analytic guarded domain theory would
+require significant theory of presheaves and making sure that all
+constructions are functors on categories of presheaves, formalizing
+synthetic guarded domain theory can be done by directly adding the
+later modality and the guarded fixed point property axiomatically.
+%
+\max{TODO: more here, specifically this is where we should talk about adequacy I think}
 
 \subsection{Contributions}
 
@@ -228,15 +241,12 @@ the semantics is readily mechanizable.
 \begin{enumerate}
 \item First, we give a simple concrete term semantics where we show
   how to model the dynamic type as a solution to a guarded domain equation
-
 \item Next, we identify where prior work on classical domain theoretic
   semantics of gradual typing breaks down when using guarded semantics
   of recursive types.
-
 \item We develop a key new concept of \emph{syntactic perturbations},
   which allow us to recover enough extensional reasoning to model the
   graduality property compositionally
-
 \item We combine this insight together with an abstract categorical
   model of gradual typing using reflexive graph categories and
   call-by-push-value to give a compositional construction of our

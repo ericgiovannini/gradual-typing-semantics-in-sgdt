@@ -1,17 +1,20 @@
 \section{A Concrete Term Model}\label{sec:concrete-term-model}
 
-\eric{Wording?}
-%
-In the present section, we use the techniques of guarded type theory to give a
-set-theoretic denotational semantics to the terms of the gradually-typed lambda
-calculus introduced in Section \ref{sec:GTLC}. This serves two important
-purposes: First, it acts as a warm-up for employing guarded type theory to
-define a denotational semantics. This acts as a stepping stone into the next
-section, where we extend the techniques employed here to accommodate the type
-and term precision orderings of the gradually-typed lambda calculus. Second,
-constructing this semantic model establishes the validity of the $\beta$ and
-$\eta$ principles for the gradually-typed lambda calculus. 
-%
+As a first step to giving a well-behaved semantics of GTLC, in this
+section we define a simpler semantics that validates all of our
+desired properties except for graduality: that is it is adequate and
+validates $\beta\eta$ equality. Our relational semantics will then be
+a refinement of this simpler design. In the process we will introduce
+some of the technical tools we will use in the refined semantics:
+guarded type theory and call-by-push-value. While these tools can be
+somewhat technical we emphasize that due to the use of synthetic
+guarded domain theory, this initial semantics is essentially just a
+``na\"\i ve'' denotational semantics of an effectful language arising
+from a monad on sets. But since we are working in the non-standard
+foundation of guarded type theory our notion of sets allows for the
+construction of more sophisticated sets and monads than classical
+logic allows.
+
 % In Section \ref{sec:towards-relational-model}, we will discuss how to extend the
 % denotational semantics to accommodate the type and term precision orderings. 
 %
@@ -19,7 +22,12 @@ $\eta$ principles for the gradually-typed lambda calculus.
 
 \subsection{Guarded Type Theory}
 
-We begin with a brief overview of synthetic guarded domain theory, which we will
+\max{TODO: discuss this wording with Eric. Are we working in guarded
+  type theory, SGDT or Ticked Cubical Type Theory in the informal work
+  in the paper?}
+We begin with a brief overview of the background theory that we use in this work.
+
+synthetic guarded domain theory, which we will
 use to construct the model. \emph{Synthetic guarded domain theory}, or SGDT for
 short, is an axiomatic framework in which we can reason about non-well-founded
 recursive constructions while abstracting away the specific details of
@@ -92,51 +100,87 @@ A$ via repeated tick application.
 %
 For the sake of brevity, we will also write tick application as $M_t$.
 
-
 \subsection{A Call-by-push-value Model}
 
 % TODO there aren't actually computation types in the syntax. They
 % arise because we are embedding call-by-value into CBPV.
 
-For the sake of modularity and ease of description, we will formulate the model
-for the gradually-typed lambda calculus using the \emph{call-by-push-value}
-paradigm \cite{levy99}. In a call-by-push-value model, there is a
-category $\calV$ of \emph{value types} and a category $\calE$ of
-\emph{computation types}. Value types represent static values, while computation
-types represent effectful terms. We denote value types by $A, A', A_1, A_i,
-A_o$, etc, and computation types by $B, B', B_1, B_i, B_o$, etc. There is a pair
-of adjoint functors $F : \calV \to \calE$ and $U : \calE \to \calV$ with $F
-\dashv U$, and a functor $\arr : \calV^{op} \times \calE \to \calE$ such that
-$U(A \arr B) \cong A \To UB$ where $\To$ denotes the internal hom in $\calV$.
+Our denotational model of GTLC must account for the fact that the
+language is call-by-value with non-trivial effects (divergence and
+errors).  To do this, we formulate the model using the categorical
+structures of Levy's \emph{call-by-push-value}
+\cite{levy99}. Call-by-push-value is a categorical model of effects
+that is a refinement of Moggi's monadic semantics
+\cite{moggi-monads}. While Moggi works with a (strong) monad $T$ on a
+category $\mathcal V$ of pure morphisms, call-by-push-value works
+instead with a decomposition of such a monad into an adjunction
+between a category $\mathcal V$ of ``value types'' and pure morphisms
+and a category $\mathcal E$ of ``computation types'' and linear
+morphisms. The monad $T$ on $\calV$ is decomposed into a left adjoint
+$F : \calV \to \calE$ constructing the type $F A$ of computations that
+return $A$ values and and right adjoint $U : \calE \to \calV$
+constructing the type $U B$ of values that are first-class suspended
+computations of type $B$. The monad $T$ can then be reconstituted as
+$T = UF$ but the main advantage is that many constructions on
+effectful programs naturally decompose into constructions on
+value/computation types. Most strikingly, the CBV function type $A
+\rightharpoonup A'$ decomposes into the composition of three
+constructions $U(A \to F A')$ where $\arr : \calV^{op} \times \calE
+\to \calE$ is a kind of mixed kinded function type. This decomposition
+considerably simplifies treatment of the CBV function
+type. Additionally, prior work on gradual typing semantics has shown
+that the casts of gradual typing are naturally formulated in terms of
+pairs of a pure morphism and a linear morphism, as we explain below
+\cite{newlicataahmed}.
 
-
-We embed our call-by-value gradually-typed cast calculus into a
-call-by-push-value model as follows. The value types will be sets, and
-computation types will be sets with additional algebraic structure corresponding
-to the possible behaviors of a gradually-typed program. One such behavior is
-\emph{failure}: a program may fail at run-time because of a type error. In
-addition to this, a program may fail to terminate. This is possible because the
-dynamic type includes function types and so is recursive. We will discuss the
-dynamic type further in a subsequent section, but for now it suffices to know
-that we can express a diverging computation in our syntax. Therefore, it will be
-necessary to track the ``steps'' taken by a term; we can regard this as a way of
-intensionally modelling \emph{partiality}.
-
-More concretely, the computation types are defined to be sets $B$ that are
-equipped with a distinguished error element $\mho_B$ and a map $\theta_B \colon
-\laterhs B \to B$. We call such sets \emph{error domains}. A \emph{morphism of
-error domains} from $B_1$ to $B_2$ is a function $\phi$ on the underlying sets
-that respects the error and $\theta$ maps, i.e., for which 
+For our simple denotational semantics, the category $\calV$ is simply
+the category $\Set$ of sets and functions. Then because GTLC is
+call-by-value, all types will be interpreted as objects of this
+category, i.e., sets. More interesting are the computation
+types. These will be interpreted in a category of sets equipped with
+``algebraic''\footnote{the $\theta$ structure is not algebraic in the
+strictest sense since it does not have finite arity, but } structure
+with morphisms being functions that are homomorphic in this structure.
+This algebraic structure needs to model the effects present in our language,
+in this case these are errors as well as taking computational steps
+(potentially diverging by taking computational steps forever).
 %
-(1) $\phi(\mho_{B_1}) = \mho_{B_2}$ and
-%
-(2) $\phi(\theta_{B_1}(\tilde{x})) = \theta_{B_2}(\later (\phi(\tilde{x})))$
-(using the functorial action of $\later$).
+We call these algebraic structures simple error domains to distinguish
+them from the error domains we define later to model graduality:
+\begin{definition}[Simple Error Domains]
+  A (simple) error domain $B$ consists of
+  \begin{enumerate}
+  \item A carrier set $UB$
+  \item An element $\mho_{B} : UB$ representing error
+  \item A function $\theta_B : \laterhs UB \to UB$ modeling a computational step
+  \end{enumerate}
+  A homomorphism of error domains $\phi : B \multimap B'$ is a
+  function $\phi : UB \multimap UB'$ that preserves these in that
+  $\phi(\mho_B) = \mho_{B'}$ and $\phi(\theta_{B}(\tilde{x})) =
+  \theta_{B'}(\later (\phi(\tilde{x})))$.  Simple error domains and
+  homomorphisms assemble into a category $\ErrDom$ with a forgetful
+  functor $U : \ErrDom \to \Set$ taking the underlying set and
+  function.
+\end{definition}
+Here is our first point where we utilize guarded type theory: rather
+than simply being a function $UB \to UB$, the ``think'' map $\theta$
+takes an element \emph{later}. This makes a major difference, because
+the structure of a think map combined with the guarded fixpoint
+operator allows us to define recursive elements of $UB$ in that any
+function $f : UB \to UB$ has a ``quasi-fixed point'' $\textrm{qfix}(f)
+= \fix(f \circ \theta_B)$ satisfying the quasi-fixed point property:
+\[ \qfix(f) = f(\delta_B(\qfix f)) \]
+where $\delta_B = \theta_B \circ \nxt$ is a map we call the ``delay''
+map which trivially delays an element now to be available later.  As
+an example, we can define $\Omega_B = \qfix(\id) : UB$, the
+``diverging element'' that ``thinks forever'' in that $\Omega_B =
+\delta(\Omega_B)$. We call this a ``quasi'' fixed point because it is
+\emph{nearly} a fixed point except for the presence of the delay map
+$\delta_B$, which is irrelevant from an extensional point of view
+where we would prefer to ignore differences in the number of steps
+that computations take.
 
-The functor $U : \errdom \to \Set$ simply takes the underlying set of the error
-domain. The functor $F : \Set \to \errdom$ is defined to be the left adjoint to
-$U$ and constructs the \emph{free error domain} on a set $A$.
-%
+\max{move this}
 The functor $\arr : \Set^{op} \times \errdom \to \errdom$ is defined on objects
 as follows. Given a set $A$ and error domain $B$, $A \arr B$ is the error domain
 whose underlying set is the set of functions $A \to UB$. The error element is
@@ -148,196 +192,257 @@ Given a morphism $f : A_o \to A_i$ and $\phi : B_i \to B_o$, the morphism $f
 \arr \phi : (A_i \arr B_i) \to (A_o \arr B_o)$ is given by pre-composing by $f$
 and post-composing by $\phi$.
 
-\subsection{The Lift + Error Monad}\label{sec:lift-monad}
-
-We describe a monad that decomposes into the free-forgetful adjunction
-between sets and error domains. We base the construction on the \emph{guarded
+Then to model effectful programs, we need to construct a left adjoint
+$\li : \Set \to \ErrDom$ to $U$ which constructs the ``free error
+domain'' on a set, which models an effectful CBV computation.
+%% \subsection{The Lift + Error Monad}\label{sec:lift-monad}
+We base the construction on the \emph{guarded
 lift monad} described in \cite{mogelberg-paviotti2016}. Here, we augment the
-guarded lift monad to accommodate the additional effect of failure. For a type
-$A$, we define the \emph{guarded lift monad with failure} $\li A$, which we will
-just call the \emph{guarded lift monad} or simply the \emph{lift monad}.
-%
-\begin{align*}
-  \li A :=\quad
-  &\alt \eta \colon A \to \li A \\
-  &\alt \mho \colon \li A \\
-  &\alt \theta \colon \laterhs (\li A) \to \li A
-\end{align*}
-%
-Unless otherwise mentioned, all constructs involving $\later$ or $\fix$ are
-understood to be with respect to a fixed clock $k$. So for the above, we really
-have for each clock $k$ a type $\li^k A$ with respect to that clock.
-%
-Formally, the lift monad $\li A$ is defined as the solution to the guarded
-recursive type equation
-%
-\[ \li A \cong A + 1\, + \laterhs \li A. \]
+guarded lift monad to accommodate the additional effect of failure.
+\begin{definition}[Free error domain]
+  For a set $A$, we define the (carrier of) \emph{free error domain} $U(\li A)$ as the unique solution to the guarded domain equation:
+  \[ U(\li A) \cong A + 1\, + \laterhs U(\li A). \]
+  For which we use the following notation for the three constructors:
+  \begin{enumerate}
+  \item $\eta \colon A \to U(\li A)$
+  \item $\mho \colon U(\li A)$
+  \item $\theta \colon \laterhs U(\li A) \to U(\li A)$
+  \end{enumerate}
+  Here $\mho, \theta$ provide the error domain structure for $\li A$,
+  and this has the universal property of being free in that any
+  function $f : U(\li A) \to UB$ uniquely extends to a homomorphism
+  $f^\dagger : \li A \multimap B$ satisfying $Uf^\dagger \circ \eta =
+  f$. In other words, the free error monad is left adjoint $\li \dashv
+  U$ to the forgetful functor, with $\eta$ the unit of the adjunction.
+\end{definition}
+%% %
+%% Unless otherwise mentioned, all constructs involving $\later$ or $\fix$ are
+%% understood to be with respect to a fixed clock $k$. So for the above, we really
+%% have for each clock $k$ a type $\li^k A$ with respect to that clock.
+%% %
+%% Formally, the lift monad $\li A$ is defined as the solution to the guarded
+%% recursive type equation
+%% %
 %
 An element of $\li A$ should be viewed as a computation that can either (1)
 return a value (via $\eta$), (2) raise an error and stop (via $\mho$), or (3)
-take a step (via $\theta$).
+take a computational step (via $\theta$).
 %
-Notice there is a computation $\fix\, \theta$ of type $\li A$. This represents a
-computation that runs forever and never returns a value.
-%
-Since we claimed that $\li A$ is a monad, we need to define the monadic
-operations and show that they respect the monadic laws. The return is just
-$\eta$, and given $f : A \to \li A'$, the monadic extension $\text{ext}(f)
-\colon (\li A \to \li A')$ is defined via guarded recursion by cases on the
-input value of type $\li A$.
+The operation $f^\dagger$ can be defined by guarded recursion in the
+apparent way, and proven to satisfy the freeness property by L\"ob
+induction.
 % It is instructive to give at least one example of a use of guarded recursion, so
 % we show below how to define extend:
 % TODO
 %
 %
-Verifying that the monadic laws hold uses \lob-induction and is straightforward.
+%% Verifying that the monadic laws hold uses \lob-induction and is straightforward.
 
-% TODO mention that error domains are algebras of the lift monad?
-We observe that the guarded lift monad applied to a set $A$ is the underlying
-set of the free error domain on $A$ $A$, i.e., we have $\li = UF$ where $F :
-\Set \to \errdom$ and $U : \errdom \to \Set$ and $F \dashv U$. Given a set $A$
-and an error domain $B$, the set of functions $A \to UB$ is naturally isomorphic
-to the set of error domain morphisms $FA \to B$.
+%% % TODO mention that error domains are algebras of the lift monad?
+%% We observe that the guarded lift monad applied to a set $A$ is the underlying
+%% set of the free error domain on $A$ $A$, i.e., we have $\li = UF$ where $F :
+%% \Set \to \errdom$ and $U : \errdom \to \Set$ and $F \dashv U$. Given a set $A$
+%% and an error domain $B$, the set of functions $A \to UB$ is naturally isomorphic
+%% to the set of error domain morphisms $FA \to B$.
 
-Lastly, we define the function $\delta : \li A \to \li A$ by $\delta = \theta_A
-\circ \nxt$.
+%% Lastly, we define the function $\delta : \li A \to \li A$ by $\delta = \theta_A
+%% \circ \nxt$.
 
 % The function type A \ra A' will be modeled as \sem{A} \to \li \sem{A'}
 
+The free error domain is essential to modeling cbv computation: a term
+$\Gamma \vdash M : A$ in GTLC will be modeled as a function $M :
+\sem{\Gamma} \to U\li \sem{A}$ from the set denoted by $\Gamma$ to the
+underlying set of the free error domain on the set denoted by $A$,
+just as in a monadic semantics with monad $U\li$.
 
-\subsection{Modeling the Dynamic Type}\label{sec:dynamic-type}
+\subsection{Modeling the type structure}\label{sec:dynamic-type}
+Much of the type structure of GTLC is simple to model: $\nat$ denotes
+the set of natural numbers and $\times$ denotes the cartesian product
+of sets. To model the CBV function type $A \rightharpoonup A'$ we use
+the CBPV decomposition $U(\sem{A} \to \li \sem{A'})$ where $A \to B$
+is the obvious point-wise algebraic structure on the set of functions
+from $A$ to $UB$.
 
-We now discuss how to model the dynamic type $\dyn$.
-The goal is to define a set $D$ that satisfies the isomorphism
+The final type to model is the the dynamic type $\dyn$.  In the style
+of Scott, a classical domain theoretic model for $\dyn$ would be given
+by solving a domain equation
 %
-\[ D \cong \Nat + (D \times D) + (D \to \li D). \]
+\[ D \cong \Nat + (D \times D) + U(D \to \li D). \]
 %
-where the use of $\li D$ in the codomain corresponds to the fact that when a
-value of type $\dyn$ is a function, the function when called may return an error
-or take a step of computation. This equation does not have inductive or
-coinductive solutions. The usual way of dealing with such equations is via
-domain theory, by which we can obtain an exact solution. However, by using
-guarded recursion we can solve the equation and obtain a guarded solution in a
+representing the fact that dynamically typed values can be numbers,
+pairs or CBV functions. This equation does not have inductive or
+coinductive solutions due to the negative occurrence of $D$ in the
+domain of the function type. In classical domain theory this is
+avoided by instead taking the initial algebra in a category of
+embedding-projection pairs, by which we obtain an exact solution to
+this equation. However, in guarded domain theory we instead replace this domain equation with a guarded domain equation.
 process analogous to giving a normal set-theoretic denotational semantics.
 Consider the following similar-looking equation:
 %
-\[ D \cong \Nat + (D \times D)\, + \laterhs (D \to \li D). \]
+\[ D \cong \Nat + (D \times D)\, + \laterhs U(D \to \li D). \]
 %
-Since the negative occurrence of $D$ is guarded under a later, this equation has
-a solution constructed via a combination of least fixed-point and guarded
-recursion. Specifically, consider the parameterized inductive type
+Since the negative occurrence of $D$ is guarded under a later, we can
+solve this equation by a mixture of inductive types and guarded fixed
+points. Specifically, consider the parameterized inductive type
 %
 \[ D'\, X := \mu T. \Nat + (T \times T) + X. \]
 %
-Now consider the function $f$ defined by
+Then we can construct $D$ as the unique solution to the guarded domain equation
+\[ D \cong D'(\laterhs U(D \to \li D)) \]
+which is a guarded equation in that all occurrences of $D$ on the right hand side are guarded by the $\laterhs$.
 %
-\[ \lambda (\tilde{D} \colon \laterhs \type) . D' (\laterhs_t (\tilde{D}_t \to (\li (\tilde{D}_t)))). \]
+Expanding out the guarded fixed point and least fixed point property
+gives us that $D$ satisfies our desired equation above. \max{give
+  that equation a number}.
 %
-Recall that the tick $t : \tick$ is evidence that time has passed, and since
-$\tilde{D}$ has type $\later \type$, i.e. $\tick \to \type$, then $\tilde{D}_t$
-has type $\type$.
-%
-Finally, define 
-\[ D := \fix f. \]
-%
-Observe that the unfolding equality characterizing the guarded fixpoint implies
-that $D = D' (\later D \to \li D)$, and by the definition of $D'$ as a least
-fixpoint we see that this is equal to $\Nat + (D \times D) + \later (D \to \li
-D)$.
-
+We then refer to the three injections for numbers, pairs and functions
+as $\inat, \itimes, \iarr$ respectively.
 
 \subsection{Term Semantics}\label{sec:term-interpretation}
 
-We can now give a semantics to the types and terms of the gradually-typed lambda
-calculus. 
+We now extend our semantics of types to a semantics of terms of
+GTLC. As mentioned above, terms $x:A_1,\ldots \vdash M : A$ are
+modeled as effectful functions $\sem{M}: \sem{A_1}\times \cdots \to U\li\sem{A}$
+and values $x:A_1,\ldots \vdash V : A$ are also be modeled as pure
+functions $\sem{V} : \sem{A_1}\times\cdots \to \sem{A}$.
 %
-Much of the semantics is similar to a normal call-by-value denotational
-semantics, so we focus only on the cast semantics. We interpret types as sets;
-the interpretation of types is given in Figure \ref{fig:type-interpretation}.
-Contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$ are interpreted as the
-product $\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic
-type $\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The
-product type $A \times A'$ is interpreted as the Cartesian product of the
-denotations of $A$ and $A'$. The function type $A \ra A'$ is interpreted as the
-set of functions from $\sem{A}$ to $\li (\sem {A'})$.
+The interpretation of the typical CBV features of GTLC into a CBPV is
+standard \cite{levy}, the only additional part we need to account for
+is the semantics of casts, shown in Figure \ref{fig:term-semantics}.
 %
-The interpretation of a value $\hasty {\Gamma} V A$ is a function from
-$\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\hasty {\Gamma} M {{A}}$ is
-interpreted as a function from $\sem{\Gamma}$ to $\li \sem{A}$.
+%% Much of the semantics is similar to a normal call-by-value denotational
+%% semantics, so we focus only on the cast semantics. We interpret types as sets;
+%% the interpretation of types is given in Figure \ref{fig:type-interpretation}.
+%% Contexts $\Gamma = x_1 \colon A_1, \dots, x_n \colon A_n$ are interpreted as the
+%% product $\sem{A_1} \times \cdots \times \sem{A_n}$. The semantics of the dynamic
+%% type $\dyn$ is the set $D$ introduced in Section \ref{sec:dynamic-type}. The
+%% product type $A \times A'$ is interpreted as the Cartesian product of the
+%% denotations of $A$ and $A'$. The function type $A \ra A'$ is interpreted as the
+%% set of functions from $\sem{A}$ to $\li (\sem {A'})$.
+%
+%% The interpretation of a value $\hasty {\Gamma} V A$ is a function from
+%% $\sem{\Gamma}$ to $\sem{A}$. Likewise, a term $\hasty {\Gamma} M {{A}}$ is
+%% interpreted as a function from $\sem{\Gamma}$ to $\li \sem{A}$.
+Following the CBPV treatment of gradual typing given by
+New-Licata-Ahmed, an upcast $\upc c$ where $c : A \ltdyn A'$ is
+interpreted as a pure function $\sem{\upc c} :\sem{A} \to \sem{A'}$ whereas a
+downcast $\dnc c$ is interpreted as a homomorphism $\sem{\dnc c} :
+\li\sem{A'} \multimap \li\sem{A}$.
+%% By the universal property of $\li$, this is determined by a function $\sem{A'} \to U\li\sem{A}$ and
+%% We use $\text{ext}$ to go from the former to the latter in the definitions of the downcasts.
+We define the semantics of upcasts and downcasts simultaneously by
+recursion over type precision derivations.
+%
+The reflexivity casts are given by identities, and the transitivity
+casts by composition. The upcasts for products, and the downcasts for
+functions are given by the functorial actions of the type constructors
+on the casts for the subformulae.
+%
+The \emph{up}casts for functions and similarly the \emph{down}casts
+for products, on the other hand, are more complex.
+%
+For these, we use not the ordinary functorial action of type
+constructors, but an action we call the \emph{Kleisli} action.
 
-We now discuss the semantics of the cast terms, shown in Figure
-\ref{fig:term-semantics}. Upcasts are pure, so the upcast ${\upc c}$, where $c :
-A \ltdyn A'$, denotes an ordinary function from $\sem{A}$ to $\sem{A'}$.
-Downcasts are effectful, so a downcast ${\dnc c}$ is interpreted as a morphism
-of error domains between $F\sem{A'}$ and $F\sem{A}$. By definition of the
-adjunction this is equivalent to an ordinary function between $\sem{A'}$ and
-$UF\sem{A}$, i.e., $\sem{A'} \to \li \sem{A}$. We use $\text{ext}$ to go from
-the former to the latter in the definitions of the downcasts.
+The Kleisli action of type constructors can be defined in any CBPV
+model. First, we can define the Kleisli category of value types
+$\calV_k$ to have value types as objects, but have morphisms
+$\calV_k(A,A') = \calE(FA,FA')$. Similarly, we can define a Kleisli
+category of computation types $\calE_k$ to have computation types as
+objects, but have morphisms $\calE_k(B,B') = \calV(UB,UB')$. The
+intuition is that these are the ``effectful'' morphisms between
+value/computation types, whereas the morphisms of $\calV/\calE$ are
+``pure''/``linear''. Then every CBPV type constructor $F,U,\times,\to$
+has in addition to its usual functorial action on pure/linear
+morphisms, an action in each argument on Kleisli morphisms. So for
+instance, the function construction is functorial in pure/linear
+morphisms $\to : \op{\calV} \times \calE \to \calE$ but on Kleisli
+morphisms what we have is for each computation type $B$ a functorial
+action $-\to B : \calV_k^{op} \to \calE_k$ given by $-\tok B$ on
+objects and for each value type a functorial action $A \tok - :
+\calE_k \to \calE_k$. Similarly we get two actions $A \timesk -$ and
+$-\timesk A'$ on Kleisli morphisms between value types. In these two
+cases we do not get a bifunctorial action because the two Kleisli
+actions do not commute past each other, i.e., in general $(A_l'
+\timesk f_r \circ f_l \timesk A_r) \neq (f_l \timesk A_r' \circ A_l
+\timesk f_r)$. The full definitions of the Kleisli actions are
+included in the appendix.
+
+Lastly, we have the upcasts and downcasts for the injections, which
+are the core primitive casts. The upcasts are simply the injections
+themselves, except the function case which must include a $\nxt$ to
+account for the fact that the functions are under a later in the
+dynamic type. Similarly, the downcasts are similar in that on values
+they pattern match on the input and return it if it is of the correct
+type, otherwise erroring. Again, the function case is slightly
+different in that if the input is in the function case, then it is
+actually only a function available later, and so we must insert a
+``think'' in order to return it.
 
 % The upcast for $c_i \ra c_o$ and the downcast for $c_1 \times c_2$ make use of
 % \emph{Kleisli functors} $\tok$ and $\timesk$.
 
-\eric{Introduce Kleisli categories and functors}
+%% \eric{Introduce Kleisli categories and functors}
 
-Recall the definition of type precision derivations given in Figure
-\ref{fig:typrec}. The semantics of the up- and downcasts for a type precision
-derivation $c$ are defined by induction on $c$.
-%
-For $r(A)$ the up- and downcasts are simply the identity function. 
-%
-For the composition $c \comp c'$ we compose the cast for $c$ and the cast for
-$c'$ as functions.
-%
-For $c_i \ra c_o$ we apply the casts for $c_i$ and $c_o$ in the domain and
-codomain respectively. More concretely, for the upcast we are given a function
-$V_f : A_i \to \li A_o$ and we must define a function $A_i' \to \li A_o'$. The
-function first downcasts its argument according to $c_i$, resulting in an
-element of $\li A_i$. It then applies $\ext{V_f}{}$ to this value to obtain an
-element of $\li A_o$. Finally, it applies the upcast of $c_o$ via the functorial
-action of the lift monad, obtaining an element of $\li A_o'$ as needed. For the
-downcast from $A_i' \to \li A_o'$ to $A_i \to \li A_o$, the resulting function
-first applies the upcast by $c_i$ to its argument, then applies the original
-function, and finally applies the downcast by $c_o$ to the result.
-%
-Likewise, in the upcast for $c_1 \times c_2$, we apply the cast for $c_1$ on the
-left and the cast for $c_2$ on the right.
+%% Recall the definition of type precision derivations given in Figure
+%% \ref{fig:typrec}. The semantics of the up- and downcasts for a type precision
+%% derivation $c$ are defined by induction on $c$.
+%% %
+%% For $r(A)$ the up- and downcasts are simply the identity function. 
+%% %
+%% For the composition $c \comp c'$ we compose the cast for $c$ and the cast for
+%% $c'$ as functions.
+%% %
+%% For $c_i \ra c_o$ we apply the casts for $c_i$ and $c_o$ in the domain and
+%% codomain respectively. More concretely, for the upcast we are given a function
+%% $V_f : A_i \to \li A_o$ and we must define a function $A_i' \to \li A_o'$. The
+%% function first downcasts its argument according to $c_i$, resulting in an
+%% element of $\li A_i$. It then applies $\ext{V_f}{}$ to this value to obtain an
+%% element of $\li A_o$. Finally, it applies the upcast of $c_o$ via the functorial
+%% action of the lift monad, obtaining an element of $\li A_o'$ as needed. For the
+%% downcast from $A_i' \to \li A_o'$ to $A_i \to \li A_o$, the resulting function
+%% first applies the upcast by $c_i$ to its argument, then applies the original
+%% function, and finally applies the downcast by $c_o$ to the result.
+%% %
+%% Likewise, in the upcast for $c_1 \times c_2$, we apply the cast for $c_1$ on the
+%% left and the cast for $c_2$ on the right.
 
-The ``base cases'' for the casts are $\inat$, $\itimes$, and $\iarr$. Recall
-that $D$ is isomorphic to $\Nat\, + (D \times D)\, + \laterhs (D \to \li D)$
-(say that the sum is left-associative).
-%
-For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $D
-\to \li D$ and performs a case inspection on the sum type. If it is a natural
-number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
-the fact that a run-time error occurs.
-%
-For $\itimes$, the upcast is $\inl \circ \inr$, and the downcast performs a case
-inspection analogously to the natural number downcast.
-%
-% TODO explain this further
-For $\iarr$, the upcast is given by $\inr \circ \nxt$. The downcast performs a
-case inspection, and in the $\inr$ case, it uses a $\theta$ in order to gain
-access to the function under the $\later$.
+%% The ``base cases'' for the casts are $\inat$, $\itimes$, and $\iarr$. Recall
+%% that $D$ is isomorphic to $\Nat\, + (D \times D)\, + \laterhs (D \to \li D)$
+%% (say that the sum is left-associative).
+%% %
+%% For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $D
+%% \to \li D$ and performs a case inspection on the sum type. If it is a natural
+%% number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
+%% the fact that a run-time error occurs.
+%% %
+%% For $\itimes$, the upcast is $\inl \circ \inr$, and the downcast performs a case
+%% inspection analogously to the natural number downcast.
+%% %
+%% % TODO explain this further
+%% For $\iarr$, the upcast is given by $\inr \circ \nxt$. The downcast performs a
+%% case inspection, and in the $\inr$ case, it uses a $\theta$ in order to gain
+%% access to the function under the $\later$.
 
 
 %
 % TODO write this out explicitly?
 
 % TODO should we include function casts?
-
-\begin{figure*}
-  \begin{align*}
-    \sem{\nat} &= \Nat \\
-    \sem{\dyn} &= D \\
-    \sem{A \times A'} &= \sem{A} \times \sem{A'} \\ 
-    \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
-  \end{align*}
-  \caption{Interpretation of types}
-  \label{fig:type-interpretation}
-\end{figure*}
+%% \begin{figure*}
+%%   \begin{align*}
+%%     \sem{\nat} &= \Nat \\
+%%     \sem{\dyn} &= D \\
+%%     \sem{A \times A'} &= \sem{A} \times \sem{A'} \\ 
+%%     \sem{A \ra A'} &= \sem{A} \To \li \sem{A'} \\
+%%   \end{align*}
+%%   \caption{Interpretation of types}
+%%   \label{fig:type-interpretation}
+%% \end{figure*}
   
 \begin{figure*}
-  \eric{Check this}
+  \max{Can we squeeze this figure very tightly?}
   
   % TODO check these
   \begin{align*}
@@ -349,47 +454,38 @@ access to the function under the $\later$.
     % \sem{\err_B}       &= \lambda \gamma . \mho \\
     %
     % upcasts
-    \sem{\upc{r(A)}} &= \id \\
+    \sem{\upc{r(A)}} &= \id_A \\
     \sem{\upc{(c \comp c')}} &= \sem{\upc{c'}} \circ \sem{\upc{c}} \\
-    \sem{\upc{(c_i \ra c_o)}} &=
-      \lambda V_f . \text{map } \upc{c_o} \circ \ext{V_f}{} \circ \dnc{c_i} \\
-    \sem{\upc{(c_1 \times c_2)}} &= 
-      \lambda (V_1, V_2) . ((\sem{\upc{c_1} V_1}) , 
-                            (\sem{\upc{c_2} V_2})) \\
-    \sem{\upc{\inat}} &= 
-      \lambda V_n . \inl\, \inl\, V_n \\
-    \sem{\upc{\itimes}} &= 
-      \lambda (V_1, V_2) . \inl\, \inr\, (V_1 , V_2) \\
-    \sem{\upc{\iarr}} &= 
-      \lambda V_f . \inr\, \nxt V_f \\[2ex]
+    \sem{\upc{(c_i \ra c_o)}} &= (\sem{\dnc {c_i}} \tok F\sem{A_o'})\circ (\sem{A_i} \tok UF(\sem{\upc {c_o}}))\\
+    \sem{\upc{(c_1 \times c_2)}} &= \sem{\upc{c_1}} \times \sem{\upc{c_2}}\\
+    \sem{\upc{\inat}} &= \inat\\
+    \sem{\upc{\itimes}} &= \itimes\\
+    \sem{\upc{\iarr}} &= \iarr \circ \nxt\\[2ex]
     %
     % downcasts
-    \sem{\dnc{r(A)}} &= \id \\
+    \sem{\dnc{r(A)}} &= \id_{FA} \\
     \sem{\dnc{(c \comp c')}} &= \sem{\dnc{c}} \circ \sem{\dnc{c'}} \\
-    \sem{\dnc{(c_i \ra c_o)}} &=
-     \text{ext}(\eta(\lambda V_f . \dnc{c_o} \circ V_f \circ \upc{c_i})) \\
+    \sem{\dnc{(c_i \ra c_o)}} &= U(\sem{\upc {c_i}} \to \sem{\dnc {c_o}})\\
     \sem{\dnc{(c_1 \times c_2)}} &= (\dnc{c_1} \timesk A_2) \circ (A_1' \timesk \dnc{c_2}) \\
-    \sem{\dnc{\inat}} &= \text{ext}(
+    \sem{\dnc{\inat}} &= (
       \lambda V_d . \text{case $({V_d})$ of}
-      \{ \inl\, (\inl\, n) \to \eta\, n
-         \alt \text{otherwise} \to \mho \}) \\
-    \sem{\dnc{\itimes}} &= \text{ext}(
+      \{ \inat\,n \to \eta\, n
+         \alt \text{otherwise} \to \mho \})^\dagger \\
+    \sem{\dnc{\itimes}} &= (
       \lambda V_d . \text{case $({V_d})$ of}
-      \{ \inl\, (\inr\, (d_1, d_2)) \to \eta\, (d_1, d_2)
-         \alt \text{otherwise} \to \mho \}) \\
-    \sem{\dnc{\iarr}} &= \text{ext}(
+      \{ \itimes(d_1, d_2) \to \eta\, (d_1, d_2)
+         \alt \text{otherwise} \to \mho \})^\dagger \\
+    \sem{\dnc{\iarr}} &= (
       \lambda V_d . \text{case $({V_d})$ of}
-      \{ \inr\, \tilde{f} \to \theta\, (\lambda t. \eta (\tilde{f}_t))
-         \alt \text{otherwise} \to \mho \}) \\
+      \{ \iarr \tilde{f} \to \theta_t\, (\eta (\tilde{f}_t))
+         \alt \text{otherwise} \to \mho \})^\dagger \\
     % \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
     % \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
   \end{align*}
-
-  \caption{Semantics of casts.}
+  \caption{Semantics of casts}
   \label{fig:term-semantics}
 \end{figure*}
 
+\subsection{Extracting a well-behaved big-step semantics}
 
-
-
-
+\max{TODO: Eric needs to add a discussion of adequacy/clock stuff here}
