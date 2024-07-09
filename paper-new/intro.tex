@@ -90,7 +90,7 @@ More concretely, consider a gradually typed language whose only
 effects are gradual type errors and divergence. Then if we fix a
 result type of natural numbers, a whole program semantics is a partial
 function from closed programs to either natural numbers or errors:
-\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \natty \} \rightharpoonup \mathbb{N} \union {\mho} \]
+\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} \cup {\mho} \]
 where $\mho$ is notation for a runtime type error. We write $M
 \Downarrow n$ and $M\Downarrow \mho$ to mean this semantics is defined
 as a number or error, and $M\Uparrow$ to mean the semantics is
