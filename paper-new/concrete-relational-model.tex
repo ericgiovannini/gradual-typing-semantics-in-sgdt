@@ -38,29 +38,96 @@ $\theta_B \laterhs B \to B$ is now required to be monotone.
 sets $X$. The elements are simply ``later''-elements of $X$, and the ordering is
 the obvious one, i.e., two later-elements are related if after one time step,
 the elements they step to are related.}
+%
+Morphisms of error domains are morphisms of the underlying partially-ordered
+sets that preserve the error element and $\theta$ map, as was the case in the
+previous section.
 
+\subsubsection{Modelling Type Precision}
 We model type precision $c : A \ltdyn A'$ as a \emph{monotone relation}, i.e., a
 relation $c$ that is upward-closed under the relation on $A'$ and
-downward-closed under the relation on $A$. The relation on the poset $A$ is
-denoted $r(A)$.
+downward-closed under the relation on $A$. We denote such a relation between $A$
+and $A'$ by $c : A \rel A'$. The relation on the poset $A$ is denoted $r(A)$.
 % This extends to products $c_1 \times c_2$ in the obvious way.
-%
-Likewise, we define a notion of \emph{computation relation} on computation types
-$B$ and $B'$. A computation relation $d : B \rel B'$ is a monotone relation on
-the underlying sets that preserves error and respects $\theta$. That is, $\mho_B
-\mathbin{d} y$ for all $y : B'$ and if $\laterhs_t (\tilde{x}_t \mathbin{d}
-\tilde{y}_t)$, then $\theta_B (\tilde{x}) \mathbin{d} \theta_{B'} (\tilde{y})$.
-The functors $U$ and $F$ introduced in the previous section extend to relations,
-The functor $U$ simply takes the underlying monotone relation of a computation
-relation; we will give the definition of $F$ on relations later in this section.
+Composition of relations on predomains is the usual relational composition
+(which is truncated to be propositional).
 
-Before moving on, we introduce the notion of \emph{square}, which specifies
-a relation between two monotone functions. The definition is as follows. Let
-$A_i, A_o, A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$ and
-$c_o : A_o \rel A_o'$ be monotone relations, and let $f : A_i \to A_o$ and $g :
-A_i' \to A_o'$ be monotone functions. We say that $f \ltsq{c_i}{c_o} g$ if for
-all $x : A_i$ and $y : A_i'$ with $x \binrel{c_i} y$, we have $f(x) \binrel{c_o}
-g(y)$. We visualize this situation as the following square:
+We likewise define a notion of \emph{error domain relation} between error
+domains $B$ and $B'$. An error domain relation $d : B \rel B'$ is a monotone
+relation on the underlying sets that preserves error and respects $\theta$. More
+formally:
+
+\begin{definition}
+  Let $B$ and $B'$ be error domains. An \emph{error domain relation} between
+  $B$ and $B'$ is a monotone relation $d$ on the underlying partially-ordered sets such that:
+  \begin{enumerate}
+     \item (Respects error): For all $y \in B'$, we have $(\mho_B, y) \in d$.
+     \item (Preserves $\theta$): For all $\tilde{x}$ in $\laterhs B$ and
+     $\tilde{y} \in \laterhs B'$, if $\laterhs_t ((\tilde{x}_t, \tilde{y}_t) \in
+     d)$, then $(\theta_B (\tilde{x}), \theta_{B'} (\tilde{y})) \in d$. 
+  \end{enumerate}
+\end{definition}
+
+Because of a technical restriction involving the interaction between
+propositional truncation and the later modality, we cannot define the
+composition of error domain relations as simply the composition of their
+underlying predomain relations. Instead, we define composition of error domain
+relations $d$ on $B_1$ and $B_2$ and $d'$ on $B_2$ and $B_3$ to be the least
+relation containing $d$ and $d'$ that is downward closed under $\le_{B_1}$,
+upward-closed under $\le_{B_3}$, respects error, and preserves $\theta$.
+Specifically, it is defined inductively by the following rules:
+%
+\begin{mathpar}
+    \inferrule*[right = Comp]
+    {b_1 \mathbin{d} b_2 \and b_2 \mathbin{d'} b_3}
+    {b_1 \mathbin{d \relcomp d'} b_3}
+
+    \inferrule*[right = DnClosed]
+    {b_1' \le_{B_1} b_1 \and b_1 \mathbin{d \relcomp d'} b_3}
+    {b_1' \mathbin{d \relcomp d'} b_3}
+
+    \inferrule*[right = UpClosed]
+    {b_1 \mathbin{d \relcomp d'} b_3 \and b_3 \le_{B_3} b_3'}
+    {b_1 \mathbin{d \relcomp d'} b_3'}
+
+    \inferrule*[right = PresErr]
+    { }
+    {\mho_{B_1} \mathbin{d \relcomp d'} b_3}
+
+    \inferrule*[right = PresTheta]
+    {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
+    {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
+\end{mathpar}
+
+
+% That is,
+% $(\mho_B, y) \in d$ for all $y : B'$ and if $\laterhs_t ((\tilde{x}_t,
+% \tilde{y}_t) \in d)$, then $(\theta_B (\tilde{x}), \theta_{B'} (\tilde{y})) \in
+% d$.
+
+The functors $U$, $F$, $\times$, and $\arr$ introduced in the previous
+section extend to relations. The functor $U$ simply takes the underlying
+monotone relation of an error domain relation. Given a relation $c_1 : A_1 \rel
+A_1'$ and $c_2 : A_2 \rel A_2'$, the relation $c_1 \times c_2 : (A_1 \times A_2)
+\rel (A_1' \times A_2')$ is defined by $((x, y), (x', y')) \in (c_1 \times c_2)$
+if and only if $(x, x') \in c_1$ and $(y, y') \in c_2$. Given a relation $c : A
+\rel A'$ and an error domain relation $d : B \rel B'$, the relation $c \arr d :
+(A \arr B) \rel (A' \arr B')$ is the error domain relation defined by $(f, g)
+\in (c \arr d)$ if and only if for all $x : A$ and $x' : A'$ with $(x , x') \in
+c$ we have $(f(x), g(x')) \in Ud$. The fact that this relation preserves error
+and respects $\theta$ follows from the corresponding properties for $d$.
+%
+We we will postpone the description of the action of $F$ on relations to later
+in this section.
+
+\subsubsection{Modelling Term Precision}\label{sec:modeling-term-precision}
+To model term precision, we need the notion of \emph{square}, which specifies a
+relation between two monotone functions. The definition is as follows. Let $A_i,
+A_o, A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$ and $c_o :
+A_o \rel A_o'$ be monotone relations, and let $f : A_i \to A_o$ and $g : A_i'
+\to A_o'$ be monotone functions. We say that $f \ltsq{c_i}{c_o} g$ if for all $x
+: A_i$ and $y : A_i'$ with $(x, y) \in c_i$, we have $(f(x), g(y)) \in c_o$. We
+visualize this situation as the following square:
 
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMCwxLCJBX28iXSxbMSwwLCJBX2knIl0sWzEsMSwiQV9vJyJdLFsyLDMsImciXSxbMCwxLCJmIiwyXSxbMCwyLCJjX2kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImNfbyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -76,8 +143,10 @@ We note that for any $c$, there is a ``vertical identity'' square $\id
 \ltsq{c}{c} \id$, as can be seen by unfolding the definition. Similarly, for any
 montone function $f : A_i \to A_o$, there is a ``horizontal identity'' square $f
 \ltsq{r(A_i)}{r(A_o)}$ by the definition of monotone function.
+We likewise make the analogous definition of square for error domains.
 
-The cast rules UpL/UpR/DnL/DnR specify a relationship between the semantics of
+Having defined squares, we now discuss the interpretation of the cast rules
+UpL/UpR/DnL/DnR. These rules specify a relationship between the semantics of
 type precision and the corresponding casts (see Section \ref{sec:GTLC}). In
 particular, they specify that the relations are \emph{representable} by the
 casts. The UpL and UpR rules refer to upcasts, and since upcasts are pure, these
@@ -138,13 +207,13 @@ the identity square for $c'$:
 \end{tikzcd}\]
 
 The existence of these simpler squares for a relation can be stated without
-reference to other relations. Thus we can require that these squares exist in
+reference to other relations. Thus, we can require that these squares exist in
 the definition of relation without running into the circularity issue we faced
 with the original rules.
 
-Finally, we model the term precision ordering $\Gamma \ltdyn \Gamma' \vdash M \ltdyn
-N : A \ltdyn A'$ as an ordering relation between the monotone functions denoted
-by $M$ and $N$, as shown below:
+Finally, we use squares to model the term precision ordering $\Gamma \ltdyn
+\Gamma' \vdash M \ltdyn N : A \ltdyn A'$ as an ordering relation between the
+monotone functions denoted by $M$ and $N$:
 
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXEdhbW1hIl0sWzAsMSwiVUYgQSJdLFsxLDAsIlxcR2FtbWEnIl0sWzEsMSwiVUZBJyJdLFsyLDMsIlxcc2Vte059Il0sWzAsMSwiXFxzZW17TX0iLDJdLFswLDIsIlxcR2FtbWFee1xcbHRkeW59IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJVRmMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -433,7 +502,7 @@ we may appeal to the no-go theorem as before.
 Now we can define the denotation of term precision for closed terms of type
 $\nat$ as follows:
 %
-\[ l_1 \leq l_2 := 
+\[ l_1 \leq^{\bisim} l_2 := 
   \Sigma_{l_1', l_2' \in \li \mathbb{N}}. l_1 \bisim l_1' \ltls l_2' \bisim l_2. \]
 
 Importantly, we note that as with the original ordering $\semltbad$ defined at
@@ -459,7 +528,7 @@ stepping.
 % ordering. This allows us to carry out complex proofs compositionally, a key goal
 % of our framework.
 
-\subsection{Adjusting the Cast Rules}
+\subsection{Adjusting the Cast Rules}\label{sec:adjusting-cast-rules}
 
 We have seen how we can recover transitive reasoning by working with the
 lock-step error ordering. However, it turns out that we cannot completely
@@ -514,17 +583,17 @@ intensional setting.
 % At this point, we could carry out the full construction of a concrete relational
 % model with these additional features. 
 
-So far, we have been focusing on closed terms of base type, for which the above
-techniques give a semantic interpretation of term precision. We now consider how
-to extend these constructions to \emph{all} types. In particular, in order to
-model higher-order data types (i.e., functions) we need to equip \emph{every}
-semantic object with not only a partial ordering relation but also a
-``bisimilarity'' relation that is reflexive and symmetric. We must similarly
-equip every object with a structured set of delays that can be inserted to
-ensure the appropriate cast rules hold at all higher-order types. For example,
-the upcast for a derivation $c \ra d$ involves the downcast corresponding to $c$
-and an upcast corresponding to $d$. We must be able to insert delays in a
-functorial manner to mimic the structure of the casts. In the next section, we
+The above techniques give a semantic interpretation of term precision for closed
+terms of base type. We now consider how to extend these constructions to
+potentially-open terms of \emph{all} types. In particular, in order to model
+higher-order data types (i.e., functions) we need to equip \emph{every} semantic
+object with not only a partial ordering relation but also a ``bisimilarity''
+relation that is reflexive and symmetric. We must similarly equip every object
+with a structured set of delays that can be inserted and manipulated to ensure
+the appropriate cast rules hold at all higher-order types. For example, the
+upcast for a derivation $c_i \ra c_o$ involves the downcast corresponding to
+$c_i$ and the upcast corresponding to $c_o$. We must be able to insert delays in
+a functorial manner to mimic the structure of the casts. In the next section, we
 will make the necessary definitions and describe the relevant constructions.
 
 % For the sake of reusability and modularity, rather than carry out this
