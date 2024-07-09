@@ -5,7 +5,7 @@ typing. To manage the complexity, we carry out the construction in phases,
 beginning with a relational model consisting of partially-ordered sets with a
 notion of bisimilarity and then adding requirements for a structured set of
 delays on each type as well as a notion of representability for relations that
-models the cast rules.
+models the cast rules in the intensional setting.
 
 \subsection{Phase One: Predomains and Error Domains}
 
@@ -153,7 +153,7 @@ f'(x')) \in c_o$. We make the analogous definition for error domains.
 
 \end{comment}
 
-\subsubsection{Guarded Lift Monad and Free-Forgetful Adjunction}\label{sec:guarded-lift-monad}
+\subsubsection{The Free Error Domain}\label{sec:free-error-domain}
 
 % Lift monad
 The functor $F$ takes a predomain $A$ to the free error domain on $A$. We first
@@ -271,7 +271,7 @@ in that it respects error and preserves $\theta$.
 % (See Definition \ref{def:step-1-model}).
 
 
-\subsection{Phase 2: Perturbations and Quasi-Representable Relations}
+\subsection{Phase Two: Perturbations and Quasi-Representable Relations}
 
 We now introduce the additional definitions needed to complete the construction
 of our model. Recall from Section \ref{sec:adjusting-cast-rules} that in order
@@ -305,7 +305,7 @@ particular, we need to be able to ``push'' and ``pull'' perturbations along
 relations $c$ and $d$. The intuition for this requirement comes from the
 construction of the square corresponding to the original UpL rule from the
 square for the simplified version as was shown in Section
-\ref{sec:modeling-term-precision}. Recall that we horizontally composed the
+\ref{sec:towards-relational-model}. Recall that we horizontally composed the
 simplified UpL for $c$ square with the identity square for $c'$ on the right.
 Now that the square for UpL involves a delay, this construction doesn't work
 unless we can ``push'' the delay on $A_2$ to a delay on $A_3$. That is, given a
@@ -315,7 +315,7 @@ endomorphisms obtained by the respective homomorphisms $i_A$ and $i_{A'}$ form a
 square. This is made formal by the following definition:
 %
 \begin{definition}
-    Let $(A, M_A, i_A)$ and $(A', M_{A'}, and i_{A'})$ be value objects, and let
+    Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let
     $c : A \rel A'$ be a predomain relation. A \emph{push-pull structure} for
     $c$ consists of a homomorphism $\push : M_A \to M_A'$ and $\pull : M_A' \to
     M_A$ such that for all $m_A \in M_A$ there is a square $i_A(m_A) \ltsq{c}{c}
@@ -333,8 +333,8 @@ Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
 \emph{quasi-left-representable} by a predomain morphism $e : A \to A'$ if there
 are perturbations $\delle_c \in M_A$ and $\delre_c \in M_{A'}$ such that the
-following two squares exist: (UpL) $e \ltsq{c}{r(A')} i_{A'}(\delre_c)$, and
-(UpR) $i_A(\delle_c) \ltsq{r(A)}{c} e$.
+following two squares exist: (1) UpL: $e \ltsq{c}{r(A')} i_{A'}(\delre_c)$, and
+(2) UpR: $i_A(\delle_c) \ltsq{r(A)}{c} e$.
 \end{definition}
 %
 Observe that this generalizes the previous notion of representability, since
@@ -351,8 +351,8 @@ $d : B \rel B'$ be an error domain relation. We say that $d$ is
 \emph{quasi-right-representable} by an error domain morphism $p : B' \to B$ if
 there are perturbations $\dellp_d \in M_B$ and $\delrp_d \in M_{B'}$ such that
 the following two squares exist: 
-(DnL) $p \ltsq{r(B')}{d} i_{B'}(\delrp_d)$ and
-(DnR) $i_B(\dellp_d) \ltsq{d}{r(B)} p$.
+(1) DnL: $p \ltsq{r(B')}{d} i_{B'}(\delrp_d)$ and
+(2) DnR: $i_B(\dellp_d) \ltsq{d}{r(B)} p$.
 \end{definition}
 %
 We make the analogous definition of quasi-right-representability for predomain
@@ -367,35 +367,94 @@ We can now give the final definition of value and computation relations for our
 model:
 %
 \begin{definition}[value relations]
-A \textbf{value relation} between value objects $(A, M_A, i_A)$ and $(A', M_{A'},
-i_{A'})$ is a predomain relation $c : A \rel A'$ that has a push-pull structure
-is quasi-left-representable by a morphism $e_c : A \to A'$, and is such that
-$Fc$ is quasi-right-representable by an error domain morphism $p_c : FA' \to
-FA$.
+A \textbf{value relation} between value objects $(A, M_A, i_A)$ and $(A',
+M_{A'}, i_{A'})$ consists of a predomain relation $c : A \rel A'$ that has a
+push-pull structure, is quasi-left-representable by a morphism $e_c : A \to A'$,
+and is such that $Fc$ is quasi-right-representable by an error domain morphism
+$p_c : FA' \to FA$.
 \end{definition}
 
 \begin{definition}[computation relations]
-A \textbf{computation relation} between computation objects $(B, M_B, i_B)$ and $(B',
-M_{B'}, i_{B'})$ is an error domain relation $d$ that has a push-pull structure,
-is quasi-right-representable by a morphism $p_d : B' \to B$, and is such that
-$Ud$ is quasi-left-representable by a morphism $e_d : UB \to UB'$
+A \textbf{computation relation} between computation objects $(B, M_B, i_B)$ and
+$(B', M_{B'}, i_{B'})$ consists of an error domain relation $d$ that has a
+push-pull structure, is quasi-right-representable by a morphism $p_d : B' \to
+B$, and is such that $Ud$ is quasi-left-representable by a morphism $e_d : UB
+\to UB'$
 \end{definition}
 
-Because we have augmented the definitions of object and relation for our model,
-we need to specify the actions of the functors $F$, $U$, $\times$, and $\arr$ on
-these objects and relations. For instance, the functor $F$ now acts on
+The reason for requiring $Fc$ to be quasi-right-representable in the definition
+of value relations is so that we can define the action of the functor $F$ on
+relations. Similarly, we require $Ud$ to be quasi-left-representable in the
+definition of computation relations so that we can define the action of $U$ on
+relations.
+
+It remains to specify the actions of the functors on value and computation
+objects and relations.
+% Because we have augmented the definitions of object and relation for our model,
+% we need to specify the actions of the functors $F$, $U$, $\times$, and $\arr$ on
+% these objects and relations. 
+For instance, the functor $F$ now acts on
 \emph{value objects} $(A, M_A, i_A)$, which means we need to specify the monoid
-$M_{FA}$ and interpretation $i_{FA}$ corresponding to the error domain $FA$. We
-leave these constructions to the appendix, as they are technical and not crucial
-to understanding our main result.
+$M_{FA}$ and interpretation $i_{FA}$ corresponding to the error domain $FA$.
+
+\subsubsection{Actions on Objects}
+We first discuss the action of $\li$ on objects. Given a value object $(A, M_A,
+i_A)$ we define $M_{\li A}$ to be $\mathbb{N} \oplus M_A$, where $\oplus$
+denotes the free product of monoids (the coproduct in the category of monoids).
+The intuition behind needing to include $\mathbb{N}$ comes from the example of
+the downcast for $\iarr$. Recall that we adjusted the squares corresponding to
+the DnL and DnR rules by adding $\delta = \theta \circ \nxt$ on the side
+opposite the downcast. Thus, we need a syntactic perturbation in $M_{\li A}$
+that will be interpreted as $\delta$. We accomplish this by taking the coproduct
+with $\mathbb{N}$.
+%
+Then to interpret the perturbations as endomorphisms, by the universal property
+of the coproduct of monoids it suffices to define two homomorphisms, one from
+$\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
+The first homomorphism sends the generator $1 \in \mathbb{N}$ to the endomorpism
+$(\delta \circ \eta)^\dagger$, and the second sends $m_A \in M_A$ to
+$\li(i_A(m_A))$ and we observe in both cases that the resulting endomorphisms
+are bisimilar to the identity since the action of $\li$ on morphisms preserves
+bisimilarity.
+
+Now we discuss the action of $U$ on objects. Given a computation object $(B,
+M_B, i_B)$, we define $M_{UB}$ to be $\mathbb{N} \oplus M_B$. The reason for
+requiring $\mathbb{N}$ is related to the Kleisli arrow functor: to establish
+quasi-representability of $U(c \arr d)$ given quasi-representability of $c$ and
+$d$, we will need to turn a perturbation on $FA$ into a perturbation on $U(A
+\arr B)$. Since the perturbations for $FA$ involve $\mathbb{N}$, so must the
+perturbations for $UB$. The interpretation $i_{UB}$ of the perturbations on $UB$
+works in the same manner as that of $FA$.
+
+The action of $\times$ on objects is as follows. Given $(A_1, M_{A_1}, i_{A_1})$
+and $(A_2, M_{A_2}, i_{A_2})$, we define the monoid $M_{A_1 \times A_2} =
+M_{A_1} \oplus M_{A_2}$. To construct the homomorphism $i_{A_1 \times A_2}$, we
+appeal to the universal property and give homomorphisms $M_{A_1} \to
+\morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$.
+
+
+
+The action of $\arr$ on objects is as follows. Given $(A, M_A, iA)$ and $(B,
+M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$. Then to
+construct the interpretation as endomorphisms it suffices to define a
+homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
+\arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
+UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
+similarly by post-composition with $i_B$.
+
+\subsubsection{Actions on Relations}
+
+
+
+
 
 
 
 
 \subsection{The Dynamic Type}
 Lastly, we describe the denotation of the dynamic type. The predomain
-representing the dynamic type is defined using guarded recursion as the solution
-to the equation
+representing the dynamic type is defined using a combination of least fixpoint
+and guarded recursion as the solution to the equation
 % \footnote{In this section, we write $F$ instead of $\li$ so that the notation follows that of the abstract model section.}
 %
 \[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr FD). \]
@@ -428,29 +487,29 @@ $\text{inj}_\to : U(D \arr F D) \rel D$ by $(f, d) \in \iarr$ iff $e_\to(f)
 \le_D d$.
 
 Now we define the perturbations for $D$. Recall that for each value type $A$ we
-associate a monoid $P_A$ of perturbations and a homomorphism into the monoid of
+associate a monoid $M_A$ of perturbations and a homomorphism into the monoid of
 endomorphisms bisimilar to the identity, and likewise for computation types. We
 define the perturbations for $D$ via least-fixpoint in the category of monoids
 as
 %
-\( P_D \cong (P_{D \times D}) \times P_{U(D \to FD)}. \)
+\( M_D \cong (M_{D \times D}) \times M_{U(D \to FD)}. \)
 %
 Unfolding the definitions, this is the same as
 %
-\( P_D \cong (P_D \times P_D) \times (\mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D). \)
+\( M_D \cong (M_D \times M_D) \times (\mathbb{N} \times M_D^{op} \times \mathbb{N} \times M_D). \)
 %
 We now explain how to interpret these perturbations as endomorphisms.
-We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
+We define $i_D : M_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
 % via the universal property of the coproduct of monoids, giving a case for each of the generators.
 % In the below, note the use of the functorial action of $\arr$ on morphisms.
 %
 % \[ P_D \cong (P_D \times P_D) \times (P_D \times (\mathbb{N} \times P_D)), \]
 %
 \begin{align*}
- \ptb_D(p_{\text{times}}, p_{\text{fun}}) &= \lambda d.\text{case $d$ of}  \\
+ i_D(p_{\text{times}}, p_{\text{fun}}) &= \lambda d.\text{case $d$ of}  \\
  &\alt \tnat(m) \mapsto \tnat(m) \\
-    &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(\ptb_{D \times D}(p_\text{times})(d_1, d_2))} \\
-    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. \ptb_{U(D \to FD)}()(\tilde{f}_t))}
+    &\alt \ttimes(d_1, d_2) \mapsto {\ttimes(i_{D \times D}(p_\text{times})(d_1, d_2))} \\
+    &\alt \tfun(\tilde{f}) \mapsto {\tfun(\lambda t. i_{U(D \to FD)}(\tilde{f}_t))}
 \end{align*}
     % \item $\ptb_D(1)$
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has
@@ -462,17 +521,17 @@ We define $\ptb_D : P_D \to \{ f : D \to D \mid f \bisim \id \}$ below,
     %   \end{align*}
     % \item $\ptb_D(\delta^K_D)$ is defined similarly to the previous but has 
     % \[ (d_1, \ptb_D(\delta^K_D)(d_2)) \] instead.
-One can verify that this defines a homomorphism from $P_D \to \{ f : D \to D : f \bisim \id \}$.
-We claim that the three relations $\inat$, $\itimes$, and $\iarr$
-%and their lifted versions 
-satisfy the push-pull property.
-As an illustrative case, we establish the push-pull property for the relation $\iarr$.
-We define $\pull_{\iarr} : P_D \to P_{U(D \arr FD)}$ by \( \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) = p_{\text{fun}}, \)
+One can verify that this defines a homomorphism from $M_D \to \{ f : D \to D : f
+\bisim \id \}$. We claim that the three relations $\inat$, $\itimes$, and
+$\iarr$ satisfy the push-pull property. As an illustrative case, we establish
+the push-pull property for the relation $\iarr$. We define $\pull_{\iarr} : M_D
+\to P_{U(D \arr FD)}$ by \( \pull_{\iarr}(p_{\text{times}}, p_{\text{fun}}) =
+p_{\text{fun}}, \)
 % (recall that $P_{U(D \arr FD)} = \mathbb{N} \times P_D^{op} \times \mathbb{N} \times P_D$).
 %
 i.e., we simply forget the other perturbation.
 %
-We define $\push_{\iarr} : P_{U(D \arr FD)} \to P_D$ by \( \push_{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}) \).
+We define $\push_{\iarr} : M_{U(D \arr FD)} \to M_D$ by \( \push_{\iarr}(p_{\text{fun}}) = (\id, p_{\text{fun}}) \).
 %
 Showing that the relevant squares commute is straightforward.
 %
@@ -483,65 +542,84 @@ Showing that the relevant squares commute is straightforward.
 % we will be done by our assumption that $f$ is related to $d$.
 
 
-We next claim that the relations $\inat$, $\itimes$, and $\iarr$ are quasi-left-representable,
-and that their lifts are quasi-right-representable.
-Indeed, since the relations are functional, it is easy to see that they are quasi-left-representable
-where the perturbations are taken to be the identity.
+We next claim that the relations $\inat$, $\itimes$, and $\iarr$ are
+quasi-left-representable, and that their lifts are quasi-right-representable.
+Indeed, since the relations are functional, it is easy to see that they are
+quasi-left-representable where the perturbations are taken to be the identity.
 %
 For quasi-right-representability, the most interesting case is $\li(\iarr)$.
-Defining the projection $p_{\iarr} : FD \to FU(D \to FD)$ is equivalent to defining
-$p' : D \to UFU(D \to FD)$. We define
+Defining the projection $p_{\iarr} : FD \to FU(D \to FD)$ is equivalent to
+defining $p' : D \to UFU(D \to FD)$. We define
 \begin{align*}
  p' = \lambda d.\text{case $d$ of}   &\alt \tnat(m) \mapsto \mho \\
     &\alt \ttimes(d_1, d_2) \mapsto \mho \\
     &\alt \tfun(\tilde{f}) \mapsto \theta (\lambda t. \eta(\tilde{f}_t)).
 \end{align*}
 %
-We define $\dellp_D = \delrp_D = \delta_{FD}$.
-Then it is easy to show using the definition of $\iarr$ that the squares for $\dnl$ and $\dnr$ commute.
+We define $\dellp_D = \delrp_D = \delta_{FD}$. Then it is easy to show using the
+definition of $\iarr$ that the squares for $\dnl$ and $\dnr$ commute.
 % Then for $\dnr$, we need to show that if $(f, d) \in \iarr$ then
 %
-It is also straightforward to establish the retraction property for
-each of these three relations. In the case of $\iarr$, we
-have that the property holds up to a delay.
+It is also straightforward to establish the retraction property for each of
+these three relations. In the case of $\iarr$, we have that the property holds
+up to a delay.
 
 % \subsection{Obtaining an Extensional Model}
 
-Now that we have defined an intensional model with an interpretation for the dynamic type, we can apply
-the abstract constructions introduced in Section \ref{sec:extensional-model-construction}.
-Doing so, we obtain an extensional model of gradual typing, where the squares are given by the
-``bisimilarity closure'' of the intensional error ordering.
+\subsection{Defining an Extensional Model}
+
+Lastly, we apply the ``bisimilarity-closure'' construction introduced in the
+previous section as follows: In particular, let $c_i : A_i \rel A_i'$ and $c_o :
+A_o \rel A_o'$.
+%
+% We define an extensional square between morphisms $f : A_i \to A_o$ and $g :
+% A_i' \to A_o'$ to consist of:
+
+% \begin{itemize}
+%   \item A morphism $f' : A_i \to A_o$ with $f \bisim f'$.
+%   \item A morphism $g' : A_i' \to A_o'$ with $g \bisim g'$.
+%   \item A square $f' \ltsq{c_i}{c_o} g'$.
+% \end{itemize}
+%
+We say that $f \ltsqbisim{c^i}{c_o} g$ if there
+exist $f'$ and $g'$ such that
+%
+\[ f \bisim f' \ltsq{c_i}{c_o} g' \bisim g. \]
+%
+We make the analogous construction for the computation squares. If the relations
+$c_i$ and $c_o$ are obvious from the context, we will simply write $f \ltbisim
+g$.
+
+% Now that we have defined an intensional model with an interpretation for the
+% dynamic type, we can apply the abstract constructions introduced in Section
+% \ref{sec:extensional-model-construction}. Doing so, we obtain an extensional
+% model of gradual typing, where the squares are given by the ``bisimilarity
+% closure'' of the intensional error ordering.
 
 \subsection{Adequacy}\label{sec:adequacy}
 
-In this section, we prove an adequacy result for the concrete extensional model of GTT we obtained in the previous section.
-applying the abstract constructions introduced in Section
-\ref{sec:extensional-model-construction} to the concrete model built in the previous section.
-%\ref{sec:concrete-model}.
-
-First we establish some notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong \li \mathbb{N}$.
-We write $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
+In this section, we prove an adequacy result for the extensional model of
+gradual typing we obtained in the previous section. First we establish some
+notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong \li \mathbb{N}$. We
+write $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
 and $f \da \mho$ to mean that there exists $m$ such that $f = \delta^m(\mho)$.
 
-Recall that $\ltls$ denotes the relation on value morphisms defined as the bisimilarity-closure
-of the intensional error-ordering on morphisms.
-That is, we have $f \ltls g$ iff there exists $f'$ and $g'$ with
+Recall that $\ltbisim$ denotes the relation on value morphisms defined as the
+bisimilarity-closure of the intensional error-ordering on morphisms. That is, we
+have $f \ltbisim g$ iff there exist $f'$ and $g'$ with
 %
 \[ f \bisim_{\li \mathbb{N}} f' \le_{\li \mathbb{N}} g' \bisim_{\li \mathbb{N}} g. \]
 %
-Here $\le_{\li \mathbb{N}}$ is the lock-step error ordering, and
-$\bisim_{\li \mathbb{N}}$ is weak bisimilarity.
-First observe that in this ordering, the semantics of error is not equivalent to
-the semantics of the diverging term.
-The main result we would like to show is as follows:
-\begin{lemma}
-If $f \ltls g : \li \mathbb{N}$, then:
+Here $\le_{\li \mathbb{N}}$ is the lock-step error ordering, and $\bisim_{\li
+\mathbb{N}}$ is weak bisimilarity. First observe that in this ordering, the
+semantics of error is not equivalent to the semantics of the diverging term. The
+main result we would like to show is as follows: If $f \ltbisim g : \li \mathbb{N}$, then:
 \begin{itemize}
   \item If $f \da n$ then $g \da n$.
   \item If $g \da \mho$ then $f \da \mho$.
   \item If $g \da n$ then $f \da n$ or $f \da \mho$.
 \end{itemize}
-\end{lemma}
+
 %
 Unfortunately, this is actually not provable!
 Roughly speaking, the issue is that this is a ``global'' result, and it is not possible
