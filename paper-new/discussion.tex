@@ -115,19 +115,25 @@ In parallel with developing the theory discussed in this paper, we have
 developed a partial formalization of our results in Guarded Cubical Agda
 \cite{veltri-vezzosi2020}.
 %
-We have formalized the key aspects in the definition of the concrete model
-discussed in Section \ref{sec:concrete-model}. For instance, we have defined
-types for predomains, error domains, and their morphisms and relations, and we
-used the guarded features to define the guarded lift + error monad and the
-dynamic type.
+We have formalized the major components of the definition of the concrete model
+described in Section \ref{sec:concrete-relational-model}: predomains, error
+domains, their morphisms, relations, and squares, and we used the guarded
+features to define the free error domain, the lock-step error ordering, and weak
+bisimilarity. We also formalized the no-go theorem from Section
+\ref{sec:concrete-term-model}.
 
-Building on these definitions, we formalized the notion of perturbations and
-push-pull structures as well as quasi-representable relations, culminating in
-the definition of value and computation types as predomains (resp. error
-domains) equipped with a monoid of perturbations with an interpretation
-homomorphism into the endomorphisms bisimilar to the identity. We constructed
-the predomain for the dynamic type via mixed induction and guarded recursion,
-defined the three relations $\inat$, $\itimes$, and $\iarr$, and proved that they are
+Building on these definitions, we formalized the notion of semantic
+perturbations and push-pull structures as well as quasi-representable relations,
+culminating in the definition of value and computation types and relations as
+introduced in Section \ref{sec:concrete-relational-model}.
+%
+% culminating in the definition of value and computation types as predomains
+% (resp. error domains) equipped with a monoid of syntactic perturbations with an
+% interpretation homomorphism into the semantic perturbations. 
+%
+We constructed the predomain for the dynamic type via mixed induction and
+guarded recursion, and defined its monoid of perturbations. We also defined the
+relations $\inat$, $\itimes$, and $\iarr$, and proved that they are
 quasi-representable.
 
 % We plan to formalize the construction of perturbations and 
@@ -142,13 +148,15 @@ quasi-representable.
 % would include fields for the push-pull property and quasi-representability.
 % We leave this investigation to future work.
 
-Lastly, we have formalized the adequacy result discussed in Section
-\ref{sec:adequacy}. This required us to add axioms about clock quantification as
-well as axioms asserting the clock-irrelevance of booleans and natural numbers,
-since as of this writing these axioms are not built-in to Guarded Cubical Agda.
-The mechanization of adequacy also required us to formalize some essential
-lemmas involving clocks and clock-irrelevance; we may later refactor these as
-part of a ``standard library'' for Guarded Cubical Agda.
+Lastly, we have formalized the big-step term semantics discussed in Section
+\ref{sec:big-step-term-semantics} and the adequacy of the relational model
+discussed in Section \ref{sec:adequacy}. This required us to add axioms about
+clock quantification as well as axioms asserting the \emph{clock-irrelevance} of
+booleans and natural numbers, since as of this writing these axioms are not
+built-in to Guarded Cubical Agda. The mechanization of adequacy also required us
+to formalize some essential lemmas involving clocks and clock-irrelevance; we
+are considering later refactoring these as part of a ``standard library'' for
+Guarded Cubical Agda.
 
 \begin{comment}
 % prove graduality in the syntax of 
