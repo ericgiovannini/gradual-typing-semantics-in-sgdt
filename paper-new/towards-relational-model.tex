@@ -140,7 +140,7 @@ semantics of types and terms to also a compositional semantics of
 Sticking to a poset-based semantics, if our value types are posets, we then want
 our precision derivations $c : A \ltdyn A'$ to be \emph{poset relations} on $A,
 A'$, that is relations between the underlying sets of $A, A'$ that are
-\emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$.  We denote such
+\emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$. We denote such
 a relation between $A$ and $A'$ by $c : A \rel A'$. The paradigmatic example of
 a poset relation is the poset ordering itself, $\leq_A : A \rel A$, which is a
 poset relation because it is transitive.
@@ -157,27 +157,26 @@ We write the composition of relations as $c \comp c'$.
 % \eric{Picked up here; Max, please read this.}
 
 These relations are then used to model term precision. For closed programs $M \ltdyn M' :
-c$ where $c : A \ltdyn A'$ we have that these denote elements of the
-free error domain $\sem{M},\sem{M'} : U\li \sem{A}$ and we model this
-as a relation holding $\sem{M} (U\li\sem{c}) \sem{M'}$ where
+c$ where $c : A \ltdyn A'$, the terms denote elements of the
+free error domain $\sem{M},\sem{M'} : U\li \sem{A}$ and we model the term precision semantically as the relation holding between those denoted elements $\sem{M} \binrel{(U\li\sem{c})} \sem{M'}$ where
 $U\li\sem{c}$ is a relational lifting of $U\circ\li$.
 %
 More generally, $M$ and $M'$ can be \emph{open} terms, in which case
 they denote functions, not just elements. We model that as not simply
-being elements related by a relation but in a typical
-logical-relations style of \emph{preserving} relatedness: if they are
-passed in inputs related by the domain relations then their output is
-related by the codomain relation.
+elements being related but in a typical logical-relations style as
+\emph{preserving} relatedness: if they are passed in inputs related by
+the domain relations then their output is related by the codomain
+relation.
 %
 To capture this preservation of relations property, we use the notion
 of a \emph{square}, which specifies a relation between two monotone
-functions. The definition of square is as follows. Let $A_i,
-A_o, A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$
-and $c_o : A_o \rel A_o'$ be poset relations, and let $f : A_i \to
-A_o$ and $g : A_i' \to A_o'$ be monotone functions. We say that $f
+functions. The definition of square is as follows. Let $A_i, A_o,
+A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$ and
+$c_o : A_o \rel A_o'$ be poset relations, and let $f : A_i \to A_o$
+and $g : A_i' \to A_o'$ be monotone functions. We say that $f
 \ltsq{c_i}{c_o} g$ if for all $x : A_i$ and $y : A_i'$ with $(x, y)
-\in c_i$, we have $(f(x), g(y)) \in c_o$. We visualize this situation
-as follows:
+\in c_i$, we have $(f(x), g(y)) \in c_o$. We call this a \emph{square}
+because we visualize this situation as follows:
 %
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMCwxLCJBX28iXSxbMSwwLCJBX2knIl0sWzEsMSwiQV9vJyJdLFsyLDMsImciXSxbMCwxLCJmIiwyXSxbMCwyLCJjX2kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImNfbyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -207,16 +206,22 @@ $c_1,\ldots$.
 
 % \max{This needs to also talk about relational composition and horizontal pasting squares, since that's transitivity!}
 We note that for any $c$, there is a ``vertical identity'' square $\id
-\ltsq{c}{c} \id$, as can be seen by unfolding the definition. Similarly, for any
-montone function $f : A_i \to A_o$, there is a ``horizontal identity'' square $f
-\ltsq{\le_{A_i}}{\le_{A_o}}$ by the definition of monotone function.
+\ltsq{c}{c} \id$, as can be seen by unfolding the
+definition. Similarly, for any montone function $f : A_i \to A_o$,
+there is a ``horizontal identity'' square $f
+\ltsq{\le_{A_i}}{\le_{A_o}} f$ arising from the fact that $f$ is
+monotone.
 %
-We can \emph{compose} squares vertically, i.e., if we have $f \ltsq{c_1}{c_2}
-f'$ and $g \ltsq{c_2}{c_3} g'$ then we obtain a square $g \circ f
-\ltsq{c_1}{c_3} g' \circ f'$. Likewise, we can compose squares horizontally: If
-$f \ltsq{c_i}{c_o} g$ and $g \ltsq{c_i'}{c_o'} h$, then we obtain a square $f
-\ltsq{c_i \comp c_i'}{c_o \comp c_o'} h$. Horizontal composition of squares
-corresponds to transitivity of term precision.
+We can \emph{compose} squares vertically, i.e., if we have $f
+\ltsq{c_1}{c_2} f'$ and $g \ltsq{c_2}{c_3} g'$ then we obtain a square
+$g \circ f \ltsq{c_1}{c_3} g' \circ f'$. Likewise, we can compose
+squares horizontally: If $f \ltsq{c_i}{c_o} g$ and $g
+\ltsq{c_i'}{c_o'} h$, then we obtain a square $f \ltsq{c_i \comp
+  c_i'}{c_o \comp c_o'} h$. Horizontal composition of squares
+corresponds to transitivity of term precision. While we do not dwell
+on categorical abstractions in this work, we note that this structure
+of functions, relations and squares forms a locally thin \emph{double
+category} as used in previous work \cite{newlicata}.
 
 Now that we have an intended model of term precision in the form of
 squares, we can see what is required to give a compositional proof of
@@ -278,7 +283,7 @@ corresponding to UpL:
 This square, with a dual one related to UpR, say that the relation $c$
 is \emph{representable} by the upcast morphism $\upc{c}$, essentially
 that the relation is a kind of \emph{graph} of the function in that $x
-\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$.
+\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$ \cite{shulmandoublecategories}.
 
 We can use this simpler square to derive the original UpL square as long as we can
 horizontally compose with the identity square for $c'$:
