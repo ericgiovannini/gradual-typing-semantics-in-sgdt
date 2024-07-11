@@ -15,6 +15,7 @@
 \end{proof}
 
 \begin{theorem}
+  \label{thm:thin}
   For any two derivations $c,c' : A \ltdyn A'$ of the same precision
   $c \equiv c'$
 \end{theorem}
@@ -39,48 +40,88 @@
   \end{enumerate}
 \end{proof}
 
-Type precision is a binary relation on typed terms. The original
-gradual guarantee rules are as follows:
+As mentioned in Section~\ref{sec:syntax}, the cast calculus we employ uses a splitting of casts into downcasts and upcasts, whereas gradual surface languages are built out of a single notion of cast
+\[ \inferrule{\Gamma \vdash M : A}{\Gamma \vdash (M :: A') : A' }\]
+The term precision rules for this style of calculus are as follows\cite{siekvitousekciminiboyland}:
 \begin{mathpar}
-  \inferrule
-  {\Gamma^\ltdyn \vdash M \ltdyn M' : c \and
-    c : A \ltdyn A'\and
-    c' : A \ltdyn A_2'
+  \inferrule*[Right=CastRight]
+  {\Delta \vdash M \ltdyn N_1 : c_1 \and
+    c_{1} : A \ltdyn A_1\and
+    c_2 : A \ltdyn A_2
   }
-  {\Gamma^\ltdyn \vdash M \ltdyn (M :: A_2') : c'}
+  {\Delta \vdash M \ltdyn (N :: A_2) : c_2}
 
-  \inferrule
-  {\Gamma^\ltdyn \vdash M \ltdyn M' : c \and
-    c : A \ltdyn A'\and
-    c' : A_2 \ltdyn A'
+  \inferrule*[Right=CastLeft]
+  {\Delta \vdash M_1 \ltdyn N : c_1 \and
+    c_1 : A_1 \ltdyn A\and
+    c_2 : A_2 \ltdyn A
   }
-  {\Gamma^\ltdyn \vdash (M :: A_2) \ltdyn M' : c'}
+  {\Delta \vdash (M_1 :: A_2) \ltdyn N : c_2}
 \end{mathpar}
-Where the cast $M :: A_2$ is defined to be
-\[ \dnc {dyn(A_2)}{\upc {dyn(A)} M} \]
+New-Ahmed and New-Licata showed that such if the cast $M_1 :: A_2$ for $M_1 : A_1$ is interpreted as
+\[ \dnc {(\dynof {A_2})}{\upc {(\dynof{A_1})} M} \]
+then the CastRight and CastLeft rules are derivable from the UpL/UpR/DnL/DnR rules
+and the \emph{retraction} property of casts: that a downcast after an upcast
+is equal to the identity.
+%
+In the intensional setting, this retraction property needs to be
+weakened: a downcast after an upcast is merely \emph{weakly bisimilar}
+to the identity.
+%
+But this weak bisimilarity is no longer strong enough to show the validity
+of CastRight and CastLeft, due to the lack of transitivity of weak
+bisimilarity.
 
-These two rules are admissible in our presentation.
+Fortunately there is an alternative argument that makes CastRight and
+CastLeft valid if we change slightly the interpretation of casts. To
+show this alternative translation we need to first introduce the
+\emph{least upper bound} of types:
+\begin{lemma}
+  The preordered set of types with type precision as ordering has all
+  binary least upper bounds defined as follows:
+  \begin{align*}
+    (A_1 \times A_2) \sqcup (A_1' \times A_2') &= (A_1 \sqcup A_1') \times (A_2 \sqcup A_2')\\
+    (A_1 \ra A_2) \sqcup (A_1' \ra A_2') &= (A_1 \ra A_1') \times (A_2 \ra A_2')\\
+    \nat \sqcup \nat &= \nat\\
+    A \sqcup A' &= \dyn \text{ otherwise }
+  \end{align*}
+\end{lemma}
 
-For the first rule, we first prove that $\dnc {dyn(A_2)}\upc {dyn(A)} M = \dnc {c'}\upc{c} M$
-\begin{align*}
-  \dnc {dyn(A_2)}\upc {dyn(A)} M
-  &= \dnc {(c \dynof {A'})}\upc{(c'\dynof{A'})} M \tag{All derivations are equal}\\
-  &= \dnc {c}\dnc {\dynof{A'}}\upc{\dynof{A'}}\upc{c'} M\tag{functoriality}\\
-  &= \dnc {c}\upc{c'} M\tag{retraction}\\
-\end{align*}
+Then for $M_1 : A_1$ we translate $M_1 :: A_2$ to
+\[ \dnc {c^\sqcup_2}\upc{c^\sqcup_1} M \]
+where $c^\sqcup_1 : A_1 \ltdyn A_1\sqcup A_2$ and $c^\sqcup_2 : A_2 \ltdyn
+A_1\sqcup A_2$. In the presence of the strong retraction property, New
+and Ahmed showed that this is equal to the prior interpretation. With
+a weak retraction property, it is still weakly bisimilar to the prior
+interpretation, so for the extensional properties we care about
+ultimately this semantics is equivalent. However our compositional
+arguments do care about this difference, and so we use instead this
+translation that avoids the need for any retraction:
+\begin{theorem}
+  If $M_1 :: A_2$ is interpreted as $\dnc {c^\sqcup_2}\upc{c^\sqcup_1} M$,
+  then CastRight and CastLeft are admissible.
+\end{theorem}
+\begin{proof}
+  We show CastLeft, as this is the one that required retraction in
+  prior work. CastRight follows similarly.
 
-Then the rest follows by the up/dn rules above and the fact that
-precision derivations are all equal.
-
-Thus the following properties are sufficient to provide an extensional
-model of gradual typing without requiring transitivity of term
-precision:
-\begin{enumerate}
-\item Every precision is representable in the above sense,
-\item The association of casts to precision is functorial
-\item Type constructors are covariant functorial with respect to
-  relational identity and composition
-\end{enumerate}
+  Assume $M_1 \ltdyn N : c_1$, we seek to prove that
+  \[ \dnc {c^\sqcup_2}\upc{c^\sqcup_1} M \ltdyn N : c_2 \]
+  %
+  Since $A \sqcup A_2$ is the
+  least upper bound, we have there must be a derivation $c^{\sqcup} :
+  A_1\sqcup A_2 \ltdyn A$.
+  %
+  Further by Theorem~\ref{thm:thin}, we have
+  $c^\sqcup_2c^{\sqcup} \equiv c_2$, so it suffices to show
+  \[M_1 \ltdyn \dnc {c^\sqcup_2}\upc{c^\sqcup} N : c^\sqcup_2c^{\sqcup} \]
+  %
+  Then applying DnL and UpL it is sufficient to show
+  \[ M_1 \ltdyn N : c^\sqcup_1c^\sqcup \]
+  But again by Theorem~\ref{thm:thin} we have $c^\sqcup_1c^\sqcup
+  \equiv c_1$ so this follows by our assumption that $M_1 \ltdyn N
+  :c_1$.
+\end{proof}
 
 \section{Call-by-push-value}
 
