@@ -1,20 +1,22 @@
-\section{A Guarded Model of Graduality}\label{sec:concrete-model}
+\section{A Guarded Model of Graduality}\label{sec:concrete-relational-model}
 
-In this section, we complete the construction of a relational model of gradual
-typing. To manage the complexity, we carry out the construction in phases,
-beginning with a relational model consisting of partially-ordered sets with a
-notion of bisimilarity and then adding requirements for a structured set of
-delays on each type as well as a notion of representability for relations that
-models the cast rules in the intensional setting.
+In this section, we describe in detail our model of gradual typing. To manage
+the complexity, we carry out the construction in two phases, beginning with a
+relational model consisting of partially-ordered sets with a notion of
+bisimilarity and then adding requirements for a structured set of syntactic
+perturbations on each type as well as the notion of quasi-representability for
+relations that models the cast rules. We then discuss the construction of the
+dynamic type and the refined denotation of term precision that relates terms
+that can be synchronized to be in lock-step. We conclude by demonstrating the
+adequacy of our model with respect to the graduality property.
 
 \subsection{Phase One: Predomains and Error Domains}
 
 In the previous section, we introduced the notion of weak bisimilarity as a
 relation on the guarded lift monad. Recall that weak bisimilarity on $\li A$ is
-parameterized by a relation on $A$. Thus, in order to define a compositional
-model for all types, we need to equip the objects (i.e. the posets and error
-domains) with a reflexive, symmetric bisimilarity relation. This leads to our
-first new definition: 
+parameterized by a relation on $A$. To define a compositional model for all
+types, we equip the posets and error domains with a reflexive, symmetric
+bisimilarity relation. This leads to our first new definition: 
 
 \begin{definition}
 A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
@@ -70,9 +72,9 @@ The definition of relations between predomains is the same as that between
 posets introduced in the previous section, as the bisimilarity relations of the
 predomains are not involved in the definition of monotone relation.
 
-Next we define a notion of \emph{error domain relation} between error domains $B$ and
-$B'$. An error domain relation $d : B \rel B'$ is a relation on the underlying
-posets that preserves error and respects $\theta$. More formally:
+Next we define an analogous notion of \emph{relation} between error domains $B$
+and $B'$. An error domain relation $d : B \rel B'$ is a relation on the
+underlying posets that preserves error and respects $\theta$. More formally:
 %
 \begin{definition}
   Let $B$ and $B'$ be error domains. An \textbf{error domain relation} between
@@ -84,10 +86,42 @@ posets that preserves error and respects $\theta$. More formally:
      d)$, then $(\theta_B (\tilde{x}), \theta_{B'} (\tilde{y})) \in d$. 
   \end{enumerate}
 \end{definition}
-% Likewise, the definition of error domain relations is unchanged.
+%
+As with predomain relations, we can compose error domain relations. However,
+because of a technical restriction involving the interaction between
+propositional truncation and the later modality, we cannot define the
+composition of error domain relations as the composition of their underlying
+predomain relations. Instead, we define composition of error domain relations
+$d$ on $B_1$ and $B_2$ and $d'$ on $B_2$ and $B_3$ inductively to be the least
+relation containing $d$ and $d'$ that is downward closed under $\le_{B_1}$,
+upward-closed under $\le_{B_3}$, respects error, and preserves $\theta$.
+Specifically, it is defined inductively by the following rules:
+% %
+% \begin{mathpar}
+%     \inferrule*[right = Comp]
+%     {b_1 \mathbin{d} b_2 \and b_2 \mathbin{d'} b_3}
+%     {b_1 \mathbin{d \relcomp d'} b_3}
+
+%     \inferrule*[right = DnClosed]
+%     {b_1' \le_{B_1} b_1 \and b_1 \mathbin{d \relcomp d'} b_3}
+%     {b_1' \mathbin{d \relcomp d'} b_3}
+
+%     \inferrule*[right = UpClosed]
+%     {b_1 \mathbin{d \relcomp d'} b_3 \and b_3 \le_{B_3} b_3'}
+%     {b_1 \mathbin{d \relcomp d'} b_3'}
+
+%     \inferrule*[right = PresErr]
+%     { }
+%     {\mho_{B_1} \mathbin{d \relcomp d'} b_3}
+
+%     \inferrule*[right = PresTheta]
+%     {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
+%     {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
+% \end{mathpar}
+% %
 
 The definitions of squares for predomains are also unchanged from the previous
-section, except that the morphisms on the left and right, are now morphisms of
+section, except that the morphisms on the left and right are now morphisms of
 predomains. We likewise define a notion of \textbf{error domain square}: Let
 $d_i : B_i \rel B_i'$ and $d_o : B_o \rel B_o'$ be error domain relations, and
 let $\phi : B_i \multimap B_o$ and $\phi' : B_i' \multimap B_o'$ be morphisms of
@@ -95,88 +129,12 @@ error domains. We say that there is an error domain square $\phi \ltsq{d_i}{d_o}
 \phi'$ exactly when there is a predomain square involving the underlying
 predomain morphisms and relations.
 
-\begin{comment}
-We define a (monotone) relation on predomains $A$ and $A'$ to be a relation on
-the underlying sets that is downward-closed under $\le_A$ and upward-closed
-under $\le_{A'}$. More formally:
-%
-\begin{definition}
-Let $A$ and $A'$ be predomains. A \emph{predomain relation} between $A$ and $A'$
-is a relation $R$ between the underlying sets such that:
-\begin{enumerate}
-    \item (Downward closure): For all $x_1, x_2 \in A$ and $y \in A'$,
-    if $x_1 \le_A x_2$ and $x_2 \mathbin{R} y$, then $x_1 \mathbin{R} y$.
-    \item (Upward closure): For all $x \in A$ and $y_1, y_2 \in A'$,
-    if $x \mathbin{R} y_1$ and $y_1 \le_{A'} y_2$, then $x \mathbin{R} y_2$.
-\end{enumerate}
-\end{definition}
-%
-Composition of relations on predomains is the usual relational composition
-(which is truncated to be propositional). Similarly, we define a (monotone)
-relation on error domains to be a relation on the underlying predomains that
-respects error and preserves $\theta$:
-%
-\begin{definition}
-    Let $B$ and $B'$ be error domains. An \emph{error domain relation} between
-    $B$ and $B'$ is a relation $R$ between the underlying predomains such that
-    \begin{enumerate}
-       \item (Respects error): For all $y \in B'$, we have $\mho_B \mathbin{R} y$.
-       \item (Preserves $\theta$): For all $\tilde{x}$ in $\later B$ and $\tilde{y} \in \later B'$,
-       if $\later_t( \tilde{x}_t \mathbin{R} \tilde{y}_t )$ then
-       $\theta_B(\tilde{x}) \mathbin{R} \theta_{B'}(\tilde{y})$.
-    \end{enumerate}
-\end{definition}
-%
-Because of a technical restriction involving the interaction between
-propositional truncation and the later modality, we cannot define the
-composition of error domain relations as simply the composition of their
-underlying predomain relations. Instead, we define composition of error domain
-relations $d$ on $B_1$ and $B_2$ and $d'$ on $B_2$ and $B_3$ to be the least
-relation containing $d$ and $d'$ that is downward closed under $\le_{B_1}$,
-upward-closed under $\le_{B_3}$, respects error, and preserves $\theta$.
-Specifically, it is defined inductively by the following rules:
-%
-\begin{mathpar}
-    \inferrule*[right = Comp]
-    {b_1 \mathbin{d} b_2 \and b_2 \mathbin{d'} b_3}
-    {b_1 \mathbin{d \relcomp d'} b_3}
-
-    \inferrule*[right = DnClosed]
-    {b_1' \le_{B_1} b_1 \and b_1 \mathbin{d \relcomp d'} b_3}
-    {b_1' \mathbin{d \relcomp d'} b_3}
-
-    \inferrule*[right = UpClosed]
-    {b_1 \mathbin{d \relcomp d'} b_3 \and b_3 \le_{B_3} b_3'}
-    {b_1 \mathbin{d \relcomp d'} b_3'}
-
-    \inferrule*[right = PresErr]
-    { }
-    {\mho_{B_1} \mathbin{d \relcomp d'} b_3}
-
-    \inferrule*[right = PresTheta]
-    {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
-    {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
-\end{mathpar}
-%
-% We note that this composition has the following universal property.
-%
-
-
-
-We now describe the squares. Suppose we are given predomains $A_i, A_o, A_i'$,
-and $A_o'$, relations $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$, and
-morphisms $f : A_i \to A_o, f' : A_i' \to A_o'$ Given a square with these
-morphisms and relations, we say that the square commutes, written $f \le f'$, if
-for all $x \in A_i$ and $x' \in A_i'$ with $(x, x') \in c_i$, we have $(f(x),
-f'(x')) \in c_o$. We make the analogous definition for error domains.
-
-\end{comment}
 
 \subsubsection{Functors}\label{sec:free-error-domain}
 
 The functors $U$, $\li$, $\times$, and $\arr$ introduced in the previous section
 extend to predomains, error domains, and their relations. The functor $U$ simply
-takes the underlying poset relation of an error domain relation. Given a
+takes the underlying predomain relation of an error domain relation. Given a
 relation $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$, the relation $c_1
 \times c_2 : (A_1 \times A_2) \rel (A_1' \times A_2')$ is defined by $((x, y),
 (x', y')) \in (c_1 \times c_2)$ if and only if $(x, x') \in c_1$ and $(y, y')
@@ -196,107 +154,28 @@ the definition), and the bisimilarity relation is the weak bisimilarity relation
 on $\li |A|$ also defined in the previous section. With these relations, the
 constructors $\eta$ and $\theta$ of the guarded lift monad are in fact morphisms
 of predomains, i.e., they are monotone and preserve bisimilarity.
-
+%
 We observe that this predomain structure extends to an error domain structure by
 noting that the required error element is given by the constructor $\mho$ and
 the required $\theta$ map is the constructor $\theta$. Lastly, it can be shown
-that the delay morphism $\delta = \theta \circ \nxt$ satisfies $x \bisim
+that the delay morphism $\delta = \theta \circ \nxt : UB \to UB$ satisfies $x \bisim
 \delta\, x$ for all $x$ as is required by the definition of error domain.
 
 The monadic bind operation $-^\dagger$ takes a predomain morphism $f : A \to UB$
-to an error domain morphism $\li A \to B$; with this we define the action of $\li$ on
-morphisms: Given $f : A \to A'$ we observe that $\eta \circ f : A \to U\li A'$, so
-we define $\li f = (\eta \circ f)^\dagger : \li A \to \li A'$.
+to an error domain morphism $\li A \multimap B$; with this we define the action of $\li$ on
+morphisms: Given $f : A \to A'$ we define $\li f = (\eta \circ f)^\dagger : \li A \to \li A'$.
 
-Finally, we define the action of $\li$ on a relation $c$ to be the heterogeneous
-lock-step error ordering between $U\li A$ and $U\li A'$ and note that it by
-definition satisfies the additional requirements of being an error domain
-relation between the error domains $\li A$ and $\li A'$. 
-
-% The monad $\li$ decomposes into a free-forgetful adjunction $F \dashv U$. Given
-% a predomain $A$, we define the error domain $FA$ whose underlying predomain is
-% $\li A$, whose error element is $\mho$, and whose $\theta$ map is the
-% constructor $\theta$. 
-
-
-% It is easily verified that $\li A$ is the free error- and later-algebra on the
-% predomain $A$, so we have that $\li$ is left-adjoint to $U$.
- 
-
-% i.e., error domain morphisms from $\li A$ to $B$ are in one-to-one correspondence with
-% predomain morphisms from $A$ to $UB$.
-
-% We define $\delta : U(\li A) \To U(\li A)$ by $\delta(x) = \theta(\nxt x)$.
-% We define $\hat{\delta} : \li A \arr \li A$ by $\hat{\delta} = \ext{(\delta \circ \eta)}{}$.
-% Note that by definition of $\text{ext}$, we have that $\hat{\delta}$ is a morphism of error domains.
-
-%\subsubsection{Lock-Step Error Ordering}\label{sec:lock-step}
-
-
-% We define the action of $\li$ on a relation $R$ between $A$ and $A'$ to be the
-% ``heterogeneous" version of the lock-step error ordering.
-
-% TODO action of \li on commuting squares
-
-\begin{comment}
-
-% internal hom for predomains and error domains
-Given predomains $A$ and $A'$, we can form the predomain of
-predomain morphisms from $A$ to $A'$, denoted $A \To A'$.
-\begin{itemize}
-    % Should we give the definition involving x and x'?
-    \item The ordering is defined by $f \le_{A \To A'} f'$ iff for all
-    $x \in A$, we have $f(x) \le_{A'} f'(x)$.
-    \item The bisimilarity relation is defined by $f \bisim_{A \To A'} f'$ iff
-    for all $x, x' \in A$ with $x \bisim_{A} x'$, we have $f(x) \bisim_{A'} f'(x')$. 
-\end{itemize}
-%
-Given $f : A_1' \to A_1$ and $g : A_2 \to A_2'$ we define the predomain morphism
-$f \To g : (A_1 \To A_2) \to (A_1' \To A_2')$ by $\lambda h. \lambda x'. g(h(f(x')))$.
-
-% TODO: include this?
-% The monadic extension operation $\ext{\cdot}{} : (A_1 \To U (\li A_2)) \To (\li A_1 \To U(\li A_2))$
-% is a morphism of predomains from $A_1 \To U(\li A_2)$ to $U(\li A_1) \To U(\li A_2)$, i.e.,
-% it preserves the ordering and bisimilarity relations.
-
-
-% Given a predomain $A$ and error domain $B$, we define $A \arr B := A \To UB$.
-We note that $A \To UB$ carries a natural error domain structure
-(in the below, the lambda is a meta-theoretic notation):
-\begin{itemize}
-    \item The error is given by $\lambda x . \mho_B$
-    \item The $\theta$ operation is defined by
-      \[ \theta_{A \To UB}(\tilde{f}) = \lambda x . \theta_B(\lambda t . \tilde{f}_t(x)). \]
-\end{itemize}
-
-Given a predomain $A$ and error domain $B$, we define
-$A \arr B$ to be the error domain such that $U(A \arr B) = A \To UB$,
-and whose error and $\theta$ operations are as defined above.
-We can define the functorial action of $\arr$ on morphisms
-$f \arr \phi$ in the obvious way.
-%
-It is easily verified that $A \arr B$ is an exponential of $UB$ by $A$
-in the category of predomains and their morphisms.
-
-\end{comment}
-
-\begin{comment}
-Lastly, given a relation of predomains $c$ between $A$ and $A'$, and a relation
-of error domains $d$ between $B$ and $B'$, we define the relation $c \arr d$
-between $A \arr B$ and $A' \arr B'$ in the obvious way, i.e., $f \in A \arr B$
-is related to $g \in A' \arr B'$ iff for all $x \in A$ and $x' \in A'$ with
-$(x, x') \in c$, we have $(f(x), g(x')) \in Ud$.
-%
-One can verify that this relation is indeed a relation of error domains
-in that it respects error and preserves $\theta$.
-\end{comment}
+Finally, we define the action of $\li$ on a predomain relation $c$ to be the
+heterogeneous lock-step error ordering between $U\li A$ and $U\li A'$ and note
+that it by definition satisfies the additional requirements of being an error
+domain relation between the error domains $\li A$ and $\li A'$.
 
 
 
 \subsection{Phase Two: Perturbations and Quasi-Representable Relations}
 
 We now introduce the additional definitions needed to complete the construction
-of our model. Recall from Section \ref{sec:adjusting-cast-rules} that in order
+of our model. Recall from Section \ref{sec:lock-step-and-weak-bisim} that in order
 to establish the DnL rule for the downcast of $\iarr$, we needed to adjust the
 rule by inserting a ``delay'' on the right-hand side. A similar adjustment is
 needed for the DnR rule for $\iarr$. Moreover, the need to insert delays impacts
@@ -307,21 +186,23 @@ consequences: first, the squares corresponding to the rules UpL and UpR may also
 require the insertion of a delay. Second, we need to be able to insert
 ``higher-order'' delays in a way that follows the structures of the casts.
 
-
 To accomplish this, we equip every predomain $A$ with a monoid $M_A$ of
 \emph{syntactic perturbations}, as well as a means of \emph{interpreting} these
-perturbations as actual endomorphisms on $A$. Moreover, we want the resulting
-endomorphisms to be extensionally equivalent to the identity function, a
-condition we express by saying that they are weakly bisimilar to the identity
-morphism on $A$. More formally, for every $A$ we require a homomorphism of
-monoids $i_A : M_A \to \morbisimid{A} := \{ f : A \to A \mid f \bisim \id_A \}$.
-We likewise equip every error domain $B$ with a monoid $M_B$ and interpretation
-homomorphism $i_B : M_B \to \morbisimid{B}$. These concepts deserve their own
-definitions: We call the triple $(A, M_A, iA)$ a \textbf{value object} as it
-will be the denotation of value types in our final model. Likewise, the triple
-$(B, M_B, i_B)$ will be called a \textbf{computation object}.
+syntactic perturbations as \emph{semantic} perturbations on $A$, i.e., as
+endomorphisms that are bisimilar to the identity.
+% Moreover, we want the
+% resulting endomorphisms to be extensionally equivalent to the identity function,
+% a condition we express by saying that they are weakly bisimilar to the identity
+% morphism on $A$. 
+More formally, for every $A$ we require a homomorphism of monoids $i_A : M_A \to
+\morbisimid{A} := \{ f : A \to A \mid f \bisim \id_A \}$. We likewise equip
+every error domain $B$ with a monoid $M_B$ and interpretation homomorphism $i_B
+: M_B \to \morbisimid{B}$. This grouping of data deserves its own definition: We
+call the triple $(A, M_A, iA)$ a \textbf{value object} as it will be the
+denotation of value types in our final model. Likewise, the triple $(B, M_B,
+i_B)$ will be called a \textbf{computation object}.
 
-We must now impose an additional condition on predomain relations $c$ and error
+We must impose an additional condition on predomain relations $c$ and error
 domain relations $d$ that specify how they interact with these perturbations. In
 particular, we need to be able to ``push'' and ``pull'' perturbations along
 relations $c$ and $d$. The intuition for this requirement comes from the
@@ -332,60 +213,62 @@ simplified UpL square for $c$ with the identity square for $c'$ on the right.
 Now that the square for UpL involves a perturbation on the right instead of the
 identity, this construction will not work unless we can ``push'' the
 perturbation on $A_2$ to one on $A_3$. That is, given a relation $c : A \rel A'$
-and a perturbation $m_A \in M_A$, we need to be able to turn it into a
-perturbation $m_{A'} \in M_{A'}$ such that the resulting endomorphisms obtained
-by applying the respective homomorphisms $i_A$ and $i_{A'}$ to the perturbations
-form a square. Dually, we will need to ``pull'' a perturbation from right to
-left. This notion is made formal by the following definition:
+and a syntactic perturbation $m_A \in M_A$, we need to be able to turn it into a
+syntactic perturbation $m_{A'} \in M_{A'}$ such that the resulting semantic
+perturbations obtained by applying the respective homomorphisms $i_A$ and
+$i_{A'}$ form a square. Dually, we will need to ``pull'' a perturbation from
+right to left. This notion is made formal by the following definition:
 %
 \begin{definition}
     Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c
     : A \rel A'$ be a predomain relation. A \textbf{push-pull structure} for $c$
-    consists of monoid homomorphisms $\push : M_A \to M_A'$ and $\pull : M_A'
-    \to M_A$ such that for all $m_A \in M_A$ there is a square $i_A(m_A)
-    \ltsq{c}{c} i_{A'}(\push\, m_A)$ and for all $m_{A'} \in M_{A'}$ there is a
-    square $i_A(\pull\, m_{A'}) \ltsq{c}{c} i_{A'}(m_{A'})$.
+    (with respect to $M_A$ and $M_{A'}$) consists of monoid homomorphisms $\push
+    : M_A \to M_A'$ and $\pull : M_A' \to M_A$ such that for all $m_A \in M_A$
+    there is a square $i_A(m_A) \ltsq{c}{c} i_{A'}(\push\, m_A)$ and for all
+    $m_{A'} \in M_{A'}$ there is a square $i_A(\pull\, m_{A'}) \ltsq{c}{c}
+    i_{A'}(m_{A'})$.
 \end{definition}
 %
 We make the analogous definition for computation objects.
 
-With the notion of perturbation defined, we can now discuss the final aspect of
-the model, namely the representability of relations.
+With the notion of syntactic perturbation defined, we can now make formal the
+final aspect of the model: the notion of quasi-represntability of relations.
 %
 \begin{definition}[quasi-left-representable relations]
 Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
 \emph{quasi-left-representable} by a predomain morphism $e : A \to A'$ if there
 are perturbations $\delle_c \in M_A$ and $\delre_c \in M_{A'}$ such that the
-following two squares exist: (1) UpL: $e \ltsq{c}{r(A')} i_{A'}(\delre_c)$, and
-(2) UpR: $i_A(\delle_c) \ltsq{r(A)}{c} e$.
+following two squares exist: (1) $\upl$: $e \ltsq{c}{\le_{A'}} i_{A'}(\delre_c)$, and
+(2) $\upr$: $i_A(\delle_c) \ltsq{\le_{A}}{c} e$.
 \end{definition}
 %
-Observe that this generalizes the previous notion of representability, since
-under that definition the perturbations were always the identity.
+Observe that this weakens the previous notion of representability, since under
+that definition the perturbations were required to be the identity.
 %
 We make the analogous definition of quasi-left-representability for error domain
 relations $d$.
-%
+
 Likewise, we define quasi-right-representability as follows:
 %
 \begin{definition}
 Let $(B, M_B, i_B)$ and $(B', M_{B'}, i_{B'})$ be computation objects, and let
 $d : B \rel B'$ be an error domain relation. We say that $d$ is
-\emph{quasi-right-representable} by an error domain morphism $p : B' \to B$ if
+\emph{quasi-right-representable} by an error domain morphism $p : B' \multimap B$ if
 there are perturbations $\dellp_d \in M_B$ and $\delrp_d \in M_{B'}$ such that
 the following two squares exist: 
-(1) DnL: $p \ltsq{r(B')}{d} i_{B'}(\delrp_d)$ and
-(2) DnR: $i_B(\dellp_d) \ltsq{d}{r(B)} p$.
+(1) $\dnl$: $p \ltsq{\le_{B'}}{d} i_{B'}(\delrp_d)$ and
+(2) $\dnr$: $i_B(\dellp_d) \ltsq{d}{\le_{B}} p$.
 \end{definition}
 %
 We make the analogous definition of quasi-right-representability for predomain
 relations $c$.
 
-Although it makes sense to refer to the quasi-representability of an arbitrary
-predomain or error domain relation, quasi-representable relations do not in
-general compose. In order to construct the needed squares for the composition of
-two relations, we require that the relations have push-pull structures.
+Given $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$, it makes sense to refer to the
+quasi-representability of a predomain relation $c : A \rel A'$. However,
+quasi-representable relations do not in general compose: in order to construct
+the needed squares for the composition of two relations, we require that the
+relations have push-pull structures.
 
 We can now give the final definition of value and computation relations for our
 model:
@@ -406,11 +289,11 @@ B$, and is such that $Ud$ is quasi-left-representable by a morphism $e_d : UB
 \to UB'$
 \end{definition}
 
-The reason for requiring $\li c$ to be quasi-right-representable in the definition
-of value relations is so that we can define the action of the functor $\li$ on
-relations. Similarly, we require $Ud$ to be quasi-left-representable in the
-definition of computation relations so that we can define the action of $U$ on
-relations.
+The reason for requiring $\li c$ to be quasi-right-representable in the
+definition of value relations is so that we can define the action of the functor
+$\li$ on relations, taking a value relation to a computation relation. Likewise,
+we require $Ud$ to be quasi-left-representable in the definition of computation
+relations so that we can define the action of $U$ on relations.
 
 It remains to specify the actions of the functors on value and computation
 objects and relations.
@@ -424,14 +307,14 @@ objects and relations.
 \subsubsection{Constructions involving Perturbations}\label{sec:perturbation-constructions}
 
 We first discuss the action of $\li$ on objects. Given a value object $(A, M_A,
-i_A)$ we define $M_{\li A}$ to be $\mathbb{N} \oplus M_A$, where $\oplus$
-denotes the free product of monoids (the coproduct in the category of monoids).
-The intuition behind needing to include $\mathbb{N}$ comes from the example of
-the downcast for $\iarr$. Recall that we adjusted the squares corresponding to
-the DnL and DnR rules by adding $(\delta \circ \eta)^\dagger$ on the side
-opposite the downcast. Thus, we need a syntactic perturbation in $M_{\li A}$
-that will be interpreted as $(\delta \circ \eta)^\dagger$. We accomplish this by
-taking the coproduct with $\mathbb{N}$.
+i_A)$ we define the syntactic perturbations $M_{\li A}$ to be $\mathbb{N} \oplus
+M_A$, where $\oplus$ denotes the free product of monoids (the coproduct in the
+category of monoids). The intuition behind needing to include $\mathbb{N}$ comes
+from the example of the downcast for $\iarr$. Recall that we adjusted the
+squares corresponding to the DnL and DnR rules by adding $(\delta \circ
+\eta)^\dagger$ on the side opposite the downcast. Thus, we need a syntactic
+perturbation in $M_{\li A}$ that will be interpreted as $(\delta \circ
+\eta)^\dagger$. We accomplish this by taking the coproduct with $\mathbb{N}$.
 %
 Then to interpret the perturbations as endomorphisms, by the universal property
 of the coproduct of monoids it suffices to define two homomorphisms, one from
@@ -472,8 +355,6 @@ similarly by post-composition with $i_B$.
 
 \eric{What, if anything, should go here? Should we discuss composition of
 value/computation relations? Actions of the functors on relations?}
-
-\eric{TODO: Quasi-equivalence of the relations mentioned in the syntax section.}
 
 
 
@@ -521,10 +402,6 @@ but in fact we define them via least-fixpoint in the category of monoids:
 %
 \( M_D \cong (M_{D \times D}) \oplus M_{U(D \to \li D)}. \)
 %
-% Unfolding the definitions, this is the same as
-% %
-% \( M_D \cong (M_D \times M_D) \oplus (\mathbb{N} \times M_D^{op} \times \mathbb{N} \times M_D). \)
-% %
 We now explain how to interpret these perturbations as endomorphisms.
 
 \eric{Check this}
@@ -575,39 +452,33 @@ For quasi-right-representability, the only nontrivial case is $\li(\iarr)$.
 Recall the defintion of the downcast for $\iarr$ given in Section
 \ref{sec:term-interpretation}.
 
-We know that in order for the DnR and DnL squares for $\li \iarr$ to exist, we must
-insert a delay on the side opposite the downcast. In terms of perturbations,
-this means that we take the perturbations $\dellp$ and $\delrp$ in the
-definition of quasi-right-representability to both be $\inl\, 1$, where $\inl$
-is the injection into the coproduct of monoids. We recall that the monoid of
-perturbations for $\li$ involves a coproduct with $\mathbb{N}$, and that the
-interpretation homomorphism maps the generator $1$ to the endomorphism of error
-domains $(\delta \circ \eta)^\dagger$.
-
+We know that in order for the DnR and DnL squares for $\li \iarr$ to exist, we
+must insert a delay on the side opposite the downcast. In terms of syntactic
+perturbations, this means that we take $\dellp$ and $\delrp$ in the definition
+of quasi-right-representability to both be $\inl\, 1$, where $\inl$ is the
+injection into the coproduct of monoids. We recall that the definition of
+syntactic perturbations for $\li$ involves a coproduct with $\mathbb{N}$, and
+that the interpretation homomorphism maps the generator $1$ to the endomorphism
+of error domains $(\delta \circ \eta)^\dagger$.
+%
 With this choice for the perturbations, it is straightforward to show that the
 DnL and DnR squares exist using the definition of the downcast and the
 definition of the relation $\iarr$. 
 
-% We define $\dellp_D = \delrp_D = \delta_{FD}$. Then it is easy to show using the
-% definition of $\iarr$ that the squares for $\dnl$ and $\dnr$ commute.
-% Then for $\dnr$, we need to show that if $(f, d) \in \iarr$ then
-%
 It is also straightforward to establish the retraction property for each of
 these three relations. In the case of $\iarr$, we have that the property holds
 up to a delay.
 
-% \subsection{Obtaining an Extensional Model}
+\subsection{Interpreting Term Precision: Extensional Squares}
 
-\subsection{Defining an Extensional Model}
-
-To obtain a model for gradual typing that is oblivious to the stepping behavior
-of terms, we apply the ``bisimilarity-closure'' construction introduced in the
-previous section as follows. Let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel
-A_o'$.
+As introduced in the previous section, to obtain a model of term precision that
+is oblivious to the stepping behavior of terms, we weaken our notion of square
+to allow for the morphisms on either side to be synchronized to be in lock-step.
+More formally, let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$.
 %
 % We define an extensional square between morphisms $f : A_i \to A_o$ and $g :
 % A_i' \to A_o'$ to consist of:
-
+%
 % \begin{itemize}
 %   \item A morphism $f' : A_i \to A_o$ with $f \bisim f'$.
 %   \item A morphism $g' : A_i' \to A_o'$ with $g \bisim g'$.
@@ -618,13 +489,14 @@ We say that $f \ltsqbisim{c^i}{c_o} g$ if there exist $f'$ and $g'$ such that
 %
 \[ f \bisim f' \ltsq{c_i}{c_o} g' \bisim g. \]
 %
-If the relations $c_i$ and $c_o$ are obvious from the context, we will simply
-write $f \ltbisim g$. We make the analogous construction for the computation
-squares.
+We call a square $f \ltsqbisim{c^i}{c_o} g$ an \emph{extensional square}, and we
+will call a square $f \ltsq{c^i}{c_o} g$ an \emph{intensional square}. If the
+relations $c_i$ and $c_o$ are obvious from the context, we will simply write $f
+\ltbisim g$. We make the analogous construction for the computation squares.
 %
 We now verify the existence of the squares for the cast rules. For UpL, the
-square is obtained as follows:
-
+relevant extensional square is obtained as follows:
+%
 % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMSwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMCwzLCJlX2MiLDIseyJjdXJ2ZSI6MX1dLFsxLDQsIlxcZGVscmVfYyIsMl0sWzIsNSwiXFxwdXNoX3tjJ30oXFxkZWxyZV9jKSIsMix7ImN1cnZlIjoxfV0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsIlxcbGVfe0FfMn0iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsImMnIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw1LCJcXGlkIiwwLHsiY3VydmUiOi0xfV0sWzAsMywiZV9jIiwwLHsiY3VydmUiOi0xfV0sWzgsMTMsIlxcYmlzaW0iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiwxNCwiXFxiaXNpbSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
 \[\begin{tikzcd}[ampersand replacement=\&,column sep=large]
 	{A_1} \& {A_2} \& {A_3} \\
@@ -641,12 +513,13 @@ square is obtained as follows:
 	\arrow["\bisim"{description}, draw=none, from=0, to=1]
 	\arrow["\bisim"{description}, draw=none, from=2, to=3]
 \end{tikzcd}\]
-
-Note that the horizontal composition of the squares is defined, as it takes
-place in the intensional setting. We have used the push-pull structure on $c'$
-to turn the perturbation on $A_2$ into a perturbation on $A_3$. Lastly we note
-that the bottom edge of the square is equal to $c'$ by the fact that $c'$ is
-downward closed. The squares for UpR, DnL, and DnR are obtained similarly.
+%
+% Note that the horizontal composition of the squares is defined, as they are
+% intensional squares.
+We have used the push-pull structure on $c'$ to turn the perturbation on $A_2$
+into a perturbation on $A_3$. Lastly we note that the bottom edge of the square
+is equal to $c'$ by the fact that $c'$ is downward closed. The squares for UpR,
+DnL, and DnR are obtained similarly.
 
 % Now that we have defined an intensional model with an interpretation for the
 % dynamic type, we can apply the abstract constructions introduced in Section
@@ -654,30 +527,61 @@ downward closed. The squares for UpR, DnL, and DnR are obtained similarly.
 % model of gradual typing, where the squares are given by the ``bisimilarity
 % closure'' of the intensional error ordering.
 
-\eric{Order-equivalence of relations}
+\eric{TODO: Does this belong here?}
 
+Recall the equivalence rules for type precision given in Section \ref{sec:GTLC},
+for example the rule that $(c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra
+c_oc_o')$ To validate this rule in the model, we construct two squares $\id
+\ltsqbisim{(c_i \ra c_o)(c_i' \ra c_o')}{(c_ic_i' \ra c_oc_o')} \id$ and $\id
+\ltsqbisim{(c_ic_i' \ra c_oc_o')}{(c_i \ra c_o)(c_i' \ra c_o')} \id$. Since the
+definition of extensional square allows us to specify intermediate morphisms
+that are synchronized in the lock-step error ordering, it will be sufficient to
+construct two intensional squares involving perturbations on both sides. This
+motivates the definition of \emph{quasi-order-equivalence}.
+
+\begin{definition}[quasi-order-equivalence]\label{def:quasi-order-equivalent}
+  Let $c, c' : A \rel A'$. We say that $c$ and $c'$ are
+  \textbf{quasi-order-equivalent}, written $c \qordeq c'$, if there exist
+  perturbations $\delta^l_1, \delta^l_2 \in \pv_A$ and $\delta^r_1, \delta^r_2
+  \in \pv_{A'}$ such that there is a square $\delta^l_1 \ltsq{c}{c'} \delta^r_1$
+  and a square $\delta^l_2 \ltsq{c'}{c} \delta^r_2$.
+\end{definition}
+We make the analogous definition for error domain relations $d, d' : B \rel B'$.
+
+Then we have the following result that shows that the functors
+$U,\li,\times,\to$ are \emph{quasi-functorial} on relations:
+
+\begin{lemma}
+\begin{itemize}
+  \item $U(d \comp d') \qordeq U(d) \comp U(d')$
+  \item $F(c \comp c') \qordeq F(c) \comp F(c')$
+  \item $(c \comp c') \to (d \comp d') \qordeq (c \to d) \comp (c' \to d')$
+  \item $(c_1 \comp c_1') \times (c_2 \comp c_2') \qordeq (c_1 \times c_2) \comp (c_1'\times c_2')$
+\end{itemize}
+\end{lemma}
+\begin{proof} See appendix \eric{TODO: make sure this is in the appendix}
+\end{proof}
 
 
 \subsection{Relational Adequacy}\label{sec:adequacy}
 
-\eric{TODO: update this in light of the new section on adequacy of the term model.}
-
-In this section, we prove an adequacy result for the extensional model of
-gradual typing we obtained in the previous section. First we establish some
-notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong \li \mathbb{N}$. We
-write $f \da n$ to mean that there exists $m$ such that $f = \delta^m(\eta n)$
-and $f \da \mho$ to mean that there exists $m$ such that $f = \delta^m(\mho)$.
+In this section, we prove the adequacy of the interpretation of term precision.
+First we establish some notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong
+\li \mathbb{N}$. We write $f \da n$ to mean that there exists $m$ such that $f =
+\delta^m(\eta n)$ and $f \da \mho$ to mean that there exists $m$ such that $f =
+\delta^m(\mho)$.
 
 Recall that $\ltbisim$ denotes the relation on value morphisms defined as the
-bisimilarity-closure of the intensional error-ordering on morphisms. That is, we
-have $f \ltbisim g$ iff there exist $f'$ and $g'$ with
+closure of the intensional error-ordering on morphisms under weak bisimilarity
+on bboth sides. Specialized to the setting of morphisms from $1 \to U \li
+\mathbb{N}$, we have $f \ltbisim g$ iff there exist $f'$ and $g'$ with
 %
 \[ f \bisim_{\li \mathbb{N}} f' \le_{\li \mathbb{N}} g' \bisim_{\li \mathbb{N}} g. \]
 %
-Here $\le_{\li \mathbb{N}}$ is the lock-step error ordering, and $\bisim_{\li
-\mathbb{N}}$ is weak bisimilarity. First observe that in this ordering, the
-semantics of error is not equivalent to the semantics of the diverging term. The
-main result we would like to show is as follows: If $f \ltbisim g : \li \mathbb{N}$, then:
+
+We first note that in this ordering, the semantics of error is not equivalent to
+the semantics of the diverging term. The main result we would like to show is as
+follows: If $f \ltbisim g : \li \mathbb{N}$, then:
 \begin{itemize}
   \item If $f \da n$ then $g \da n$.
   \item If $g \da \mho$ then $f \da \mho$.
@@ -685,57 +589,35 @@ main result we would like to show is as follows: If $f \ltbisim g : \li \mathbb{
 \end{itemize}
 
 %
-Unfortunately, this is actually not provable!
-Roughly speaking, the issue is that this is a ``global'' result, and it is not possible
-to prove such results inside of the guarded setting. 
-In particular, if we tried to prove the above result in the guarded
-setting, we would run into a problem where we would have a natural number
-``stuck'' under a $\later$, with no way to get out the underlying number.
+Unfortunately, this is actually not provable! Roughly speaking, the issue is
+that this is a ``global'' result, and it is not possible to prove such results
+in the guarded setting. In particular, if we tried to prove the above result in
+the guarded setting we would run into a problem where we would have a natural
+number ``stuck'' under a $\later$, with no way to get out the underlying number.
 %
-Thus, to prove our adequacy result, we need to leave the guarded setting and pass back
-to the more familiar, set-theoretic world with no internal notion of step-indexing.
-We can do this using a process known as \emph{clock quantification}.
-Recall that all of the constructions we have made in SGDT take place in the context of a clock $k$.
-All of our uses of the later modality and guarded recursion have taken place with respect to this clock.
-For example, recall the definition of the lift monad by guarded recursion.
-% We define the lift monad $\li^k X$ as the guarded fixpoint of $\lambda \tilde{T}. X + 1 + \later^k_t (\tilde{T}_t)$.
-We can view this definition as being parameterized by a clock $k$: $\li^k : \type \to \type$.
-Then for $X$ satisfying a certain technical requirement known as \emph{clock-irrelevance},
-\footnote{A type $X$ is clock-irrelevant if there is an isomorphism $\forall k.X \cong X$.}
-we can define the ``global lift'' monad as $\li^{gl} X := \forall k. \li^k X$.
+Thus, to prove our adequacy result, we need to pass to leave the guarded
+setting. We have seen in Section \ref{sec:big-step-term-semantics} that clock
+quantification makes this possible.
 
-It can be shown that there is an isomorphism between the global lift monad and the
-delay monad of Capretta \cite{lmcs:2265}.
-Recall that, given a type $X$, the delay monad $\text{Delay}(X)$ is defined as the coinductive
-type generated by 
-$\tnow : X \to \delay(X)$ and $\tlater : \delay(X) \to \delay(X)$.
+Recall that the definitions of our model, e.g., the free error domain, the
+lock-step ordering, and weak bisimilarity, have all been parameterized by a
+clock $k$. We saw in previously that there is an isomorphism between the
+globalization of the free error domain and Capretta's coinductive delay monad:
+$\li^{gl} \mathbb{N} \cong \delay(\mathbb{N} + {\mho})$.
 
-% solution to the equation
-
-% \[ \text{Delay}(X) \cong X + \text{Delay}(X). \]
-
-It can be shown that for a clock-irrelevant type $X$, $\li^{gl} X$ is a final
-coalgebra of the functor $F(Y) = X + 1 + Y$ (For example, this follows from Theorem 4.3 in
-\cite{kristensen-mogelberg-vezzosi2022}.) 
-\footnote{The proof relies on the existence of an operation  
-$\mathsf{force} : \forall k. \later^k A \to \forall k. X$ that
-allows us to eliminate the later operator under a clock quantifier.
-This must be added as an axiom in guarded type theory.}
-Since $\delay(X + 1)$ is also a final coalgebra
-of this functor, then we have $\li^{gl} X \cong \delay(X + 1)$.
-
-Given a predomain $X$ on a clock-irrelevant type, we can define a
-``global'' version of the lock-step error ordering and the
-weak bisimilarity relation on elements of the global lift; the former is defined by
+Now consider the predomain $\mathbb{N}$ with ordering and bisimilarity both the
+equality relation. We can define a ``global'' version of the lock-step error
+ordering and the weak bisimilarity relation on elements of the $\li^{gl}
+\mathbb{N}$; the former is defined by
 %
-\( x \le^{gl}_X y := \forall k. x[k] \le y[k], \)
+\( x \ltls^{gl}_X y := \forall k. x[k] \ltls y[k], \)
 %
 and the latter is defined by
 %
 \( x \bisim^{gl}_X y := \forall k. x[k] \bisim y[k]. \)
 %
-On the other hand, we can define coinductively a ``lock-step error ordering"
-relation on $\delay(X + 1)$:
+On the other hand, we can define coinductively a ``lock-step error ordering''
+relation on $\delay(\mathbb{N} + {\mho})$:
 %
 \begin{mathpar}
   \inferrule*[]
@@ -751,51 +633,54 @@ relation on $\delay(X + 1)$:
   {\tlater\, d_1 \ledelay \tlater\, d_2}
 \end{mathpar}
 %
-And we similarly define by coinduction a ``weak bisimilarity'' relation on $\delay(X + 1)$, which uses
-a relation $d \Da x_?$ between $\delay(X+1)$ and $X+1$ that is defined as 
-$d \Da x_? := \Sigma_{m \in \mathbb{N}} d = \tlater^m(\tnow\, x_?)$.
-Then weak bisimilarity is defined by the rules
+And we similarly define by coinduction a ``weak bisimilarity'' relation on
+$\delay(\mathbb{N} + {\mho})$. This uses a relation $d \Da x_?$ between
+$\delay(\mathbb{N} + {\mho})$ and $\mathbb{N} + {\mho}$ that is defined as $d
+\Da n_? := \Sigma_{i \in \mathbb{N}} d = \tlater^i(\tnow\, n_?)$. Then weak
+bisimilarity for the delay monad is defined coinductively by the rules
 %
 \begin{mathpar}
   \inferrule*[]
-  {x_? \bisim_{X + 1} y_?}
-  {\tnow\, x_? \bisimdelay \tnow\, y_? }
+  {n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tnow\, n_? \bisimdelay \tnow\, m_? }
 
-  \inferrule*[]
-  {d_1 \Da x_? \and x_? \bisim_{X + 1} y_?}
-  {\tlater\, d_1 \bisimdelay \tnow\, y_? }
+  \inferrule*[leftskip=1.5em]
+  {d_1 \Da n_? \and n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tlater\, d_1 \bisimdelay \tnow\, m_? }
 
-  \inferrule*[]
-  {d_2 \Da y_? \and x_? \bisim_{X + 1} y_?}
-  {\tnow\, x_? \bisimdelay \tlater\, d_2}
+  \inferrule*[leftskip=1.5em]
+  {d_2 \Da m_? \and n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tnow\, n_? \bisimdelay \tlater\, d_2}
 
-  \inferrule*[]
+  \inferrule*[leftskip=1.5em]
   {d_1 \bisimdelay d_2}
   {\tlater\, d_1 \bisimdelay \tlater\, d_2 }
-
+  %
   % \inferrule*[]
   % {d_1 \Da x_? \and d_2 \Da y_? \and x_? \bisim_{X + 1} y_?}
   % {d_1 \bisimdelay d_2}
-
+  %
   % \inferrule*[]
   % {d_1 \bisimdelay d_2}
   % {\tlater d_1 \bisimdelay \tlater d_2 }
-
 \end{mathpar}
 %
-Note the similarity of these definitions to the corresponding guarded definitions.
-By adapting the aforementioned theorem to the setting of inductively-defined relations,
-we can show that both the global lock-step error ordering and the global weak bisimilarity
-admit coinductive definitions. In particular, modulo the above isomorphism
-between $\li^{gl} X$ and $\delay(X+1)$, the global version of the lock-step
-error ordering is equivalent to the lock-step error ordering on $\delay(X + 1)$,
-and likewise, the global version of the weak bisimilarity relation is equivalent to the
-weak bisimilarity relation on $\delay(X + 1)$.
+Note the similarity of these definitions to the corresponding guarded
+definitions. By adapting Theorem 4.3 of \cite{kristensen-mogelberg-vezzosi2022}
+to the setting of inductively-defined relations, we can show that both the
+global lock-step error ordering and the global weak bisimilarity admit
+coinductive definitions. In particular, modulo the above isomorphism between
+$\li^{gl} X$ and $\delay(\mathbb{N} + {\mho})$, the global version of the
+lock-step error ordering is equivalent to the lock-step error ordering on
+$\delay(\mathbb{N} + {\mho})$, and likewise, the global version of the weak
+bisimilarity relation is equivalent to the weak bisimilarity relation on
+$\delay(\mathbb{N} + {\mho})$.
 
-This implies that the global version of the extensional term precision semantics for
-$\li^{gl} X$ agrees with the corresponding notion for $\delay(X + 1)$.
-Then adequacy follows by proving the corresponding
-result for $\delay(X + 1)$ which in turn follows from the definitions of the relations.
+This implies that the global version of the term precision semantics for
+$\li^{gl} \mathbb{N}$ agrees with the corresponding notion for
+$\delay(\mathbb{N} + {\mho})$. Then adequacy follows by proving the
+corresponding result for $\delay(\mathbb{N} + {\mho})$ which in turn follows
+from the definitions of the relations.
 
 
 % We have been writing the type as $\li X$, but it is perhaps more accurate to write it as $\li^k X$ to

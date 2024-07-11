@@ -137,20 +137,26 @@ compositionally. First of all, we need to extend our compositional
 semantics of types and terms to also a compositional semantics of
 \emph{type precision derivations} and \emph{term precision}.
 %
-Sticking to a poset-based semantics, if our value types are posets, we
-then want our precision derivations $c : A \ltdyn A'$ to be
-\emph{poset relations} on $A, A'$, that is relations between the
-underlying sets of $A, A'$ that are \emph{downward-closed} in $A$ and
-\emph{upward-closed} in $A'$.  We denote such a relation between $A$
-and $A'$ by $c : A \rel A'$. The paradigmatic example of a poset
-relation is the poset ordering itself, $\leq_A : A \rel A$.
+Sticking to a poset-based semantics, if our value types are posets, we then want
+our precision derivations $c : A \ltdyn A'$ to be \emph{poset relations} on $A,
+A'$, that is relations between the underlying sets of $A, A'$ that are
+\emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$.  We denote such
+a relation between $A$ and $A'$ by $c : A \rel A'$. The paradigmatic example of
+a poset relation is the poset ordering itself, $\leq_A : A \rel A$, which is a
+poset relation because it is transitive.
+%
+Given two poset relations $c : A_1 \rel A_2$ and $c' : A_2 \rel A_3$, we can
+form their \emph{composition} in the usual manner, i.e., $(x, y) \in c$ if and
+only if there is an element $z : A_2$ with $(x, z) \in c$ and $(z, y) \in c'$.
+We write the composition of relations as $c \comp c'$.
 
 % \max{TODO: Eric pick
 %   up from here. Go into the squares for casts and how representability
 %   gives us a compositional approach to proving them}
 
-\eric{Picked up here; Max, please read this.}  These relations are
-then used to model term precision. For closed programs $M \ltdyn M' :
+% \eric{Picked up here; Max, please read this.}
+
+These relations are then used to model term precision. For closed programs $M \ltdyn M' :
 c$ where $c : A \ltdyn A'$ we have that these denote elements of the
 free error domain $\sem{M},\sem{M'} : U\li \sem{A}$ and we model this
 as a relation holding $\sem{M} (U\li\sem{c}) \sem{M'}$ where
@@ -199,11 +205,18 @@ $c_1,\ldots$.
 %% 	\arrow["{U\li c}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
 %% \end{tikzcd}\]
 
-\max{This needs to also talk about relational composition and horizontal pasting squares, since that's transitivity!}
+% \max{This needs to also talk about relational composition and horizontal pasting squares, since that's transitivity!}
 We note that for any $c$, there is a ``vertical identity'' square $\id
 \ltsq{c}{c} \id$, as can be seen by unfolding the definition. Similarly, for any
 montone function $f : A_i \to A_o$, there is a ``horizontal identity'' square $f
-\ltsq{r(A_i)}{r(A_o)}$ by the definition of monotone function.
+\ltsq{\le_{A_i}}{\le_{A_o}}$ by the definition of monotone function.
+%
+We can \emph{compose} squares vertically, i.e., if we have $f \ltsq{c_1}{c_2}
+f'$ and $g \ltsq{c_2}{c_3} g'$ then we obtain a square $g \circ f
+\ltsq{c_1}{c_3} g' \circ f'$. Likewise, we can compose squares horizontally: If
+$f \ltsq{c_i}{c_o} g$ and $g \ltsq{c_i'}{c_o'} h$, then we obtain a square $f
+\ltsq{c_i \comp c_i'}{c_o \comp c_o'} h$. Horizontal composition of squares
+corresponds to transitivity of term precision.
 
 Now that we have an intended model of term precision in the form of
 squares, we can see what is required to give a compositional proof of
@@ -227,9 +240,10 @@ $c : A_1 \ltdyn A_2$ and $c' : A_2 \ltdyn A_3$ and $M : A_1$ is
 related to $N : A_3$ via the composition $c \comp c'$, then the upcast
 $\upc{c} M$ is related to $N$ via $c'$. Since the upcasts are pure
 functions in the semantics this can be deduced from the existence of
-the following square:\max{the square doesn't make sense because we
-  haven't discussed horizontal composition of relations or that this
-  notation means horizontal composition of relations}
+the following square, where the relation on the top is $\sem{c} \comp \sem{c'}$:
+% \max{the square doesn't make sense because we
+%   haven't discussed horizontal composition of relations or that this
+%   notation means horizontal composition of relations}
 %
 % https://q.uiver.app/#q=WzAsNSxbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMyw0LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiXFx1cGN7Y30iLDJdLFsyLDQsIlxcaWQiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -251,36 +265,49 @@ graduality. However, New and Licata observed that in the presence of
 transitivity, we can \emph{derive} the above squares from simpler ones
 that do not involve composition of relations. Below is the square
 corresponding to UpL:
-% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJyKEFfMikiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcdXBje2N9IiwyXSxbMiwzLCJcXGlkIl1d
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGxlX3tBXzJ9IiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXHVwY3tjfSIsMl0sWzIsMywiXFxpZCJdXQ==
 \[\begin{tikzcd}[ampersand replacement=\&]
-  {A_1} \& {A_2} \\
-  {A_2} \& {A_2}
-  \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-  \arrow["{\upc{c}}"', from=1-1, to=2-1]
-  \arrow["\id", from=1-2, to=2-2]
-  \arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	{A_1} \& {A_2} \\
+	{A_2} \& {A_2}
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\upc{c}}"', from=1-1, to=2-1]
+	\arrow["\id", from=1-2, to=2-2]
+	\arrow["{\le_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
 \end{tikzcd}\]
 %
 This square, with a dual one related to UpR, say that the relation $c$
 is \emph{representable} by the upcast morphism $\upc{c}$, essentially
 that the relation is a kind of \emph{graph} of the function in that $x
-\binrel{\sem c} y$ if and only if $\sem{upc c}(x) \leq_{A_2} y$.
+\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$.
 
 We can use this simpler square to derive the original UpL square as long as we can
 horizontally compose with the identity square for $c'$:
 %
-% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwicihBXzIpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNSw0LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiXFx1cGN7Y30iLDJdLFsyLDQsIlxcaWQiXSxbMSw1LCJcXGlkIiwyXV0=
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiXFxsZV97QV8yfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNCwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsIlxcdXBje2N9IiwyXSxbMiw0LCJcXGlkIl0sWzEsNSwiXFxpZCIsMl1d
 \[\begin{tikzcd}[ampersand replacement=\&]
-  {A_1} \& {A_2} \& {A_3} \\
-  {A_2} \& {A_2} \& {A_3}
-  \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-  \arrow["{\upc{c}}"', from=1-1, to=2-1]
-  \arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
-  \arrow["\id"', from=1-2, to=2-2]
-  \arrow["\id", from=1-3, to=2-3]
-  \arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-  \arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+	{A_1} \& {A_2} \& {A_3} \\
+	{A_2} \& {A_2} \& {A_3}
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{\upc{c}}"', from=1-1, to=2-1]
+	\arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+	\arrow["\id"', from=1-2, to=2-2]
+	\arrow["\id", from=1-3, to=2-3]
+	\arrow["{\le_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
 \end{tikzcd}\]
+%
+Observe that the composition of $\le_{A_2}$ with $c'$ implies
+$c'$, because $c'$ is \emph{downward-closed} under the relation on $A_2$. Thus, we
+obtain the original UpL square by vertically composing the square shown above
+with the square $\id \ltsq{\le_{A_2}\, c'}{c'} \id$ on the bottom.
+
+The actual place where transitivity of the relations on the value types is
+needed in this argument occurs when $A_3 = A_2$ and we take $c'$ to be
+$\le_{A_2}$ (recall that $c'$ is universally quantified, so it can be any
+relation). The fact that $\le_{A_2}$ is downward-closed is equivalent to it
+being transitive. In other words, all relations $\le_A$ on value types must be
+poset relations in order to carry out the above compositional construction.
+
 So we see that in order to get a sensible condition that can give us a
 compositional definition of a well-behaved relation, some amount of
 transitive reasoning on squares is required, and so we cannot entirely
@@ -295,14 +322,15 @@ transitive. Theorem\ref{thm:no-go} tells us, however, that any non-trivial such
 relation must either not be a congruence with respect to $\theta$, or
 must not be left- and right-step-insensitive.
 \footnote{Technically, the theorem only implies that we need to drop
-one of both left- and right-step-insensitivity. We might then attempt
+one of left- or right-step-insensitivity. We might then attempt
 to work with two separate ``step-semi-sensitive'' relations on $\li
 A$, each closed under delays on the left and right respectively. This
 has some similarities to prior work on logical relations models
 \cite{newahmedlicata,newgiovanninilicata}, but we do not take this
 approach because the relations still do not seem to be provably
 transitive, though we have not been able to prove that they are not
-transitive either.\max{Eric check if this footnote is correct}}
+transitive either.}
+% \max{Eric check if this footnote is correct}}
 %
 We cannot forego the property of being a $\theta$-congruence, as
 without this we would not be able to prove basic properties of the
@@ -388,7 +416,7 @@ steps a \emph{perturbation}.
 
 We formalize this property of being equivalent ``except for steps''
 with a second relation on the free error domain $\li A$: \emph{weak
-bisimilarity}, defined in Figure~\ref{fig:weak-bisim}, which is
+bisimilarity}, defined in Figure~\ref{fig:weak-bisimilarity}, which is
 parameterized by a binary relation $\bisim_A$ on $A$
 \cite{guarded-stuff-that-uses-bisim}.
 % For a type $X$, we define a relation on $\li X$, called ``weak bisimilarity",
