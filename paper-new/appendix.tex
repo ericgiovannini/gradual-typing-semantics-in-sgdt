@@ -123,77 +123,110 @@ translation that avoids the need for any retraction:
   :c_1$.
 \end{proof}
 
-
-
 \section{Kleisli Actions}
 
-In CBPV models, all the type constructors are interpreted as functors:
+We now define the Kleisli actions of the type constructors. These are the following
 \begin{enumerate}
-\item $\to : \op\calV \times \calE \to \calE$
-\item $\times : \calV \times \calV \to \calV$
-\item $F : \calV \to \calE$
-\item $U : \calE \to \calV$
+\item $- \tok B : \op\PreDom_k \to \ErrDom_k$
+\item $A \tok - : \ErrDom_k \to \ErrDom_k$
+\item $- \timesk A_2 : \PreDom_k \to \PreDom_k$
+\item $A_1 \timesk - : \PreDom_k \to \PreDom_k$
 \end{enumerate}
-That is, they all have functorial actions on \emph{pure} morphisms of
-value types and \emph{linear} morphisms of computation types.
-%
-We use these functorial actions extensively in the construction of
-casts and their corresponding perturbations. But when defining
-downcasts of value types and upcasts of computation types, we
-additionally need a second functorial action of these categories:
-functoriality in \emph{impure} morphisms of value types and
-\emph{non-linear} morphisms of computation types. These notions of
-morphism are given by the \emph{Kleisli} categories $\calVk$ and
-$\calEk$ which have value types and computation types as objects but
-morphisms are defined as
-\[ \calVk(A,A') = \calE(F A, FA')\]
-\[ \calEk(B,B') = \calV(U B, U B')\]
-with composition given by composition in $\calE/\calV$.  That is we
-need to define a second functorial action, that agrees with the above
-on objects for these Kleisli categories:
-\begin{enumerate}
-\item $\tok : \op\calVk \square \calEk \to \calEk$
-\item $\timesk : \calVk \square \calVk \to \calVk$
-\item $\Fk : \calVk \to \calEk$
-\item $\Uk : \calEk \to \calVk$
-\end{enumerate}
-Note that rather than the product of categories we use the ``funny
-tensor product'' $\square$. This is because the action on
-impure/non-linear morphisms for $\tok/\timesk$ do not satisfy ``joint
-functoriality'' but instead only ``separate functoriality'', meaning
-we give rather than an action on morphisms in both categories
-simultaneously instead an action on each argument categories morphisms
-with the object in the other category fixed. The existence of these
-functorial actions for $\tok$ and $\timesk$ is reliant on the
-\emph{strength} of the adjunction. We describe them using the internal
-language of CBPV in order to more easily verify their
-existence/functoriality:
-\begin{enumerate}
-\item For $\tok$ we define for $\phi : \calE(F A,F A')$ and $B \in \calE$ the morphism $\phi \tok B : \calV(U(A' \to B),U(A\to B))$ as
-  \[ t:U(A'\to B) \vdash \phi \tok B = \{ \lambda x. x' \leftarrow \phi\,[\ret x]; ! t x'\} : U(A \to B) \]
-  and for $A \in \calV$ and $f : \calV(UB,UB')$ we define $A \tok f : \calV(U(A \to B),U(A\to B'))$ as
-  \[ t : U(A \to B) \vdash A \tok f = \{ \lambda x. !f[\{ ! t x \}]\} \]
-\item For $\timesk$ we define for $\phi : \calE(F A_1,FA_2)$ and $A' \in \calV$ the morphism $\phi \timesk A_2$ as
-  \[ \bullet : F(A_1\times A_2) \vdash \phi \timesk A_2 = (x_1,x_2) \leftarrow \bullet; x_1' \leftarrow \phi[\ret x_1]; \ret (x_1',x_2) : F(A_1'\times A_2)\]
-  and $A_1 \timesk \phi$ is defined symmetrically.
-\item For $\Uk$ we need to define for $f : \calV(UB,UB')$ a morphism $\Uk f : \calE(FUB,FUB')$. This is simply given by the functorial action of $F$: $\Uk f = F(f)$
-\item Similarly $\Fk \phi = U\phi$
-\end{enumerate}
+While these can be defined in any CBPV model, for simplicity we just
+give their definition explicitly for predomains and error domains:
+\begin{definition}{~}
+  Given $\phi : \li A_i \multimap \li A_o$, we define $\phi \tok B : U(A_o \to B) \to U(A_i \to B)$ as
+  \[ (\phi \tok B)(f)(x) = f^\dagger(\phi(\eta(x))) \]
 
-Functoriality in each argument is easily established, meaning for
-example for the function type is functorial in each argument:
-\begin{enumerate}
-\item $(\phi \circ \phi') \tok B = (\phi' \tok B) \circ (\phi \tok B)$
-\item $\id \tok B = \id$
-\item $A \tok (f \circ f') = (A \tok f) \circ (A \tok f)$
-\item $A \tok \id = \id$
-\end{enumerate}
+  This is functorial in that $\id \tok B = \id$ and $(\phi \circ
+  \phi') \tok B = (\phi' \tok B) \circ (\phi \tok B)$.
 
-Finally, note that all of these constructions lift to squares in a
-double CBPV model since the squares themselves form a CBPV model and
-the projection functions preserve CBPV structure. For instance, given a square
-$\alpha : \phi \ltdyn_{F c_o}^{F c_i} \phi'$ and a horizontal morphism $d : B \rel B'$ of appropriate type, we get a square
-\[ \alpha \tok d : \phi \tok B \ltdyn_{U(c_o \to d)}^{U(c_i \to d)} \phi' \tok B' \]
+  Further, this preserves squares in that if $\phi \ltsq{\li c_i}{\li c_o} \phi'$ then $\phi \tok B \ltsq{U(c_o \to d)}{U(c_i \to d)} \phi' \tok B'$.
+\end{definition}
+\begin{proof}
+  {~}
+  \begin{itemize}
+  \item For identity
+    \[ (\id \tok B)(f)(x) = f^\dagger(\eta(x)) = f(x) \]
+
+  \item 
+    For composition, expanding definitions it suffices to show
+    \[ f^\dagger(\phi(\phi'(\eta(x)))) = ((\phi \tok B)(f))^\dagger(\phi'(\eta(x))) \]
+    Which follows if we can show
+    \[ ((\phi \tok B)(f))^\dagger = f^\dagger \circ \phi \]
+    By the freeness of $\li -$ it suffices to show it for inputs of the form $\eta y$:
+    \[ ((\phi \tok B)(f))^\dagger(\eta y) = ((\phi \tok B)(f))(y) = f^\dagger(\phi(\eta y))\]
+  \item For squares, we assume $f \binrel{U(c_o\to d)} f'$ and $x
+    \binrel {c_i} x'$ and we need to show $f^\dagger(\phi(x)) \binrel
+    d (f')^\dagger(\phi'(x))$. This follows easily since $f^\dagger
+    \ltsq{\li c_o}{d} f^{\prime\dagger}$.
+  \end{itemize}
+\end{proof}
+
+\begin{definition}
+  Given $f : UB \to UB'$, define $A \tok f : U(A \to B) \to U(A \to B')$ as
+    \[ (A \tok f)(g)(x) = f(g(x)) \]
+
+  This is functorial in that $A \tok \id = \id$ and $A \tok (f \circ
+  f') = (A \tok f) \circ (A \tok f')$.
+
+  Further this preserves squares in that if $f \ltsq{Ud_i}{Ud_o} f'$
+  then $A \tok f \ltsq{U(c \to d_i)}{U(c \to d_o)} A' \tok f'$
+\end{definition}
+\begin{proof}
+  \begin{itemize}
+  \item For identity
+    \[ (A \tok \id)(g)(x) = g(x) \]
+  \item 
+    for composition
+    \[  (A \tok (f \circ f'))(g)(x) = f(f'(g(x))) = (A\tok f)((A \tok f')(g))(x) \]
+  \item 
+   for squares, given $g \binrel{U(c \to d_i)} g'$ and $x \binrel{c}
+   x'$ we have $f(g(x)) \binrel{d_o} f'(g'(x'))$.
+  \end{itemize}
+\end{proof}
+
+\begin{definition}[Kleisli Actions of $\times$]
+  Given $\phi_1 : \li A_1 \multimap \li A_1'$ we define $\phi_1 \timesk A_2 : \li (A_1 \times A_2) \multimap (A_1' \times A_2)$ as the unique extension of the following to a homomorphism:
+  \[ (\phi_1 \timesk A_2)(\eta (x_1,x_2)) = (\lambda x_1'. \eta(x_1',x_2))^\dagger(\phi_1(\eta(x_1))) \]
+  and similarly define
+  \[ (A_1 \timesk \phi_2)(\eta (x_1,x_2)) = (\lambda x_2'. \eta(x_1,x_2'))^\dagger(\phi_2(\eta(x_2)))\]
+\end{definition}
+\begin{proof}
+  We show cases only for $-\timesk A_2$ as the other is symmetric.
+  \begin{itemize}
+  \item For identity it is sufficient to consider inputs of the form $\eta(x_1,x_2)$, then indeed
+    \[ (\id \timesk A_2)(\eta(x_1,x_2)) = (\lambda x_1'. \eta(x_1',x_2))^\dagger(\eta(x_1)) = \eta(x_1,x_2) \]
+  \item For composition, again for pure inputs this reduces to
+    \[ (\lambda x_1'. \eta(x_1',x_2))^\dagger(\phi_1'(\phi_1(\eta(x_1))))
+    = (\phi_1'\timesk A_2)((\lambda x_1'. \eta(x_1',x_2))^\dagger(\phi_1(\eta(x_1)))) \]
+    So it suffices to show
+    \[ (\lambda x_1'. \eta(x_1',x_2))^\dagger \circ \phi_1' = (\phi_1'\timesk A_2) \circ (\lambda x_1'. \eta(x_1',x_2))^\dagger \]
+    Since both sides are homomorphisms out of the free error domain by freeness it suffices to show they are equal for inputs of the form $\eta(x_1')$:
+    \[  (\lambda x_1'. \eta(x_1',x_2))^\dagger(\phi_1'(\eta(x_1')))
+    = (\phi_1'\timesk A_2)(\eta(x_1',x_2))
+    = (\phi_1'\timesk A_2)((\lambda x_1'. \eta(x_1',x_2))^\dagger(\eta(x_1')))
+    \]
+
+  \item Finally, for squares, we need to show if $\phi_l \ltsq{\li
+    c_1}{\li c_1'} \phi_r$ then $\phi_l \timesk A_{2l} \ltsq{\li (c_1
+    \times c_2)}{\li (c_1' \times c_2)} \phi_r \timesk A_{2r}$.
+
+    By the universal property of $\li-$ on relations, it suffices to
+    assume $x_{1l} \binrel{c_1} x_{1r}$ and $x_{2l} \binrel{c_2} x_{2r}$ and prove
+    \[ (\phi_l \timesk A_{2l})(\eta(x_{1l},x_{2l})) \binrel{(\li (c_1' \times c_2))} (\phi_r \timesk A_{2r})(\eta(x_{1r},x_{2r})) \]
+    expanding definitions this is
+    \[ (\lambda x_{1l}'. \eta(x_{1l}',x_{2l}))^\dagger\phi_l(\eta(x_{1l}))
+    \binrel{(\li (c_1' \times c_2))}
+    (\lambda x_{1r}'. \eta(x_{1r}',x_{2r}))^\dagger\phi_r(\eta(x_{1r}))
+    \]
+    By our assumptions we have $\phi_l(\eta(x_{1l}) \binrel {\li c_1'} \phi_r(\eta(x_{1r})$ so since $-^\dagger$ preserves squares it suffices to show
+    \[ (\lambda x_{1l}'. \eta(x_{1l}',x_{2l})) \ltsq{\li c_1}{\li (c_1' \times c_2)} (\lambda x_{1r}'. \eta(x_{1r}',x_{2r})) \]
+    To show this assume $x_{1l}' \binrel{c_1'} x_{1r}'$. Then we have
+    \[ \eta(x_{1l}',x_{2l}) \binrel{\li (c_1' \times c_2)} \eta(x_{1r'},x_{2l})  \]
+    holds.
+  \end{itemize}
+\end{proof}
 
 \section{Omitted Proofs Section \ref{sec:towards-relational-model}}
 
