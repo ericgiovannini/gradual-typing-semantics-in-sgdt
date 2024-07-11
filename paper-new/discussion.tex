@@ -1,5 +1,89 @@
 \section{Discussion}\label{sec:discussion}
 
+\eric{I moved this from the intro. We may need to revise it.}
+
+\subsection{Limitations of Prior Work}
+
+We give an overview of current approaches to proving graduality of
+languages and why they do not meet our criteria of a reusable semantic
+framework.
+
+\subsubsection{From Static to Gradual}
+
+Current approaches to constructing languages that satisfy the
+graduality property include the methods of Abstracting Gradual Typing
+\cite{garcia-clark-tanter2016} and the formal tools of the Gradualizer
+\cite{cimini-siek2016}.  These allow the language developer to start
+with a statically typed language and derive a gradually typed language
+that satisfies the gradual guarantee. The main downside to these
+approaches lies in their inflexibility: since the process in entirely
+mechanical, the language designer must adhere to the predefined
+framework.  Many gradually typed languages do not fit into either
+framework, e.g., Typed Racket \cite{tobin-hochstadt06,
+  tobin-hochstadt08} and the semantics produced is not always the
+desired one.
+%
+Furthermore, while these frameworks do prove graduality of the
+resulting languages, they do not show the correctness of the
+equational theory, which is equally important to sound gradual typing.
+
+\subsubsection{Double Categorical Semantics}
+
+New and Licata \cite{new-licata18} developed an axiomatic account of
+the graduality relation on a call-by-name cast calculus terms and
+showed that the graduality proof could be modeled using semantics in
+certain kinds of \emph{double categories}, categories internal to the
+category of categories. A double category extends a category with a
+second notion of morphism, often a notion of ``relation'' to be paired
+with the notion of functional morphism, as well as a notion of
+functional morphisms preserving relations. In gradual typing the
+notion of relation models type precision and the squares model the
+term precision relation. This approach was influenced by the semantics
+of parametricity using reflexive graph categories
+\cite{ma-reynolds,dunphythesis,reynoldsprogramme}: reflexive graph
+categories are essentially double categories without a notion of
+relational composition. In addition to capturing the notions of type
+and term precision, the double categorical approach allows for a
+\emph{universal property} for casts: upcasts are the \emph{universal}
+way to turn a relation arrow into a function in a forward direction
+and downcasts are the dual universal arrow.  Later, New, Licata and
+Ahmed \cite{new-licata-ahmed2019} extended this axiomatic treatment from
+call-by-name to call-by-value as well by giving an axiomatic theory of
+type and term precision in call-by-push-value. This left implicit any
+connection to a ``double call-by-push-value'', which we make explicit
+in Section~\ref{sec:cbpv}.
+
+With this notion of abstract categorical model in hand, denotational
+semantics is then the work of constructing concrete models that
+exhibit the categorical construction. New and Licata
+\cite{new-licata18} present such a model using categories of
+$\omega$-CPOs, and this model was extended by Lennon-Bertrand,
+Maillard, Tabareau and Tanter to prove graduality of a gradual
+dependently typed calculus $\textrm{CastCIC}^{\mathcal G}$. This
+domain-theoretic approach meets our criteria of being a semantic
+framework for proving graduality, but suffers from the limitations of
+classical domain theory: the inability to model viciously
+self-referential structures such as higher-order extensible state and
+similar features such as runtime-extensible dynamic types. Since these
+features are quite common in dynamically typed languages, we seek a
+new denotational framework that can model these type system features.
+
+The standard alternative to domain theory that scales to essentially
+arbitrary self-referential definitions is \emph{step-indexing} or its
+synthetic form of \emph{guarded recursion}. A series of works
+\cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
+developed step-indexed logical relations models of gradually typed
+languages based on operational semantics. Unlike classical domain
+theory, such step-indexed techniques are capable of modeling
+higher-order store and runtime-extensible dynamic types
+\cite{appelmcallester01,ahmed06,neis09,new-jamner-ahmed19}. However,
+their proof developments are highly repetitive and technical, with
+each development formulating a logical relation from first-principles
+and proving many of the same tedious lemmas without reusable
+mathematical abstractions.
+
+
+
 \subsection{Related Work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
