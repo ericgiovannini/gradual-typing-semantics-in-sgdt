@@ -15,7 +15,7 @@ graduality property include the methods of Abstracting Gradual Typing
 \cite{garcia-clark-tanter2016} and the formal tools of the Gradualizer
 \cite{cimini-siek2016}.  These allow the language developer to start
 with a statically typed language and derive a gradually typed language
-that satisfies the gradual guarantee. The main downside to these
+that satisfies the graduality. The main downside to these
 approaches lies in their inflexibility: since the process in entirely
 mechanical, the language designer must adhere to the predefined
 framework.  Many gradually typed languages do not fit into either
@@ -96,7 +96,7 @@ source language to be proven.
 Similarly to our approach, they define a guarded lift monad to model potentially-
 nonterminating computations and use guarded recursion to model the dynamic type.
 However, they do not give a denotational semantics to term precision and it is unclear
-how to prove the gradual guarantee in this setting.
+how to prove the graduality in this setting.
 The work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
 % Discuss Jeremy Siek's work on graduality in Agda
@@ -134,7 +134,7 @@ introduced in Section \ref{sec:concrete-relational-model}.
 We constructed the predomain for the dynamic type via mixed induction and
 guarded recursion, and defined its monoid of perturbations. We also defined the
 relations $\inat$, $\itimes$, and $\iarr$, and proved that they are
-quasi-representable.
+quasi-representable.\max{need to say what's not formalized}
 
 % We plan to formalize the construction of perturbations and 
 % quasi-representable relations, but we have yet to decide
@@ -156,7 +156,7 @@ booleans and natural numbers, since as of this writing these axioms are not
 built-in to Guarded Cubical Agda. The mechanization of adequacy also required us
 to formalize some essential lemmas involving clocks and clock-irrelevance; we
 are considering later refactoring these as part of a ``standard library'' for
-Guarded Cubical Agda.
+Guarded Cubical Agda.\max{say these axioms are taken from prior work and cite that}
 
 \begin{comment}
 % prove graduality in the syntax of 
@@ -226,6 +226,7 @@ some theorems on clock globalization.
 
 \subsection{Comparison to Explicit Step-Indexing}
 
+\max{shallow}
 Working internally to guarded type theory reduces the overhead of
 needing to carry around the step-indices in the proofs as is required
 when using explicit step-indexing. Additionally, the logical relations
@@ -238,6 +239,7 @@ reasoning of term precision to be recovered. In the future we aim to
 explore if this approach is feasible in guarded semantics.
 
 \subsection{Synthetic Ordering}
+\max{cut this subsection if we need space}
 A key to managing the complexity of our concrete construction is in
 using a \emph{synthetic} approach to step-indexing rather than working
 analytically with presheaves. This has helped immensely in our ongoing
@@ -259,6 +261,7 @@ models \cite{fiore_1997,GrodinNSH24}.
 
 \subsection{Future Work}
 
+\max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
 In the future, we plan to apply our approach to give a denotational
 semantics for languages that feature higher-order state or
 runtime-extensible dynamic typing
