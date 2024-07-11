@@ -133,17 +133,17 @@ predomain morphisms and relations.
 \subsubsection{Functors}\label{sec:free-error-domain}
 
 The functors $U$, $\li$, $\times$, and $\arr$ introduced in the previous section
-extend to predomains, error domains, and their relations. The functor $U$ simply
-takes the underlying predomain relation of an error domain relation. Given a
-relation $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$, the relation $c_1
-\times c_2 : (A_1 \times A_2) \rel (A_1' \times A_2')$ is defined by $((x, y),
-(x', y')) \in (c_1 \times c_2)$ if and only if $(x, x') \in c_1$ and $(y, y')
-\in c_2$. Given a relation $c : A \rel A'$ and an error domain relation $d : B
-\rel B'$, the relation $c \arr d : (A \arr B) \rel (A' \arr B')$ is the error
-domain relation defined by $(f, g) \in (c \arr d)$ if and only if for all $x :
-A$ and $x' : A'$ with $(x , x') \in c$ we have $(f(x), g(x')) \in Ud$. The fact
-that this relation preserves error and respects $\theta$ follows from the
-corresponding properties for $d$.
+act on predomains and error domains and also have actions on their morphisms,
+relations, and squares. The functor $U$ simply takes the underlying predomain
+relation of an error domain relation. Given a relation $c_1 : A_1 \rel A_1'$ and
+$c_2 : A_2 \rel A_2'$, the relation $c_1 \times c_2 : (A_1 \times A_2) \rel
+(A_1' \times A_2')$ is defined by $((x, y), (x', y')) \in (c_1 \times c_2)$ if
+and only if $(x, x') \in c_1$ and $(y, y') \in c_2$. Given a relation $c : A
+\rel A'$ and an error domain relation $d : B \rel B'$, the relation $c \arr d :
+(A \arr B) \rel (A' \arr B')$ is the error domain relation defined by $(f, g)
+\in (c \arr d)$ if and only if for all $x : A$ and $x' : A'$ with $(x , x') \in
+c$ we have $(f(x), g(x')) \in Ud$. The fact that this relation preserves error
+and respects $\theta$ follows from the corresponding properties for $d$.
 
 % Free error domain
 The functor $\li$ takes a predomain $A$ to the free error domain on $A$. We first
@@ -234,7 +234,7 @@ We make the analogous definition for computation objects.
 With the notion of syntactic perturbation defined, we can now make formal the
 final aspect of the model: the notion of quasi-represntability of relations.
 %
-\begin{definition}[quasi-left-representable relations]
+\begin{definition}[quasi-left-representable relations]\label{def:quasi-left-representable}
 Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
 \emph{quasi-left-representable} by a predomain morphism $e : A \to A'$ if there
@@ -251,7 +251,7 @@ relations $d$.
 
 Likewise, we define quasi-right-representability as follows:
 %
-\begin{definition}
+\begin{definition}[quasi-right-represntable relations]\label{def:quasi-right-representable}
 Let $(B, M_B, i_B)$ and $(B', M_{B'}, i_{B'})$ be computation objects, and let
 $d : B \rel B'$ be an error domain relation. We say that $d$ is
 \emph{quasi-right-representable} by an error domain morphism $p : B' \multimap B$ if
@@ -341,6 +341,7 @@ appeal to the universal property and give homomorphisms $M_{A_1} \to
 \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
 former applies $i_{A_1}$ in the first component and the identity in the second
 component, while the latter does the reverse with $i_{A_2}$.
+% Could state this using the functorial action of \times
 
 The action of $\arr$ on objects is as follows. Given $(A, M_A, iA)$ and $(B,
 M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$. Then to
@@ -349,6 +350,7 @@ homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
 \arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
 UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
 similarly by post-composition with $i_B$.
+% Could state this using the functorial action of \arr
 
 \subsubsection{Constructions involving Value and Computation Relations}
 
@@ -535,29 +537,33 @@ c_oc_o')$ To validate this rule in the model, we construct two squares $\id
 \ltsqbisim{(c_i \ra c_o)(c_i' \ra c_o')}{(c_ic_i' \ra c_oc_o')} \id$ and $\id
 \ltsqbisim{(c_ic_i' \ra c_oc_o')}{(c_i \ra c_o)(c_i' \ra c_o')} \id$. Since the
 definition of extensional square allows us to specify intermediate morphisms
-that are synchronized in the lock-step error ordering, it will be sufficient to
-construct two intensional squares involving perturbations on both sides. This
-motivates the definition of \emph{quasi-order-equivalence}.
+that are synchronized in the intensional ordering, it will be sufficient to
+construct two intensional squares between the relations, with perturbations on
+both sides. This motivates the definition of \emph{quasi-order-equivalence}.
 
 \begin{definition}[quasi-order-equivalence]\label{def:quasi-order-equivalent}
-  Let $c, c' : A \rel A'$. We say that $c$ and $c'$ are
+  Let $A$ and $A'$ be value objects, and let $c, c' : A \rel A'$ be relations
+  between the underlying predomains. We say that $c$ and $c'$ are
   \textbf{quasi-order-equivalent}, written $c \qordeq c'$, if there exist
-  perturbations $\delta^l_1, \delta^l_2 \in \pv_A$ and $\delta^r_1, \delta^r_2
-  \in \pv_{A'}$ such that there is a square $\delta^l_1 \ltsq{c}{c'} \delta^r_1$
-  and a square $\delta^l_2 \ltsq{c'}{c} \delta^r_2$.
+  syntactic perturbations $\delta^l_1, \delta^l_2 \in M_A$ and $\delta^r_1,
+  \delta^r_2 \in M_{A'}$ such that there is a square $\delta^l_1 \ltsq{c}{c'}
+  \delta^r_1$ and a square $\delta^l_2 \ltsq{c'}{c} \delta^r_2$.
 \end{definition}
-We make the analogous definition for error domain relations $d, d' : B \rel B'$.
+Given computation objects $B$ and $B$, we make the analogous definition for
+relations $d, d' : B \rel B'$ between the underlying error domains.
 
 Then we have the following result that shows that the functors
 $U,\li,\times,\to$ are \emph{quasi-functorial} on relations:
 
 \begin{lemma}
+The following hold:
 \begin{itemize}
   \item $U(d \comp d') \qordeq U(d) \comp U(d')$
-  \item $F(c \comp c') \qordeq F(c) \comp F(c')$
+  \item $\li(c \comp c') \qordeq \li (c) \comp \li (c')$
   \item $(c \comp c') \to (d \comp d') \qordeq (c \to d) \comp (c' \to d')$
   \item $(c_1 \comp c_1') \times (c_2 \comp c_2') \qordeq (c_1 \times c_2) \comp (c_1'\times c_2')$
 \end{itemize}
+
 \end{lemma}
 \begin{proof} See appendix \eric{TODO: make sure this is in the appendix}
 \end{proof}
