@@ -615,26 +615,10 @@ two Kleisli product actions.
 
 \subsection{Lemmas involving Quasi-Representable Relations}
 
-Before proceeding with the lemmas, we begin with a definition.
-
-\begin{definition}[representation structure]\label{def:representation-structure}
-  Let $A$ and $A'$ be value objects, and let $c : A \rel A'$ be a relation on
-  the underlying predomains. A \emph{left-representation structure} $\rho^L_c$
-  for $c$ consists of a predomain morphism $e_c : A \to A'$ such that $c$ is
-  quasi-left-representable by $e_c$ (see Definition
-  \ref{def:quasi-left-representable}). We similarly define a
-  {right-representation structure} $\rho^R_c$ for $c$ to consist of a predomain
-  morphism $p_c : A' \to A$ such that $c$ is quasi-right-representable by $p_c$
-  (see Definition \ref{def:quasi-right-representable}).
-  % (Notice that the direction of the morphism is opposite in the definition of
-  % right-representation structure.)
-
-  Likewise, let $d : B \rel B'$ be a computation relation. Left- and
-  right-representation structures for $d$ are defined similarly, except the
-  representing morphisms are now error domain morphisms rather than predomain
-  morphisms.
-\end{definition}
-
+In this section we prove lemmas about quasi-representability needed for showing
+that our notions of value and computation relation are compositional, and for
+defining the action of the functors $U$, $\li$, $\arr$, and $\times$ on value
+and computation relations.
 
 Recall the notion of quasi-order-equivalence as defined in Definition
 \ref{def:quasi-order-equivalent}. The following lemma will be useful in showing
@@ -717,6 +701,9 @@ Next we show that the functors $\li$ and $U$ preserve quasi-representability.
 
   The proof for $Ud$ is analogous.
 \end{proof}
+
+
+Next we show that the identity relation is quasi-representable.
 
 %%%%%%%%%%%%
 % Identity %
