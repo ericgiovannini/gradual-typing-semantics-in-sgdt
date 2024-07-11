@@ -123,44 +123,9 @@ translation that avoids the need for any retraction:
   :c_1$.
 \end{proof}
 
-\section{Call-by-push-value}
 
-\subsection{Morphisms of CBPV Models}
 
-\max{there is not definition of a CBPV model...}
-There are two relevant notions of \emph{morphism} of CBPV models:
-\emph{strict} and \emph{lax}.
-% morphisms of CBPV models
-Given call-by-push-value models
-$\mathcal M_1 = (\mathcal V_1, \mathcal E_1, \arr_1, U_1, F_1)$ and
-$\mathcal M_2 = (\mathcal V_2, \mathcal E_2, \arr_2, U_2, F_2)$,
-A \emph{strict} morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
-$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$
-that strictly presere the constructors:
-\begin{enumerate}
-  \item $G_{\mathcal{E}} \circ F_1 = F_2 \circ G_{\mathcal{V}}$
-  \item $G_{\mathcal{V}} \circ U_1 = U_2 \circ G_{\mathcal{E}}$
-  \item $G_{\mathcal{E}}(A \arr_1 B) = G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
-  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) = G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
-  \item $G_{\mathcal{V}}(1_1) = 1_2$
-\end{enumerate}
-As well as strictly preserving the corresponding universal morphisms
-and coherence isomorphisms.
-
-A lax morphism instead preserves these only up to transformation
-\begin{enumerate}
-  \item $G_{\mathcal{E}} \circ F_1 \Rightarrow F_2 \circ G_{\mathcal{V}}$
-  \item $G_{\mathcal{V}} \circ U_1 \Rightarrow U_2 \circ G_{\mathcal{E}}$
-  \item $G_{\mathcal{E}}(A \arr_1 B) \Rightarrow G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
-  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) \Rightarrow G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
-  \item $G_{\mathcal{V}}(1_1) \Rightarrow 1_2$
-\end{enumerate}
-Additionally a lax morphism should have a relationship between these
-transformations and the universal morphisms, but we will only consider
-lax morphisms of thin categories, where such conditions hold
-trivially.
-
-\subsection{Kleisli Actions of CBPV Type Constructors}
+\section{Kleisli Actions}
 
 In CBPV models, all the type constructors are interpreted as functors:
 \begin{enumerate}
@@ -267,22 +232,6 @@ In Section \ref{sec:concrete-relational-model} we described our model of gradual
 typing. We omitted several technical proofs involving the well-definedness of
 composition of relations and the actions of functors. We provide those proofs in
 this section.
-
-% We note that our approach in this section will be differ from the body of the
-% paper in two ways: 
-
-% First, we will work \emph{abstractly} with a notion of model of gradual typing
-% defined in the setting of an arbitrary double category.
-% %
-% Second, we build up the abstract notion of model in several phases, and layer
-% the constructions in a modular way so that we can isolate the essential parts of
-% the proofs and abstract away unnecessary details about previous parts of the
-% construction.
-
-% The constructions we carry out in this section specialize to the model we
-% describe in the body of the paper. We find, however, that organizing things in
-% this manner makes the arguments easier to follow.
-
 
 \subsection{Free Composition of Error Domain Relations}
 \begin{definition}\label{def:free-comp-ed-rel}
@@ -665,6 +614,9 @@ Recall the notion of quasi-order-equivalence as defined in Definition
 \ref{def:quasi-order-equivalent}. The following lemma will be useful in showing
 that two relations are quasi-order-equivalent.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% quasi-representable by same morphism --> quasi-equivalent
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{lemma}\label{lem:left-rep-by-same-morphism} Let $A$ and $A'$ be value
   objects, and let $c, c' : A \rel A'$ be relations between the underlying
   predomains. If $c$ and $c'$ are both quasi-left-representable by the same
@@ -744,13 +696,27 @@ Next we show that the functors $\li$ and $U$ preserve quasi-representability.
 \end{proof}
 
 
-Next we show that the identity relation is quasi-representable.
 
 %%%%%%%%%%%%
 % Identity %
 %%%%%%%%%%%%
 
-\eric{Identity relation is quasi-representable}
+Next we show that the reflexive relation is quasi-representable.
+
+\begin{lemma}\label{lem:reflexive-rel-quasi-rep}
+  Let $A$ be a value object. Then $r(A)$ is quasi-left-representable and quasi-right-representable.
+  Likewise, $r(B)$ is quasi-left- and quasi-right-representable for any computation object $B$.
+\end{lemma}
+\begin{proof}
+  To show $r(A)$ is quasi-left-representable, we take the embedding to be the
+  identity morphism and the perturbations $\delle = \delre = \id_{M_{A}}$, i.e.,
+  the identtiy of the monoid. Then because $i_A$ is a homomorphism of monoids,
+  it sends the identity element to the identity morphism, so the $\upl$ and
+  $\upr$ squares are just identity squares.
+
+  The same argument shows that $r(A)$ is quasi-right-representable and that
+  $r(B)$ is quasi-left- and quasi-right-representable.
+\end{proof}
 
 
 %%%%%%%%%%%%%%%
@@ -812,22 +778,22 @@ $U$.
 \begin{lemma}\label{lem:Fcc-equiv-FcFc'}
   
   Let $A$, $A'$, and $A''$ be value objects and let $c : A \rel A'$ and $c' : A'
-  \rel A''$ be predomain relations. Then we have $\li(c \comp c') \bisim \li c \comp \li c'$ 
-  
+  \rel A''$ be predomain relations. Then we have $\li(c \comp c') \bisim \li c
+  \comp \li c'$.
 \end{lemma}
 \begin{proof}
   First, we claim that $\li(c \comp c')$ and $\li c \comp \li c'$ are both
   quasi-left-represented by $\li e_{c'} \circ \li e_c$. Indeed, we have by part
   (1) of Lemma \ref{lem:representation-comp} that $e_c' \circ e_c$
   quasi-left-represents $c \comp c'$, and then by Lemma
-  \ref{lem:representation-U-F} we have $F(e_c' \circ e_c) = Fe_{c'} \circ Fe_c$
-  quasi-left-represents $F(c \comp c')$.
+  \ref{lem:representation-U-F} we have $\li(e_{c'} \circ e_c) = \li e_{c'} \circ \li e_c$
+  quasi-left-represents $\li (c \comp c')$.
   %
-  On the other hand, we also know that $Fe_c$ quasi-left-represents $Fc$ and
-  $Fe_{c'}$ quasi-left-represents $Fc'$ again by Lemma
+  On the other hand, we also know that $\li e_c$ quasi-left-represents $\li c$ and
+  $\li e_{c'}$ quasi-left-represents $\li c'$ again by Lemma
   \ref{lem:representation-U-F}. Then by part (2) of Lemma
-  \ref{lem:representation-comp}, their composition quasi-left-represents $Fc
-  \comp Fc'$.
+  \ref{lem:representation-comp}, their composition quasi-left-represents $\li c
+  \comp \li c'$.
 
   The result now follows by Lemma \ref{lem:left-rep-by-same-morphism}.
 \end{proof}
@@ -873,13 +839,13 @@ $U$ applied to a composition of relations:
     
     First, by Lemma \ref{lem:Fcc-equiv-FcFc'} there is a square $\alpha$ of the form
 
-    % https://q.uiver.app/#q=WzAsNSxbMCwwLCJcXGxpIEEiXSxbMiwwLCJcXGxpIEEnJyJdLFswLDEsIlxcbGkgQSJdLFsxLDEsIlxcbGkgQSciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDEsIlxcbGkgKGMgXFxjb21wIGMnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxsaSBjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJcXGxpIGMnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCJpX0EoXFxkZWx0YV5sKSIsMl0sWzEsNCwiaV97QScnfShcXGRlbHRhXnIpIl0sWzgsOSwiXFxhbHBoYSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    % https://q.uiver.app/#q=WzAsNSxbMCwwLCJcXGxpIEEiXSxbMiwwLCJcXGxpIEEnJyJdLFswLDEsIlxcbGkgQSJdLFsxLDEsIlxcbGkgQSciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDEsIlxcbGkgKGMgXFxjb21wIGMnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxsaSBjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJcXGxpIGMnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCJpX3tcXGxpIEF9KFxcZGVsdGFebCkiLDJdLFsxLDQsImlfe1xcbGkgQScnfShcXGRlbHRhXnIpIl0sWzgsOSwiXFxhbHBoYSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
     \[\begin{tikzcd}[ampersand replacement=\&]
       {\li A} \&\& {\li A''} \\
       {\li A} \& {\li A'} \& {\li A''}
       \arrow["{\li (c \comp c')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
-      \arrow[""{name=0, anchor=center, inner sep=0}, "{i_A(\delta^l)}"', from=1-1, to=2-1]
-      \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{A''}(\delta^r)}", from=1-3, to=2-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{i_{\li A}(\delta^l)}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{\li A''}(\delta^r)}", from=1-3, to=2-3]
       \arrow["{\li c}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
       \arrow["{\li c'}", "\shortmid"{marking}, no head, from=2-2, to=2-3]
       \arrow["\alpha"{description}, draw=none, from=0, to=1]
@@ -892,23 +858,21 @@ $U$ applied to a composition of relations:
     Then we can build the $\dnr$ square by pasting the square $\alpha$ on top of
     the $\dnr$ square for the composition $\li c \comp \li c'$, as shown below:
 
-    \eric{Need to change F to $\li$}
-
-    % https://q.uiver.app/#q=WzAsNyxbMCwwLCJGQSJdLFsyLDAsIkZBJyciXSxbMCwxLCJGQSJdLFsxLDEsIkZBJyJdLFsyLDEsIkZBJyciXSxbMCwyLCJGQSJdLFsyLDIsIkZBIl0sWzAsMSwiRihjIFxcY29tcCBjJykiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJGYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs1LDYsInIoRkEpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwyLCJcXGRlbHRhXmwiLDJdLFsyLDUsIlxcZGVsbHBfe0ZjIFxcY29tcCBGYyd9IiwyXSxbMSw0LCJcXGRlbHRhXnIiXSxbNCw2LCJwX3tGYyBcXGNvbXAgRmMnfSJdLFsxMSwxMywiXFxhbHBoYSIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNCwiXFxkbnJfe0ZjIFxcY29tcCBGYyd9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+    % https://q.uiver.app/#q=WzAsNyxbMCwwLCJcXGxpIEEiXSxbMiwwLCJcXGxpIEEnJyJdLFswLDEsIlxcbGkgQSJdLFsxLDEsIlxcbGkgQSciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDIsIlxcbGkgQSJdLFsyLDIsIlxcbGkgQSJdLFswLDEsIlxcbGkgKGMgXFxjb21wIGMnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxsaSBjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJcXGxpIGMnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNSw2LCJyKFxcbGkgQSkiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsImlfe1xcbGkgQX0oXFxkZWx0YV5sKSIsMl0sWzIsNSwiaV9BKFxcZGVsbHBfe1xcbGkgYyBcXGNvbXAgXFxsaSBjJ30pIiwyXSxbMSw0LCJpX3tcXGxpIEEnJ30oXFxkZWx0YV5yKSJdLFs0LDYsInBfe1xcbGkgYyBcXGNvbXAgXFxsaSBjJ30iXSxbMTIsMTQsIlxcZG5yX3tcXGxpIGMgXFxjb21wIFxcbGkgYyd9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzExLDEzLCJcXGFscGhhIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
     \[\begin{tikzcd}[ampersand replacement=\&]
-      FA \&\& {FA''} \\
-      FA \& {FA'} \& {FA''} \\
-      FA \&\& FA
-      \arrow["{F(c \comp c')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
-      \arrow["Fc", "\shortmid"{marking}, no head, from=2-1, to=2-2]
-      \arrow["{Fc'}", "\shortmid"{marking}, no head, from=2-2, to=2-3]
-      \arrow["{r(FA)}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
-      \arrow[""{name=0, anchor=center, inner sep=0}, "{\delta^l}"', from=1-1, to=2-1]
-      \arrow[""{name=1, anchor=center, inner sep=0}, "{\dellp_{Fc \comp Fc'}}"', from=2-1, to=3-1]
-      \arrow[""{name=2, anchor=center, inner sep=0}, "{\delta^r}", from=1-3, to=2-3]
-      \arrow[""{name=3, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}", from=2-3, to=3-3]
-      \arrow["\alpha"{marking, allow upside down}, draw=none, from=0, to=2]
-      \arrow["{\dnr_{Fc \comp Fc'}}"{description}, draw=none, from=1, to=3]
+      {\li A} \&\& {\li A''} \\
+      {\li A} \& {\li A'} \& {\li A''} \\
+      {\li A} \&\& {\li A}
+      \arrow["{\li (c \comp c')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{i_{\li A}(\delta^l)}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{\li A''}(\delta^r)}", from=1-3, to=2-3]
+      \arrow["{\li c}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow[""{name=2, anchor=center, inner sep=0}, "{i_A(\dellp_{\li c \comp \li c'})}"', from=2-1, to=3-1]
+      \arrow["{\li c'}", "\shortmid"{marking}, no head, from=2-2, to=2-3]
+      \arrow[""{name=3, anchor=center, inner sep=0}, "{p_{\li c \comp \li c'}}", from=2-3, to=3-3]
+      \arrow["{r(\li A)}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
+      \arrow["\alpha"{marking, allow upside down}, draw=none, from=0, to=1]
+      \arrow["{\dnr_{\li c \comp \li c'}}"{description}, draw=none, from=2, to=3]
     \end{tikzcd}\]
 
     We define $\delrp_{\li (c \comp c')}$ to be $\delrp_{\li c \comp \li c'} \cdot \delta^r$.
@@ -917,25 +881,25 @@ $U$ applied to a composition of relations:
     the square $\id \ltdyn_{\li (c \comp c')}^{\li c \comp \li c'} \id$ which we get from
     the fact that $\li$ is lax.
 
-    % https://q.uiver.app/#q=WzAsOSxbMCwwLCJGQScnIl0sWzIsMCwiRkEnJyJdLFswLDEsIkZBJyciXSxbMiwxLCJGQScnIl0sWzAsMiwiRkEiXSxbMiwyLCJGQScnIl0sWzAsMywiRkEiXSxbMiwzLCJGQScnIl0sWzEsMiwiRkEnIl0sWzAsMSwicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywicihGQScnKSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzYsNywiRihjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsIlxcZGVsdGFeciIsMl0sWzIsNCwicF97RmMgXFxjb21wIEZjJ30iLDJdLFs0LDYsIlxcaWQiLDJdLFsxLDMsIlxcZGVsdGFeciJdLFszLDUsIlxcZGVscnBfe0ZjIFxcY29tcCBGYyd9Il0sWzUsNywiXFxpZCJdLFs0LDgsIkZjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbOCw1LCJGYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNSwicihcXGRlbHRhXnIpIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEzLDE2LCJcXGRubF97RmMgXFxjb21wIEZjJ30iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    % https://q.uiver.app/#q=WzAsOSxbMCwwLCJcXGxpIEEnJyJdLFsyLDAsIlxcbGkgQScnIl0sWzAsMSwiXFxsaSBBJyciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDIsIlxcbGkgQSJdLFsyLDIsIlxcbGkgQScnIl0sWzAsMywiXFxsaSBBIl0sWzIsMywiXFxsaSBBJyciXSxbMSwyLCJcXGxpIEEnIl0sWzAsMSwicihcXGxpIEEnJykiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsInIoXFxsaSBBJycpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw3LCJcXGxpIChjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsImlfe0EnJ30oXFxkZWx0YV5yKSIsMl0sWzIsNCwicF97RmMgXFxjb21wIEZjJ30iLDJdLFs0LDYsIlxcaWQiLDJdLFsxLDMsImlfe0EnJ30oXFxkZWx0YV5yKSJdLFszLDUsImlfe0EnJ30oXFxkZWxycF97RmMgXFxjb21wIEZjJ30pIl0sWzUsNywiXFxpZCJdLFs0LDgsIlxcbGkgYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzgsNSwiXFxsaSBjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEyLDE1LCJcXGlkIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEzLDE2LCJcXGRubF97XFxsaSBjIFxcY29tcCBcXGxpIGMnfSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
     \[\begin{tikzcd}[ampersand replacement=\&]
-      {FA''} \&\& {FA''} \\
-      {FA''} \&\& {FA''} \\
-      FA \& {FA'} \& {FA''} \\
-      FA \&\& {FA''}
-      \arrow["{r(FA'')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
-      \arrow["{r(FA'')}", "\shortmid"{marking}, no head, from=2-1, to=2-3]
-      \arrow["{F(c \comp c')}"', "\shortmid"{marking}, no head, from=4-1, to=4-3]
-      \arrow[""{name=0, anchor=center, inner sep=0}, "{\delta^r}"', from=1-1, to=2-1]
-      \arrow[""{name=1, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}"', from=2-1, to=3-1]
+      {\li A''} \&\& {\li A''} \\
+      {\li A''} \&\& {\li A''} \\
+      {\li A} \& {\li A'} \& {\li A''} \\
+      {\li A} \&\& {\li A''}
+      \arrow["{r(\li A'')}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{i_{A''}(\delta^r)}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{A''}(\delta^r)}", from=1-3, to=2-3]
+      \arrow["{r(\li A'')}", "\shortmid"{marking}, no head, from=2-1, to=2-3]
+      \arrow[""{name=2, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}"', from=2-1, to=3-1]
+      \arrow[""{name=3, anchor=center, inner sep=0}, "{i_{A''}(\delrp_{Fc \comp Fc'})}", from=2-3, to=3-3]
+      \arrow["{\li c}", "\shortmid"{marking}, no head, from=3-1, to=3-2]
       \arrow["\id"', from=3-1, to=4-1]
-      \arrow[""{name=2, anchor=center, inner sep=0}, "{\delta^r}", from=1-3, to=2-3]
-      \arrow[""{name=3, anchor=center, inner sep=0}, "{\delrp_{Fc \comp Fc'}}", from=2-3, to=3-3]
+      \arrow["{\li c'}", "\shortmid"{marking}, no head, from=3-2, to=3-3]
       \arrow["\id", from=3-3, to=4-3]
-      \arrow["Fc", "\shortmid"{marking}, no head, from=3-1, to=3-2]
-      \arrow["{Fc'}", "\shortmid"{marking}, no head, from=3-2, to=3-3]
-      \arrow["{r(\delta^r)}"{marking, allow upside down}, draw=none, from=0, to=2]
-      \arrow["{\dnl_{Fc \comp Fc'}}"{description}, draw=none, from=1, to=3]
+      \arrow["{\li (c \comp c')}"', "\shortmid"{marking}, no head, from=4-1, to=4-3]
+      \arrow["\id"{marking, allow upside down}, draw=none, from=0, to=1]
+      \arrow["{\dnl_{\li c \comp \li c'}}"{description}, draw=none, from=2, to=3]
     \end{tikzcd}\]
 
 
@@ -961,11 +925,13 @@ $U$ applied to a composition of relations:
 % Products %
 %%%%%%%%%%%%
 \begin{lemma}\label{lem:representation-product} 
-  
-  Let $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$. If $c_1$ and $c_2$ are
-  quasi-left-representable, then $c_1 \times c_2$ is quasi-left-representable.
-  Furthermore, if $\li c_1$ and $\li c_2$ are quasi-right-representable, then so
-  is $\li (c_1 \times c_2)$.
+  Let $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$. 
+  \begin{enumerate}
+    \item If $c_1$ and $c_2$ are
+    quasi-left-representable, then $c_1 \times c_2$ is quasi-left-representable.
+    \item If $\li c_1$ and $\li c_2$ are quasi-right-representable, then so
+    is $\li (c_1 \times c_2)$.
+  \end{enumerate}
 
   % Let $\rho^L_{c_1}$ be a left-representation structure for $c_1$, and
   % let $\rho^L_{c_2}$ be a left-representation structure for $c_2$.
@@ -976,41 +942,43 @@ $U$ applied to a composition of relations:
   % Then we can define a right-representation structure for $F(c_1 \times c_2)$.
 \end{lemma}
 \begin{proof}
-  To show $c_1 \times c_2$ is quasi-left-representable, we define
-  \begin{itemize}
-    \item $e_{c_1 \times c_2} = e_{c_1} \times e_{c_2}$
-    \item $\delre_{c_1 \times c_2} = \inl (\delre_{c_1}) \cdot \inr
-    (\delre_{c_2})$ (recall from Section \ref{sec:perturbation-constructions}
-    that $M_{A_1' \times A_2'}$ is the coproduct $M_{A_1'} \oplus M_{A_2'}$)
-    \item $\delle_{c_1 \times c_2}$ is defined similarly
-    \item The $\upl$ square is constructed using the functorial action of
-    $\times$ and the corresponding squares for $c_1$ and $c_2$:
-    % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEgXFx0aW1lcyBBXzIiXSxbMCwxLCJBXzEnIFxcdGltZXMgQV8yIl0sWzAsMiwiQV8xJyBcXHRpbWVzIEFfMiciXSxbMSwwLCJBXzEnIFxcdGltZXMgQV8yJyJdLFsxLDEsIkFfMScgXFx0aW1lcyBBXzInIl0sWzEsMiwiQV8xJyBcXHRpbWVzIEFfMiciXSxbMCwzLCJjXzEgXFx0aW1lcyBjXzIiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDQsInIoQV8xJykgXFx0aW1lcyBjXzIiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDUsInIoQV8xJykgXFx0aW1lcyByKEFfMicpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJlX3tjXzF9IFxcdGltZXMgXFxpZCIsMl0sWzEsMiwiXFxpZCBcXHRpbWVzIGVfe2NfMn0iLDJdLFszLDQsImlfe0FfMSd9KFxcZGVscmVfe2NfMX0pIFxcdGltZXMgXFxpZCJdLFs0LDUsIlxcaWQgXFx0aW1lcyBpX3tBXzInfShcXGRlbHJlX3tjXzJ9KSJdLFs5LDExLCJcXHVwbF97Y18xfSBcXHRpbWVzIFxcaWQiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMTAsMTIsIlxcaWQgXFx0aW1lcyBcXHVwbF97Y18yfSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
-      \[\begin{tikzcd}[ampersand replacement=\&]
-        {A_1 \times A_2} \& {A_1' \times A_2'} \\
-        {A_1' \times A_2} \& {A_1' \times A_2'} \\
-        {A_1' \times A_2'} \& {A_1' \times A_2'}
-        \arrow["{c_1 \times c_2}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-        \arrow[""{name=0, anchor=center, inner sep=0}, "{e_{c_1} \times \id}"', from=1-1, to=2-1]
-        \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{A_1'}(\delre_{c_1}) \times \id}", from=1-2, to=2-2]
-        \arrow["{r(A_1') \times c_2}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
-        \arrow[""{name=2, anchor=center, inner sep=0}, "{\id \times e_{c_2}}"', from=2-1, to=3-1]
-        \arrow[""{name=3, anchor=center, inner sep=0}, "{\id \times i_{A_2'}(\delre_{c_2})}", from=2-2, to=3-2]
-        \arrow["{r(A_1') \times r(A_2')}"', "\shortmid"{marking}, no head, from=3-1, to=3-2]
-        \arrow["{\upl_{c_1} \times \id}"{description}, draw=none, from=0, to=1]
-        \arrow["{\id \times \upl_{c_2}}"{description}, draw=none, from=2, to=3]
-      \end{tikzcd}\]
-    \item The $\upr$ square is defined similarly
-  \end{itemize}
+  \begin{enumerate}
+    \item To show $c_1 \times c_2$ is quasi-left-representable, we define
+    \begin{itemize}
+      \item $e_{c_1 \times c_2} = e_{c_1} \times e_{c_2}$
+      \item $\delre_{c_1 \times c_2} = \inl (\delre_{c_1}) \cdot \inr
+      (\delre_{c_2})$ (recall from Section \ref{sec:perturbation-constructions}
+      that $M_{A_1' \times A_2'}$ is the coproduct $M_{A_1'} \oplus M_{A_2'}$)
+      \item $\delle_{c_1 \times c_2}$ is defined similarly
+      \item The $\upl$ square is constructed using the functorial action of
+      $\times$ and the corresponding squares for $c_1$ and $c_2$:
+      % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEgXFx0aW1lcyBBXzIiXSxbMCwxLCJBXzEnIFxcdGltZXMgQV8yIl0sWzAsMiwiQV8xJyBcXHRpbWVzIEFfMiciXSxbMSwwLCJBXzEnIFxcdGltZXMgQV8yJyJdLFsxLDEsIkFfMScgXFx0aW1lcyBBXzInIl0sWzEsMiwiQV8xJyBcXHRpbWVzIEFfMiciXSxbMCwzLCJjXzEgXFx0aW1lcyBjXzIiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDQsInIoQV8xJykgXFx0aW1lcyBjXzIiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDUsInIoQV8xJykgXFx0aW1lcyByKEFfMicpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJlX3tjXzF9IFxcdGltZXMgXFxpZCIsMl0sWzEsMiwiXFxpZCBcXHRpbWVzIGVfe2NfMn0iLDJdLFszLDQsImlfe0FfMSd9KFxcZGVscmVfe2NfMX0pIFxcdGltZXMgXFxpZCJdLFs0LDUsIlxcaWQgXFx0aW1lcyBpX3tBXzInfShcXGRlbHJlX3tjXzJ9KSJdLFs5LDExLCJcXHVwbF97Y18xfSBcXHRpbWVzIFxcaWQiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMTAsMTIsIlxcaWQgXFx0aW1lcyBcXHVwbF97Y18yfSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+        \[\begin{tikzcd}[ampersand replacement=\&]
+          {A_1 \times A_2} \& {A_1' \times A_2'} \\
+          {A_1' \times A_2} \& {A_1' \times A_2'} \\
+          {A_1' \times A_2'} \& {A_1' \times A_2'}
+          \arrow["{c_1 \times c_2}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+          \arrow[""{name=0, anchor=center, inner sep=0}, "{e_{c_1} \times \id}"', from=1-1, to=2-1]
+          \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{A_1'}(\delre_{c_1}) \times \id}", from=1-2, to=2-2]
+          \arrow["{r(A_1') \times c_2}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+          \arrow[""{name=2, anchor=center, inner sep=0}, "{\id \times e_{c_2}}"', from=2-1, to=3-1]
+          \arrow[""{name=3, anchor=center, inner sep=0}, "{\id \times i_{A_2'}(\delre_{c_2})}", from=2-2, to=3-2]
+          \arrow["{r(A_1') \times r(A_2')}"', "\shortmid"{marking}, no head, from=3-1, to=3-2]
+          \arrow["{\upl_{c_1} \times \id}"{description}, draw=none, from=0, to=1]
+          \arrow["{\id \times \upl_{c_2}}"{description}, draw=none, from=2, to=3]
+        \end{tikzcd}\]
+      \item The $\upr$ square is defined similarly
+    \end{itemize}
 
-  To show that $\li(c_1 \times c_2)$ is quasi-right-representable, we define
-  \begin{itemize}
-    \item $p_{\li (c_1 \times c_2)} = (p_{\li c_1} \timesk A_2) \circ (A_1' \timesk p_{\li c_2})$
-    \item $\dellp_{\li (c_1 \times c_2)} = (\dellp_{\li c_1} \timesk \id) \cdot (\id \timesk \dellp_{\li c_2})$ 
-    using the Kleisli product action on syntactic perturbations in Definition \ref{def:kleisli-product-perturbations}
-    \item $\delrp_{\li (c_1 \times c_2)} = (\delrp_{\li c_1} \timesk \id) \cdot (\id \timesk \delrp_{\li c_2})$
-    \item The squares are obtained via the functorial action of $\timesk$ on the squares for $\li c_1$ and $\li c_2$.
-  \end{itemize}
+    \item To show that $\li(c_1 \times c_2)$ is quasi-right-representable, we define
+    \begin{itemize}
+      \item $p_{\li (c_1 \times c_2)} = (p_{\li c_1} \timesk A_2) \circ (A_1' \timesk p_{\li c_2})$
+      \item $\dellp_{\li (c_1 \times c_2)} = (\dellp_{\li c_1} \timesk \id) \cdot (\id \timesk \dellp_{\li c_2})$ 
+      using the Kleisli product actions on syntactic perturbations in Definition \ref{def:kleisli-product-perturbations}
+      \item $\delrp_{\li (c_1 \times c_2)} = (\delrp_{\li c_1} \timesk \id) \cdot (\id \timesk \delrp_{\li c_2})$
+      \item The squares are obtained via the functorial action of $\timesk$ on the squares for $\li c_1$ and $\li c_2$.
+    \end{itemize}
+  \end{enumerate}
 \end{proof}
 
 
@@ -1022,12 +990,14 @@ $U$ applied to a composition of relations:
 \begin{lemma}\label{lem:representation-arrow}
   Let $c : A \rel A'$ and $d : B \rel B'$.
   %
-  If $c$ is quasi-left-representable and $d$ is quasi-right-representable, then
-  $c \arr d$ is quasi-right-representable.
-
-  Likewise, if $\li c$ is quasi-right-representable and $Ud$ is
-  quasi-left-representable, then $U(c \arr d)$ is quasi-left-representable.
-
+  \begin{enumerate}
+    \item If $c$ is quasi-left-representable and $d$ is quasi-right-representable, then
+    $c \arr d$ is quasi-right-representable.
+  
+    \item If $\li c$ is quasi-right-representable and $Ud$ is
+    quasi-left-representable, then $U(c \arr d)$ is quasi-left-representable.
+  \end{enumerate}
+  
   % Let $\rho^L_c$ be a left-representation structure for $c$,
   % and let $\rho^R_d$ be a right-representation structure for $d$.
   % Then we can define a right-representation structure for $c \arr d$.
@@ -1037,56 +1007,159 @@ $U$ applied to a composition of relations:
   % Then we can define a left-representation structure for $U(c \arr d)$.
 \end{lemma}
 \begin{proof}
-  To show $c \arr d$ is quasi-right-representable, we define:
-  \begin{itemize}
-    \item $p_{c \arr d} = e_c \arr p_d$
-    \item $\dellp_{c \arr d} = \inl(\delle_c) \cdot \inr(\dellp_d)$
-    \item $\delrp_{c \arr d} = \inl(\delre_c) \cdot \inr(\delrp_d)$
-    \item The squares $\dnr$ and $\dnl$ are obtained via the functorial action of $\arr$, i.e., we define
-    
-    \[ \dnr_{c \arr d} = \upr_{c} \arr \dnr_{d} : 
-      (\delle_c \arr \dellp_d) \ltdyn_{r(A \arr B)}^{c \arr d} (e_c \arr p_d),  \]
-    
-    and
+  \begin{enumerate}
+    \item 
+      To show $c \arr d$ is quasi-right-representable, we define:
+      \begin{itemize}
+        \item $p_{c \arr d} = e_c \arr p_d$
+        \item $\dellp_{c \arr d} = \inl(\delle_c) \cdot \inr(\dellp_d)$
+        \item $\delrp_{c \arr d} = \inl(\delre_c) \cdot \inr(\delrp_d)$
+        \item The squares $\dnr$ and $\dnl$ are obtained via the functorial action of $\arr$ on squares.
+        
+      \end{itemize}
 
-    \[ \dnl_{c \arr d} = \upl_{c} \arr \dnl_{d}. \]
-    
-  \end{itemize}
+    % TODO check this
+    \item
+      We show $U(c \arr d)$ is quasi-left-representable as follows:
+      \begin{itemize}
+        \item $e_{U(c \arr d)} = (p_{\li c} \tok B') \circ (A \tok e_{Ud})$
+        \item $\delre_{U(c \arr d)} = (\delrp_{\li c} \tok B') \cdot (A' \tok
+              \delre_{Ud})$ using the Kleisli arrow actions on syntactic
+              perturbations in Definition \ref{def:kleisli-arrow-perturbations}.
+        \item $\delle_{U(c \arr d)} = (\dellp_{\li c} \tok B) \cdot (A \tok \delle_{Ud})$
+        \item The squares $\upl$ and $\upr$ are obtained via the functorial action of $\tok$ on squares.
+        For instance, $\upl$ is given by the following square:
 
-  % TODO check this
-  We define $\rho^L_{U(c \arr d)}$ as follows:
-  \begin{itemize}
-    \item $e_{U(c \arr d)} = (p_{Fc} \tok B') \circ (A \tok e_{Ud})$
-    \item $\delre_{U(c \arr d)} = (\delrp_{Fc} \tok B') \circ (A' \tok \delre_{Ud})$
-    \item $\delle_{U(c \arr d)} = (\dellp_{Fc} \tok B) \circ (A \tok \delle_{Ud})$
-    \item The squares $\upl$ and $\upr$ are obtained via the functorial action of $\tok$.
-    For instance, $\upl$ is given by the following square:
+        % https://q.uiver.app/#q=WzAsNixbMCwwLCJVKEEgXFx0byBCKSJdLFsyLDAsIlUoQScgXFx0byBCJykiXSxbMiwxLCJVKEEnIFxcdG8gQicpIl0sWzIsMiwiVShBJyBcXHRvIEInKSJdLFswLDEsIlUoQSBcXHRvIEInKSJdLFswLDIsIlUoQScgXFx0byBCJykiXSxbMCwxLCJVKGMgXFx0byBkKSJdLFs0LDIsIlUoYyBcXHRvIHIoQicpKSJdLFs1LDMsIlUocihBJykgXFx0byByKEInKSkiXSxbNCw1LCJwX3tGY30gXFx0b2sgQiciLDJdLFsxLDIsIkEnIFxcdG9rIFxcZGVscmVfe1VkfSJdLFsyLDMsIlxcZGVscnBfe0ZjfSBcXHRvayBCJyJdLFswLDQsIkEgXFx0b2sgZV97VWR9IiwyXSxbMTIsMTAsIlxcaWRfe0ZjfSBcXHRvayBcXHVwbF97VWR9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzksMTEsIlxcZG5sX3tGY30gXFx0b2sgXFxpZF97cihCJyl9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+        \[\begin{tikzcd}[ampersand replacement=\&,row sep=large]
+          {U(A \to B)} \&\& {U(A' \to B')} \\
+          {U(A \to B')} \&\& {U(A' \to B')} \\
+          {U(A' \to B')} \&\& {U(A' \to B')}
+          \arrow["{U(c \to d)}", from=1-1, to=1-3]
+          \arrow["{U(c \to r(B'))}", from=2-1, to=2-3]
+          \arrow["{U(r(A') \to r(B'))}", from=3-1, to=3-3]
+          \arrow[""{name=0, anchor=center, inner sep=0}, "{p_{Fc} \tok B'}"', from=2-1, to=3-1]
+          \arrow[""{name=1, anchor=center, inner sep=0}, "{A' \tok \delre_{Ud}}", from=1-3, to=2-3]
+          \arrow[""{name=2, anchor=center, inner sep=0}, "{\delrp_{Fc} \tok B'}", from=2-3, to=3-3]
+          \arrow[""{name=3, anchor=center, inner sep=0}, "{A \tok e_{Ud}}"', from=1-1, to=2-1]
+          \arrow["{\id_{Fc} \tok \upl_{Ud}}"{description}, draw=none, from=3, to=1]
+          \arrow["{\dnl_{Fc} \tok \id_{r(B')}}"{description}, draw=none, from=0, to=2]
+        \end{tikzcd}\]
+      \end{itemize}
 
-    % https://q.uiver.app/#q=WzAsNixbMCwwLCJVKEEgXFx0byBCKSJdLFsyLDAsIlUoQScgXFx0byBCJykiXSxbMiwxLCJVKEEnIFxcdG8gQicpIl0sWzIsMiwiVShBJyBcXHRvIEInKSJdLFswLDEsIlUoQSBcXHRvIEInKSJdLFswLDIsIlUoQScgXFx0byBCJykiXSxbMCwxLCJVKGMgXFx0byBkKSJdLFs0LDIsIlUoYyBcXHRvIHIoQicpKSJdLFs1LDMsIlUocihBJykgXFx0byByKEInKSkiXSxbNCw1LCJwX3tGY30gXFx0b2sgQiciLDJdLFsxLDIsIkEnIFxcdG9rIFxcZGVscmVfe1VkfSJdLFsyLDMsIlxcZGVscnBfe0ZjfSBcXHRvayBCJyJdLFswLDQsIkEgXFx0b2sgZV97VWR9IiwyXSxbMTIsMTAsIlxcaWRfe0ZjfSBcXHRvayBcXHVwbF97VWR9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzksMTEsIlxcZG5sX3tGY30gXFx0b2sgXFxpZF97cihCJyl9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
-    \[\begin{tikzcd}[ampersand replacement=\&,row sep=large]
-      {U(A \to B)} \&\& {U(A' \to B')} \\
-      {U(A \to B')} \&\& {U(A' \to B')} \\
-      {U(A' \to B')} \&\& {U(A' \to B')}
-      \arrow["{U(c \to d)}", from=1-1, to=1-3]
-      \arrow["{U(c \to r(B'))}", from=2-1, to=2-3]
-      \arrow["{U(r(A') \to r(B'))}", from=3-1, to=3-3]
-      \arrow[""{name=0, anchor=center, inner sep=0}, "{p_{Fc} \tok B'}"', from=2-1, to=3-1]
-      \arrow[""{name=1, anchor=center, inner sep=0}, "{A' \tok \delre_{Ud}}", from=1-3, to=2-3]
-      \arrow[""{name=2, anchor=center, inner sep=0}, "{\delrp_{Fc} \tok B'}", from=2-3, to=3-3]
-      \arrow[""{name=3, anchor=center, inner sep=0}, "{A \tok e_{Ud}}"', from=1-1, to=2-1]
-      \arrow["{\id_{Fc} \tok \upl_{Ud}}"{description}, draw=none, from=3, to=1]
-      \arrow["{\dnl_{Fc} \tok \id_{r(B')}}"{description}, draw=none, from=0, to=2]
-    \end{tikzcd}\]
-  \end{itemize}
-
-  The construction of $\upr$ is similar.
+    The construction of $\upr$ is similar.
+\end{enumerate}
 \end{proof}
 
 
+\subsection{Model Construction: Composition and Functorial Actions on Relations}
 
-% We can now show that our notions of value and computation relations compose,
-% which follows from the preceding lemmas.
+We now show that our notions of value and computation relations compose.
+\begin{definition}[composition of value (resp. computation) relations]\label{def:value-computation-rel-comp}
+  Let $A$, $A'$ and $A''$ be value objects and let $c$ and $c'$ be \emph{value
+  relations} between $A$ and $A'$ and $A'$ and $A''$ respectively. Then we
+  define their composition $cc'$ as follows:
 
+  \begin{itemize}
+    \item The predomain relation is the composition of the underlying predomain
+    relations $cc'$
+    \item The push-pull structure is given by Lemma \ref{lem:push-pull-comp}.
+    \item Quasi-left-representability of $cc'$ follows from Lemma
+    \ref{lem:representation-comp} and the fact that $c$ and $c'$ are
+    quasi-left-representable
+    \item Quasi-right-representability of $\li(cc')$ holds by Lemma
+    \ref{lem:representation-comp-F-U} and the quasi-right-representability of
+    $\li c$ and $\li c'$
+  \end{itemize}
+
+  Likewise, let $B$, $B'$ and $B''$ be computation objects and let $d$ and $d'$ be
+  \emph{computation relations} between $B$ and $B'$ and $B'$ and $B''$
+  respectively. We define their composition $dd'$ as follows:
+  
+  \begin{itemize}
+    \item The error domain relation is the composition of the underlying error
+    domain relations $dd'$
+    \item The push-pull structure is given by Lemma \ref{lem:push-pull-comp}.
+    \item Quasi-right-representability of $dd'$ follows from Lemma
+    \ref{lem:representation-comp} and the fact that $d$ and $d'$ are
+    quasi-right-representable
+    \item Quasi-left-representability of $U(dd')$ holds by Lemma
+    \ref{lem:representation-comp-F-U} and the quasi-left-representability of
+    $Ud$ and $Ud'$
+  \end{itemize}
+\end{definition}
+
+
+We can define the functorial actions of $\li$, $U$, $\times$, and $\arr$ on
+value and computation relations as follows:
+\begin{definition}[functorial actions on relations]\label{def:functorial-actions-on-relations}
+  
+  \begin{enumerate}
+
+    \item Let $A$ and $A'$ be value objects and $c : A \rel A'$ a value relation.
+          Then we define the computation relation $\li c$ as follows:
+      \begin{itemize}
+        \item The error domain relation is given by the action of $\li$ on the
+        underlying predomain relation of $c$
+        \item The push-pull structure is given by Lemma \ref{lem:push-pull-U-F}
+        \item Quasi-right-representability of $\li c$ holds because it is part
+        of the definition of the value relation $c$
+        \item Quasi-left-representability of $U \li c$ follows from Lemma
+        \ref{lem:representation-U-F} and the quasi-left-representability of $c$
+      \end{itemize}
+          
+    \item Let $B$ and $B'$ be computation objects and $d : B \rel B'$ a computation relation.
+          We define $Ud$ as follows:
+          \begin{itemize}
+            \item The predomain relation is given by the action of $U$ on the
+            error domain relation of $d$
+            \item The push-pull structure is given by Lemma
+            \ref{lem:push-pull-U-F}
+            \item Quasi-left-representability of $Ud$ holds because it is part
+            of the definition of the computation relation $d$
+            \item Quasi-right-representability of $\li(Ud)$ follows from Lemma
+            \ref{lem:representation-U-F} and the quasi-right-representability of
+            $d$
+          \end{itemize}
+
+    \item Let $c_1 : A_1 \rel A_1'$ and $c_2 : A_2 \rel A_2'$ be value relations.
+          We define $c_1 \times c_2$ as follows:
+          \begin{itemize}
+            \item The relation is given by the action of $\times$ on the
+            predomain relations of $c_1$ and $c_2$
+            \item The push-pull structure is given by Lemma
+            \ref{lem:push-pull-times}
+            \item Quasi-left-representability of $c_1 \times c_2$ and
+            quasi-right-representabiity of $\li(c_1 \times c_2)$ are given by
+            Lemma \ref{lem:representation-product}
+          \end{itemize}
+
+    \item Let $c : A \rel A'$ be a value relation and $d : B \rel B'$ be a computation relation.
+          We define $c \arr d$ as follows:
+          \begin{itemize}
+            \item The error domain relation is given by the action of $\arr$ on
+            the underlying relations of $c$ and $d$
+            \item The push-pull structure is given by Lemma
+            \ref{lem:push-pull-arrow}
+            \item Quasi-right-representability of $c \arr d$, and
+                  quasi-left-representability of $U(c \arr d)$ follow from Lemma
+                  \ref{lem:representation-arrow}
+          \end{itemize}
+
+  \end{enumerate}
+\end{definition}
+
+Lastly, we establish the quasi-order-equivalence for the functors.
+
+\begin{lemma}
+  The following hold:
+  \begin{itemize}
+    \item $U(d \comp d') \qordeq U(d) \comp U(d')$
+    \item $\li(c \comp c') \qordeq \li (c) \comp \li (c')$
+    \item $(c \comp c') \to (d \comp d') \qordeq (c \to d) \comp (c' \to d')$
+    \item $(c_1 \comp c_1') \times (c_2 \comp c_2') \qordeq (c_1 \times c_2) \comp (c_1'\times c_2')$
+  \end{itemize}
+\end{lemma}
 
 % We now establish the quasi-order-equivalence for the functors.
 % We already showed that $U(d \comp d') \qordeq U(d)U(d')$ and $F(c \comp c'') \qordeq F(c)F(c')$
