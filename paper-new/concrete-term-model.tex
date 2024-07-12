@@ -22,13 +22,11 @@ logic allows.
 
 \subsection{Guarded Type Theory}
 
-\max{TODO: discuss this wording with Eric. Are we working in guarded
-  type theory, SGDT or Ticked Cubical Type Theory in the informal work
-  in the paper?}
+% \max{TODO: discuss this wording with Eric. Are we working in guarded
+%   type theory, SGDT or Ticked Cubical Type Theory in the informal work
+%   in the paper?}
 We begin with a brief overview of the background theory that we use in this work.
-
-synthetic guarded domain theory, which we will
-use to construct the model. \emph{Synthetic guarded domain theory}, or SGDT for
+\emph{Synthetic guarded domain theory}, or SGDT for
 short, is an axiomatic framework in which we can reason about non-well-founded
 recursive constructions while abstracting away the specific details of
 step-indexing that we would need to track if we were working analytically. This
@@ -100,6 +98,8 @@ A$ via repeated tick application.
 %
 For the sake of brevity, we will also write tick application as $M_t$.
 
+The constructions we carry out in this paper will take place in a guarded type
+theory with ticks.
 \subsection{A Call-by-push-value Model}
 
 % TODO there aren't actually computation types in the syntax. They
@@ -111,7 +111,7 @@ errors).  To do this, we formulate the model using the categorical
 structures of Levy's \emph{call-by-push-value}
 \cite{levy99}. Call-by-push-value is a categorical model of effects
 that is a refinement of Moggi's monadic semantics
-\cite{moggi-monads}. While Moggi works with a (strong) monad $T$ on a
+\cite{MOGGI199155}. While Moggi works with a (strong) monad $T$ on a
 category $\mathcal V$ of pure morphisms, call-by-push-value works
 instead with a decomposition of such a monad into an adjunction
 between a category $\mathcal V$ of ``value types'' and pure morphisms
@@ -131,7 +131,7 @@ considerably simplifies treatment of the CBV function
 type. Additionally, prior work on gradual typing semantics has shown
 that the casts of gradual typing are naturally formulated in terms of
 pairs of a pure morphism and a linear morphism, as we explain below
-\cite{newlicataahmed}.
+\cite{new-licata-ahmed2019}.
 
 For our simple denotational semantics, the category $\calV$ is simply
 the category $\Set$ of sets and functions. Then because GTLC is
@@ -155,7 +155,7 @@ them from the error domains we define later to model graduality:
   \item A function $\theta_B : \laterhs UB \to UB$ modeling a computational step
   \end{enumerate}
   A homomorphism of error domains $\phi : B \multimap B'$ is a
-  function $\phi : UB \multimap UB'$ that preserves these in that
+  function $\phi : UB \to UB'$ that preserves these in that
   $\phi(\mho_B) = \mho_{B'}$ and $\phi(\theta_{B}(\tilde{x})) =
   \theta_{B'}(\later (\phi(\tilde{x})))$.  Simple error domains and
   homomorphisms assemble into a category $\ErrDom$ with a forgetful
@@ -250,7 +250,7 @@ induction.
 
 % The function type A \ra A' will be modeled as \sem{A} \to \li \sem{A'}
 
-The free error domain is essential to modeling cbv computation: a term
+The free error domain is essential to modeling CBV computation: a term
 $\Gamma \vdash M : A$ in GTLC will be modeled as a function $M :
 \sem{\Gamma} \to U\li \sem{A}$ from the set denoted by $\Gamma$ to the
 underlying set of the free error domain on the set denoted by $A$,
@@ -268,7 +268,7 @@ The final type to model is the the dynamic type $\dyn$.  In the style
 of Scott, a classical domain theoretic model for $\dyn$ would be given
 by solving a domain equation
 %
-\[ D \cong \Nat + (D \times D) + U(D \to \li D). \]
+\[ D \cong \Nat + (D \times D) + U(D \to \li D), \]
 %
 representing the fact that dynamically typed values can be numbers,
 pairs or CBV functions. This equation does not have inductive or
@@ -277,10 +277,11 @@ domain of the function type. In classical domain theory this is
 avoided by instead taking the initial algebra in a category of
 embedding-projection pairs, by which we obtain an exact solution to
 this equation. However, in guarded domain theory we instead replace this domain equation with a guarded domain equation.
-process analogous to giving a normal set-theoretic denotational semantics.
 Consider the following similar-looking equation:
 %
-\[ D \cong \Nat + (D \times D)\, + \laterhs U(D \to \li D). \]
+\begin{equation}\label{eq:dyn}
+D \cong \Nat + (D \times D)\, + \laterhs U(D \to \li D).
+\end{equation}
 %
 Since the negative occurrence of $D$ is guarded under a later, we can
 solve this equation by a mixture of inductive types and guarded fixed
@@ -293,8 +294,8 @@ Then we can construct $D$ as the unique solution to the guarded domain equation
 which is a guarded equation in that all occurrences of $D$ on the right hand side are guarded by the $\laterhs$.
 %
 Expanding out the guarded fixed point and least fixed point property
-gives us that $D$ satisfies our desired equation above. \max{give
-  that equation a number}.
+gives us that $D$ satisfies Equation $\ref{eq:dyn}$. 
+% \max{give that equation a number}.
 %
 We then refer to the three injections for numbers, pairs and functions
 as $\inat, \itimes, \iarr$ respectively.
@@ -367,13 +368,13 @@ cases we do not get a bifunctorial action because the two Kleisli
 actions do not commute past each other, i.e., in general $(A_l'
 \timesk f_r \circ f_l \timesk A_r) \neq (f_l \timesk A_r' \circ A_l
 \timesk f_r)$. The full definitions of the Kleisli actions are
-included in the appendix.
+included in Appendix \ref{sec:kleisli-actions}.
 
-Lastly, we have the upcasts and downcasts for the injections, which
+Lastly, we have the upcasts and downcasts for the injections into the dynamic type, which
 are the core primitive casts. The upcasts are simply the injections
 themselves, except the function case which must include a $\nxt$ to
 account for the fact that the functions are under a later in the
-dynamic type. Similarly, the downcasts are similar in that on values
+dynamic type. The downcasts are similar in that on values
 they pattern match on the input and return it if it is of the correct
 type, otherwise erroring. Again, the function case is slightly
 different in that if the input is in the function case, then it is
@@ -524,7 +525,7 @@ $\li^k \mathbb{N}
 Furthermore, it can be shown that the functor $F$ satisfies the technical
 condition in the statement of the above-mentioned theorem. Thus, the theorem
 implies that the type $\li^{gl} \mathbb{N} := \forall k. \li^k \mathbb{N}$ is a
-final $F$-coalgebra.
+final $F$-coalgebra. In fact, $\li^{gl}$ is isomorphic to a more familiar coninductive type.
 %
 Given a type $Y$, Capretta's \emph{delay monad} \cite{lmcs:2265},
 which we write as $\text{Delay}(Y)$, is defined as the coinductive type
@@ -541,7 +542,7 @@ for which $d \da^i n_?$.
 
 Now consider the function $\{M \,|\, \cdot \vdash M : \nat \} \to \li^{gl}
 \mathbb{N}$ defined by $\lambda M. \lambda k .\sem{M}$. Composing this with the
-above partial function yields the desired partial function $-\Downarrow : \{M
+above partial function yields the desired partial function $-\Downarrow \colon \{M
 \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} + {\mho}$. It is
 then straightforward to see that this big-step semantics respects the equational
 theory and that the denotations of the diverging term $\Omega$, the error term
