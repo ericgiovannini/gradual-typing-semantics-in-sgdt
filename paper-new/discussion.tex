@@ -2,51 +2,60 @@
 
 % \eric{I moved this from the intro. We may need to revise it.}
 
-\subsection{Limitations of Prior Work}
+\subsection{Related Work}
 
-We give an overview of current approaches to proving graduality of
-languages and why they do not meet our criteria of a reusable semantic
-framework.
+We give an overview of current approaches to proving graduality and discuss
+their limitations where appropriate.
 
 \subsubsection{From Static to Gradual}
 
 The methods of Abstracting Gradual Typing \cite{garcia-clark-tanter2016} and the
 formal tools of the Gradualizer \cite{cimini-siek2016} provide a way to derive
-from a statically-typed language a gradually-typed language languages that
-satisfies graduality by construction. The main downside to these approaches lies
-in their inflexibility: since the process in entirely mechanical, the language
-designer must adhere to the predefined framework.  Many gradually typed
-languages do not fit into either framework, e.g., Typed Racket
-\cite{tobin-hochstadt06, tobin-hochstadt08} and the semantics produced is not
-always the desired one.
+from a statically-typed language a language that satisfies graduality by
+construction. The main downside to these approaches lies in their inflexibility:
+since the process in entirely mechanical, the language designer must adhere to
+the predefined framework.  Many gradually typed languages do not fit into either
+framework, e.g., Typed Racket \cite{tobin-hochstadt06, tobin-hochstadt08} and
+the semantics produced is not always the desired one.
 %
 Furthermore, while these frameworks do prove graduality of the resulting
 languages, they do not show the correctness of the equational theory, which is
 equally important to sound gradual typing.
 
-\subsubsection{Double Categorical Semantics}
+\subsubsection{Double-Categorical Semantics}
 
-New and Licata \cite{new-licata18} developed an axiomatic account of
-the graduality relation on a call-by-name cast calculus terms and
-showed that the graduality proof could be modeled using semantics in
-certain kinds of \emph{double categories}, categories internal to the
-category of categories. A double category extends a category with a
-second notion of morphism, often a notion of ``relation'' to be paired
-with the notion of functional morphism, as well as a notion of
-functional morphisms preserving relations. In gradual typing the
-notion of relation models type precision and the squares model the
-term precision relation. This approach was influenced by the semantics
-of parametricity using reflexive graph categories
-\cite{ma-reynolds,dunphythesis,reynoldsprogramme}: reflexive graph
-categories are essentially double categories without a notion of
-relational composition. In addition to capturing the notions of type
-and term precision, the double categorical approach allows for a
-\emph{universal property} for casts: upcasts are the \emph{universal}
-way to turn a relation arrow into a function in a forward direction
-and downcasts are the dual universal arrow.  Later, New, Licata and
-Ahmed \cite{new-licata-ahmed2019} extended this axiomatic treatment from
-call-by-name to call-by-value as well by giving an axiomatic theory of
-type and term precision in call-by-push-value.
+% New and Licata \cite{new-licata18} developed an axiomatic account of
+% the graduality relation on a call-by-name cast calculus terms and
+% showed that the graduality proof could be modeled using semantics in
+% certain kinds of \emph{double categories}, categories internal to the
+% category of categories. A double category extends a category with a
+% second notion of morphism, often a notion of ``relation'' to be paired
+% with the notion of functional morphism, as well as a notion of
+% functional morphisms preserving relations. In gradual typing the
+% notion of relation models type precision and the squares model the
+% term precision relation. This approach was influenced by the semantics
+% of parametricity using reflexive graph categories
+% \cite{ma-reynolds,dunphythesis,reynoldsprogramme}: reflexive graph
+% categories are essentially double categories without a notion of
+% relational composition. In addition to capturing the notions of type
+% and term precision, the double categorical approach allows for a
+% \emph{universal property} for casts: upcasts are the \emph{universal}
+% way to turn a relation arrow into a function in a forward direction
+% and downcasts are the dual universal arrow.  
+
+New and Licata \cite{new-licata18} developed an axiomatic account of the
+graduality relation on a call-by-name cast calculus and showed that the
+graduality proof could be modeled using semantics in certain kinds of double
+categories.
+%
+Later, New, Licata and Ahmed \cite{new-licata-ahmed2019} extended this axiomatic
+treatment from call-by-name to call-by-value as well by giving an axiomatic
+theory of type and term precision in call-by-push-value. The double-categorical
+framework serves as a foundation on which we base our model construction in this
+paper. However, because of the lack of transitivity of the relation modeling
+term precision, our model is not a double category but instead a reflexive graph
+category, that is, a double category without a notion of relational composition.
+
 
 %% With this notion of abstract categorical model in hand, denotational
 %% semantics is then the work of constructing concrete models that
@@ -63,6 +72,30 @@ type and term precision in call-by-push-value.
 %% features are quite common in dynamically typed languages, we seek a
 %% new denotational framework that can model these type system features.
 
+\subsubsection{Embedding-Projection Pairs}
+
+A line of work by New, Licata and Ahmed proves graduality by
+interpreting type precision $c : A \ltdyn A'$ as an
+\emph{embedding-projection pair}, that is a pure function $e : A \to
+A'$ and a possibly erroring projection $p : \li A' \multimap \li A$
+such that $p \circ e = \id$ and $e \circ p \ltdyn \id$
+\cite{new-ahmed2018,new-licata18,new-licata-ahmed2019}. At first glance, our model
+of precision looks somewhat different: it is a \emph{relation}
+$\sem{c} : A \rel A'$ with a quasi-representability structure that
+gives us something like $e$ and $p$ in an embedding-projection
+pair. The relationship between these models is that \emph{if} the
+relation were \emph{truly} representable rather than only
+quasi-representable we would have that $e$ and $p$ form a \emph{Galois
+connection} $e \circ p \ltdyn \id$ and $\id \ltdyn p \circ
+e$. However, we have dropped the stronger property of retraction from
+our analysis in this work. With true representability, the relation
+$c$ is \emph{uniquely determined} by the embedding $e$, but since we
+only have quasi-representability, we need to keep the relation around
+explicitly. So the extra complexity of managing explicit relations is
+a cost of the intensional reasoning that guarded type theory
+introduces.
+
+\subsubsection{Step-Indexed Logical Relations Models}
 The standard alternative to domain theory that scales to essentially
 arbitrary self-referential definitions is \emph{step-indexing} or its
 synthetic form of \emph{guarded recursion}. A series of works
@@ -75,7 +108,17 @@ higher-order store and runtime-extensible dynamic types
 their proof developments are highly repetitive and technical, with
 each development formulating a logical relation from first-principles
 and proving many of the same tedious lemmas without reusable
-mathematical abstractions. This is addressed somewhat by Siek and Chen
+mathematical abstractions.
+%
+% Additionally, the logical relations constructed to prove graduality in prior
+% work \cite{new-ahmed2018,new-licata-ahmed2019,new-giovannini-licata-2022} suffer
+% from technical complications of requiring two separate expression relations, one
+% that counts steps on the left and the other on the right, and there is no
+% analogue of this in our approach. However, using two expression relations allows
+% some but not all transitive reasoning of term precision to be recovered. In the
+% future we aim to explore if this approach is feasible in guarded semantics.
+%
+This is addressed somewhat by Siek and Chen
 \cite{siek-chen2021}, who give a proof in Agda of graduality for an
 operational semantics who use a \emph{guarded logic of propositions}
 shallowly embedded in Agda. The guarded logic simplifies the treatment
@@ -86,6 +129,8 @@ modeled. A further advantage of the denotational approach is that it
 easily validates equational reasoning, not just graduality, and it is
 completely independent of any particular syntax of gradual typing.
 
+
+\subsubsection{Gradual Dependent Types}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
 define a syntactic model for a gradually-typed source
@@ -97,7 +142,7 @@ source language to be proven.
 Similarly to our approach, they define a guarded lift monad to model potentially-
 nonterminating computations and use guarded recursion to model the dynamic type.
 However, they do not give a denotational semantics to term precision and it is unclear
-how to prove the graduality in this setting.
+how to prove graduality in this setting.
 The work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
 % Discuss Jeremy Siek's work on graduality in Agda
@@ -227,40 +272,7 @@ finished some prerequisite proofs on clock quantification and postulated
 some theorems on clock globalization.
 \end{comment}
 
-\subsection{Comparison to Embedding-projection pairs}
 
-A line of work by New, Licata and Ahmed proves graduality by
-interpreting type precision $c : A \ltdyn A'$ as an
-\emph{embedding-projection pair}, that is a pure function $e : A \to
-A'$ and a possibly erroring projection $p : \li A' \multimap \li A$
-such that $p \circ e = \id$ and $e \circ p \ltdyn \id$
-\cite{newahmed,newlicata,newlicataahmed}. At first glance, our model
-of precision looks somewhat different: it is a \emph{relation}
-$\sem{c} : A \rel A'$ with a quasi-representability structure that
-gives us something like $e$ and $p$ in an embedding-projection
-pair. The relationship between these models is that \emph{if} the
-relation were \emph{truly} representable rather than only
-quasi-representable we would have that $e$ and $p$ form a \emph{Galois
-connection} $e \circ p \ltdyn \id$ and $\id \ltdyn p \circ
-e$. However, we have dropped the stronger property of retraction from
-our analysis in this work. With true representability, the relation
-$c$ is \emph{uniquely determined} by the embedding $e$, but since we
-only have quasi-representability, we need to keep the relation around
-explicitly. So the extra complexity of managing explicit relations is
-a cost of the intensional reasoning that guarded type theory
-introduces.
-
-\subsection{Comparison to Logical Relations Models}
-Working internally to guarded type theory reduces the overhead of
-needing to carry around the step-indices in the proofs as is required
-when using explicit step-indexing. Additionally, the logical relations
-constructed to prove graduality in prior work \cite{new-ahmed2018,new-licata-ahmed2019,new-giovannini-licata-2022} suffer
-from technical complications of requiring two separate expression
-relations, one that counts steps on the left and the other on the
-right, and there is no analogue of this in our approach. However,
-using two expression relations allows some but not all transitive
-reasoning of term precision to be recovered. In the future we aim to
-explore if this approach is feasible in guarded semantics.
 
 % \subsection{Synthetic Ordering}
 % \max{cut this subsection if we need space}
