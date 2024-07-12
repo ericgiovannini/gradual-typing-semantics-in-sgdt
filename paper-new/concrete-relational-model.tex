@@ -23,18 +23,22 @@ bisimilarity relation. This leads to our first new definition:
 \begin{definition}
 A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 \begin{itemize}
-    \item A partial order $\le_A$.
+    \item A partial order $\ltdyn_A$.
     \item A reflexive, symmetric ``bisimilarity'' relation $\bisim_A$.
-\end{itemize}\max{shouldn't this be $\ltdyn$?}
+\end{itemize} %\max{shouldn't this be $\ltdyn$?}
 \end{definition}
 
 We will generally write $A$ for both a predomain and its underlying set; if we
 need to emphasize the difference we will write $|A|$ for the underlying set of
 $A$.
+%
+When we refer to the order on a predomain $A$ in isolation we will denote it
+$r(A)$, and to express that two elements are related in $r(A)$ we will
+write $x \ltdyn_A y$.
 
 Given a predomain $A$, we can form the predomain $\later A$. The underlying set
 is $\later |A|$ and the relation is defined in the obvious way, i.e., $\tilde{x}
-\le_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \le_A \tilde{x'}_t)$.
+\ltdyn_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \ltdyn_A \tilde{x'}_t)$.
 Likewise for bisimilarity.
 %
 We also give a predomain structure to the natural numbers $\mathbb{N}$, where
@@ -45,8 +49,8 @@ the ordering and the bisimilarity relation. More formally:
 %
 \begin{definition}
 Let $A$ and $A'$ be predomains. A \textbf{morphism of predomains} $f : A \to A'$
-is a function between the underlying sets such that for all $x, x'$, if $x \le_A
-x'$, then $f(x) \le f(x')$, and if $x \bisim_A x'$, then $f(x) \bisim_{A'}
+is a function between the underlying sets such that for all $x, x'$, if $x \ltdyn_A
+x'$, then $f(x) \ltdyn_{A'} f(x')$, and if $x \bisim_A x'$, then $f(x) \bisim_{A'}
 f(x')$.
 \end{definition}
 
@@ -57,7 +61,7 @@ the bisimilarity relation. More concretely:
 \begin{definition}
 An \textbf{error domain} $B$ consists of a predomain $B$ along with the following data:
 \begin{itemize}
-    \item A distinguished ``error'' element $\mho_B \in B$ such that $\mho \le_B x$ for all $x$
+    \item A distinguished ``error'' element $\mho_B \in B$ such that $\mho \ltdyn_B x$ for all $x$
     \item A morphism of predomains $\theta_B \colon \later B \to B$
     \item For all $x : B$ we have $\theta_B(\nxt\, x) \bisim_B x$
 \end{itemize}\max{Don't we also need $\forall x. \mho \le x$?}
@@ -82,7 +86,7 @@ underlying posets that preserves error and respects $\theta$. More formally:
   Let $B$ and $B'$ be error domains. An \textbf{error domain relation} between
   $B$ and $B'$ is a monotone relation $d$ on the underlying partially-ordered sets such that:
   \begin{enumerate}
-     \item (Respects error): For all $y \in B'$, we have $\mho_B \binrel{d} y$.\max{can we please use infix notation consistently for relations?}
+     \item (Respects error): For all $y \in B'$, we have $\mho_B \binrel{d} y$. %\max{can we please use infix notation consistently for relations?}
      \item (Preserves $\theta$): For all $\tilde{x}$ in $\laterhs B$ and
      $\tilde{y} \in \laterhs B'$, if $\laterhs_t (\tilde{x}_t \binrel{d} \tilde{y}_t)$, then 
      $(\theta_B (\tilde{x}) \binrel{d} \theta_{B'} (\tilde{y}))$. 
@@ -95,8 +99,8 @@ relation.
 % Can explain this further in the appendix
 Instead, we define composition of error domain relations $d$ on $B_1$ and $B_2$
 and $d'$ on $B_2$ and $B_3$ inductively to be the least relation containing $d$
-and $d'$ that is downward closed under $\le_{B_1}$, upward-closed under
-$\le_{B_3}$, respects error, and preserves $\theta$. See Definition
+and $d'$ that is downward closed under $\ltdyn_{B_1}$, upward-closed under
+$\ltdyn_{B_3}$, respects error, and preserves $\theta$. See Definition
 \ref{def:free-comp-ed-rel} in the appendix for the precise definition.
 
 
@@ -122,7 +126,7 @@ and only if $(x, x') \in c_1$ and $(y, y') \in c_2$. Given a relation $c : A
 \rel A'$ and an error domain relation $d : B \rel B'$, the relation $c \arr d :
 (A \arr B) \rel (A' \arr B')$ is the error domain relation defined by $(f, g)
 \in (c \arr d)$ if and only if for all $x : A$ and $x' : A'$ with $(x , x') \in
-c$ we have $(f(x), g(x')) \in Ud$. The fact that this relation respects error\max{preserves error?}
+c$ we have $(f(x), g(x')) \in Ud$. The fact that this relation respects error %\max{preserves error?}
 and preserves $\theta$ follows from the corresponding properties for $d$.
 
 % Free error domain
@@ -142,9 +146,10 @@ the required $\theta$ map is the constructor $\theta$. Lastly, it can be shown
 that the delay morphism $\delta = \theta \circ \nxt : UB \to UB$ satisfies $x \bisim
 \delta\, x$ for all $x$ as is required by the definition of error domain.
 
-The monadic bind operation $-^\dagger$ takes a predomain morphism $f : A \to UB$
-to an error domain morphism $\li A \multimap B$; with this we define the action of $\li$ on
-morphisms: Given $f : A \to A'$ we define $\li f = (\eta \circ f)^\dagger : \li A \to \li A'$.\max{what is the point of this sentence?}
+% The monadic bind operation $-^\dagger$ takes a predomain morphism $f : A \to UB$
+% to an error domain morphism $\li A \multimap B$; with this we define the action of $\li$ on
+% morphisms: Given $f : A \to A'$ we define $\li f = (\eta \circ f)^\dagger : \li A \to \li A'$.
+%\max{what is the point of this sentence?}
 
 Finally, we define the action of $\li$ on a predomain relation $c$ to be the
 heterogeneous lock-step error ordering between $U\li A$ and $U\li A'$ and note
@@ -204,8 +209,8 @@ Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
 \emph{quasi-left-representable} by a predomain morphism $e : A \to A'$ if there
 are perturbations $\delle_c \in M_A$ and $\delre_c \in M_{A'}$ such that the
-following two squares exist: (1) $\upl$: $e \ltsq{c}{\le_{A'}} i_{A'}(\delre_c)$, and
-(2) $\upr$: $i_A(\delle_c) \ltsq{\le_{A}}{c} e$.
+following two squares exist: (1) $\upl$: $e \ltsq{c}{\ltdyn_{A'}} i_{A'}(\delre_c)$, and
+(2) $\upr$: $i_A(\delle_c) \ltsq{\ltdyn_{A}}{c} e$.
 \end{definition}
 %
 Observe that this weakens the previous notion of representability, since under
@@ -222,8 +227,8 @@ $d : B \rel B'$ be an error domain relation. We say that $d$ is
 \emph{quasi-right-representable} by an error domain morphism $p : B' \multimap B$ if
 there are perturbations $\dellp_d \in M_B$ and $\delrp_d \in M_{B'}$ such that
 the following two squares exist: 
-(1) $\dnl$: $p \ltsq{\le_{B'}}{d} i_{B'}(\delrp_d)$ and
-(2) $\dnr$: $i_B(\dellp_d) \ltsq{d}{\le_{B}} p$.
+(1) $\dnl$: $p \ltsq{\ltdyn_{B'}}{d} i_{B'}(\delrp_d)$ and
+(2) $\dnr$: $i_B(\dellp_d) \ltsq{d}{\ltdyn_{B}} p$.
 Quasi-right-representability for predomain relations is defined similarly.
 \end{definition}
 
@@ -295,7 +300,9 @@ relations so that we can define the action of $U$ on relations.
 % corresponding to the error domain $FA$.
 
 \subsubsection{Constructions involving Perturbations}\label{sec:perturbation-constructions}
-\max{this section needs prose}
+% \max{this section needs prose}
+
+\eric{May be able to move some of this to the appendix}
 In this section, we discuss the actions of the functors on value and computation
 objects. Specifically, we define the actions of the functors on the syntactic
 perturbations and their interpretation as semantic perturbations.
@@ -374,7 +381,7 @@ as the constructors except for $e_{\iarr}$ which includes a $\nxt$.
 % $e_\times : D \times D \to D$ to be $\text{times}$, and $e_\to : U(D \arr F D)$
 % to be the morphism $\nxt$ followed by $\text{fun}$.
 %
-The definition of the ordering $\le_D$ is provided in the appendix for completeness.
+The definition of the ordering $\ltdyn_D$ is provided in the appendix for completeness.
 
 % given by:\max{this is kind of obvious IMO maybe it can go in the appendix}
 %
@@ -382,10 +389,10 @@ The definition of the ordering $\le_D$ is provided in the appendix for completen
 %
 %
 We define three relations involving $D$ as follows. We define $\inat :
-\mathbb{N} \rel D$ by $(n, d) \in \inat$ iff $e_\nat(n) \le_D d$. We similarly
+\mathbb{N} \rel D$ by $(n, d) \in \inat$ iff $e_\nat(n) \ltdyn_D d$. We similarly
 define $\itimes : D \times D \rel D$ by $((d_1, d_2), d) \in \itimes$ iff
-$e_\times(d_1, d_2) \le_D d$, and we define $\text{inj}_\to : U(D \arr \li D)
-\rel D$ by $(f, d) \in \iarr$ iff $e_\to(f) \le_D d$.
+$e_\times(d_1, d_2) \ltdyn_D d$, and we define $\text{inj}_\to : U(D \arr \li D)
+\rel D$ by $(f, d) \in \iarr$ iff $e_\to(f) \ltdyn_D d$.
 
 Now we define the perturbations for $D$. Recall that to each predomain $A$ we
 associate a monoid $M_A$ of syntactic perturbations and a homomorphism into the
@@ -482,7 +489,7 @@ relations $c_i$ and $c_o$ are obvious from the context, we will simply write $f
 We now verify the existence of the squares for the cast rules. For UpL, the
 relevant extensional square is obtained as follows:
 %
-% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMSwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMCwzLCJlX2MiLDIseyJjdXJ2ZSI6MX1dLFsxLDQsIlxcZGVscmVfYyIsMl0sWzIsNSwiXFxwdXNoX3tjJ30oXFxkZWxyZV9jKSIsMix7ImN1cnZlIjoxfV0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsIlxcbGVfe0FfMn0iLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDUsImMnIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw1LCJcXGlkIiwwLHsiY3VydmUiOi0xfV0sWzAsMywiZV9jIiwwLHsiY3VydmUiOi0xfV0sWzgsMTMsIlxcYmlzaW0iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiwxNCwiXFxiaXNpbSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMSwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMCwzLCJlX2MiLDIseyJjdXJ2ZSI6MX1dLFsxLDQsIlxcZGVscmVfYyIsMl0sWzIsNSwiXFxwdXNoX3tjJ30oXFxkZWxyZV9jKSIsMix7ImN1cnZlIjoxfV0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsInIoQV8yKSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDUsIlxcaWQiLDAseyJjdXJ2ZSI6LTF9XSxbMCwzLCJlX2MiLDAseyJjdXJ2ZSI6LTF9XSxbOCwxMywiXFxiaXNpbSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDE0LCJcXGJpc2ltIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&,column sep=large]
 	{A_1} \& {A_2} \& {A_3} \\
 	{A_2} \& {A_2} \& {A_3}
@@ -493,7 +500,7 @@ relevant extensional square is obtained as follows:
 	\arrow["{\delre_c}"', from=1-2, to=2-2]
 	\arrow[""{name=2, anchor=center, inner sep=0}, "{\push_{c'}(\delre_c)}"', curve={height=6pt}, from=1-3, to=2-3]
 	\arrow[""{name=3, anchor=center, inner sep=0}, "\id", curve={height=-6pt}, from=1-3, to=2-3]
-	\arrow["{\le_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
 	\arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
 	\arrow["\bisim"{description}, draw=none, from=0, to=1]
 	\arrow["\bisim"{description}, draw=none, from=2, to=3]
@@ -513,7 +520,7 @@ DnL, and DnR are obtained similarly.
 % closure'' of the intensional error ordering.
 
 
-\max{Missing a subsection on how to interpret the syntax into the semantics, i.e., the actual graduality proof}
+% \max{Missing a subsection on how to interpret the syntax into the semantics, i.e., the actual graduality proof}
 \subsection{Interpreting the Relational Axioms}
 
 \eric{Check this}
