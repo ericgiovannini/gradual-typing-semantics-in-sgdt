@@ -134,7 +134,14 @@ introduced in Section \ref{sec:concrete-relational-model}.
 We constructed the predomain for the dynamic type via mixed induction and
 guarded recursion, and defined its monoid of perturbations. We also defined the
 relations $\inat$, $\itimes$, and $\iarr$, and proved that they are
-quasi-representable.\max{need to say what's not formalized}
+quasi-representable.
+%
+We have not yet formalized the constructions involving value and computation
+relations: showing that these relations compose, and defining the actions of the
+functors $\li$, $U$, $\times$, and $\arr$ on the relations. We have also not yet
+formalized the syntax-to-semantics translation.
+
+% \max{need to say what's not formalized}
 
 % We plan to formalize the construction of perturbations and 
 % quasi-representable relations, but we have yet to decide
@@ -152,11 +159,14 @@ Lastly, we have formalized the big-step term semantics discussed in Section
 \ref{sec:big-step-term-semantics} and the adequacy of the relational model
 discussed in Section \ref{sec:adequacy}. This required us to add axioms about
 clock quantification as well as axioms asserting the \emph{clock-irrelevance} of
-booleans and natural numbers, since as of this writing these axioms are not
-built-in to Guarded Cubical Agda. The mechanization of adequacy also required us
-to formalize some essential lemmas involving clocks and clock-irrelevance; we
-are considering later refactoring these as part of a ``standard library'' for
-Guarded Cubical Agda.\max{say these axioms are taken from prior work and cite that}
+booleans and natural numbers since as of this writing these axioms are not
+built-in to Guarded Cubical Agda. These axioms are discussed in prior work on
+guarded type theory \cite{atkey-mcbride2013, kristensen-mogelberg-vezzosi2022}.
+The mechanization of adequacy also required us to formalize some essential
+lemmas involving clocks and clock-irrelevance; we are considering later
+refactoring these as part of a ``standard library'' for Guarded Cubical
+Agda.
+% \max{say these axioms are taken from prior work and cite that}
 
 \begin{comment}
 % prove graduality in the syntax of 
