@@ -80,12 +80,11 @@ interpreting type precision $c : A \ltdyn A'$ as an
 A'$ and a possibly erroring projection $p : \li A' \multimap \li A$
 such that $p \circ e = \id$ and $e \circ p \ltdyn \id$
 \cite{new-ahmed2018,new-licata18,new-licata-ahmed2019}. At first glance, our model
-of precision looks somewhat different: it is a \emph{relation}
+of precision looks different: it is a \emph{relation}
 $\sem{c} : A \rel A'$ with a quasi-representability structure that
 gives us something like $e$ and $p$ in an embedding-projection
 pair. The relationship between these models is that \emph{if} the
-relation were \emph{truly} representable rather than only
-quasi-representable we would have that $e$ and $p$ form a \emph{Galois
+relation were \emph{truly} representable we would have that $e$ and $p$ form a \emph{Galois
 connection} $e \circ p \ltdyn \id$ and $\id \ltdyn p \circ
 e$. However, we have dropped the stronger property of retraction from
 our analysis in this work. With true representability, the relation
@@ -153,9 +152,9 @@ In parallel with developing the theory discussed in this paper, we have
 developed a partial formalization of our results in Guarded Cubical Agda
 \cite{veltri-vezzosi2020}.
 %
-We have formalized the major components of the definition of the concrete model
+We formalized the major components of the definition of the concrete model
 described in Section \ref{sec:concrete-relational-model}: predomains, error
-domains, their morphisms, relations, and squares, and we used the guarded
+domains, morphisms, relations, squares, using the guarded
 features to define the free error domain, the lock-step error ordering, and weak
 bisimilarity. We also formalized the no-go theorem from Section
 \ref{sec:concrete-term-model}.
