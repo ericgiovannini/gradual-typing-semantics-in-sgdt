@@ -49,24 +49,22 @@ way to turn a relation arrow into a function in a forward direction
 and downcasts are the dual universal arrow.  Later, New, Licata and
 Ahmed \cite{new-licata-ahmed2019} extended this axiomatic treatment from
 call-by-name to call-by-value as well by giving an axiomatic theory of
-type and term precision in call-by-push-value. This left implicit any
-connection to a ``double call-by-push-value'', which we make explicit
-in Section~\ref{sec:cbpv}.
+type and term precision in call-by-push-value.
 
-With this notion of abstract categorical model in hand, denotational
-semantics is then the work of constructing concrete models that
-exhibit the categorical construction. New and Licata
-\cite{new-licata18} present such a model using categories of
-$\omega$-CPOs, and this model was extended by Lennon-Bertrand,
-Maillard, Tabareau and Tanter to prove graduality of a gradual
-dependently typed calculus $\textrm{CastCIC}^{\mathcal G}$. This
-domain-theoretic approach meets our criteria of being a semantic
-framework for proving graduality, but suffers from the limitations of
-classical domain theory: the inability to model viciously
-self-referential structures such as higher-order extensible state and
-similar features such as runtime-extensible dynamic types. Since these
-features are quite common in dynamically typed languages, we seek a
-new denotational framework that can model these type system features.
+%% With this notion of abstract categorical model in hand, denotational
+%% semantics is then the work of constructing concrete models that
+%% exhibit the categorical construction. New and Licata
+%% \cite{new-licata18} present such a model using categories of
+%% $\omega$-CPOs, and this model was extended by Lennon-Bertrand,
+%% Maillard, Tabareau and Tanter to prove graduality of a gradual
+%% dependently typed calculus $\textrm{CastCIC}^{\mathcal G}$. This
+%% domain-theoretic approach meets our criteria of being a semantic
+%% framework for proving graduality, but suffers from the limitations of
+%% classical domain theory: the inability to model viciously
+%% self-referential structures such as higher-order extensible state and
+%% similar features such as runtime-extensible dynamic types. Since these
+%% features are quite common in dynamically typed languages, we seek a
+%% new denotational framework that can model these type system features.
 
 The standard alternative to domain theory that scales to essentially
 arbitrary self-referential definitions is \emph{step-indexing} or its
@@ -80,11 +78,17 @@ higher-order store and runtime-extensible dynamic types
 their proof developments are highly repetitive and technical, with
 each development formulating a logical relation from first-principles
 and proving many of the same tedious lemmas without reusable
-mathematical abstractions.
+mathematical abstractions. This is addressed somewhat by Siek and Chen
+\cite{siek-chen2021}, who give a proof in Agda of graduality for an
+operational semantics who use a \emph{guarded logic of propositions}
+shallowly embedded in Agda. The guarded logic simplifies the treatment
+of step-indexed logical relations, but the approach is still
+fundamentally operational, and so the main lemmas of the work are
+still tied to the particular operational syntactic calculus being
+modeled. A further advantage of the denotational approach is that it
+easily validates equational reasoning, not just graduality, and it is
+completely independent of any particular syntax of gradual typing.
 
-
-
-\subsection{Related Work}
 % Discuss Joey Eremondi's thesis on gradual dependent types
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
 define a syntactic model for a gradually-typed source
@@ -100,14 +104,6 @@ how to prove the graduality in this setting.
 The work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
 % Discuss Jeremy Siek's work on graduality in Agda
-Siek and Chen \cite{siek-chen2021} give a proof in Agda of graduality
-for an operational semantics. While they do not use the Guarded
-Cubical extension, they do use a guarded logic of propositions
-shallowly embedded in Agda. Our denotational approach requires full
-guarded type theory not just guarded logic. An advantage of the
-denotational approach is that it easily validates equational
-reasoning, not just graduality, and it is completely independent of
-any particular syntax of gradual typing.
 
 \subsection{Mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
@@ -234,9 +230,30 @@ finished some prerequisite proofs on clock quantification and postulated
 some theorems on clock globalization.
 \end{comment}
 
-\subsection{Comparison to Explicit Step-Indexing}
+\subsection{Comparison to Embedding-projection pairs}
 
-\max{shallow}
+A line of work by New, Licata and Ahmed proves graduality by
+interpreting type precision $c : A \ltdyn A'$ as an
+\emph{embedding-projection pair}, that is a pure function $e : A \to
+A'$ and a possibly erroring projection $p : \li A' \multimap \li A$
+such that $p \circ e = \id$ and $e \circ p \ltdyn \id$
+\cite{newahmed,newlicata,newlicataahmed}. At first glance, our model
+of precision looks somewhat different: it is a \emph{relation}
+$\sem{c} : A \relto A'$ with a quasi-representability structure that
+gives us something like $e$ and $p$ in an embedding-projection
+pair. The relationship between these models is that \emph{if} the
+relation were \emph{truly} representable rather than only
+quasi-representable we would have that $e$ and $p$ form a \emph{Galois
+connection} $e \circ p \ltdyn \id$ and $\id \ltdyn p \circ
+e$. However, we have dropped the stronger property of retraction from
+our analysis in this work. With true representability, the relation
+$c$ is \emph{uniquely determined} by the embedding $e$, but since we
+only have quasi-representability, we need to keep the relation around
+explicitly. So the extra complexity of managing explicit relations is
+a cost of the intensional reasoning that guarded type theory
+introduces.
+
+\subsection{Comparison to Logical Relations Models}
 Working internally to guarded type theory reduces the overhead of
 needing to carry around the step-indices in the proofs as is required
 when using explicit step-indexing. Additionally, the logical relations

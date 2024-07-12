@@ -40,7 +40,9 @@
   \end{enumerate}
 \end{proof}
 
-As mentioned in Section~\ref{sec:syntax}, the cast calculus we employ uses a splitting of casts into downcasts and upcasts, whereas gradual surface languages are built out of a single notion of cast
+As mentioned in Section~\ref{sec:syntax}, the cast calculus we
+separates gradual type casts into downcasts and upcasts, whereas many
+gradual calculi are built out of a single notion of cast
 \[ \inferrule{\Gamma \vdash M : A}{\Gamma \vdash (M :: A') : A' }\]
 The term precision rules for this style of calculus are as follows\cite{siekvitousekciminiboyland}:
 \begin{mathpar}
@@ -291,6 +293,10 @@ this section.
       {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
       {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
   \end{mathpar}
+
+  This has the universal property that $\phi \ltsq{d \relcomp d'}{d''}
+  \phi'$ if and only if for any $b \binrel{d} b'$ and $b' \binrel{d'}
+  b''$ that $\phi(b) \binrel{d''} \phi'(b'')$.
 \end{definition}
 
 \subsection{The Dynamic Type}
