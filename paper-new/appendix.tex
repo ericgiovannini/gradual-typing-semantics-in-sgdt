@@ -125,7 +125,7 @@ translation that avoids the need for any retraction:
   :c_1$.
 \end{proof}
 
-\section{Kleisli Actions}
+\section{Kleisli Actions}\label{sec:kleisli-actions}
 
 We now define the Kleisli actions of the type constructors. These are the following
 \begin{enumerate}
@@ -649,9 +649,9 @@ that our notions of value and computation relation are compositional, and for
 defining the action of the functors $U$, $\li$, $\arr$, and $\times$ on value
 and computation relations.
 
-Recall the notion of quasi-order-equivalence as defined in Definition
+Recall the notion of quasi-equivalence of relations as defined in Definition
 \ref{def:quasi-order-equivalent}. The following lemma will be useful in showing
-that two relations are quasi-order-equivalent.
+that two relations are quasi-equivalent.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % quasi-representable by same morphism --> quasi-equivalent
@@ -811,7 +811,7 @@ push-pull structures is quasi-representable.
 \end{proof}
 
 
-The next two lemmas concern quasi-order-equivalence and the functors $\li$ and
+The next two lemmas concern quasi-equivalence and the functors $\li$ and
 $U$.
 
 \begin{lemma}\label{lem:Fcc-equiv-FcFc'}
@@ -1186,7 +1186,8 @@ value and computation relations as follows:
   \end{enumerate}
 \end{definition}
 
-Lastly, we establish the quasi-order-equivalence for the functors.
+Lastly, we prove quasi-equivalence of relations involving composition and the
+functors $U$, $\li$, $\to$ and $\times$.
 
 \begin{lemma}\label{lem:quasi-order-equiv-functors}
   The following hold:
@@ -1217,8 +1218,8 @@ Lastly, we establish the quasi-order-equivalence for the functors.
 \subsection{Definitions of Error Ordering and Weak Bisimilarity for the Delay Monad}
 \label{sec:relations-on-delay-monad}
 
-Correspondingly, we define a notion of lock-step error ordering and weak
-bisimilarity relation for the coinductive delay monad $\delay(\mathbb{N} + {\mho})$:
+We define a notion of lock-step error ordering and weak bisimilarity relation
+for the coinductive delay monad $\delay(\mathbb{N} + {\mho})$:
 
 The lock-step error ordering is defined coinductively by the following rules:
 
