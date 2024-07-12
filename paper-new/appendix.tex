@@ -675,17 +675,17 @@ that two relations are quasi-order-equivalent.
   
   Composing these horizontally we get the following square:
 
-  % https://q.uiver.app/#q=WzAsNixbMCwwLCJBIl0sWzEsMCwiQSJdLFsyLDAsIkEnIl0sWzAsMSwiQSJdLFsxLDEsIkEnIl0sWzIsMSwiQSciXSxbMCwxLCJyKEEpIl0sWzEsMiwiYyJdLFszLDQsImMnIiwyXSxbNCw1LCJyKEEnKSIsMl0sWzAsMywiaV9BKFxcZGVsbGVfe2MnfSkiLDJdLFsxLDQsImYiLDJdLFsyLDUsImlfe0EnfShcXGRlbHJlX2MpIl1d
+  % https://q.uiver.app/#q=WzAsNixbMCwwLCJBIl0sWzEsMCwiQSJdLFsyLDAsIkEnIl0sWzAsMSwiQSJdLFsxLDEsIkEnIl0sWzIsMSwiQSciXSxbMCwxLCJyKEEpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMyw0LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwicihBJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsImlfQShcXGRlbGxlX3tjJ30pIiwyXSxbMSw0LCJmIiwyXSxbMiw1LCJpX3tBJ30oXFxkZWxyZV9jKSJdXQ==
   \[\begin{tikzcd}[ampersand replacement=\&]
     A \& A \& {A'} \\
     A \& {A'} \& {A'}
-    \arrow["{r(A)}", from=1-1, to=1-2]
+    \arrow["{r(A)}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
     \arrow["{i_A(\delle_{c'})}"', from=1-1, to=2-1]
-    \arrow["c", from=1-2, to=1-3]
+    \arrow["c", "\shortmid"{marking}, no head, from=1-2, to=1-3]
     \arrow["f"', from=1-2, to=2-2]
     \arrow["{i_{A'}(\delre_c)}", from=1-3, to=2-3]
-    \arrow["{c'}"', from=2-1, to=2-2]
-    \arrow["{r(A')}"', from=2-2, to=2-3]
+    \arrow["{c'}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \arrow["{r(A')}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
   \end{tikzcd}\]
 
   Then since $r(A) \comp c = c$ and $c' \comp r(A') = c'$, we obtain the desired square.
@@ -914,7 +914,7 @@ $U$ applied to a composition of relations:
     the square $\id \ltdyn_{\li (c \comp c')}^{\li c \comp \li c'} \id$ which we get from
     the fact that $\li$ is lax.
 
-    % https://q.uiver.app/#q=WzAsOSxbMCwwLCJcXGxpIEEnJyJdLFsyLDAsIlxcbGkgQScnIl0sWzAsMSwiXFxsaSBBJyciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDIsIlxcbGkgQSJdLFsyLDIsIlxcbGkgQScnIl0sWzAsMywiXFxsaSBBIl0sWzIsMywiXFxsaSBBJyciXSxbMSwyLCJcXGxpIEEnIl0sWzAsMSwicihcXGxpIEEnJykiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsInIoXFxsaSBBJycpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw3LCJcXGxpIChjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsImlfe0EnJ30oXFxkZWx0YV5yKSIsMl0sWzIsNCwicF97RmMgXFxjb21wIEZjJ30iLDJdLFs0LDYsIlxcaWQiLDJdLFsxLDMsImlfe0EnJ30oXFxkZWx0YV5yKSJdLFszLDUsImlfe0EnJ30oXFxkZWxycF97RmMgXFxjb21wIEZjJ30pIl0sWzUsNywiXFxpZCJdLFs0LDgsIlxcbGkgYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzgsNSwiXFxsaSBjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEyLDE1LCJcXGlkIiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEzLDE2LCJcXGRubF97XFxsaSBjIFxcY29tcCBcXGxpIGMnfSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    % https://q.uiver.app/#q=WzAsOSxbMCwwLCJcXGxpIEEnJyJdLFsyLDAsIlxcbGkgQScnIl0sWzAsMSwiXFxsaSBBJyciXSxbMiwxLCJcXGxpIEEnJyJdLFswLDIsIlxcbGkgQSJdLFsyLDIsIlxcbGkgQScnIl0sWzAsMywiXFxsaSBBIl0sWzIsMywiXFxsaSBBJyciXSxbMSwyLCJcXGxpIEEnIl0sWzAsMSwicihcXGxpIEEnJykiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsInIoXFxsaSBBJycpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw3LCJcXGxpIChjIFxcY29tcCBjJykiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsImlfe0EnJ30oXFxkZWx0YV5yKSIsMl0sWzIsNCwicF97XFxsaSBjIFxcY29tcCBcXGxpIGMnfSIsMl0sWzQsNiwiXFxpZCIsMl0sWzEsMywiaV97QScnfShcXGRlbHRhXnIpIl0sWzMsNSwiaV97QScnfShcXGRlbHJwX3tcXGxpIGMgXFxjb21wIFxcbGkgYyd9KSJdLFs1LDcsIlxcaWQiXSxbNCw4LCJcXGxpIGMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs4LDUsIlxcbGkgYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMiwxNSwiXFxpZCIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMywxNiwiXFxkbmxfe1xcbGkgYyBcXGNvbXAgXFxsaSBjJ30iLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
     \[\begin{tikzcd}[ampersand replacement=\&]
       {\li A''} \&\& {\li A''} \\
       {\li A''} \&\& {\li A''} \\
@@ -924,8 +924,8 @@ $U$ applied to a composition of relations:
       \arrow[""{name=0, anchor=center, inner sep=0}, "{i_{A''}(\delta^r)}"', from=1-1, to=2-1]
       \arrow[""{name=1, anchor=center, inner sep=0}, "{i_{A''}(\delta^r)}", from=1-3, to=2-3]
       \arrow["{r(\li A'')}", "\shortmid"{marking}, no head, from=2-1, to=2-3]
-      \arrow[""{name=2, anchor=center, inner sep=0}, "{p_{Fc \comp Fc'}}"', from=2-1, to=3-1]
-      \arrow[""{name=3, anchor=center, inner sep=0}, "{i_{A''}(\delrp_{Fc \comp Fc'})}", from=2-3, to=3-3]
+      \arrow[""{name=2, anchor=center, inner sep=0}, "{p_{\li c \comp \li c'}}"', from=2-1, to=3-1]
+      \arrow[""{name=3, anchor=center, inner sep=0}, "{i_{A''}(\delrp_{\li c \comp \li c'})}", from=2-3, to=3-3]
       \arrow["{\li c}", "\shortmid"{marking}, no head, from=3-1, to=3-2]
       \arrow["\id"', from=3-1, to=4-1]
       \arrow["{\li c'}", "\shortmid"{marking}, no head, from=3-2, to=3-3]
@@ -1014,8 +1014,6 @@ $U$ applied to a composition of relations:
   \end{enumerate}
 \end{proof}
 
-
-\eric{Left off here}
 
 %%%%%%%%%
 % Arrow %
@@ -1184,7 +1182,7 @@ value and computation relations as follows:
 
 Lastly, we establish the quasi-order-equivalence for the functors.
 
-\begin{lemma}
+\begin{lemma}\label{lem:quasi-order-equiv-functors}
   The following hold:
   \begin{itemize}
     \item $U(d \comp d') \qordeq U(d) \comp U(d')$
@@ -1193,6 +1191,13 @@ Lastly, we establish the quasi-order-equivalence for the functors.
     \item $(c_1 \comp c_1') \times (c_2 \comp c_2') \qordeq (c_1 \times c_2) \comp (c_1'\times c_2')$
   \end{itemize}
 \end{lemma}
+\begin{proof}
+  (1) and (2) were already shown in Lemmas \ref{lem:Fcc-equiv-FcFc'} and
+  \ref{lem:Udd-equiv-UdUd'}. (3) follows from observing that both relations are
+  right-represented by the morphism $e_c'e_c \arr p_{d}p_{d'}$ and (4) from the
+  fact that both are left-represented by the morphism $e_{c_1'} e_{c_1} \times
+  e_{c_2'} e_{c_2}$
+\end{proof}
 
 % We now establish the quasi-order-equivalence for the functors.
 % We already showed that $U(d \comp d') \qordeq U(d)U(d')$ and $F(c \comp c'') \qordeq F(c)F(c')$
@@ -1203,7 +1208,60 @@ Lastly, we establish the quasi-order-equivalence for the functors.
 % are proved similarly, noting in both cases that the both relations are
 % quasi-represented by the same morphism.
 
+\subsection{Definitions of Error Ordering and Weak Bisimilarity for the Delay Monad}
+\label{sec:relations-on-delay-monad}
 
+Correspondingly, we define a notion of lock-step error ordering and weak
+bisimilarity relation for the coinductive delay monad $\delay(\mathbb{N} + {\mho})$:
+
+The lock-step error ordering is defined coinductively by the following rules:
+
+%
+\begin{mathpar}
+  \inferrule*[]
+  { }
+  {\tnow (\inr\, 1) \ledelay d}
+
+  \inferrule*[]
+  {x_1 \le_X x_2}
+  {\tnow (\inl\, x_1) \ledelay \tnow (\inl\, x_2)}
+
+  \inferrule*[]
+  {d_1 \ledelay d_2}
+  {\tlater\, d_1 \ledelay \tlater\, d_2}
+\end{mathpar}
+%
+And we similarly define by coinduction a ``weak bisimilarity'' relation on
+$\delay(\mathbb{N} + {\mho})$. This uses a relation $d \Da x_?$ between
+$\delay(\mathbb{N} + {\mho})$ and $\mathbb{N} + {\mho}$ that is defined as $d
+\Da n_? := \Sigma_{i \in \mathbb{N}} d = \tlater^i(\tnow\, n_?)$. Then weak
+bisimilarity for the delay monad is defined coinductively by the rules
+%
+\begin{mathpar}
+  \inferrule*[]
+  {n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tnow\, n_? \bisimdelay \tnow\, m_? }
+
+  \inferrule*[leftskip=1.5em]
+  {d_1 \Da n_? \and n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tlater\, d_1 \bisimdelay \tnow\, m_? }
+
+  \inferrule*[leftskip=1.5em]
+  {d_2 \Da m_? \and n_? \bisim_{\mathbb{N} + {\mho}} m_?}
+  {\tnow\, n_? \bisimdelay \tlater\, d_2}
+
+  \inferrule*[leftskip=1.5em]
+  {d_1 \bisimdelay d_2}
+  {\tlater\, d_1 \bisimdelay \tlater\, d_2 }
+  %
+  % \inferrule*[]
+  % {d_1 \Da x_? \and d_2 \Da y_? \and x_? \bisim_{X + 1} y_?}
+  % {d_1 \bisimdelay d_2}
+  %
+  % \inferrule*[]
+  % {d_1 \bisimdelay d_2}
+  % {\tlater d_1 \bisimdelay \tlater d_2 }
+\end{mathpar}
 
 
 
