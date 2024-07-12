@@ -233,8 +233,8 @@ later modality and the guarded fixed point property axiomatically.
 
 
 In this paper, we develop an adequate denotational semantics that satisfies
-graduality and soundness of the equational theory of cast calculi using the
-techniques of SGDT.  
+graduality and soundness of the equational theory of cast calculi using
+synthetic guarded domain theory.  
 
 
 \subsection{Contributions}
@@ -247,13 +247,13 @@ demonstrating that the semantics is readily mechanizable.
 
 \begin{enumerate}
 \item First, we give a simple concrete term semantics where we show
-  how to model the dynamic type as a solution to a guarded domain equation
+  how to model the dynamic type as a solution to a guarded domain equation.
 \item Next, we identify where prior work on classical domain theoretic
   semantics of gradual typing breaks down when using guarded semantics
   of recursive types.
 \item We develop a key new concept of \emph{syntactic perturbations},
   which allow us to recover enough extensional reasoning to model the
-  graduality property compositionally
+  graduality property compositionally.
 \item We combine this insight together with an abstract categorical
   model of gradual typing using reflexive graph categories and
   call-by-push-value to give a compositional construction of our
@@ -265,24 +265,24 @@ demonstrating that the semantics is readily mechanizable.
 
 The paper is laid out as follows:
 \begin{enumerate}
-\item In Section\ref{sec:GTLC} we fix our input language, a fairly
+\item In Section \ref{sec:GTLC} we fix our input language, a fairly
   typical gradually typed cast calculus.
-\item In Section\ref{sec:concrete-term-model} we develop a first
+\item In Section \ref{sec:concrete-term-model} we develop a first
   denotational semantics in synthetic guarded domain theory that
   satisfies adequacy and respects the equational theory, but does not
   validate graduality. We use this to introduce some of our main
   technical tools: modeling recursive types in guarded type theory and
   modeling effects using call-by-push-value.
-\item In Section\ref{sec:towards-relational-model} we show where the
+\item In Section \ref{sec:towards-relational-model} we show where the
   New-Licata classical domain theoretic approach fails to adapt
   cleanly to the guarded setting and explore the difficulties of
   proving graduality in an intensional model.
-\item In Section\ref{sec:concrete-relational-model} we describe the resulting
+\item In Section \ref{sec:concrete-relational-model} we describe the resulting
   model in detail. We then prove that the resulting denotational model is
   \emph{adequate} for the graduality property: a closed term precision $M \ltdyn
-  N : \nat$ has the expected semantics, that $M$ errors or $M$ and $N$ have the
+  N : \nat$ has the expected semantics, i.e., that $M$ errors or $M$ and $N$ have the
   same extensional behavior.
-\item In Section\ref{sec:discussion} we discuss prior work on proving
+\item In Section \ref{sec:discussion} we discuss prior work on proving
   graduality, our partial mechanization of these results and discuss
   future directions for denotational semantics of gradual typing.
 \end{enumerate}

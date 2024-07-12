@@ -11,7 +11,7 @@ Figure~\ref{fig:gtlc-syntax}. We include a dynamic type, a type of
 numbers, the call-by-value function type $A \ra A'$ and products.
 %
 We include a syntax for \emph{type precision} derivations $c : A
-\ltdyn A'$, the typing is given in Figure~\ref{fig:typrec}.
+\ltdyn A'$; the typing is given in Figure~\ref{fig:typrec}.
 %
 Any type precision derivation $c : A \ltdyn A'$ induces a pair of
 casts, the upcast $\upc c : A \ra A'$ and the downcast $\dnc c : A' \ra
@@ -115,16 +115,18 @@ $M \ltdyn M'$ and $N \ltdyn N'$ that $M\,N \ltdyn M'\,N'$.
 With such congruence rules, reflexivity $M \ltdyn M$ is
 admissible. Transitivity, on the other hand, is intentionally not
 taken as a primitive rule, matching the original formulation of the
-dynamic gradual guarantee.
+dynamic gradual guarantee \cite{siek_et_al:LIPIcs:2015:5031}.
 %
 We include a rule that says that equivalent type precision derivations
 $c \equiv c'$ are equivalent for the purposes of term precision.
 %
-The next rule is the \emph{retraction} principle, which states that a
-downcast after an upcast is equivalent to doing nothing at all, since
-intuitively the upcasted value should already satisfy the type. Here
-$\equidyn$ means we require each is $\ltdyn$ the other, with
-reflexivity precision derivations.
+% Removed retraction
+%
+% The next rule is the \emph{retraction} principle, which states that a
+% downcast after an upcast is equivalent to doing nothing at all, since
+% intuitively the upcasted value should already satisfy the type. Here
+% $\equidyn$ means we require each is $\ltdyn$ the other, with
+% reflexivity precision derivations.
 %
 Finally, we include 4 rules for reasoning about casts. Intuitively
 these say that the upcast is a kind of \emph{least upper bound} and
@@ -156,9 +158,10 @@ given by functorial actions \cite{new-licata18,new-licata-ahmed2019}.
   {}
   {\Delta \vdash \mho \ltdyn M : c}
 
-  \inferrule
-  {}
-  {\dnc {c} \upc {c} M \equidyn M}
+  % Removed retraction
+  % \inferrule
+  % {}
+  % {\dnc {c} \upc {c} M \equidyn M}
 
   \inferrule*[Right=UpL]
   {M \ltdyn M' : cc_r}
@@ -185,7 +188,9 @@ In the remainder of this article, we seek to develop a compositional
 semantics of this calculus that is \emph{adequate} for
 graduality. This means we should have a semantic relation $\ltdyn$
 such that if $M \ltdyn M'$ then $\sem{M} \ltdyn \sem{M'}$ satisfying
-the following properties for closed terms of type $\nat$:
+the following properties for closed terms of type $\nat$. We write
+$\equidyn$ to mean that each side is $\ltdyn$ the other, with
+reflexivity precision derivations.
 \begin{enumerate}
 \item $\sem{n} \equidyn \sem{n'}$ if and only if $n = n'$ for natural numbers
   $n,n'$.
