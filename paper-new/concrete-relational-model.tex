@@ -561,10 +561,10 @@ DnL, and DnR are obtained analogously.
 
 \subsection{Relational Adequacy}\label{sec:adequacy}
 
-\eric{Check this}
-
-In this section, we prove the adequacy of the interpretation of term precision.
-
+Now that we have established our denotational model, we can, as in
+Section~\ref{sec:big-step-term-semantics}, extract a big step semantics. Our final
+goal then is to prove that the extensional squares in our model imply
+the graduality property for this final big step semantics.
 \begin{comment}
 First we establish some notation. Fix a morphism $f : 1 \to \li \mathbb{N} \cong
 \li \mathbb{N}$. We write $f \da n$ to mean that there exists $m$ such that $f =
@@ -597,11 +597,8 @@ Thus, to prove our adequacy result, we need to leave the guarded
 setting\max{``pass to leave the guarded setting''?}. We have seen in Section \ref{sec:big-step-term-semantics} that clock
 quantification makes this possible.
 \end{comment}
-
-Recall the big-step term semantics $- \Downarrow -$ defined in Section
-\ref{sec:big-step-term-semantics}. The result we seek to show is the following:
+The result we seek to show is the following:
 % If $f \bisim^{gl} f' \ltls^{gl} g' \bisim^{gl} g$, then
-
 \begin{theorem}[adequacy]
   If $\cdot \vdash M \ltdyn N : \nat$, then:
   \begin{itemize}
@@ -610,10 +607,6 @@ Recall the big-step term semantics $- \Downarrow -$ defined in Section
     \item If $N \Downarrow n$ then $M \Downarrow n$ or $M \Downarrow \mho$.
   \end{itemize}
 \end{theorem}
-
-We have already established graduality above, which states that syntactic term
-precision implies that the denoted terms are related in the semantic
-interpretation of term precision.
 %
 % Recall as discussed in that section that the definitions of our model are all
 % parameterized by a clock $k$. 
