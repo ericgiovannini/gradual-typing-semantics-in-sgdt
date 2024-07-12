@@ -28,7 +28,7 @@ The obvious first try at a guarded semantics that models graduality
 would be to similarly enhance our value types and computation types to
 additionally carry a poset structure. For most type formers this
 ordering can be defined as lifting poset structures on the
-subformulae, the key design choice is in the ordering on the free
+subformulae; the key design choice is in the ordering on the free
 error domain $\li A$.
 
 The ordering on $\li A$ should model the graduality property, but how
@@ -79,7 +79,7 @@ which is the content of the final $4$ cases of the definition.
 This definition of $\semltbad$ is sufficient to model the graduality
 property in that if $l \semltbad l'$ for $l,l' : \li \mathbb{N}$ where
 $\mathbb{N}$ is the flat poset whose ordering is equality, then the
-bigstep semantics we derive for $l, l'$ do in fact satisfy the
+big-step semantics we derive for $l, l'$ does in fact satisfy the
 intended graduality relation.
 %
 However, there is a major issue with this definition: it's not a poset
