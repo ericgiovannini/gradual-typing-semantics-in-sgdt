@@ -47,11 +47,7 @@ a tilde to denote a term of type $\later A$, e.g., $\tilde{M}$.
 % TODO later is an applicative functor, but not a monad
 
 There is a \emph{guarded fixpoint} operator
-%
-\[
-  \fix : \forall T, (\later T \to T) \to T.
-\]
-%
+\[ \fix : \forall T, (\later T \to T) \to T. \]
 That is, to construct a term of type $T$, it suffices to assume that we have
 access to such a term ``later'' and use that to help us build a term ``now''.
 This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$. In
@@ -97,7 +93,6 @@ A$ via repeated tick application.
 % TODO restriction on tick application
 %
 For the sake of brevity, we will also write tick application as $M_t$.
-
 The constructions we carry out in this paper will take place in a guarded type
 theory with ticks.
 \subsection{A Call-by-push-value Model}
@@ -441,27 +436,24 @@ actually only a function available later, and so we must insert a
 %%   \caption{Interpretation of types}
 %%   \label{fig:type-interpretation}
 %% \end{figure*}
-  
 \begin{figure*}
-  \max{Can we squeeze this figure very tightly?}
-  
-  % TODO check these
+  \begin{minipage}{0.3\textwidth}
+    \begin{footnotesize}
   \begin{align*}
+    % upcasts
+    \sem{\upc{r(A)}} &= \id_A \\
+    \sem{\upc{(c \comp c')}} &= \sem{\upc{c'}} \circ \sem{\upc{c}} \\
+    \sem{\upc{(c_i \ra c_o)}} &= (\sem{\dnc {c_i}} \tok \li\sem{A_o'})\circ (\sem{A_i} \tok U\li(\sem{\upc {c_o}}))\\
+    \sem{\upc{(c_1 \times c_2)}} &= \sem{\upc{c_1}} \times \sem{\upc{c_2}}\\
+    \sem{\upc{\inat}} &= \inat\\
+    \sem{\upc{\itimes}} &= \itimes\\
+    \sem{\upc{\iarr}} &= \iarr \circ \nxt\\
     % \sem{\zro}         &= \lambda \gamma . 0 \\
     % \sem{\suc\, V}     &= \lambda \gamma . (\sem{V}\, \gamma) + 1 \\
     % \sem{x \in \Gamma} &= \lambda \gamma . \gamma(x) \\
     % \sem{\lda{x}{M}}   &= \lambda \gamma . \lambda a . \sem{M}\, (*,\, (\gamma , a))  \\
     % \sem{V_f\, V_x}    &= \lambda \gamma . {({(\sem{V_f}\, \gamma)} \, {(\sem{V_x}\, \gamma)})} \\
     % \sem{\err_B}       &= \lambda \gamma . \mho \\
-    %
-    % upcasts
-    \sem{\upc{r(A)}} &= \id_A \\
-    \sem{\upc{(c \comp c')}} &= \sem{\upc{c'}} \circ \sem{\upc{c}} \\
-    \sem{\upc{(c_i \ra c_o)}} &= (\sem{\dnc {c_i}} \tok F\sem{A_o'})\circ (\sem{A_i} \tok UF(\sem{\upc {c_o}}))\\
-    \sem{\upc{(c_1 \times c_2)}} &= \sem{\upc{c_1}} \times \sem{\upc{c_2}}\\
-    \sem{\upc{\inat}} &= \inat\\
-    \sem{\upc{\itimes}} &= \itimes\\
-    \sem{\upc{\iarr}} &= \iarr \circ \nxt\\[2ex]
     %
     % downcasts
     \sem{\dnc{r(A)}} &= \id_{FA} \\
@@ -483,6 +475,8 @@ actually only a function available later, and so we must insert a
     % \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
     % \sem{\bind{x}{M}{N}} &= \lambda \delta . \ext {(\lambda x . \sem{N}\, (\delta, x))} {\sem{M}\, \delta} \\
   \end{align*}
+    \end{footnotesize}
+  \end{minipage}
   \caption{Semantics of casts}
   \label{fig:term-semantics}
 \end{figure*}

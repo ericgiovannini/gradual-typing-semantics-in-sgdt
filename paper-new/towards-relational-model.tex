@@ -53,26 +53,25 @@ to the number of steps taken, it is sensible to say that if one side
 has terminated and the other side is thinking, that we must require
 the thinking side to eventually terminate with a related behavior,
 which is the content of the final $4$ cases of the definition.
-
 \begin{figure*}
-    \begin{align*}
-        &\mho \semltbad l \text{ iff } \top \\
+      \begin{align*}
+        \mho \semltbad l &\text{ iff } \top \\
         %
-        &\eta\, x \semltbad \eta\, y \text{ if } 
+        \eta\, x \semltbad \eta\, y &\text{ iff } 
             x \semlt y \\
         %		
-        &\theta\, \tilde{l} \semltbad \theta\, \tilde{l'} \text{ iff } 
+        \theta\, \tilde{l} \semltbad \theta\, \tilde{l'} &\text{ iff } 
             \later_t (\tilde{l}_t \semltbad \tilde{l'}_t) \\
         %	
-        &\theta\, \tilde{l} \semltbad \mho \text{ iff } \exists n. \theta\, \tilde{l} = \delta^n(\mho) \\
+        \theta\, \tilde{l} \semltbad \mho &\text{ iff } \exists n. \theta\, \tilde{l} = \delta^n(\mho) \\
         %	
-        &\theta\, \tilde{l} \semltbad \eta\, y \text{ iff } \exists n. \exists x \leq y.
+        \theta\, \tilde{l} \semltbad \eta\, y &\text{ iff } \exists n. \exists x \leq y.
             (\theta\, \tilde{l} = \delta^n(\eta\, x)) \\
         %	
-        &\eta\, x \semltbad \theta\, \tilde{l'} \text { iff }
+        \eta\, x \semltbad \theta\, \tilde{l'} &\text { iff }
             \exists n. \exists y \geq x. (\theta\, \tilde{l'} = \delta^n (\eta\, y))
     \end{align*}
-    \caption{The step-insensitive error ordering.}
+    \caption{Step-insensitive error ordering}
     \label{fig:step-insensitive-error-ordering}
 \end{figure*}
 
@@ -350,9 +349,10 @@ ordering, they must have the exact same stepping behavior
 More formally, we define the \emph{lock-step error-ordering}, with the idea
 being that two computations $l$ and $l'$ are related if they are in lock-step
 with regard to their intensional behavior, up to $l$ erroring. Figure
-\ref{fig:lock-step-error-ordering} gives the definition.
+\ref{fig:lock-step-error-ordering} gives the definition of this relation.
 
 \begin{figure}
+  \begin{minipage}{0.5\textwidth}
     \fbox{$l_1 \ltls l_2$}
     \begin{align*}
         &\eta\, x \ltls \eta\, y \text{ if } 
@@ -362,8 +362,26 @@ with regard to their intensional behavior, up to $l$ erroring. Figure
         %
         &\theta\, \tilde{l} \ltls \theta\, \tilde{l'} \text{ if } 
             \later_t (\tilde{l}_t \ltls \tilde{l'}_t)
-    \end{align*}
-    \caption{The lock-step error ordering.}
+  \end{align*}\end{minipage}\begin{minipage}{0.5\textwidth}
+\fbox{$l_1 \bisim l_2$}
+    \begin{align*}
+        \mho \bisim \mho &\text{ iff } \top \\
+      %
+        \eta\, x \bisim \eta\, y &\text{ iff } x \bisim_A y \\
+      %		
+        \theta\, \tilde{x} \bisim \theta\, \tilde{y} &\text{ iff } \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+      %	
+        \theta\, \tilde{x} \bisim \mho &\text{ iff } \exists n. \theta\, \tilde{x} = \delta^n(\mho)\\
+      %	
+        \theta\, \tilde{x} \bisim \eta\, y &\text{ iff } \exists n. \exists x \bisim_A y.
+          (\theta\, \tilde{x} = \delta^n(\eta\, x))\\
+      %
+        \mho \bisim \theta\, \tilde{y} &\text{ iff } \exists n. \theta\, \tilde{y} = \delta^n(\mho) \\
+      %	
+        \eta\, x \bisim \theta\, \tilde{y} &\text { iff } \exists n. \exists y \bisim_A x. (\theta\, \tilde{y} = \delta^n (\eta\, y))
+      \end{align*}
+  \end{minipage}
+    \caption{lock-step error ordering and weak bisimilarity}
     \label{fig:lock-step-error-ordering}
 \end{figure}
 
@@ -389,16 +407,16 @@ The offending step arises precisely from the place where our
 definition of $D$ uses a $\later$: the function case.
 %
 Consider the representability condition corresponding to the DnL rule
-for $\iarr \colon \dyntodyn \ltdyn\, \dyn$.
-% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXGxpIEQiXSxbMCwxLCJcXGxpIFUoRCBcXGFyciBcXGxpIEQpIl0sWzEsMCwiXFxsaSBEIl0sWzEsMSwiXFxsaSBEIl0sWzAsMiwiXFxsZXFfe1xcbGkgRH0iLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsIlxcbGlcXGlhcnIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcZG5je1xcaWFycn0iLDJdLFsyLDMsIlxcaWQiXV0=
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{\li D} \& {\li D} \\
-	{\li U(D \arr \li D)} \& {\li D}
-	\arrow["{\leq_{\li D}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-	\arrow["{\sem{\dnc{\iarr}}}"', from=1-1, to=2-1]
-	\arrow["\id", from=1-2, to=2-2]
-	\arrow["\li\sem{\iarr}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-\end{tikzcd}\]
+for $\iarr \colon \dyntodyn \ltdyn\, \dyn$. This is the square $\sem{\dnc{\iarr}} \ltsq{r({\li D})}{\li\sem{\iarr}} \id$.
+%% % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXGxpIEQiXSxbMCwxLCJcXGxpIFUoRCBcXGFyciBcXGxpIEQpIl0sWzEsMCwiXFxsaSBEIl0sWzEsMSwiXFxsaSBEIl0sWzAsMiwiXFxsZXFfe1xcbGkgRH0iLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsIlxcbGlcXGlhcnIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcZG5je1xcaWFycn0iLDJdLFsyLDMsIlxcaWQiXV0=
+%% \[\begin{tikzcd}[ampersand replacement=\&]
+%% 	{\li D} \& {\li D} \\
+%% 	{\li U(D \arr \li D)} \& {\li D}
+%% 	\arrow["{\leq_{\li D}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+%% 	\arrow["{\sem{\dnc{\iarr}}}"', from=1-1, to=2-1]
+%% 	\arrow["\id", from=1-2, to=2-2]
+%% 	\arrow["\li\sem{\iarr}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+%% \end{tikzcd}\]
 For this square to be valid with the lock-step ordering the left and
 right hand side would need to take the same number of steps, at least
 when the left-hand side does not error.
@@ -420,7 +438,7 @@ steps a \emph{perturbation}.
 
 We formalize this property of being equivalent ``except for steps''
 with a second relation on the free error domain $\li A$: \emph{weak
-bisimilarity}, defined in Figure~\ref{fig:weak-bisimilarity}, which is
+bisimilarity}, defined in Figure~\ref{fig:lock-step-error-ordering}, which is
 parameterized by a binary relation $\bisim_A$ on $A$
 \cite{guarded-stuff-that-uses-bisim}.
 % For a type $X$, we define a relation on $\li X$, called ``weak bisimilarity",
@@ -433,27 +451,6 @@ thinking but the other terminates at $\eta x$ (i.e., one side steps),
 we stipulate that the $\theta$-term runs to $\eta y$ where $x$ is
 related to $y$. And similarly, if one side is thinking and the other
 errors, we ensure the thinking side eventually errors.
-\begin{figure}
-    \fbox{$l_1 \bisim l_2$}
-    \begin{align*}
-        \mho \bisim \mho &\text{ iff } \top \\
-      %
-        \eta\, x \bisim \eta\, y &\text{ iff } x \bisim_A y \\
-      %		
-        \theta\, \tilde{x} \bisim \theta\, \tilde{y} &\text{ iff } \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
-      %	
-        \theta\, \tilde{x} \bisim \mho &\text{ iff } \exists n. \theta\, \tilde{x} = \delta^n(\mho)\\
-      %	
-        \theta\, \tilde{x} \bisim \eta\, y &\text{ iff } \exists n. \exists x \bisim_A y.
-          (\theta\, \tilde{x} = \delta^n(\eta\, x))\\
-      %
-        \mho \bisim \theta\, \tilde{y} &\text{ iff } \exists n. \theta\, \tilde{y} = \delta^n(\mho) \\
-      %	
-        \eta\, x \bisim \theta\, \tilde{y} &\text { iff } \exists n. \exists y \bisim_A x. (\theta\, \tilde{y} = \delta^n (\eta\, y))
-      \end{align*}
-    \caption{The weak bisimilarity relation on the free error domain}
-    \label{fig:weak-bisimilarity}
-\end{figure}
 
 It can be shown (by \lob-induction) that weak bisimilarity is
 reflexive and symmetric. Since it is non-trivial, a $\theta$

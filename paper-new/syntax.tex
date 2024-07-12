@@ -11,7 +11,7 @@ Figure~\ref{fig:gtlc-syntax}. We include a dynamic type, a type of
 numbers, the call-by-value function type $A \ra A'$ and products.
 %
 We include a syntax for \emph{type precision} derivations $c : A
-\ltdyn A'$; the typing is given in Figure~\ref{fig:typrec}.
+\ltdyn A'$; the typing is given in Figure~\ref{fig:gtlc-syntax}.
 %
 Any type precision derivation $c : A \ltdyn A'$ induces a pair of
 casts, the upcast $\upc c : A \ra A'$ and the downcast $\dnc c : A' \ra
@@ -65,11 +65,6 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\dyn$. That is, $\d
 
   \inferrule{}{\Gamma \vdash \mho : A}
   \end{mathpar}
-  \caption{GTLC Cast Calculus Syntax}
-  \label{fig:gtlc-syntax}
-\end{figure}
-
-\begin{figure}
   \begin{mathpar}
     \inferrule{}{r(A) : A \ltdyn A}\and
     \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
@@ -86,8 +81,8 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\dyn$. That is, $\d
      (c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra c_oc_o') \and
      (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
   \end{mathpar}
-  \caption{Type Precision Derivations and equational theory}
-  \label{fig:typrec}
+  \caption{GTLC Cast Calculus Syntax, Type Precision Derivations and Precision Equivalence}
+  \label{fig:gtlc-syntax}
 \end{figure}
 
 Next, we consider the axiomatic (in)equational reasoning principles
