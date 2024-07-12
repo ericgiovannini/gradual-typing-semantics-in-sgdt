@@ -73,8 +73,8 @@ then further diverge, but this is typically not modeled in gradual
 calculi.}.
 %
 Fundamentally, this property comes down to the behavior of
-\emph{runtime type casts}\max{TODO: introduce casts more thoroughly as
-  they are important}.
+\emph{runtime type casts}, which implement these generalized runtime
+assertions.
 
 Additionally, gradually typed languages should offer some of the
 benefits of static typing. While classical type soundness, that
@@ -163,10 +163,10 @@ However, an approach based on classical domain theory has fundamental
 limitations: domain theory is incapable of modeling certain perversely
 recursive features of programming languages such as dynamic type tag
 generation and higher-order references, which are commonplace in
-real-world gradually typed systems as well as gradual calculi
-\cite{examples-of-gradual-stuff}. Our long-term goal is to develop a
-semantics that will scale up to these advanced features, and so we
-begin with this work by departing from classical domain theory.
+real-world gradually typed systems as well as gradual calculi. Our
+long-term goal is to develop a semantics that will scale up to these
+advanced features, and so we begin with this work by departing from
+classical domain theory.
 
 The main denotational alternative to classical domain theory that can
 successfully model these advanced features is \emph{guarded domain
