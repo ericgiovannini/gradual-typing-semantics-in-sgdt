@@ -146,9 +146,9 @@ a poset relation is the poset ordering itself, $\leq_A : A \rel A$, which is a
 poset relation because it is transitive.
 %
 Given two poset relations $c : A_1 \rel A_2$ and $c' : A_2 \rel A_3$, we can
-form their \emph{composition} in the usual manner, i.e., $(x, y) \in c$ if and
-only if there is an element $z : A_2$ with $(x, z) \in c$ and $(z, y) \in c'$.
-We write the composition of relations as $c \comp c'$.
+form their \emph{composition} in the usual manner, i.e., $x \binrel{c \comp c'} y$ if and
+only if there is an element $z : A_2$ with $x \binrel{c} z$ and $z \binrel{c'} y$.
+%We write the composition of relations as $c \comp c'$.
 
 % \max{TODO: Eric pick
 %   up from here. Go into the squares for casts and how representability
@@ -168,15 +168,14 @@ elements being related but in a typical logical-relations style as
 the domain relations then their output is related by the codomain
 relation.
 %
-To capture this preservation of relations property, we use the notion
-of a \emph{square}, which specifies a relation between two monotone
-functions. The definition of square is as follows. Let $A_i, A_o,
-A_i', A_o'$ be partially-ordered sets. Let $c_i : A_i \rel A_i'$ and
-$c_o : A_o \rel A_o'$ be poset relations, and let $f : A_i \to A_o$
-and $g : A_i' \to A_o'$ be monotone functions. We say that $f
-\ltsq{c_i}{c_o} g$ if for all $x : A_i$ and $y : A_i'$ with $(x, y)
-\in c_i$, we have $(f(x), g(y)) \in c_o$. We call this a \emph{square}
-because we visualize this situation as follows:
+To capture this preservation of relations property, we use the notion of a
+\emph{square}, which specifies a relation between two monotone functions. The
+definition of square is as follows. Let $A_i, A_o, A_i', A_o'$ be
+partially-ordered sets. Let $c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$ be
+poset relations, and let $f : A_i \to A_o$ and $g : A_i' \to A_o'$ be monotone
+functions. We say that $f \ltsq{c_i}{c_o} g$ if for all $x : A_i$ and $y : A_i'$
+with $x \binrel{c_i} y$, we have $f(x) \binrel{c_o} g(y)$. We call this a
+\emph{square} because we visualize this situation as follows:
 %
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBX2kiXSxbMCwxLCJBX28iXSxbMSwwLCJBX2knIl0sWzEsMSwiQV9vJyJdLFsyLDMsImciXSxbMCwxLCJmIiwyXSxbMCwyLCJjX2kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImNfbyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -221,7 +220,7 @@ squares horizontally: If $f \ltsq{c_i}{c_o} g$ and $g
 corresponds to transitivity of term precision. While we do not dwell
 on categorical abstractions in this work, we note that this structure
 of functions, relations and squares forms a locally thin \emph{double
-category} as used in previous work \cite{newlicata}.
+category} as used in previous work \cite{new-licata18}.
 
 Now that we have an intended model of term precision in the form of
 squares, we can see what is required to give a compositional proof of
