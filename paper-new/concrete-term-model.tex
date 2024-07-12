@@ -180,17 +180,17 @@ $\delta_B$, which is irrelevant from an extensional point of view
 where we would prefer to ignore differences in the number of steps
 that computations take.
 
-\max{move this}
-The functor $\arr : \Set^{op} \times \errdom \to \errdom$ is defined on objects
-as follows. Given a set $A$ and error domain $B$, $A \arr B$ is the error domain
-whose underlying set is the set of functions $A \to UB$. The error element is
-the constant error function, i.e., $\lambda x. \mho_B$. The map $\theta :
-(\laterhs (A \to UB)) \to (A \to UB)$ is defined by 
-$\theta(\tilde{f}) = \lambda x . \theta_B (\tilde{f}_t)$.
-%
-Given a morphism $f : A_o \to A_i$ and $\phi : B_i \to B_o$, the morphism $f
-\arr \phi : (A_i \arr B_i) \to (A_o \arr B_o)$ is given by pre-composing by $f$
-and post-composing by $\phi$.
+% \max{move this}
+% The functor $\arr : \Set^{op} \times \errdom \to \errdom$ is defined on objects
+% as follows. Given a set $A$ and error domain $B$, $A \arr B$ is the error domain
+% whose underlying set is the set of functions $A \to UB$. The error element is
+% the constant error function, i.e., $\lambda x. \mho_B$. The map $\theta :
+% (\laterhs (A \to UB)) \to (A \to UB)$ is defined by 
+% $\theta(\tilde{f}) = \lambda x . \theta_B (\tilde{f}_t)$.
+% %
+% Given a morphism $f : A_o \to A_i$ and $\phi : B_i \to B_o$, the morphism $f
+% \arr \phi : (A_i \arr B_i) \to (A_o \arr B_o)$ is given by pre-composing by $f$
+% and post-composing by $\phi$.
 
 Then to model effectful programs, we need to construct a left adjoint
 $\li : \Set \to \ErrDom$ to $U$ which constructs the ``free error
@@ -490,7 +490,7 @@ actually only a function available later, and so we must insert a
 \subsection{Extracting a well-behaved big-step semantics}\label{sec:big-step-term-semantics}
 
 % \max{TODO: Eric needs to add a discussion of adequacy/clock stuff here}
-\eric{Check this}
+% \eric{Check this}
 
 We now define from the above term model a ``big-step'' semantics. More
 concretely, our goal is to define a function 
