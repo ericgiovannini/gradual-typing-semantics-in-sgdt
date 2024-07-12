@@ -59,7 +59,9 @@
 \newcommand{\Lift}{\text{Lift}}
 
 %\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
-\newcommand{\rel}{\mathrel{\circ\mkern-6mu-\mkern-6mu\bullet}}
+%% \newcommand{\rel}{\mathrel{\circ\mkern-6mu-\mkern-6mu\bullet}}
+%% \def\rel{\mathrel{\joinrel=}}
+\newcommand{\rel}{\mathrel{{\relbar}\hspace{-2px}{\relbar}\hspace{-2px}{\shortmid}\hspace{-2px}{\relbar}\hspace{-2px}{\relbar}}}
 % \newcommand{\wand}{\mathrel{-\mkern-6mu*}}
 \newcommand{\wand}{\mathrel{\multimap}}
 \newcommand{\ltdyn}{\sqsubseteq}
