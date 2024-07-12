@@ -1,6 +1,6 @@
 \section{Discussion}\label{sec:discussion}
 
-\eric{I moved this from the intro. We may need to revise it.}
+% \eric{I moved this from the intro. We may need to revise it.}
 
 \subsection{Limitations of Prior Work}
 
@@ -10,22 +10,19 @@ framework.
 
 \subsubsection{From Static to Gradual}
 
-Current approaches to constructing languages that satisfy the
-graduality property include the methods of Abstracting Gradual Typing
-\cite{garcia-clark-tanter2016} and the formal tools of the Gradualizer
-\cite{cimini-siek2016}.  These allow the language developer to start
-with a statically typed language and derive a gradually typed language
-that satisfies the graduality. The main downside to these
-approaches lies in their inflexibility: since the process in entirely
-mechanical, the language designer must adhere to the predefined
-framework.  Many gradually typed languages do not fit into either
-framework, e.g., Typed Racket \cite{tobin-hochstadt06,
-  tobin-hochstadt08} and the semantics produced is not always the
-desired one.
+The methods of Abstracting Gradual Typing \cite{garcia-clark-tanter2016} and the
+formal tools of the Gradualizer \cite{cimini-siek2016} provide a way to derive
+from a statically-typed language a gradually-typed language languages that
+satisfies graduality by construction. The main downside to these approaches lies
+in their inflexibility: since the process in entirely mechanical, the language
+designer must adhere to the predefined framework.  Many gradually typed
+languages do not fit into either framework, e.g., Typed Racket
+\cite{tobin-hochstadt06, tobin-hochstadt08} and the semantics produced is not
+always the desired one.
 %
-Furthermore, while these frameworks do prove graduality of the
-resulting languages, they do not show the correctness of the
-equational theory, which is equally important to sound gradual typing.
+Furthermore, while these frameworks do prove graduality of the resulting
+languages, they do not show the correctness of the equational theory, which is
+equally important to sound gradual typing.
 
 \subsubsection{Double Categorical Semantics}
 
@@ -265,35 +262,51 @@ using two expression relations allows some but not all transitive
 reasoning of term precision to be recovered. In the future we aim to
 explore if this approach is feasible in guarded semantics.
 
-\subsection{Synthetic Ordering}
-\max{cut this subsection if we need space}
-A key to managing the complexity of our concrete construction is in
-using a \emph{synthetic} approach to step-indexing rather than working
-analytically with presheaves. This has helped immensely in our ongoing
-mechanization in cubical Agda as it sidesteps the need to formalize
-these constructions internally. 
-%
-However, there are other aspects of the model, the bisimilarity and
-the monotonicity, which are treated analytically and are similarly
-tedious.
-%
-It may be possible to utilize further synthetic techniques to reduce
-this burden as well, and have all type intrinsically carry a notion of
-bisimilarity and ordering relation, and all constructions to
-automatically preserve them.
-%
-A synthetic approach to ordering is common in (non-guarded) synthetic
-domain theory and has also been used for synthetic reasoning for cost
-models \cite{fiore_1997,GrodinNSH24}.
+% \subsection{Synthetic Ordering}
+% \max{cut this subsection if we need space}
+% A key to managing the complexity of our concrete construction is in
+% using a \emph{synthetic} approach to step-indexing rather than working
+% analytically with presheaves. This has helped immensely in our ongoing
+% mechanization in cubical Agda as it sidesteps the need to formalize
+% these constructions internally. 
+% %
+% However, there are other aspects of the model, the bisimilarity and
+% the monotonicity, which are treated analytically and are similarly
+% tedious.
+% %
+% It may be possible to utilize further synthetic techniques to reduce
+% this burden as well, and have all type intrinsically carry a notion of
+% bisimilarity and ordering relation, and all constructions to
+% automatically preserve them.
+% %
+% A synthetic approach to ordering is common in (non-guarded) synthetic
+% domain theory and has also been used for synthetic reasoning for cost
+% models \cite{fiore_1997,GrodinNSH24}.
 
 \subsection{Future Work}
 
-\max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
-In the future, we plan to apply our approach to give a denotational
-semantics for languages that feature higher-order state or
-runtime-extensible dynamic typing
-\cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
-disciplines such as gradual dependent types and effect systems.
+% \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
+% In the future, we plan to apply our approach to give a denotational
+% semantics for languages that feature higher-order state or
+% runtime-extensible dynamic typing
+% \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
+% disciplines such as gradual dependent types and effect systems.
+
+% \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
+In the future, we plan to apply our approach to give a denotational semantics
+for languages that feature higher-order state or runtime-extensible dynamic
+typing \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
+disciplines such as gradual dependent types and effect systems. This will
+involve adapting prior operational models based on step-indexing (e.g.,
+\cite{new-giovannini-licata-2022}) to the denotational setting and using guarded
+type theory to obtain solutions to guarded domain equations as we did in this
+work for the denotation of the dynamic type. The generality of our techniques
+should allow for many of the constructions to be reused across different
+languages. For instance, the free error domain construction can be easily
+extended with additional cases to model effects besides error and stepping.
+Additionally, we aim to complete our Agda formalization and evolve it into a
+reusable framework for mechanized denotational semantics of gradually-typed
+languages.
 
 %% to gradually-typed
 %% languages with algebraic effects, building on prior work on gradual typing for effect handlers
