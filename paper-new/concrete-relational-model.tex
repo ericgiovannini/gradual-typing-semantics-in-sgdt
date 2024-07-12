@@ -36,9 +36,6 @@ Given a predomain $A$, we can form the predomain $\later A$. The
 underlying set is $\later |A|$ and the ordering is given by $\tilde{x}
 \ltdyn_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \ltdyn_A
 \tilde{x'}_t)$. Likewise for bisimilarity.
-%
-We also give a predomain structure to the natural numbers $\mathbb{N}$, where
-both the ordering and the bisimilarity relation are equality.\max{why natural numbers here? I don't think we need it. check and come back}
 
 We similarly enhance our error domains with ordering and bisimilarity
 relations, but we further need to impose conditions on the algebraic
@@ -432,7 +429,7 @@ We define $i_D : M_D \to \{ f : D \to D \mid f \bisim \id \}$ by induction as fo
   i_D(m_\times) &= \lambda d. \text{case $d$ of }
     \{ \itimes (d_1, d_2) \To \itimes (i_{D \times D}(m_\times)(d_1, d_2)) \alt x \To x \} \\
   i_D(m_\to) &= \lambda d. \text{case $d$ of }
-    \{ \iarr (\tilde{f}) \To \iarr (\lambda t. i_{U(D \to \li D)}(m_\to)(\tilde{f}_t)) \alt x \To x \} \\
+    \{ \iarr (\tilde{f}) \To \iarr (\lambda t. i_{U(D \to \li D)}(m_\to)(\tilde{f}_t)) \alt x \To x \}
 \end{align*}
 %
 In the case of a perturbation on $D \times D$, we use the interpretation for the
