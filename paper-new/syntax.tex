@@ -41,8 +41,7 @@ transitivity and functoriality for the monotonicity rules.
 %
 We note the following two admissible principles: any two derivations
 $c,c' : A \ltdyn A'$ of the same fact are equivalent $c \equiv c'$ and
-for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\,
-\dyn$. That is, $\dyn$ is the ``most dynamic'' type.
+for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\dyn$. That is, $\dyn$ is the ``most dynamic'' type.
 
 \begin{figure}
   \begin{mathpar}
@@ -74,9 +73,9 @@ for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\,
   \begin{mathpar}
     \inferrule{}{r(A) : A \ltdyn A}\and
     \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
-    \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn\, \dyn}\and
-    \inferrule{}{\inat \colon \nat \ltdyn\, \dyn}\and
-    \inferrule{}{\itimes \colon \dyn\, \times\, \dyn \ltdyn\, \dyn}\and
+    \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn \dyn}\and
+    \inferrule{}{\inat \colon \nat \ltdyn \dyn}\and
+    \inferrule{}{\itimes \colon \dyn \times \dyn \ltdyn \dyn}\and
     \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}\and
     \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}\and
      r(A)c \equiv c\and
@@ -131,12 +130,15 @@ $c \equiv c'$ are equivalent for the purposes of term precision.
 Finally, we include 4 rules for reasoning about casts. Intuitively
 these say that the upcast is a kind of \emph{least upper bound} and
 dually that the downcast is a \emph{greatest lower bound}.
-%
-These principles have been shown in prior work to imply that the
-behavior of functorial lifts such as $c \ra c'$ and $c \times c'$ are
-given by functorial actions \cite{new-licata18,new-licata-ahmed2019}.
 
-\max{talk about errors and divergence}
+As a higher-order gradually typed language we inherently have to deal
+with two effects: errors and divergence. Errors arise from failing
+casts, e.g. casting a number to dynamic to a function
+$\dnc{\iarr}\upc{\inat} x$. Divergence arises because our dynamic type
+allows us to encode untyped lambda calculus, and so we can encode the
+$\Omega$ term with the help of casts $\Omega = (\lambda
+x:\dyn. (\dnc{\iarr} x)x)(\upc{\iarr}(\lambda x:\dyn. (\dnc{\iarr}
+x)x))$.
 
 \begin{figure}
   \begin{mathpar}
@@ -183,30 +185,10 @@ given by functorial actions \cite{new-licata18,new-licata-ahmed2019}.
   \label{fig:term-prec}
 \end{figure}
 
-\max{update this below to fit the formulation elsewhere}
-In the remainder of this article, we seek to develop a compositional
-semantics of this calculus that is \emph{adequate} for
-graduality. This means we should have a semantic relation $\ltdyn$
-such that if $M \ltdyn M'$ then $\sem{M} \ltdyn \sem{M'}$ satisfying
-the following properties for closed terms of type $\nat$. We write
-$\equidyn$ to mean that each side is $\ltdyn$ the other, with
-reflexivity precision derivations.
-\begin{enumerate}
-\item $\sem{n} \equidyn \sem{n'}$ if and only if $n = n'$ for natural numbers
-  $n,n'$.
-\item $\sem{n}, \sem{\mho}, \sem{\Omega}$ are all different (not
-  $\equidyn$), where $\Omega$ is a diverging term.
-\item If $\sem{M}\ltdyn \sem{M'}$ then
-  \begin{itemize}
-  \item If $\sem{M} \equidyn \sem{n}$ then $\sem{M'} \equidyn \sem{n}$
-  \item If $\sem{M'} \equidyn \sem{\mho}$ then $\sem{M} \equidyn \sem{\mho}$
-  \item If $\sem{M'}\equidyn \sem{n}$ then $\sem{M} \equidyn \sem{n}$ or $\sem{M} \equidyn \sem{\mho}$
-  \end{itemize}
-\end{enumerate}
-The first two conditions ensure that our notions of distinct result of
-a program are all preserved by the semantics. The last intuitively
-states that if $M$ has a non-erroring behavior, then $M'$ exhibits the
-same behavior.
+Our goal in the remainder of this work is to develop compositional
+denotational semantics of types, terms, type and term precision from
+which we can easily extract a big step semantics that satisfies
+graduality and respects the equational theory of the calculus.
 
 %% Here we describe the syntax and typing for the gradually-typed lambda calculus.
 %% We also give the rules for syntactic type and term precision.
