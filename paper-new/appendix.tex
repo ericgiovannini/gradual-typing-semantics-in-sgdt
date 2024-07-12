@@ -40,11 +40,11 @@
   \end{enumerate}
 \end{proof}
 
-As mentioned in Section~\ref{sec:syntax}, the cast calculus we
+As mentioned in Section~\ref{sec:GTLC}, the cast calculus
 separates gradual type casts into downcasts and upcasts, whereas many
 gradual calculi are built out of a single notion of cast
 \[ \inferrule{\Gamma \vdash M : A}{\Gamma \vdash (M :: A') : A' }\]
-The term precision rules for this style of calculus are as follows\cite{siekvitousekciminiboyland}:
+The term precision rules for this style of calculus are as follows\cite{siek_et_al:LIPIcs:2015:5031}:
 \begin{mathpar}
   \inferrule*[Right=CastRight]
   {\Delta \vdash M \ltdyn N_1 : c_1 \and
@@ -312,6 +312,35 @@ The ordering $\le_D$ on the predomain $D$ is defined by
 
 and the bisimilarity relation is analogous.
 
+
+\subsection{Functorial Actions on Syntactic Perturbations}
+
+\begin{itemize}
+  % \li
+  \item Then to interpret the perturbations as endomorphisms, by the universal property
+  of the coproduct of monoids it suffices to define two homomorphisms, one from
+  $\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
+  The first homomorphism sends the generator $1 \in \mathbb{N}$ to the error
+  domain endomorpism $(\delta \circ \eta)^\dagger$, and the second sends $m_A \in
+  M_A$ to $\li(i_A(m_A))$ and we observe in both cases that the resulting
+  endomorphisms are bisimilar to the identity since the action of $\li$ on
+  morphisms preserves bisimilarity.
+
+
+  \item To construct the homomorphism $i_{A_1 \times A_2}$, we
+  appeal to the universal property and give homomorphisms $M_{A_1} \to
+  \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
+  former applies $i_{A_1}$ in the first component and the identity in the second
+  component, while the latter does the reverse with $i_{A_2}$.
+
+  \item To
+  construct the interpretation as endomorphisms $i_{A \arr B}$ it suffices to define a
+  homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
+  \arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
+  UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
+  similarly by post-composition with $i_B$.
+
+\end{itemize}
 
 \subsection{Lemmas about Perturbations}
 
@@ -650,7 +679,7 @@ defining the action of the functors $U$, $\li$, $\arr$, and $\times$ on value
 and computation relations.
 
 Recall the notion of quasi-equivalence of relations as defined in Definition
-\ref{def:quasi-order-equivalent}. The following lemma will be useful in showing
+\ref{def:quasi-equivalent}. The following lemma will be useful in showing
 that two relations are quasi-equivalent.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

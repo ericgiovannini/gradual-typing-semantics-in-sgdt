@@ -91,7 +91,7 @@ extra interaction with the algebraic structure.
 
 In our denotational model of GTLC, we map every type $A$ to a
 predomain $\sem{A}$. These constructions are given by the same
-constructions as in Section~\ref{sec:tm-model}, but now enriched to
+constructions as in Section~\ref{sec:concrete-term-model}, but now enriched to
 act also on orderings and bisimilarity. For products this is the
 obvious lifting, and for functions we use the CBPV decomposition $U(A
 \to \li A')$ where the only one that is not clear is $\li A'$.
@@ -146,7 +146,7 @@ act on heterogeneous relations as well in an analogous way.
 The most interesting type to interpret is the dynamic
 type. The beauty of guarded domain theory is that once we have define
 $\laterhs$ for predomains, we can solve the same domain equation as in
-Section~\ref{sec:tm-model} changed only in that we interpret it as a
+Section~\ref{sec:concrete-term-model} changed only in that we interpret it as a
 domain equation on predomains rather than sets:
 %
 \[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr \li D) \]
@@ -347,7 +347,7 @@ denotational model:
 \end{theorem}
 
 For the term semantics $\sem{M}$, nothing really differs from the term
-semantics in Section~\ref{sec:tm-semantics}. The only difference is
+semantics in Section~\ref{sec:concrete-term-model}. The only difference is
 that the definitions of $\sem{\upc c}$ and $\sem{\dnc c}$ can be
 defined as the morphisms that left- and right-quasi-represent $\sem
 c$, but upon inspection this definition agrees with the one given
@@ -358,10 +358,10 @@ the remaining components.
 \subsubsection{Interpreting types}\label{sec:perturbation-constructions}
 % \max{this section needs prose}
 
-\eric{May be able to move some of this to the appendix} For our value
-type semantics, we already have an interpretation as predomains, we
-describe how we enhance each of the constructions we use
-$U,\li,\to,\times,D$ with a notion of syntactic perturbation.
+% \eric{May be able to move some of this to the appendix}
+For our value type semantics, we already have an interpretation as predomains,
+we describe how we enhance each of the constructions we use $U,\li,\to,\times,D$
+with a notion of syntactic perturbation.
 
 First consider the free error domain $\li-$. Given a value object
 $(A, M_A, i_A)$ we define the syntactic perturbations $M_{\li A}$ to
@@ -375,14 +375,8 @@ syntactic perturbation in $M_{\li A}$ that will be interpreted as
 $(\delta \circ \eta)^\dagger$. We accomplish this by taking the
 coproduct with $\mathbb{N}$.
 %
-Then to interpret the perturbations as endomorphisms, by the universal property
-of the coproduct of monoids it suffices to define two homomorphisms, one from
-$\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
-The first homomorphism sends the generator $1 \in \mathbb{N}$ to the error
-domain endomorpism $(\delta \circ \eta)^\dagger$, and the second sends $m_A \in
-M_A$ to $\li(i_A(m_A))$ and we observe in both cases that the resulting
-endomorphisms are bisimilar to the identity since the action of $\li$ on
-morphisms preserves bisimilarity.
+The interpretation of the perturbations as endomorphisms is defined using the
+universal property of the coproduct of monoids (see appendix for details).
 
 Now we discuss the action of $U$ on objects. Given a computation object $(B,
 M_B, i_B)$, we define $M_{UB}$ to be $\mathbb{N} \oplus M_B$. The reason for
@@ -395,20 +389,13 @@ works in the same manner as that of $\li A$.
 
 The action of $\times$ on objects is as follows. Given $(A_1, M_{A_1}, i_{A_1})$
 and $(A_2, M_{A_2}, i_{A_2})$, we define the monoid $M_{A_1 \times A_2} =
-M_{A_1} \oplus M_{A_2}$. To construct the homomorphism $i_{A_1 \times A_2}$, we
-appeal to the universal property and give homomorphisms $M_{A_1} \to
-\morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
-former applies $i_{A_1}$ in the first component and the identity in the second
-component, while the latter does the reverse with $i_{A_2}$.
+M_{A_1} \oplus M_{A_2}$. The interpretation is defined using the universal property
+of the coproduct (see appendix for the details).
 % Could state this using the functorial action of \times
 
 The action of $\arr$ on objects is as follows. Given $(A, M_A, iA)$ and $(B,
-M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$. Then to
-construct the interpretation as endomorphisms it suffices to define a
-homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
-\arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
-UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
-similarly by post-composition with $i_B$.
+M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$ and the interpretation
+is defined analogously to that of $\times$.
 % Could state this using the functorial action of \arr
 
 Finally, the most interesting type is of course the dynamic type. 

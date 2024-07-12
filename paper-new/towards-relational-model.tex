@@ -40,7 +40,7 @@ direct encoding of the graduality property is an ordering we call the
 in Figure~\ref{fig:step-insensitive-error-ordering}.
 %
 Firstly, to model graduality, $\mho$ is the least element. Next, two
-returned values are related just when they are in the ordering $\leq$
+returned values are related just when they are in the ordering $\ltdyn$
 on $A$.
 %
 Two thinking elements are related just when they are related later.
@@ -65,7 +65,7 @@ which is the content of the final $4$ cases of the definition.
         %	
         \theta\, \tilde{l} \semltbad \mho &\text{ iff } \exists n. \theta\, \tilde{l} = \delta^n(\mho) \\
         %	
-        \theta\, \tilde{l} \semltbad \eta\, y &\text{ iff } \exists n. \exists x \leq y.
+        \theta\, \tilde{l} \semltbad \eta\, y &\text{ iff } \exists n. \exists x \ltdyn y.
             (\theta\, \tilde{l} = \delta^n(\eta\, x)) \\
         %	
         \eta\, x \semltbad \theta\, \tilde{l'} &\text { iff }
@@ -141,7 +141,7 @@ our precision derivations $c : A \ltdyn A'$ to be \emph{poset relations} on $A,
 A'$, that is relations between the underlying sets of $A, A'$ that are
 \emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$. We denote such
 a relation between $A$ and $A'$ by $c : A \rel A'$. The paradigmatic example of
-a poset relation is the poset ordering itself, $\leq_A : A \rel A$, which is a
+a poset relation is the poset ordering itself, $\ltdyn_A : A \rel A$, which is a
 poset relation because it is transitive.
 %
 Given two poset relations $c : A_1 \rel A_2$ and $c' : A_2 \rel A_3$, we can
@@ -281,12 +281,12 @@ corresponding to UpL:
 This square, with a dual one related to UpR, say that the relation $c$
 is \emph{representable} by the upcast morphism $\upc{c}$, essentially
 that the relation is a kind of \emph{graph} of the function in that $x
-\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$ \cite{shulmandoublecategories}.
+\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$ \cite{shulman2007}.
 
 We can use this simpler square to derive the original UpL square as long as we can
 horizontally compose with the identity square for $c'$:
 %
-% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiXFxsZV97QV8yfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNCwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsIlxcdXBje2N9IiwyXSxbMiw0LCJcXGlkIl0sWzEsNSwiXFxpZCIsMl1d
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiXFxsdGR5bl97QV8yfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNCwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsIlxcdXBje2N9IiwyXSxbMiw0LCJcXGlkIl0sWzEsNSwiXFxpZCIsMl1d
 \[\begin{tikzcd}[ampersand replacement=\&]
 	{A_1} \& {A_2} \& {A_3} \\
 	{A_2} \& {A_2} \& {A_3}
@@ -295,20 +295,21 @@ horizontally compose with the identity square for $c'$:
 	\arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
 	\arrow["\id"', from=1-2, to=2-2]
 	\arrow["\id", from=1-3, to=2-3]
-	\arrow["{\le_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{\ltdyn_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
 	\arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
 \end{tikzcd}\]
 %
-Observe that the composition of $\le_{A_2}$ with $c'$ implies
-$c'$, because $c'$ is \emph{downward-closed} under the relation on $A_2$. Thus, we
-obtain the original UpL square by vertically composing the square shown above
-with the square $\id \ltsq{\le_{A_2}\, c'}{c'} \id$ on the bottom.
+Then to complete the proof, we observe that the composition of $\ltdyn_{A_2}$ with $c'$ is equal to
+$c'$, because $c'$ is \emph{downward-closed} under the relation on $A_2$.
+% Thus, we
+% obtain the original UpL square by vertically composing the square shown above
+% with the square $\id \ltsq{\le_{A_2}\, c'}{c'} \id$ on the bottom.
 
 The actual place where transitivity of the relations on the value types is
 needed in this argument occurs when $A_3 = A_2$ and we take $c'$ to be
-$\le_{A_2}$ (recall that $c'$ is universally quantified, so it can be any
-relation). The fact that $\le_{A_2}$ is downward-closed is equivalent to it
-being transitive. In other words, all relations $\le_A$ on value types must be
+$\ltdyn_{A_2}$ (recall that $c'$ is universally quantified, so it can be any
+relation). The fact that $\ltdyn_{A_2}$ is downward-closed is equivalent to it
+being transitive. In other words, the relations $\ltdyn_A$ on value types must be
 poset relations in order to carry out the above compositional construction.
 
 So we see that in order to get a sensible condition that can give us a
@@ -356,7 +357,7 @@ with regard to their intensional behavior, up to $l$ erroring. Figure
     \fbox{$l_1 \ltls l_2$}
     \begin{align*}
         &\eta\, x \ltls \eta\, y \text{ if } 
-            x \mathbin{\le_A} y \\
+            x \mathbin{\ltdyn_A} y \\
         %		
         &\mho \ltls l' \\
         %
@@ -386,7 +387,7 @@ with regard to their intensional behavior, up to $l$ erroring. Figure
 \end{figure}
 
 When both sides are $\eta$, then we check that the returned values are related
-in $\le_A$. The error term $\mho$ is the least element. Lastly, if both sides step
+in $\ltdyn_A$. The error term $\mho$ is the least element. Lastly, if both sides step
 (i.e., are a $\theta$) then we compare the resulting computations one time step
 later.
 %
@@ -440,7 +441,7 @@ We formalize this property of being equivalent ``except for steps''
 with a second relation on the free error domain $\li A$: \emph{weak
 bisimilarity}, defined in Figure~\ref{fig:lock-step-error-ordering}, which is
 parameterized by a binary relation $\bisim_A$ on $A$
-\cite{guarded-stuff-that-uses-bisim}.
+\cite{mogelberg-paviotti2016}.
 % For a type $X$, we define a relation on $\li X$, called ``weak bisimilarity",
 % written $l \bisim l'$. 
 Two errors are bisimilar, and when both sides are $\eta$, we ensure
