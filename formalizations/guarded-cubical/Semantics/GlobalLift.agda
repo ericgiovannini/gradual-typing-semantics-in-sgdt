@@ -18,7 +18,7 @@ open import Cubical.Relation.Nullary
 open import Cubical.Data.Nat hiding (_·_ ; _^_)
 open import Cubical.Data.Nat.Order hiding (eq)
 open import Cubical.Data.Empty.Base renaming (rec to exFalso)
-open import Cubical.Data.Sum
+open import Cubical.Data.Sum as Sum
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool hiding (_≤_)
 open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
@@ -296,6 +296,9 @@ module PartialFunctions {X : Type ℓ} where
   -- Type alias for the codomain of the big-step term semantics.
   Fun : Type ℓ
   Fun = ℕ → X ⊎ ⊤
+
+  terminates : Fun → Type ℓ-zero
+  terminates f = Σ[ n ∈ ℕ ] Sum.rec (λ _ → ⊤) (λ _ → ⊥) (f n)
 
   -- "Intensional" termination predicate for big-step terms.
   _↓fun[_]_ : Fun → ℕ → X → Type ℓ
