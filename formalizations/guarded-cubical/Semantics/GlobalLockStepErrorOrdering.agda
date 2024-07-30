@@ -37,6 +37,7 @@ open import Semantics.Concrete.GuardedLiftError hiding (L ; η ; θ)
 open import Semantics.Concrete.LockStepErrorOrdering hiding (ret ; err)
 open import Semantics.Concrete.DoublePoset.Monad
 
+open import Semantics.BigStepFunction
 open import Semantics.GlobalLift
 
 

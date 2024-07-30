@@ -17,11 +17,16 @@ open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Nat hiding (_^_ ; _+_)
 open import Cubical.Data.Nat.Order hiding (eq)
 open import Cubical.Relation.Binary
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Structure
 
 open import Common.Later
 open import Common.ClockProperties
 
 open import Semantics.Concrete.DoublePoset.Error
+
+open import Semantics.Partial
+open import Semantics.BigStepFunction
 open import Semantics.GlobalLift
 
 open import Semantics.GlobalLockStepErrorOrdering
@@ -34,14 +39,19 @@ open BinaryRelation
 private
   variable
     ℓ ℓ' ℓR : Level
+    ℓX ℓY : Level
     ℓ≈X ℓ≈Y ℓ⊑ : Level
 
 
 
+-- The final adequacy theorem, combining the adequacy for the
+-- lock-step error ordering with adequacy for weak bisimilarity to
+-- obtain a result involving the closure of the former under the
+-- latter on both sides.
 
 module Result
-  (X : Type ℓ) (isSetX : isSet X) (X-clk-irrel : clock-irrel X)
-  (Y : Type ℓ) (isSetY : isSet Y) (Y-clk-irrel : clock-irrel Y)
+  (X : Type ℓX) (isSetX : isSet X) (X-clk-irrel : clock-irrel X)
+  (Y : Type ℓY) (isSetY : isSet Y) (Y-clk-irrel : clock-irrel Y)
   (_≈X_ : X → X → Type ℓ≈X) (≈X-prop-valued : isPropValued _≈X_) (≈X-clk-irrel : ∀ x x' → clock-irrel (x ≈X x'))
   (_≈Y_ : Y → Y → Type ℓ≈Y) (≈Y-prop-valued : isPropValued _≈Y_) (≈Y-clk-irrel : ∀ y y' → clock-irrel (y ≈Y y'))
   (_⊑XY_ : X → Y → Type ℓ⊑) (⊑XY-clk-irrel : ∀ x y → clock-irrel (x ⊑XY y))
@@ -72,32 +82,45 @@ module Result
   _≈X?_ = Sum≈ X _≈X_
   _≈Y?_ = Sum≈ Y _≈Y_
 
-  -- extensional error relation on results
+  -- Error ordering on results:
   _⊑res_ : X? → Y? → Type ℓ⊑
   (inl x) ⊑res (inl y) = x ⊑XY y
   inr tt ⊑res y? = ⊤*
   _ ⊑res _  = ⊥*
 
 
-  -- The closure of ⊑XY under ≈X on the left and ≈Y on the right
-  _X≈⊑≈Y_ : X? → Y? → Type (ℓ-max (ℓ-max (ℓ-max ℓ ℓ≈X) ℓ≈Y) ℓ⊑)
-  x? X≈⊑≈Y y? = Σ[ x'? ∈ X? ] Σ[ y'? ∈ Y? ] (x? ≈X? x'?) × (x'? ⊑res y'?) × (y'? ≈Y? y?)
+  -- The closure of the error ordering ⊑XY under ≈X on the left and ≈Y
+  -- on the right:
+  _X≈⊑≈Y_ : X? → Y? → Type _
+  x? X≈⊑≈Y y? = Σ[ x'? ∈ X? ] Σ[ y'? ∈ Y? ]
+    (x? ≈X? x'?) × (x'? ⊑res y'?) × (y'? ≈Y? y?)
 
 
-  -- The extensional error ordering
-  _≾_ : Fun {X = X?} → Fun {X = Y?} → Type (ℓ-max (ℓ-max (ℓ-max ℓ ℓ≈X) ℓ≈Y) ℓ⊑)
-  f ≾ g =
-      (∀ x → f ↓fun (inl x) → Σ[ y ∈ Y ] g ↓fun (inl y) × ((inl x) X≈⊑≈Y (inl y)))
-    × (∀ y? → g ↓fun y? → Σ[ x? ∈ X? ] f ↓fun x? × (x? X≈⊑≈Y y?))
-
-
-  -- closure of ⊑fun under ≈fun on both sides
-  _⊑fun-cl_ : Fun {X = X?} → Fun {X = Y?} → Type (ℓ-max (ℓ-max (ℓ-max ℓ ℓ≈X) ℓ≈Y) ℓ⊑)
+  -- (*) Closure of the lock-step error ordering on big-step functions
+  --     under bisimilarity of functions on both sides.  Notice that
+  --     each relation holds *for all n*.
+  _⊑fun-cl_ : Fun {X = X?} → Fun {X = Y?} → Type _
   f ⊑fun-cl g = Σ[ f' ∈ Fun ] Σ[ g' ∈ Fun ]
     (∀ n → (f ≈funX?[ n ] f')) × (∀ n → (f' ⊑fun[ n ] g')) × (∀ n → (g' ≈funY?[ n ] g))
 
 
+  -- (**) A more intuitive notion of step-insensitive error ordering
+  -- on functions:
+  _≾_ : Fun {X = X?} → Fun {X = Y?} → Type _
+  f ≾ g =
+      -- If f terminates with a value x, then g terminates with a related value y.
+      (∀ x → f ↓fun (inl x) → Σ[ y ∈ Y ] g ↓fun (inl y) × ((inl x) X≈⊑≈Y (inl y)))
+      
+      -- If g terminates with a result y?, then f terminates with a related result x?.
+    × (∀ y? → g ↓fun y? → Σ[ x? ∈ X? ] f ↓fun x? × (x? X≈⊑≈Y y?))
+
+
+  ------------------------------------------------------------------------------------
+  -- The adequacy theorem says that (*) implies (**).
+
+  --
   -- Lemmas used in the proof
+  --
   deconstruct-lem-1 :
    ∀ x (x'? : (X ⊎ ⊤)) → ∀ f' j → (H1 : (f' ↓fun[ j ] x'?)) (H2 : ((inl x) ≈X? x'?)) →
      Σ[ x' ∈ X ] ((f' ↓fun[ j ] (inl x')) × (x ≈X x'))
@@ -115,9 +138,11 @@ module Result
   ≤res→⊑res n m (inr x) y? _ = tt*
 
 
-  -- The adequacy result: the closure of ⊑XY under bisimilarity on each side
-  -- implies the extensional error ordering.
+  -- The (intensional) adequacy result: the closure of ⊑fun under
+  -- bisimilarity on each side implies the more intuitive notion of
+  -- step-insensitive error ordering.
   combined-adequacy : ∀ f g → f ⊑fun-cl g → f ≾ g
+
   combined-adequacy f g (f' , g' , f≈f' , f'⊑g' , g'≈g) .fst x (n , eq) =
     y , (n'' , g↓y) , (inl x' , inl y' , x≈x' , x'⊑y' , y'≈y)
     where
@@ -164,6 +189,9 @@ module Result
   combined-adequacy f g (f' , g' , f≈f' , f'⊑g' , g'≈g) .snd y? (n , eq) =
     x? , ((n''' , f↓[n''']) , (x'? , y'? , x?≈x'? , x'?-⊑res-y'? , y'?≈y?))
     where
+      -- We start by assuming that g ↓[ n ] y?.
+
+      -- Then since g' ≈ g, we know that g' ↓[ n' ] y'? for some y'? such that y'? ≈ y?
       g'↓ : Σ-syntax ℕ (λ j → Σ-syntax (Y ⊎ ⊤) (λ y'? → (g' j ≡ in1 y'?) × Sum≈ Y _≈Y_ y'? y?))
       g'↓ = g'≈g n n ≤-refl .snd y? eq
 
@@ -172,6 +200,8 @@ module Result
       g'↓[n'] = g'↓ .snd .snd .fst
       y'?≈y? = g'↓ .snd .snd .snd
 
+      -- Then since f' ⊑ g', we have f' ↓[ n'' ] x'? for some x'? such that (x'? , n'') ⊑ (y'? , n')
+      -- In particular, this means that x'? ⊑ y'?.
       f'↓ : Σ-syntax X?
               (λ x'? → Σ-syntax ℕ (λ j → (f' j ≡ in1 x'?) × ((x'? , j) ≤res (y'? , n'))))
       f'↓ = f'⊑g' n' n' ≤-refl .snd y'? g'↓[n']
@@ -179,7 +209,8 @@ module Result
       n'' = f'↓ .snd .fst
       f'↓[n''] = f'↓ .snd .snd .fst
       x'?-⊑res-y'? = ≤res→⊑res n'' n' x'? y'? (f'↓ .snd .snd .snd) 
-      
+
+      -- Then since f ≈ f', we have f ↓[ n''' ] x? for some x? such that x? ≈ x'?
       f↓ : Σ-syntax ℕ (λ j → Σ-syntax (X ⊎ ⊤) (λ x? → (f j ≡ in1 x?) × Sum≈ X _≈X_ x? x'?))
       f↓ = f≈f' n'' n'' ≤-refl .snd x'? f'↓[n'']
 
@@ -188,6 +219,100 @@ module Result
       f↓[n'''] = f↓ .snd .snd .fst
       x?≈x'? = f↓ .snd .snd .snd
 
+
+  ---------------------------------------------------------------------------------
+
+  open ErrorOrdPartial _X≈⊑≈Y_
+
+
+  -- Finally, we have a theorem establishing a relationship between
+  -- the big-step ordering on functions ≾ to the ordering on partial
+  -- elements: If f is related to g in the big-step ordering on
+  -- functions, then the corresponding partial elements are related.
+  ≾fun→≤part : ∀ f g → (f .fst) ≾ (g .fst) → (collapse f) ≤part (collapse g)
+
+  -- Pt 1. Assume the LHS terminates.
+  ≾fun→≤part f g (H1 , H2) .fst (n , term-n) with (extract' (f .fst) n term-n)
+  
+  ... | (inl x , eq) =
+    inr ((m , term .fst) , subst (λ z? → inl x X≈⊑≈Y z?) (sym (term .snd)) x⊑y)
+    where
+      lem : Σ[ y ∈ Y ] (((g .fst) ↓fun in1 y) × (inl x X≈⊑≈Y inl y))
+      lem = H1 x (n , eq)
+
+      y = lem .fst
+      m = lem .snd .fst .fst
+
+      g↓m : (g .fst) ↓fun[ m ] (inl y)
+      g↓m = lem .snd .fst .snd
+
+      x⊑y : inl x X≈⊑≈Y inl y
+      x⊑y = lem .snd .snd
+
+      term : Σ[ p ∈ terminates-in (g .fst) m ] (extract' (g .fst) m p .fst ≡ inl y)
+      term = term-lemma-1 (g .fst) m (inl y) g↓m
+
+  ... | (inr tt , eq) = inl refl
+
+  -- Pt 2. Assume the RHS terminates.
+  ≾fun→≤part f g (H1 , H2) .snd (m , term-m) =
+    (n , term .fst) , subst (λ z? → z? X≈⊑≈Y y?) (sym (term .snd)) x?⊑y?
+    where
+      y? = (extract' (g .fst) m term-m) .fst
+
+      eq : g .fst m ≡ inl y?
+      eq = (extract' (g .fst) m term-m) .snd
+
+      lem : Σ[ x? ∈ X? ] (((f .fst) ↓fun x?) × (x? X≈⊑≈Y y?))
+      lem = H2 y? (m , eq)
+
+      x? = lem .fst
+      n = lem .snd .fst .fst
+
+      f↓n : (f .fst) ↓fun[ n ] x?
+      f↓n = lem .snd .fst. snd
+
+      x?⊑y? : x? X≈⊑≈Y y?
+      x?⊑y? = lem .snd .snd
+
+      term : Σ[ p ∈ terminates-in (f .fst) n ] (extract' (f .fst) n p .fst ≡ x?)
+      term = term-lemma-1 (f .fst) n x? f↓n
+      
+      
+
+{-
+  inr ((m , inl y , g↓m) , x⊑y)
+    where
+      x? = extract f f↓
+
+      aux : Σ[ y ∈ Y ] ((g ↓fun in1 y) × (inl x X≈⊑≈Y inl y))
+      aux = H1 x (n , f↓n)
+
+      y = aux .fst
+      m = aux .snd .fst. fst
+
+      g↓m : g ↓fun[ m ] (inl y)
+      g↓m = aux .snd .fst .snd
+
+      x⊑y : inl x X≈⊑≈Y inl y
+      x⊑y = aux .snd .snd
+
+  ≾fun→≤part f g (H1 , H2) .fst (n , inr tt , f↓n) = inl refl
+  
+  ≾fun→≤part f g (H1 , H2) .snd (n , y? , g↓n) = (m , x? , f↓m) , x?⊑y?
+    where
+      aux : Σ[ x? ∈ X? ] ((f ↓fun x?) × (x? X≈⊑≈Y y?))
+      aux = H2 y? (n , g↓n)
+
+      x? = aux .fst
+      m = aux .snd .fst .fst
+
+      f↓m : f ↓fun[ m ] x?
+      f↓m = aux .snd .fst .snd
+
+      x?⊑y? : x? X≈⊑≈Y y?
+      x?⊑y? = aux .snd .snd
+  -}  
 
   ---------------------------------------------------------------------------------
 
@@ -228,14 +353,25 @@ module Result
     -- Finally, we combine everything, showing that the denotations of lx and ly
     -- are related in the expected manner.
     -- **************************************************************************
+
+    ⟦_⟧bigstep-X = ⟦_⟧bigstep
+      where open BigStep (X ⊎ ⊤) (⊎-clock-irrel X-clk-irrel Unit-clock-irrel)
+    ⟦_⟧bigstep-Y = ⟦_⟧bigstep
+      where open BigStep (Y ⊎ ⊤) (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel)
     
-    final-adequacy-theorem : ⟦ lx ⟧x ≾ ⟦ ly ⟧y
-    final-adequacy-theorem = combined-adequacy ⟦ lx ⟧x ⟦ ly ⟧y
+    intensional-adequacy : ⟦ lx ⟧x ≾ ⟦ ly ⟧y
+    intensional-adequacy = combined-adequacy ⟦ lx ⟧x ⟦ ly ⟧y
       (⟦ lx' ⟧x , ⟦ ly' ⟧y
       , (λ n m m≤n → bisim-X-pt2 n (bisim-X-pt1 n) m m≤n)
       , (λ n m m≤n → lock-step-pt2 n (lock-step-pt1 n) m m≤n)
       , (λ n m m≤n → bisim-Y-pt2 n (bisim-Y-pt1 n) m m≤n))
     
+    extensional-adequacy : (collapse ⟦ lx ⟧bigstep-X) ≤part (collapse ⟦ ly ⟧bigstep-Y)
+    extensional-adequacy = ≾fun→≤part _ _ intensional-adequacy
+  
+
+
+
 
 
 

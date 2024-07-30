@@ -32,6 +32,7 @@ open import Common.ClockProperties
 
 open import Semantics.Concrete.WeakBisimilarity
 open import Semantics.Concrete.GuardedLift
+open import Semantics.BigStepFunction
 open import Semantics.GlobalLift
 
 
@@ -333,10 +334,11 @@ module Adequacy (X : Type ℓ) (R : X → X → Type ℓR)
  
   open BigStepLemmas X-clk-irrel
   open PartialFunctions
+  open BigStep X X-clk-irrel
 
   -- The big-step term semantics.
-  ⟦_⟧ : L^gl X → Fun
-  ⟦ lg ⟧ = toFun X-clk-irrel lg
+  -- ⟦_⟧ : L^gl X → Fun
+  -- ⟦ lg ⟧ = toFun X-clk-irrel lg
 
 
   -- (Step-indexed) weak bisimilarity for the Fun type.

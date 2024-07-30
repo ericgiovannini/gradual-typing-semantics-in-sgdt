@@ -35,6 +35,8 @@ open import Common.Later
 open import Common.Common
 open import Common.ClockProperties
 open import Semantics.Concrete.GuardedLift
+open import Semantics.Partial
+open import Semantics.BigStepFunction
 
 private
   variable
@@ -290,94 +292,32 @@ module BigStepLemmas {X : Type ℓ} (H : clock-irrel X) where
 
 
 
--- Notation and properties of functions from ℕ to (X + 1)
-module PartialFunctions {X : Type ℓ} where
+-- The big-step term semantics
 
-  -- Type alias for the codomain of the big-step term semantics.
-  Fun : Type ℓ
-  Fun = ℕ → X ⊎ ⊤
-
-  terminates : Fun → Type ℓ-zero
-  terminates f = Σ[ n ∈ ℕ ] Sum.rec (λ _ → ⊤) (λ _ → ⊥) (f n)
-
-  -- "Intensional" termination predicate for big-step terms.
-  _↓fun[_]_ : Fun → ℕ → X → Type ℓ
-  f ↓fun[ n ] x = f n ≡ inl x
-
-  -- Termination in n steps to some (unspecified) value.
-  _↓fun[_] : Fun → ℕ → Type ℓ
-  f ↓fun[ n ] = Σ[ x ∈ X ] (f ↓fun[ n ] x)
-  -- equivalently: fiber inl (f n) (except this reverses the equality
-  -- above, i.e. inl x ≡ f n)
-
-  -- Alternative definition of the above.
-  _↓fun'[_] : Fun → ℕ → Type ℓ
-  f ↓fun'[ n ] = aux (f n)
-    where
-      aux : _ → _
-      aux (inl x) = ⊤*
-      aux (inr tt) = ⊥*
-
-  ↓fun→↓fun' : (f : Fun) (n : ℕ) →
-    f ↓fun[ n ] → f ↓fun'[ n ]
-  ↓fun→↓fun' f n (x , eq) with (f n)
-  ... | inl x' = tt*
-  ... | inr tt = ⊥.rec (inl≠inr _ _ (sym eq))
-
-
-  ↓fun'→↓fun : (f : Fun) (n : ℕ) →
-    f ↓fun'[ n ] → f ↓fun[ n ]
-  ↓fun'→↓fun f n H with (f n)
-  ... | inl x = x , refl
-
-
-  -- "Extensional" termination predicate.
-  _↓fun_ : Fun → X → Type ℓ
-  f ↓fun x = Σ[ m ∈ ℕ ] f ↓fun[ m ] x
-
-  -- If a function terminates at n with x and with y, then x ≡ y.
-  ↓n-unique : (f : Fun) → (n : ℕ) → (x y : X) →
-    f ↓fun[ n ] x → f ↓fun[ n ] y → x ≡ y
-  ↓n-unique f n x y f↓nx f↓ny =
-    isEmbedding→Inj isEmbedding-inl x y (sym f↓nx ∙ f↓ny)
-
-  -- Divergence at n
-  _↑fun[_] : Fun → ℕ → Type ℓ
-  f ↑fun[ n ] = ∀ m → m ≤ n → (f m ≡ inr tt)
-
-
-  -- A function cannot both terminate at n and diverge at n
-  coherence : (f : Fun) (n : ℕ) (x : X) →
-    f ↓fun[ n ] x → f ↑fun[ n ] → ⊥
-  coherence f n x f↓n f↑ = inl≠inr x tt (sym f↓n ∙ (f↑ n ≤-refl))
-
-  -- Stronger uniqueness property stating that a function can
-  -- terminate with at most one value. This isn't true for the Fun
-  -- type in general, but it *is* true of the functions in the image
-  -- of the big-step semantics.
-  --
-  -- TODO: is this a good definition?
-  ↓-unique : Fun → Type ℓ
-  ↓-unique f = (n m : ℕ) (x y : X) →
-    f ↓fun[ n ] x → f ↓fun[ m ] y → (n ≡ m) × (x ≡ y)
-
-  -- This definition seems stronger (equivalence seems to require that X is a set)
-  ↓-unique' : Fun → Type ℓ
-  ↓-unique' f = isProp (Σ[ n ∈ ℕ ] Σ[ x ∈ X ] (f ↓fun[ n ] x))
-
-  ↓-unique'→↓-unique : (f : Fun) → ↓-unique' f → ↓-unique f
-  ↓-unique'→↓-unique f H n m x y f↓x f↓y = (λ i → H (n , x , f↓x) (m , y , f↓y) i .fst) , λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst
-    -- λ i → H (n , x , f↓x) (m , y , f↓y) i .snd .fst , ?
-
-
-
--- Notation for big-step term semantics
 module BigStep (X : Type ℓ) (X-clk-irrel : clock-irrel X) where
 
   open PartialFunctions
+  open BigStepLemmas X-clk-irrel
 
+  -- Interpreting an element of the global lift as a function ℕ → X + 1:
   ⟦_⟧ : L^gl X → Fun {X = X}
   ⟦ lg ⟧ = toFun X-clk-irrel lg
+
+  -- The resulting function is such that its termination is a prop:
+  bigStep-term-prop : ∀ lg → terminates-prop ⟦ lg ⟧
+  bigStep-term-prop lg =
+    ↓-unique→term-prop ⟦ lg ⟧ (λ n m x y p q → bigStep-unique' lg x y n m p q)
+
+  -- Thus, we can interpret an element of the global lift as a
+  -- function defined at most once:
+  ⟦_⟧bigstep : L^gl X → BigStepFun
+  ⟦ lg ⟧bigstep = ⟦ lg ⟧ , (bigStep-term-prop lg)
+
+  -- Semantics as a partial element using the extensional collapse:
+  ⟦_⟧partial : L^gl X → Part X ℓ-zero
+  ⟦ lg ⟧partial = collapse ⟦ lg ⟧bigstep
+
+
 
 
 module Test where

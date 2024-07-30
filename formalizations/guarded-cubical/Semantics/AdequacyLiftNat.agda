@@ -24,6 +24,8 @@ open import Semantics.Concrete.GuardedLiftError hiding (mapL)
 open import Semantics.Concrete.LockStepErrorOrdering
 open import Semantics.Concrete.WeakBisimilarity
 
+open import Semantics.Partial
+open import Semantics.BigStepFunction
 open import Semantics.CombinedAdequacy
 
 
@@ -96,8 +98,10 @@ module _
   -- globalization of the original definitions of the relations to the
   -- globalization of the versions as sum types.
 
-  nat-adequate : ⟦ l1 ⟧ ≾ ⟦ l2 ⟧
-  nat-adequate = final-adequacy-theorem l1 l1' l2' l2
+  open ErrorOrdPartial _X≈⊑≈Y_
+
+  nat-adequate : ⟦ l1 ⟧partial ≤part ⟦ l2 ⟧partial --⟦ l1 ⟧ ≾ ⟦ l2 ⟧
+  nat-adequate = extensional-adequacy l1 l1' l2' l2
   
     (λ k → ≈→≈Sum k (ℕ ⊎ ⊤) (Sum≈ ℕ _≡_) (l1 k) (l1' k)
       (L-map-preserves-bisim k (Error ℕ) (≈ErrorX _≡_) (ℕ ⊎ ⊤)
