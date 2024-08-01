@@ -1,5 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
+{-# OPTIONS --safe #-}
 
 module Cubical.Algebra.Monoid.More where
 
