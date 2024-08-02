@@ -137,13 +137,13 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
     iA' = A' .snd .interpV
 
   pushV : MonoidHom MA MA'
-  pushV = unWkn fstL ∘hom corecΣ _ (c .snd .fst)
+  pushV = fstL' ∘hom corecΣ _ (c .snd .fst)
 
   pushVSq : ∀ pA → VRelPtbSq A A' (c .fst) pA (pushV .fst pA)
   pushVSq pA = snd (c .snd .fst .fst pA)
 
   pullV : MonoidHom MA' MA
-  pullV = unWkn fstR ∘hom corecΣ _ (c .snd .snd)
+  pullV = fstR' ∘hom corecΣ _ (c .snd .snd)
 
   pullVSq : ∀ pA' → VRelPtbSq A A' (c .fst) (pullV .fst pA') pA'
   pullVSq pA' = snd (c .snd .snd .fst pA')
@@ -203,13 +203,13 @@ module _ {B : CompType ℓ ℓ≤ ℓ≈ ℓM} {B' : CompType ℓ' ℓ≤' ℓ�
     iB' = B' .snd .snd .snd
 
   pushC : MonoidHom MB MB'
-  pushC = unWkn fstL ∘hom corecΣ _ (d .snd .fst)
+  pushC = fstL' ∘hom corecΣ _ (d .snd .fst)
 
   pushCSq : ∀ pB → CRelPtbSq B B' (d .fst) pB (pushC .fst pB)
   pushCSq pB = snd (d .snd .fst .fst pB)
 
   pullC : MonoidHom MB' MB
-  pullC = unWkn fstR ∘hom corecΣ _ (d .snd .snd)
+  pullC = fstR' ∘hom corecΣ _ (d .snd .snd)
 
   pullCSq : ∀ pB' → CRelPtbSq B B' (d .fst) (pullC .fst pB') pB'
   pullCSq pB' = snd (d .snd .snd .fst pB')

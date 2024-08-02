@@ -5,6 +5,7 @@ module Cubical.Algebra.Monoid.FreeMonoid where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Structure
 open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Semigroup
@@ -74,11 +75,17 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
       elim .snd .fst = refl
       elim .snd .snd x y = refl
 
-  -- -- general principle...
-  -- rec : ∀ (N : Monoid ℓ''') → (A → N .fst) → MonoidHom FM N
-  -- rec N iA .fst = elim (wkn FM N) iA .fst
-  -- rec N iA .snd .IsMonoidHom.presε = elim (wkn FM N) iA .snd .fst
-  -- rec N iA .snd .IsMonoidHom.pres· = elim (wkn FM N) iA .snd .snd
+  module _ (N : Monoid ℓ''')
+    (iA : A → ⟨ N ⟩)
+    (iB : B → MonoidHom N N)
+    (iC : C → MonoidHom (N ^op) N)
+    where
+    rec : MonoidHom FM N
+    rec = unWkn {ϕ = idMon _} s where
+      s : Section (wkn FM N)
+      s = elim (wkn FM N) iA
+        (λ b → wknHom (coHom b) (iB b))
+        λ c → wknHom (opHom c) (iC c)
 
   -- elim : ∀ 
 -- module Elim {ℓ'} {B : FreeMonoid A → Type ℓ'}

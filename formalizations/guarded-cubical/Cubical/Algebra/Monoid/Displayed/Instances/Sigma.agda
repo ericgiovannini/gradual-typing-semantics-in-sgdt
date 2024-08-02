@@ -59,25 +59,31 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'} {Mᴰ : Monoidᴰ (M × N) ℓᴰ} wh
   open Monoidᴰ
 
   fstL : VMonoidHomᴰ (Σl {M = M}{N = N} Mᴰ) (wkn M N)
-  fstL .fst (m , n , mᴰ)= n
+  fstL .fst (n , mᴰ)= n
   fstL .snd .fst = refl
   fstL .snd .snd x y = refl
 
-  sndL : LocalSection (corec (fstHom {Mᴰ = SigL})
-                      (unWkn {N = N}{ϕ = fstHom} fstL))
-                      Mᴰ
+  fstL' : MonoidHom (Disp.Σ SigL) N
+  fstL' = unWkn {N = N}{ϕ = fstHom}(recΣV {Mᴰ = SigL}{Nᴰ = wkn M N} fstL)
+
+  sndL : LocalSection {M = Disp.Σ SigL}
+         (corec (fstHom {Mᴰ = SigL}) fstL')
+         Mᴰ
   sndL .fst (m , n , mᴰ) = mᴰ
   sndL .snd .fst = refl
   sndL .snd .snd x y = refl
 
   fstR : VMonoidHomᴰ SigR (wkn N M)
-  fstR .fst (n , m , mᴰ) = m
+  fstR .fst (m , mᴰ) = m
   fstR .snd .fst = refl
   fstR .snd .snd x y = refl
 
-  sndR : LocalSection (corec ((unWkn {N = M}{ϕ = fstHom} fstR))
-                             (fstHom {Mᴰ = SigR}))
-                      Mᴰ
+  fstR' : MonoidHom (Disp.Σ SigR) M
+  fstR' = (unWkn {N = M}{ϕ = fstHom} (recΣV {Mᴰ = SigR} {Nᴰ = wkn N M} fstR))
+
+  sndR : LocalSection {M = Disp.Σ SigR}
+         (corec fstR' (fstHom {Mᴰ = SigR}))
+         Mᴰ
   sndR .fst (n , m , mᴰ) = mᴰ
   sndR .snd .fst = refl
   sndR .snd .snd x y = refl

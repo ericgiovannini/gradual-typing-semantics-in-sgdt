@@ -2,9 +2,11 @@
 module Cubical.Algebra.Monoid.Displayed where
 
 open import Cubical.Foundations.Prelude hiding (Σ)
+open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Data.Sigma hiding (Σ)
+import Cubical.Data.Equality as Eq
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
@@ -12,7 +14,7 @@ open import Cubical.Algebra.Semigroup.Base
 
 private
   variable
-    ℓ ℓ' ℓ'' ℓᴰ ℓᴰ' : Level
+    ℓ ℓ' ℓ'' ℓ''' ℓᴰ ℓᴰ' : Level
 
 record Monoidᴰ (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
   open MonoidStr (M .snd)
@@ -28,6 +30,22 @@ record Monoidᴰ (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
     ·Assocᴰ  : ∀ {x y z}(xᴰ : eltᴰ x)(yᴰ : eltᴰ y)(zᴰ : eltᴰ z)
       → (xᴰ ·ᴰ (yᴰ ·ᴰ zᴰ)) ≡[ ·Assoc x y z ] ((xᴰ ·ᴰ yᴰ) ·ᴰ zᴰ)
     isSetEltᴰ : ∀ {x} → isSet (eltᴰ x)
+
+  rectify :
+    ∀ {x y} {xᴰ yᴰ}
+    → {p q : x ≡ y}
+    → xᴰ ≡[ p ] yᴰ → xᴰ ≡[ q ] yᴰ
+  rectify {xᴰ = xᴰ}{yᴰ = yᴰ} = subst (xᴰ ≡[_] yᴰ)
+    (is-set _ _ _ _)
+  _∙ᴰ_ :
+    ∀ {x y z} {xᴰ yᴰ zᴰ}
+    → {p : x ≡ y}{q : y ≡ z}
+    → xᴰ ≡[ p ] yᴰ → yᴰ ≡[ q ] zᴰ
+    → xᴰ ≡[ p ∙ q ] zᴰ
+  _∙ᴰ_ {xᴰ = xᴰ}{zᴰ = zᴰ}{p}{q} pᴰ qᴰ =
+    subst (λ p → PathP (λ i → p i) xᴰ zᴰ)
+      (sym (congFunct eltᴰ p q))
+      (compPathP pᴰ qᴰ)
 
 record Submonoid (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
   open MonoidStr (M .snd)
@@ -89,11 +107,39 @@ LocalSection {M = M} {N = N} ϕ Nᴰ =
 -- (ϕᴰ s∘h ψ) .fst x = ϕᴰ .fst (ψ .fst x)
 -- (ϕᴰ s∘h ψ) .snd .fst = {!!}
 -- (ϕᴰ s∘h ψ) .snd .snd = {!!}
+open Monoidᴰ
+-- rectifySection : {M : Monoid ℓ} {N : Monoid ℓ'}
+--   {Nᴰ : Monoidᴰ N ℓᴰ}
+--   {ϕ ϕ' : MonoidHom M N}
+--   → ϕ .fst Eq.≡ ϕ' .fst
+--   → LocalSection ϕ Nᴰ
+--   → LocalSection ϕ' Nᴰ
+-- rectifySection {Nᴰ = Nᴰ} Eq.refl f .fst x =
+-- rectifySection Eq.refl f .snd = {!!}
 
 Section : {M : Monoid ℓ} (Mᴰ : Monoidᴰ M ℓ') → Type (ℓ-max ℓ ℓ')
 Section {M = M} Mᴰ = LocalSection (idMon M) Mᴰ
 
+MonoidHomᴰ : {M : Monoid ℓ}{N : Monoid ℓ'}
+  (ϕ : MonoidHom M N)
+  → Monoidᴰ M ℓᴰ
+  → Monoidᴰ N ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
+MonoidHomᴰ {M = M}{N} ϕ Mᴰ Nᴰ =
+  Σ[ ϕᴰ ∈ (∀ {x} → (Mᴰ.eltᴰ x) → Nᴰ.eltᴰ (ϕ .fst x)) ]
+  (ϕᴰ Mᴰ.εᴰ Nᴰ.≡[ ϕ .snd .presε ] Nᴰ.εᴰ) ×
+  (∀ {x}{y} xᴰ yᴰ
+    → ϕᴰ (xᴰ Mᴰ.·ᴰ yᴰ) Nᴰ.≡[ ϕ .snd .pres· x y ] (ϕᴰ xᴰ Nᴰ.·ᴰ ϕᴰ yᴰ) )
+  where
+    module Mᴰ = Monoidᴰ Mᴰ
+    module Nᴰ = Monoidᴰ Nᴰ
+    open IsMonoidHom
 
+VMonoidHomᴰ : {M : Monoid ℓ}
+  → Monoidᴰ M ℓᴰ
+  → Monoidᴰ M ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
+VMonoidHomᴰ Mᴰ Nᴰ = MonoidHomᴰ (idMon _) Mᴰ Nᴰ
+
+{- Σ -}
 module _ {M : Monoid ℓ}{Mᴰ : Monoidᴰ M ℓᴰ} where
   fstHom : MonoidHom (Σ Mᴰ) M
   fstHom .fst = fst
@@ -115,18 +161,31 @@ module _ {M : Monoid ℓ}{Mᴰ : Monoidᴰ M ℓᴰ} where
   corecΣ ϕ ϕᴰ .snd .IsMonoidHom.pres· x y =
     ΣPathP ((ϕ .snd .IsMonoidHom.pres· x y) , (ϕᴰ .snd .snd x y))
 
-MonoidHomᴰ : {M : Monoid ℓ}{N : Monoid ℓ'}
-  (ϕ : MonoidHom M N)
-  → Monoidᴰ M ℓᴰ
-  → Monoidᴰ N ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
-MonoidHomᴰ {M = M}{N} ϕ Mᴰ Nᴰ =
-  LocalSection (ϕ ∘hom fstHom {Mᴰ = Mᴰ}) Nᴰ
+module _ {M : Monoid ℓ}{Mᴰ : Monoidᴰ M ℓᴰ}{N : Monoid ℓ'}{Nᴰ : Monoidᴰ N ℓᴰ'}
+  where
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
+  recΣ :
+    ∀ (ϕ : MonoidHom M N)
+    → (ϕᴰ : MonoidHomᴰ ϕ Mᴰ Nᴰ)
+    → LocalSection {M = Σ Mᴰ} (ϕ ∘hom fstHom) Nᴰ
+  recΣ ϕ ϕᴰ .fst (m , mᴰ) = ϕᴰ .fst {m} mᴰ
+  recΣ ϕ ϕᴰ .snd .fst =
+    Nᴰ.rectify (ϕᴰ .snd .fst)
+  recΣ ϕ ϕᴰ .snd .snd x y =
+    Nᴰ.rectify (ϕᴰ .snd .snd (x .snd) (y .snd))
+module _ {M : Monoid ℓ}{Mᴰ : Monoidᴰ M ℓᴰ}{Nᴰ : Monoidᴰ M ℓᴰ'} where
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
 
-VMonoidHomᴰ : {M : Monoid ℓ}
-  → Monoidᴰ M ℓᴰ
-  → Monoidᴰ M ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
-VMonoidHomᴰ Mᴰ Nᴰ = MonoidHomᴰ (idMon _) Mᴰ Nᴰ
+  recΣV :
+    (ϕᴰ : VMonoidHomᴰ Mᴰ Nᴰ)
+    → LocalSection {M = Σ Mᴰ} fstHom Nᴰ
+  recΣV ϕᴰ .fst (m , mᴰ) = ϕᴰ .fst {m} mᴰ
+  recΣV ϕᴰ .snd .fst = ϕᴰ .snd .fst
+  recΣV ϕᴰ .snd .snd x y = ϕᴰ .snd .snd (x .snd) (y .snd)
 
+{- weakening -}
 open MonoidStr
 wkn : (M : Monoid ℓ) (N : Monoid ℓ') → Monoidᴰ M ℓ'
 wkn M N .Monoidᴰ.eltᴰ x = ⟨ N ⟩
@@ -136,6 +195,17 @@ wkn M N .Monoidᴰ.·IdRᴰ = N .snd .·IdR
 wkn M N .Monoidᴰ.·IdLᴰ = N .snd .·IdL
 wkn M N .Monoidᴰ.·Assocᴰ = N .snd .·Assoc
 wkn M N .Monoidᴰ.isSetEltᴰ = is-set (N .snd)
+
+open IsMonoidHom
+wknHom :
+  {M : Monoid ℓ}{M' : Monoid ℓ'}
+  {N : Monoid ℓ''}{N' : Monoid ℓ'''}
+  (ϕ : MonoidHom M N)
+  (ψ : MonoidHom M' N')
+  → MonoidHomᴰ ϕ (wkn M M') (wkn N N')
+wknHom ϕ ψ .fst = ψ .fst
+wknHom ϕ ψ .snd .fst = ψ .snd .presε
+wknHom ϕ ψ .snd .snd = ψ .snd .pres·
 
 module _ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoid ℓ''} where
   unWkn : {ϕ : MonoidHom P M}
@@ -154,3 +224,4 @@ _^opᴰ : ∀ {M : Monoid ℓ} → Monoidᴰ M ℓᴰ → Monoidᴰ (M ^op) ℓ�
 (Mᴰ ^opᴰ) .Monoidᴰ.·IdLᴰ = Mᴰ .·IdRᴰ
 (Mᴰ ^opᴰ) .·Assocᴰ xᴰ yᴰ zᴰ = symP (Mᴰ .·Assocᴰ _ _ _)
 (Mᴰ ^opᴰ) .Monoidᴰ.isSetEltᴰ = Mᴰ .isSetEltᴰ
+
