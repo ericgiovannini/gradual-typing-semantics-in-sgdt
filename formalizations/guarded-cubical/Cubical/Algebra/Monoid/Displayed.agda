@@ -31,12 +31,21 @@ record Monoidᴰ (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
       → (xᴰ ·ᴰ (yᴰ ·ᴰ zᴰ)) ≡[ ·Assoc x y z ] ((xᴰ ·ᴰ yᴰ) ·ᴰ zᴰ)
     isSetEltᴰ : ∀ {x} → isSet (eltᴰ x)
 
+  reind : ∀ {x y} (p : x ≡ y) → eltᴰ x → eltᴰ y
+  reind = subst eltᴰ
+
+  reind-filler : ∀ {x y}(p : x ≡ y)
+    → (xᴰ : eltᴰ x)
+    → xᴰ ≡[ p ] reind p xᴰ
+  reind-filler = subst-filler eltᴰ
+
   rectify :
     ∀ {x y} {xᴰ yᴰ}
     → {p q : x ≡ y}
     → xᴰ ≡[ p ] yᴰ → xᴰ ≡[ q ] yᴰ
   rectify {xᴰ = xᴰ}{yᴰ = yᴰ} = subst (xᴰ ≡[_] yᴰ)
     (is-set _ _ _ _)
+  infixr 30 _∙ᴰ_
   _∙ᴰ_ :
     ∀ {x y z} {xᴰ yᴰ zᴰ}
     → {p : x ≡ y}{q : y ≡ z}
@@ -46,6 +55,14 @@ record Monoidᴰ (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
     subst (λ p → PathP (λ i → p i) xᴰ zᴰ)
       (sym (congFunct eltᴰ p q))
       (compPathP pᴰ qᴰ)
+  _·ᴰcong_ :
+    ∀ {w x y z}
+      {wᴰ xᴰ yᴰ zᴰ}
+      {p : w ≡ x}
+      {q : y ≡ z}
+    → wᴰ ≡[ p ] xᴰ → yᴰ ≡[ q ] zᴰ
+    → (wᴰ ·ᴰ yᴰ) ≡[ cong₂ _·_ p q ] (xᴰ ·ᴰ zᴰ)
+  pᴰ ·ᴰcong qᴰ = congP₂ (λ _ → _·ᴰ_) pᴰ qᴰ
 
 record Submonoid (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
   open MonoidStr (M .snd)
