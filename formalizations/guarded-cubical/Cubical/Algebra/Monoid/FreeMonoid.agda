@@ -10,9 +10,11 @@ open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Semigroup
 open import Cubical.Algebra.Monoid.Displayed
+open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
+open import Cubical.Data.Empty as Empty hiding (elim; rec)
 
 private variable
-  ℓ ℓ' ℓ'' ℓ''' ℓᴰ : Level
+  ℓ ℓ' ℓ'' ℓ''' ℓᴰ ℓᴰ' : Level
 
 module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
   data FreeMonoid : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ'')) where
@@ -32,6 +34,9 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
 
   FM : Monoid _
   FM = FreeMonoid , (monoidstr ε _·_ (ismonoid (issemigroup trunc assoc) identityᵣ identityₗ))
+
+  gen : A → ⟨ FM ⟩
+  gen x = ⟦ x ⟧
 
   coHom : B → MonoidHom FM FM
   coHom b .fst = ⟦ b ⟧co
@@ -87,50 +92,21 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
         (λ b → wknHom (coHom b) (iB b))
         λ c → wknHom (opHom c) (iC c)
 
-  -- elim : ∀ 
--- module Elim {ℓ'} {B : FreeMonoid A → Type ℓ'}
---   (⟦_⟧*       : (x : A) → B ⟦ x ⟧)
---   (ε*         : B ε)
---   (_·*_       : ∀ {x y}   → B x → B y → B (x · y))
---   (identityᵣ* : ∀ {x}     → (xs : B x)
---     → PathP (λ i → B (identityᵣ x i)) (xs ·* ε*) xs)
---   (identityₗ* : ∀ {x}     → (xs : B x)
---     → PathP (λ i → B (identityₗ x i)) (ε* ·* xs) xs)
---   (assoc*     : ∀ {x y z} → (xs : B x) (ys : B y) (zs : B z)
---     → PathP (λ i → B (assoc x y z i)) (xs ·* (ys ·* zs)) ((xs ·* ys) ·* zs))
---   (trunc*     : ∀ xs → isSet (B xs)) where
+-- Here's a local elimination principle but only when we don't use the coHom/opHom
+module _ (A : Type ℓ) where
+  FMsimp : Monoid ℓ
+  FMsimp = FM A ⊥ ⊥
 
---   f : (xs : FreeMonoid A) → B xs
---   f ⟦ x ⟧ = ⟦ x ⟧*
---   f ε = ε*
---   f (xs · ys) = f xs ·* f ys
---   f (identityᵣ xs i) = identityᵣ* (f xs) i
---   f (identityₗ xs i) = identityₗ* (f xs) i
---   f (assoc xs ys zs i) = assoc* (f xs) (f ys) (f zs) i
---   f (trunc xs ys p q i j) = isOfHLevel→isOfHLevelDep 2 trunc*  (f xs) (f ys)
---     (cong f p) (cong f q) (trunc xs ys p q) i j
-
--- module ElimProp {ℓ'} {B : FreeMonoid A → Type ℓ'}
---   (BProp : {xs : FreeMonoid A} → isProp (B xs))
---   (⟦_⟧*       : (x : A) → B ⟦ x ⟧)
---   (ε*         : B ε)
---   (_·*_       : ∀ {x y}   → B x → B y → B (x · y)) where
-
---   f : (xs : FreeMonoid A) → B xs
---   f = Elim.f ⟦_⟧* ε* _·*_
---     (λ {x} xs → toPathP (BProp (transport (λ i → B (identityᵣ x i)) (xs ·* ε*)) xs))
---     (λ {x} xs → toPathP (BProp (transport (λ i → B (identityₗ x i)) (ε* ·* xs)) xs))
---     (λ {x y z} xs ys zs → toPathP (BProp (transport (λ i → B (assoc x y z i)) (xs ·* (ys ·* zs))) ((xs ·* ys) ·* zs)))
---     (λ _ → (isProp→isSet BProp))
-
--- module Rec {ℓ'} {B : Type ℓ'} (BType : isSet B)
---   (⟦_⟧*       : (x : A) → B)
---   (ε*         : B)
---   (_·*_       : B → B → B)
---   (identityᵣ* : (x : B) → x ·* ε* ≡ x)
---   (identityₗ* : (x : B) → ε* ·* x ≡ x)
---   (assoc*     : (x y z : B) → x ·* (y ·* z) ≡ (x ·* y) ·* z)
---   where
-
---   f : FreeMonoid A → B
---   f = Elim.f ⟦_⟧* ε* _·*_ identityᵣ* identityₗ* assoc* (const BType)
+  module _ {M : Monoid ℓ'}
+      (Mᴰ : Monoidᴰ M ℓᴰ')
+      (ϕ : MonoidHom FMsimp M) where
+    private
+      module Mᴰ = Monoidᴰ Mᴰ
+    module _ (iA : ∀ a → Mᴰ.eltᴰ ( ϕ .fst (gen _ _ _ a))) where
+      elimLocal : LocalSection ϕ Mᴰ
+      elimLocal =
+        _gs⋆h_
+          {Mᴰ = Reindex {M = FMsimp}{N = M} ϕ Mᴰ}
+          {Nᴰ = Mᴰ}
+          {ϕ = ϕ}
+          (elim A ⊥ ⊥ (Reindex ϕ Mᴰ) iA Empty.elim Empty.elim) (π ϕ Mᴰ)

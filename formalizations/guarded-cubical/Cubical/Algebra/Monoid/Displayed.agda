@@ -156,6 +156,18 @@ VMonoidHomᴰ : {M : Monoid ℓ}
   → Monoidᴰ M ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
 VMonoidHomᴰ Mᴰ Nᴰ = MonoidHomᴰ (idMon _) Mᴰ Nᴰ
 
+module _   {M : Monoid ℓ}{N : Monoid ℓ'}
+  {Mᴰ : Monoidᴰ M ℓᴰ}{Nᴰ : Monoidᴰ N ℓᴰ'}
+  {ϕ : MonoidHom M N}
+  where
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
+  _gs⋆h_ : (s : Section Mᴰ) (ϕᴰ : MonoidHomᴰ ϕ Mᴰ Nᴰ) → LocalSection ϕ Nᴰ
+  (s gs⋆h ϕᴰ) .fst x = ϕᴰ .fst (s .fst x)
+  (s gs⋆h ϕᴰ) .snd .fst =
+    Nᴰ.rectify (cong (ϕᴰ .fst) (s .snd .fst) Nᴰ.∙ᴰ ϕᴰ .snd .fst)
+  (s gs⋆h ϕᴰ) .snd .snd x y =
+    Nᴰ.rectify (cong (ϕᴰ .fst) (s .snd .snd x y) Nᴰ.∙ᴰ ϕᴰ .snd .snd _ _)
 {- Σ -}
 module _ {M : Monoid ℓ}{Mᴰ : Monoidᴰ M ℓᴰ} where
   fstHom : MonoidHom (Σ Mᴰ) M

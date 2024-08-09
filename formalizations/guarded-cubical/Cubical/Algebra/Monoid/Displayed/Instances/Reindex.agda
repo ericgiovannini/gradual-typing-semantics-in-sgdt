@@ -44,3 +44,8 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'}(ϕ : MonoidHom M N)
     Mᴰ.∙ᴰ Mᴰ.reind-filler _ _
     )
   Reindex .Monoidᴰ.isSetEltᴰ = Mᴰ.isSetEltᴰ
+
+  π : MonoidHomᴰ ϕ Reindex Mᴰ
+  π .fst = λ z → z
+  π .snd .fst = symP (Mᴰ.reind-filler _ _)
+  π .snd .snd xᴰ yᴰ = symP (Mᴰ.reind-filler _ _)

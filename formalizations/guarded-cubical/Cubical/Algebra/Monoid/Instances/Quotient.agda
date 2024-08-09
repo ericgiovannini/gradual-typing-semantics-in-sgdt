@@ -14,17 +14,14 @@ open import Cubical.Data.Empty as Empty hiding (elim; rec)
 
 private variable
   ℓ ℓ' ℓ'' ℓ''' ℓᴰ : Level
-
-module _ (M : Monoid ℓ) where
-  private
-    module M = MonoidStr (M .snd)
-    open MonoidStr
-  module _ 
+open MonoidStr
+module QuotientMonoid (M : Monoid ℓ)
     (_~_ : ⟨ M ⟩ → ⟨ M ⟩ → Type ℓ')
-    (~congl : ∀ {a b c} → a ~ b → (a M.· c) ~ (b M.· c))
-    (~congr : ∀ {a b c} → b ~ c → (a M.· b) ~ (a M.· c))
+    (~congl : ∀ {a b c} → a ~ b → (M .snd ._·_ a c) ~ (M .snd ._·_ b c))
+    (~congr : ∀ {a b c} → b ~ c → (M .snd ._·_ a b) ~ (M .snd ._·_ a c))
     where
     private
+      module M = MonoidStr (M .snd)
       |M/~| = ⟨ M ⟩ / _~_
 
     QuotientMonoid : Monoid (ℓ-max ℓ ℓ')
@@ -48,6 +45,9 @@ module _ (M : Monoid ℓ) where
     σ .fst = [_]
     σ .snd .IsMonoidHom.presε = refl
     σ .snd .IsMonoidHom.pres· x y = refl
+
+    σ/~ : ∀ {m n} → m ~ n → σ .fst m ≡ σ .fst n
+    σ/~ p = eq/ _ _ p
 
     module _ (Mᴰ : Monoidᴰ QuotientMonoid ℓᴰ)
       (s : LocalSection σ Mᴰ)
