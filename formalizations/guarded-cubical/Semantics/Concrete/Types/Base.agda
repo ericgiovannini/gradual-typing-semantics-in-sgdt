@@ -87,6 +87,13 @@ ValType→Predomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} → ValType ℓ ℓ≤ �
 ValType→Predomain A = ⟨ A ⟩ , (A .snd .is-poset-with-bisim)
   where open ValTypeStr
 
+PtbV : ValType ℓ ℓ≤ ℓ≈ ℓM → Monoid ℓM
+PtbV A = A .snd .ValTypeStr.PtbV
+
+interpV : (A : ValType ℓ ℓ≤ ℓ≈ ℓM) →
+  MonoidHom (PtbV A) (Endo (ValType→Predomain A))
+interpV A = A .snd .ValTypeStr.interpV
+
 mkValType :
   (A : PosetBisim ℓ ℓ≤ ℓ≈)
   → (PtbV : Monoid ℓM)
@@ -147,6 +154,13 @@ mkCompType B PtbC ι = ⟨ B ⟩ , ((B .snd) , (PtbC , ι))
 CompType→ErrorDomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} →
   CompType ℓ ℓ≤ ℓ≈ ℓM → ErrorDomain ℓ ℓ≤ ℓ≈
 CompType→ErrorDomain B = ⟨ B ⟩ , B .snd .fst
+
+PtbC : CompType ℓ ℓ≤ ℓ≈ ℓM → Monoid ℓM
+PtbC B = B .snd .snd .fst
+
+interpC : (B : CompType ℓ ℓ≤ ℓ≈ ℓM) →
+  MonoidHom (PtbC B) (CEndo (CompType→ErrorDomain B))
+interpC B = B .snd .snd .snd
 
 
 -- Vertical morphisms of computation types
