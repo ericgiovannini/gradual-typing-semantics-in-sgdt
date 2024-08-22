@@ -25,6 +25,8 @@ open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Convenience
 open import Semantics.Concrete.DoublePoset.Constructions
 open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.DblPosetCombinators
+
 open import Common.Later
 
 open BinaryRelation
@@ -35,7 +37,7 @@ private
     ℓX' ℓ'X' ℓY' ℓ'Y' ℓZ' ℓ'Z' : Level
     ℓ ℓ' ℓ'' ℓR ℓR' ℓR'' : Level
     ℓo : Level
-    ℓc : Level
+    ℓc ℓc' : Level
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' : Level
     ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  : Level
@@ -259,3 +261,15 @@ LiftPBRel {ℓc' = ℓc'} R = record {
   is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PBRel.is-prop-valued x y) ;
   is-antitone = λ x'≤x xRy -> lift (R .PBRel.is-antitone x'≤x (lower xRy)) ;
   is-monotone = λ xRy y≤y' -> lift (R .PBRel.is-monotone (lower xRy) y≤y') }
+
+
+module _ {k : Clock} (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
+
+  open Clocked k
+  open ClockedCombinators k
+
+  -- Relation between A and ▹ A defined by
+  -- x  (relNext A)  y~  iff  (next x)  r(▹A)  y~
+  -- i.e. ▸ₜ[ x  r(A)  (y~ t) ]
+  relNext : PBRel A (PB▹ A) ℓ≤A
+  relNext = functionalRel Next Id (idPRel (PB▹ A))
