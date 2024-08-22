@@ -13,6 +13,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_·_)
+open import Cubical.Relation.Nullary.Base
 
 
 open import Cubical.Algebra.Monoid.Base
@@ -72,7 +73,7 @@ private
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
     ℓMAᵢ ℓMAₒ ℓMBᵢ ℓMBₒ : Level
 
-open ValTypeStr
+-- open ValTypeStr
 open MonoidStr
 open IsMonoidHom
 open IsSemigroup
@@ -81,7 +82,7 @@ open IsMonoid
 -- identity and composition for value and comp relations
 module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} where
   private
-    iA = A .snd .interpV
+    iA = interpV A
   IdRelV : VRelPP A A _
   IdRelV .fst = idPRel _
   IdRelV .snd .fst = corecPushV _ _ _ (idMon _) λ pA → Predom-IdSqH (iA .fst pA .fst)
@@ -102,9 +103,9 @@ module _
   where
 
   private
-    iA₁ = A₁ .snd .interpV .fst
-    iA₂ = A₂ .snd .interpV .fst
-    iA₃ = A₃ .snd .interpV .fst
+    iA₁ = interpV A₁ .fst
+    iA₂ = interpV A₂ .fst
+    iA₃ = interpV A₃ .fst
 
   ⊙V : VRelPP A₁ A₃ _
   ⊙V .fst = c₁ .fst ⊙ c₂ .fst
@@ -215,14 +216,33 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}{A' : ValType ℓA' ℓ≤A' �
     (elimNat _ _ (((i₁ .fst 1) , i₁ .fst 1 , δ*Sq (c .fst)) , refl))
     (corecCFact1 _ _ _ (i₂ ∘hom pushV c) λ pA →
       F-sq (c .fst) (c .fst)
-           (A .snd .interpV .fst pA .fst) (A' .snd .interpV .fst _ .fst)
+           (interpV A .fst pA .fst) (interpV A' .fst _ .fst)
            (pushVSq c pA))
 
   F c .snd .snd = elimSection _
     (elimNat _ _ (((i₁ .fst 1) , ((i₁ .fst 1) , (δ*Sq (c .fst)))) , refl))
     (corecCFact2 _ _ _ (i₂ ∘hom pullV c) (λ pA' →
       F-sq (c .fst) (c .fst)
-           (A .snd .interpV .fst _ .fst) (A' .snd .interpV .fst _ .fst)
+           (interpV A .fst _ .fst) (interpV A' .fst _ .fst)
            (pullVSq c pA')))
 
 -- TODO: inj-arr , inj-× , inj-nat
+
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
+  where
+
+  private
+    module C = ClockedCombinators k
+    iA = interpV A
+
+  Next : VRelPP A (V▹ {k = k} A) ℓ≤A
+  Next .fst = relNext (ValType→Predomain A)
+
+  -- push
+  Next .snd .fst = corecVFact1 A (V▹ A) (Next .fst) (idMon _)
+    λ pA → λ x y~ H t → PBMor.isMon (iA .fst pA .fst) (H t)  -- NTS: (iA pA x) ⊑A (iA pA (y~ t))
+
+  -- pull
+  Next .snd .snd = corecVFact2 A (V▹ A) (Next .fst) (idMon _)
+    λ pA → λ x y~ H t → PBMor.isMon (iA .fst pA .fst) (H t)
+

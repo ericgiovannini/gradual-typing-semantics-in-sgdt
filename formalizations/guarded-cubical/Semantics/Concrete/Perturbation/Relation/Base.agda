@@ -38,7 +38,7 @@ open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.KleisliFunctors k
 
 open import Semantics.Concrete.Predomains.PrePerturbations k
-open import Semantics.Concrete.Types.Base k
+open import Semantics.Concrete.Types.Base k 
 
 private
   variable
@@ -75,7 +75,7 @@ private
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
     ℓMAᵢ ℓMAₒ ℓMBᵢ ℓMBₒ : Level
 
-open ValTypeStr
+-- open ValTypeStr
 open MonoidStr
 open IsMonoidHom
 open IsSemigroup
@@ -87,10 +87,10 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
          (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
   private
-    MA = A .snd .PtbV
-    iA = A .snd .interpV
-    MA' = A' .snd .PtbV
-    iA' = A' .snd .interpV
+    MA = PtbV A
+    iA = interpV A
+    MA' = PtbV A'
+    iA' = interpV A'
 
   VRelPtbSq : ⟨ MA ⟩ → ⟨ MA' ⟩ → Type _
   VRelPtbSq pA pA' = PBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
@@ -190,10 +190,10 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
   where
 
   private
-    MA = A .snd .PtbV
-    iA = A .snd .interpV
-    MA' = A' .snd .PtbV
-    iA' = A' .snd .interpV
+    MA = PtbV A
+    iA = interpV A
+    MA' = PtbV A'
+    iA' = interpV A'
 
   pushV : MonoidHom MA MA'
   pushV = π2V _ _ _ ∘hom c .snd .fst .fst
