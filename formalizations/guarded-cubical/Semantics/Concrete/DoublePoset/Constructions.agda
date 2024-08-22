@@ -1,5 +1,7 @@
 {-# OPTIONS --guarded --rewriting #-}
 
+{-# OPTIONS --allow-unsolved-metas #-}
+
 
 module Semantics.Concrete.DoublePoset.Constructions where
 
@@ -9,6 +11,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Transport
 
 open import Cubical.Data.Bool
 open import Cubical.Data.Nat renaming (ℕ to Nat)
@@ -24,6 +27,7 @@ open import Cubical.Relation.Binary.Base
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.Convenience
+open import Semantics.Concrete.DoublePoset.DPMorProofs
 
 open import Common.Later
 open import Common.LaterProperties
@@ -40,6 +44,8 @@ private
     ℓ2 ℓ'2 ℓ''2 : Level
     ℓA ℓ'A ℓ''A : Level
     ℓB ℓ'B ℓ''B : Level
+
+    ℓ≤A ℓ≈A : Level
 
     X : PosetBisim ℓX ℓ'X ℓ''X
     Y : PosetBisim ℓY ℓ'Y ℓ''Y
@@ -305,6 +311,260 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
   f = λ a → inr a ;
   isMon = λ {x} {y} x≤y → lift x≤y ;
   pres≈ = λ {x} {y} x≈y → lift x≈y }
+
+
+open PosetBisimStr
+
+
+-- Indexed product of predomains (must be at the same universe levels)
+
+
+ΠP : (X : Type ℓX){ℓ ℓ≤ ℓ≈ : Level} → (A : X → PosetBisim ℓ ℓ≤ ℓ≈) →
+  PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
+ΠP X A = (∀ (x : X) → ⟨ A x ⟩) ,
+  posetbisimstr (isSetΠ λ x → A x .snd .is-set) ord isOrdering bisim isBisimilarity
+
+  where
+    ord : _ → _ → Type _
+    ord as bs = ∀ x → A x .snd  .PosetBisimStr._≤_ (as x) (bs x)
+
+    ord-prop-valued : isPropValued ord
+    ord-prop-valued as bs p q =
+      funExt (λ x → A x .snd .is-prop-valued (as x) (bs x) (p x) (q x))
+
+    ord-refl : isRefl ord
+    ord-refl as x = A x .snd .is-refl (as x)
+
+    ord-trans : isTrans ord
+    ord-trans as bs cs as≤bs bs≤cs x =
+      A x .snd .is-trans (as x) (bs x) (cs x) (as≤bs x) (bs≤cs x)
+
+    ord-antisym : isAntisym ord
+    ord-antisym as bs as≤bs bs≤as =
+      funExt (λ x → A x .snd .is-antisym (as x) (bs x) (as≤bs x) (bs≤as x))
+
+    isOrdering = isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym
+
+    bisim : _ → _ → Type _
+    bisim as bs = ∀ x → A x .snd .PosetBisimStr._≈_ (as x) (bs x)
+
+    bisim-prop-valued : isPropValued bisim
+    bisim-prop-valued as bs p q =
+      funExt (λ x → A x .snd .is-prop-valued-Bisim (as x) (bs x) (p x) (q x))
+
+    bisim-refl : isRefl bisim
+    bisim-refl as x = A x .snd .is-refl-Bisim (as x)
+
+    bisim-sym : isSym bisim
+    bisim-sym as bs as≈bs x = A x .snd .is-sym (as x) (bs x) (as≈bs x)
+
+    isBisimilarity = isbisim bisim-refl bisim-sym bisim-prop-valued
+
+
+-- Intro and elim for Π
+module _ {X : Type ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ ℓ≤ ℓ≈} where
+
+  Π-intro : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    ((x : X) → PBMor A (B x)) →
+    PBMor A (ΠP X B)
+  Π-intro fs .PBMor.f a x = PBMor.f (fs x) a
+  Π-intro fs .PBMor.isMon a₁≤a₂ x = PBMor.isMon (fs x) a₁≤a₂
+  Π-intro fs .PBMor.pres≈ a₁≈a₂ x = PBMor.pres≈ (fs x) a₁≈a₂
+
+  Π-elim : (x : X) → PBMor (ΠP X B) (B x)
+  Π-elim x .PBMor.f bs = bs x
+  Π-elim x .PBMor.isMon {x = as} {y = bs} as≤bs = as≤bs x
+  Π-elim x .PBMor.pres≈ {x = as} {y = bs} as≈bs = as≈bs x
+
+-- Action of Π on a family of morphisms
+Π-mor : ∀ {ℓ ℓ≤ ℓ≈}
+  (X : Type ℓX) →
+  (A B : X → PosetBisim ℓ ℓ≤ ℓ≈) →
+  ((x : X) → PBMor (A x) (B x)) →
+  PBMor (ΠP X A) (ΠP X B)
+Π-mor X A B fs = Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
+  
+
+
+-- Σ for predomains (i.e. a Type-indexed coproduct of predomains)
+
+ΣP : (X : hSet ℓX) → {ℓ ℓ≤ ℓ≈ : Level} →
+  (B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈) →
+  PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
+ΣP X B = (Σ[ x ∈ ⟨ X ⟩ ] ⟨ B x ⟩) ,
+  (posetbisimstr (isSetΣ (X .snd) (λ x → B x .snd .is-set))
+    ord (isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym)
+    bisim (isbisim bisim-refl bisim-sym bisim-prop-valued))
+
+  where
+
+    ord : _ → _ → Type _
+    ord (x₁ , b₁) (x₂ , b₂) =
+      Σ[ eq ∈ (x₁ ≡ x₂) ] (rel-≤ (B x₂) (subst (λ x → ⟨ B x ⟩) eq b₁) b₂)
+
+    ord-prop-valued : isPropValued ord
+    ord-prop-valued (x₁ , b₁) (x₂ , b₂) (eq , b₁≤b₂) (eq' , b₁≤b₂') =
+      ΣPathP ((X .snd x₁ x₂ eq eq') ,
+              (isProp→PathP (λ i → B x₂ .snd .is-prop-valued _ _) b₁≤b₂ b₁≤b₂'))
+
+    ord-refl : isRefl ord
+    ord-refl (x , b) = refl ,
+      subst
+        (λ y → rel-≤ (B x) y b)
+        (sym (substRefl {B = λ x → ⟨ B x ⟩} b))
+        (B x .snd .is-refl b)
+
+    ord-trans : isTrans ord
+    ord-trans (x₁ , b₁) (x₂ , b₂) (x₃ , b₃) (x₁≡x₂ , b₁₂≤b₂) (x₂≡x₃ , b₂₃≤b₃) =
+      (x₁≡x₂ ∙ x₂≡x₃) ,
+      transport (λ i → rel-≤ (B x₃) (sym (substComposite T x₁≡x₂ x₂≡x₃ b₁) i) b₃) lem
+        where
+          T : ⟨ X ⟩ → Type _
+          T = λ x → ⟨ B x ⟩
+        
+          b₁₃  = subst T (x₁≡x₂ ∙ x₂≡x₃) b₁
+          b₁₂  = subst T x₁≡x₂ b₁
+          b₁₂₃ = subst T x₂≡x₃ b₁₂
+          b₂₃  = subst T x₂≡x₃ b₂
+          
+          b₁₂₃≤b₂₃ : rel-≤ (B x₃) b₁₂₃ b₂₃
+          b₁₂₃≤b₂₃ = rel-transport-≤ (cong B x₂≡x₃) b₁₂≤b₂
+
+          -- Goal: b₁₃ (B x₃).≤ b₃
+          -- Know: b₁₃ = b₁₂₃ by substComposite
+          --
+          -- STS b₁₂₃ (B x₃).≤ b₃
+          -- By transitivity STS b₁₂₃ ≤ b₂₃ ≤ b₃.
+          -- The latter is true by assumption, and the former
+          -- follows by assumption b₁₂≤b₂ and the fact that B x₂ ≡ B x₃.
+          lem : rel-≤ (B x₃) b₁₂₃ b₃
+          lem = B x₃ .snd .is-trans b₁₂₃ b₂₃ b₃ b₁₂₃≤b₂₃ b₂₃≤b₃
+         
+    
+    ord-antisym : isAntisym ord
+    ord-antisym (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≤b₂) (x₂≡x₁ , b₂₁≤b₁) =
+      ΣPathP (x₁≡x₂ , toPathP eq)
+        where
+          T : ⟨ X ⟩ → Type _
+          T = λ x → ⟨ B x ⟩
+          
+          b₁₂  = subst T x₁≡x₂ b₁
+          b₁₂₁ = subst T x₂≡x₁ b₁₂
+          b₂₁  = subst T x₂≡x₁ b₂
+          b₂₁₂ = subst T x₁≡x₂ b₂₁
+
+          pf-inverse : x₁≡x₂ ≡ sym x₂≡x₁
+          pf-inverse = X .snd x₁ x₂ x₁≡x₂ (sym x₂≡x₁)
+
+          b₂₁₂≤b₁₂ : rel-≤ (B x₂) b₂₁₂ b₁₂
+          b₂₁₂≤b₁₂ = rel-transport-≤ (cong B x₁≡x₂) b₂₁≤b₁
+
+          b₂₁₂≡b₂ : b₂₁₂ ≡ b₂
+          b₂₁₂≡b₂ = let e1 = (λ i → subst T (pf-inverse i) b₂₁) in
+                    let e2 = subst⁻Subst T x₂≡x₁ b₂ in
+                    e1 ∙ e2
+          
+          eq : b₁₂ ≡ b₂
+          eq = B x₂ .snd .is-antisym b₁₂ b₂ b₁₂≤b₂
+            (subst (λ z → rel-≤ (B x₂) z b₁₂) b₂₁₂≡b₂ b₂₁₂≤b₁₂) 
+
+    bisim : _ → _ → Type _
+    bisim (x₁ , b₁) (x₂ , b₂) =
+      Σ[ eq ∈ (x₁ ≡ x₂) ] (rel-≈ (B x₂) (subst (λ x → ⟨ B x ⟩) eq b₁) b₂)
+
+    bisim-refl : isRefl bisim
+    bisim-refl (x , b) = refl ,
+      subst
+        (λ y → rel-≈ (B x) y b)
+        (sym (substRefl {B = λ x → ⟨ B x ⟩} b))
+        (B x .snd .is-refl-Bisim b)
+
+    bisim-sym : isSym bisim
+    bisim-sym (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≈b₂) =
+      (sym x₁≡x₂) , rel-transport-≈-lemma (cong B (sym x₁≡x₂)) (B x₂ .snd .is-sym _ _ b₁₂≈b₂)
+
+    bisim-prop-valued : isPropValued bisim
+    bisim-prop-valued (x₁ , b₁) (x₂ , b₂) (eq , b₁≈b₂) (eq' , b₁≈b₂') =
+      ΣPathP ((X .snd x₁ x₂ eq eq') ,
+              (isProp→PathP (λ i → B x₂ .snd .is-prop-valued-Bisim _ _) b₁≈b₂ b₁≈b₂'))
+
+
+
+-- Intro and elim for Σ
+module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈} where
+
+  Σ-intro : (x : ⟨ X ⟩) → PBMor (B x) (ΣP X B)
+  Σ-intro x .PBMor.f b = x , b
+  Σ-intro x .PBMor.isMon {x = b₁} {y = b₂} b₁≤b₂ =
+    refl , subst (λ b → rel-≤ (B x) b b₂) (sym (transportRefl b₁)) b₁≤b₂
+  Σ-intro x .PBMor.pres≈ {x = b₁} {y = b₂} b₁≈b₂ =
+    refl , subst (λ b → rel-≈ (B x) b b₂) (sym (transportRefl b₁)) b₁≈b₂
+
+  Σ-intro' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    (g : ⟨ A ⟩ → ⟨ X ⟩) → ((a : ⟨ A ⟩) → PBMor A (B (g a))) → PBMor A (ΣP X B)
+  Σ-intro' g h .PBMor.f a = (g a) , h a .PBMor.f a
+  Σ-intro' g h .PBMor.isMon {x = a₁} {y = a₂} a₁≤a₂ = {!!} , {!!}
+  Σ-intro' g h .PBMor.pres≈ = {!!}
+    -- record {
+    -- f = λ x → g.f x , h.f x
+    -- ; isMon = λ x≤y → (g.isMon x≤y) , (h.isMon x≤y)
+    -- ; pres≈ = λ x≈y → (g.pres≈ x≈y) , (h.pres≈ x≈y)
+    -- } where
+    -- module g = PBMor g
+    -- module h = PBMor h
+
+  Σ-elim₁ : ⟨ (ΣP X B) ⟩ → ⟨ X ⟩
+  Σ-elim₁ = fst
+
+  Σ-elim₂ : (p : ⟨ ΣP X B ⟩) → ⟨ B (Σ-elim₁ p) ⟩
+  Σ-elim₂ = snd
+
+-- Action of Σ on a family of morphisms
+Σ-mor : ∀ {ℓ ℓ≤ ℓ≈}
+  (X : hSet ℓX) →
+  (A B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈) →
+  ((x : ⟨ X ⟩) → PBMor (A x) (B x)) →
+  PBMor (ΣP X A) (ΣP X B)
+-- Σ-mor X A B fs = {!!}
+Σ-mor X A B fs .PBMor.f (x , a) = (x , fs x .PBMor.f a)
+
+Σ-mor X A B fs .PBMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁₂≤a₂) = x₁≡x₂ , aux
+  where
+    open PBMor 
+    TA : ⟨ X ⟩ → Type _
+    TA = λ x → ⟨ A x ⟩
+
+    TB : ⟨ X ⟩ → Type _
+    TB = λ x → ⟨ B x ⟩
+
+    a₁₂ = subst TA x₁≡x₂ a₁
+
+    -- fs x₂ a₁₂ ≤ fs x₂ a₂
+    lem1 : rel-≤ (B x₂) (fs x₂ .f a₁₂) (fs x₂ .f a₂)
+    lem1 = fs x₂ .isMon a₁₂≤a₂
+
+    lem2 : PathP (λ i → ⟨ B (x₁≡x₂ i) ⟩) (fs x₁ .f a₁) (fs x₂ .f a₁₂)
+    lem2 i = fs (x₁≡x₂ i) .f (subst-filler TA x₁≡x₂ a₁ i)
+
+    lem3 : (subst TB x₁≡x₂ (fs x₁ .f a₁)) ≡ fs x₂ .f a₁₂
+    lem3 = fromPathP lem2
+    
+    -- lem2 : (fs x₂ .f a₁₂) ≡ (subst TB x₁≡x₂ (fs x₁ .f a₁))
+    -- lem2 =
+    --   fs x₂ .f a₁₂
+    --   ≡⟨ cong (fs x₂ .f) (sym {!subst-filler TA ? a₂!}) ⟩ fs x₂ .f a₂
+    --   ≡⟨ (subst-filler (λ _ → B x₂ .fst) x₁≡x₂ (fs x₂ .f a₂)) ⟩ _
+    --   ≡⟨ {!!} ⟩
+    --   _ ∎
+ 
+    aux : rel-≤ (B x₂) (subst TB x₁≡x₂ (fs x₁ .f a₁)) (fs x₂ .f a₂)
+    aux = subst (λ z → rel-≤ (B x₂) z (fs x₂ .f a₂)) (sym lem3) lem1 
+  
+Σ-mor X A B fs .PBMor.pres≈ = {!!}
+-- Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
+
+
+
 
 
 𝔽 : (Clock -> PosetBisim ℓ ℓ' ℓ'') -> PosetBisim ℓ ℓ' ℓ''
