@@ -26,7 +26,7 @@ open import Common.Common
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Constructions
+-- open import Semantics.Concrete.DoublePoset.Constructions
 open import Cubical.HITs.PropositionalTruncation
 
 private
@@ -68,6 +68,39 @@ rel-transport-≈ {A} {B} eq {a1} {a2} a1≤a2 =
     (transport-filler (λ j → ⟨ eq j ⟩) a1 i)
     (transport-filler (λ j → ⟨ eq j ⟩) a2 i))
   a1≤a2
+
+
+rel-transport-≤-lemma :
+  {A B : PosetBisim ℓ ℓ' ℓ''} →
+  (eq : A ≡ B) →
+  {a : ⟨ A ⟩} {b : ⟨ B ⟩} →
+  rel-≤ A a (transport (λ i → ⟨ eq (~ i) ⟩) b) →
+  rel-≤ B (transport (λ i → ⟨ eq i ⟩) a) b
+rel-transport-≤-lemma {A = A} {B = B} eq {a = a} {b = b} H =
+  subst (λ x → rel-≤ B ab x) (transportTransport⁻ (cong fst eq) b) lem
+  where
+    ab = transport (λ i → ⟨ eq i ⟩) a
+    bab = transport (λ i → ⟨ eq i ⟩) (transport (λ i → ⟨ eq (~ i) ⟩) b)
+    
+    lem : rel-≤ B ab bab
+    lem = rel-transport-≤ eq H
+
+rel-transport-≈-lemma :
+  {A B : PosetBisim ℓ ℓ' ℓ''} →
+  (eq : A ≡ B) →
+  {a : ⟨ A ⟩} {b : ⟨ B ⟩} →
+  rel-≈ A a (transport (λ i → ⟨ eq (~ i) ⟩) b) →
+  rel-≈ B (transport (λ i → ⟨ eq i ⟩) a) b
+rel-transport-≈-lemma {A = A} {B = B} eq {a = a} {b = b} H =
+  subst (λ x → rel-≈ B ab x) (transportTransport⁻ (cong fst eq) b) lem
+  where
+    ab = transport (λ i → ⟨ eq i ⟩) a
+    bab = transport (λ i → ⟨ eq i ⟩) (transport (λ i → ⟨ eq (~ i) ⟩) b)
+    
+    lem : rel-≈ B ab bab
+    lem = rel-transport-≈ eq H
+
+
 
 rel-transport-sym-≤ : {A B : PosetBisim ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
