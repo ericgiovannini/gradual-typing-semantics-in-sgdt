@@ -60,12 +60,18 @@ module _ {ℓ : Level}
   (dec-eq-S : ∀ (s s' : S) → Dec (s ≡ s'))
   (isSetS : isSet S)
   where
-  
+
 
   -- The underlying type of Dyn
   data DynTy (X : Type ℓ) : Type ℓ where
     guarded : X → DynTy X
     unguarded : ∀ s → (P s → DynTy X) → DynTy X
+
+  unguarded≡ : ∀ {X : Type ℓ}{s t}{ds : P s → DynTy X}{es : P t → DynTy X}
+    → (s≡ : Path S s t)
+    → PathP (λ i → P (s≡ i) → DynTy X) ds es
+    → unguarded s ds ≡ unguarded t es
+  unguarded≡ s≡ cs≡ i = unguarded (s≡ i) (cs≡ i)
 
   -- Elim principle
   DynInd : {X : Type ℓ} → {B : DynTy X → Type ℓ'} →
@@ -81,7 +87,7 @@ module _ {ℓ : Level}
   module _ (X : PosetBisim ℓ ℓ ℓ) where
 
     private
-      |D| = DynTy ⟨ X ⟩ 
+      |D| = DynTy ⟨ X ⟩
       module X = PosetBisimStr (X .snd)
 
     -- ordering
@@ -103,7 +109,7 @@ module _ {ℓ : Level}
             where
               lem1 : eq ≡ eq'
               lem1 = isSetS s s' eq eq'
-              
+
               lem2 : PathP
                       (λ i →
                         (p : P s) (p' : P s') (path : PathP (λ j → P (lem1 i j)) p p') → ds p ⊑d es p')
@@ -130,18 +136,36 @@ module _ {ℓ : Level}
         where
           aux : _
           aux p₁ p₃ path = ⊑d-trans (ds₁ p₁) (ds₂ p₂) (ds₃ p₃) (H p₁ p₂ (toPathP refl)) (H' p₂ p₃ lem) where
-          
+
             p₂ : P s₂
             p₂ = subst P eq p₁
 
             lem : PathP (λ i → P (eq' i)) p₂ p₃
             lem = {!!}
-          
+
     ⊑d-antisym : isAntisym _⊑d_
-    ⊑d-antisym .(guarded x) .(guarded y) (⊑guarded x y x⊑y) (⊑guarded .y .x y⊑x) =
+    ⊑d-antisym (guarded x) (guarded y) (⊑guarded _ _ x⊑y) (⊑guarded _ _ y⊑x) =
       cong guarded (X.is-antisym x y x⊑y y⊑x)
-    ⊑d-antisym .(unguarded s ds) .(unguarded s' es) (⊑unguarded s s' ds es eq H) (⊑unguarded .s' .s .es .ds eq' H') =
-      cong₂ unguarded eq (λ i x → {!ds!})
+    ⊑d-antisym (unguarded s ds) (unguarded s' es)
+      (⊑unguarded _ _ _ _ s≡s' ds⊑es)
+      (⊑unguarded _ _ _ _ s'≡s es⊑ds) =
+      unguarded≡ s≡s' (toPathP (funExt λ p → {!fromPathP!}))
+      where
+        ds⊑es' : (p : P s) → ds p ⊑d (es (subst P s≡s' p))
+        ds⊑es' p = ds⊑es p (subst P s≡s' p) {!!}
+        es⊑ds' : (p : P s) → (es (subst P s≡s' p)) ⊑d ds p
+        es⊑ds' p = es⊑ds (subst P s≡s' p) p {!!}
+
+        ds≡es : (p : P s) → ds p ≡ es (subst P s≡s' p)
+        ds≡es p = ⊑d-antisym _ _ (ds⊑es' p) (es⊑ds' p)
+        -- es⊑ds' : (p : P s)
+        --    (path : PathP (λ i → P (s≡s' (~ i))) p p') →
+        --    es p ⊑d ds p'
+        -- es⊑ds' = {!!}
+
+        foo : ∀ (p' : P s') → ds (subst⁻ P s≡s' p') ≡ es p'
+        foo p' = {!fromPathP!}
+      -- cong₂ unguarded eq (λ i x → {!ds!})
 
     -- bisimilarity
     data _≈d_ : |D| → |D| → Type ℓ where
@@ -170,7 +194,7 @@ module _ {ℓ : Level}
         (λ p p' path → ≈d-prop (ds p) (es p') (H1 p p' (subst (λ pf → PathP (λ j → P (pf j)) p p') {!!} path)) (H2 p p' {!!}) i)
 
 
-   
+
     -- isSet
     isSetDynTy : isSet (DynTy ⟨ X ⟩)
     isSetDynTy = {!!}
@@ -213,7 +237,7 @@ module _ {ℓ : Level}
     -------------------------
     -- Perturbations for Dyn
     -------------------------
-    module _ (S'gen S'co S'op : Type ℓ-zero)             
+    module _ (S'gen S'co S'op : Type ℓ-zero)
       where
 
       PtbD : Monoid ℓ-zero
