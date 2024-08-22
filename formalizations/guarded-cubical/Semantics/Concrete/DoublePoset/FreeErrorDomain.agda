@@ -608,3 +608,38 @@ module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ
 --       open CBPVExt ⟨ A ⟩ (L℧ ⟨ A' ⟩) ℧ θ
 --       eq : Σ[ h ∈ PBMor A (𝕃 A') ] ϕ .ErrorDomMor.fun ≡ {!ext (h .PBMor.f)!} 
 
+
+open F-ob
+
+-- Constructing an error domain square between morphisms out of the free error domain
+module _
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'}
+  (c : PBRel A A' ℓc) (d : ErrorDomRel B B' ℓd)
+  (ϕ : ErrorDomMor (F-ob A) B) (ϕ' : ErrorDomMor (F-ob A') B')
+  where
+  open F-rel
+  open ExtAsEDMorphism
+
+  F-rel-free :
+    PBSq c (U-rel d) (U-mor ϕ ∘p η-mor) (U-mor ϕ' ∘p η-mor) →
+    ErrorDomSq (F-rel c) d ϕ ϕ'
+  F-rel-free α = subst2 (λ ψ ψ' → ErrorDomSq (F-rel c) d ψ ψ') (sym eq1) (sym eq2) ext-sq
+    where
+      f : PBMor A (U-ob B)
+      f = ext-unique ϕ .fst .fst
+
+      f' : PBMor A' (U-ob B')
+      f' = ext-unique ϕ' .fst .fst
+
+      _ : f ≡ (U-mor ϕ ∘p η-mor)
+      _ = refl
+
+      eq1 : ϕ ≡ Ext f
+      eq1 = (ext-unique ϕ .fst .snd)
+
+      eq2 : ϕ' ≡ Ext f'
+      eq2 = (ext-unique ϕ' .fst. snd)
+
+      ext-sq : ErrorDomSq (F-rel c) d (Ext f) (Ext f')
+      ext-sq = Ext-sq c d f f' α
