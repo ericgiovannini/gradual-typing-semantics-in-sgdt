@@ -542,29 +542,61 @@ module _
 
 
 
+-- If two error domain morphisms out of the free error domain agree on
+-- inputs of the form η x, then they are equal.
 module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
 
   private module B = ErrorDomainStr (B .snd)
-  open CBPVExt ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f
+  open ExtAsEDMorphism
+
+  open F-ob
+
+  F-extensionality : (ϕ ϕ' : ErrorDomMor (F-ob A) B) →
+    (∀ x → ϕ .ErrorDomMor.fun (η x) ≡ ϕ' .ErrorDomMor.fun (η x)) →
+    ϕ ≡ ϕ'
+  F-extensionality ϕ ϕ' eq = eqEDMor _ _ (funExt (fix aux))
+    where
+      module ϕ = ErrorDomMor ϕ
+      module ϕ' = ErrorDomMor ϕ'
+      aux : ▹ _ → _
+      aux _ (η x) = eq x
+      aux _ ℧ = ϕ.f℧ ∙ sym ϕ'.f℧
+      aux IH (θ lx~) =
+          (ϕ.fθ lx~)
+        ∙ cong B.θ.f (later-ext (λ t → IH t (lx~ t)))
+        ∙ (sym (ϕ'.fθ lx~))
+
+
+
+-- For every error domain ϕ morphism out of the free error domain,
+-- there is a unique f such that ϕ = ext f.
+
+module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
+
+  private module B = ErrorDomainStr (B .snd)
+  -- open CBPVExt ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f
+  open ExtAsEDMorphism
 
   ext-unique :
     (ϕ : ErrorDomMor (F-ob.F-ob A) B) →
-    ∃![ f ∈ PBMor A (U-ob B) ] ϕ .ErrorDomMor.fun ≡ ext (f .PBMor.f)
+    ∃![ f ∈ PBMor A (U-ob B) ] ϕ ≡ Ext f
   ext-unique ϕ .fst .fst = U-mor ϕ ∘p η-mor
-  ext-unique ϕ .fst .snd = funExt (fix aux)
-    where
-      module ϕ = ErrorDomMor ϕ
-      aux : ▹ _ → _
-      aux _ (η x) = sym (Equations.ext-η _ x)
-      aux _ ℧ = ϕ.f℧ ∙ sym (Equations.ext-℧ _)
-      aux IH (θ lx~) = ϕ.fθ lx~ ∙ sym (Equations.ext-θ _ lx~ ∙ cong B.θ.f (later-ext (λ t → sym (IH t (lx~ t)))))
-  ext-unique ϕ .snd (g , eq) =
-    ΣPathPProp (λ g → isSet→ B.is-set _ _) (eqPBMor _ _ (funExt aux))
+  ext-unique ϕ .fst .snd = F-extensionality ϕ _ (λ x → sym (Equations.ext-η (U-mor ϕ ∘p η-mor) x))
+  ext-unique ϕ .snd (g , eq) = ΣPathPProp (λ g → EDMorIsSet ϕ (Ext g)) (eqPBMor _ _ (funExt aux))
     where
       aux : _
-      aux x = (λ i → eq i (η x)) ∙ (Equations.ext-η _ x)
+      aux x = (funExt⁻ (cong ErrorDomMor.fun eq) (η x)) ∙ (Equations.ext-η g x)
+  
+    -- ΣPathPProp (λ g → isSet→ B.is-set _ _) (eqPBMor _ _ (funExt aux))
+    -- where
+    --   aux : _
+    --   aux x = (λ i → eq i (η x)) ∙ (Equations.ext-η _ x)
       -- know : ϕ ≡ ext g
       -- NTS: Uϕ ∘ η ≡ g
+
+
+-- If f ≡ g, then 
+
 
 -- module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} where
 
@@ -575,4 +607,4 @@ module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ
 --       open LiftPredomain
 --       open CBPVExt ⟨ A ⟩ (L℧ ⟨ A' ⟩) ℧ θ
 --       eq : Σ[ h ∈ PBMor A (𝕃 A') ] ϕ .ErrorDomMor.fun ≡ {!ext (h .PBMor.f)!} 
-  
+
