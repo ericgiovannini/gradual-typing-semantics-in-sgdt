@@ -14,6 +14,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Transport
+open import Cubical.Foundations.Transport.More
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Path
 
@@ -34,7 +35,7 @@ open import Semantics.Concrete.GuardedLiftError k
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.Morphism hiding (_$_)
 open import Semantics.Concrete.DoublePoset.DPMorRelation
 open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
@@ -149,23 +150,27 @@ module _ {ℓ : Level}
     ⊑d-antisym (unguarded s ds) (unguarded s' es)
       (⊑unguarded _ _ _ _ s≡s' ds⊑es)
       (⊑unguarded _ _ _ _ s'≡s es⊑ds) =
-      unguarded≡ s≡s' (toPathP (funExt λ p → {!fromPathP!}))
+      unguarded≡ s≡s'
+        (toPathP $ funExt λ p' →
+          (λ i → transp-ds-simplify i p')
+          ∙ λ i → ds'≡es p' i)
       where
-        ds⊑es' : (p : P s) → ds p ⊑d (es (subst P s≡s' p))
-        ds⊑es' p = ds⊑es p (subst P s≡s' p) {!!}
-        es⊑ds' : (p : P s) → (es (subst P s≡s' p)) ⊑d ds p
-        es⊑ds' p = es⊑ds (subst P s≡s' p) p {!!}
+        transp-ds-simplify :
+          (transport (λ i → P (s≡s' i) → DynTy ⟨ X ⟩) ds)
+          ≡ (ds ∘ subst P (sym s≡s'))
+        transp-ds-simplify = fromPathP (funDomTransp P s≡s' ds)
 
-        ds≡es : (p : P s) → ds p ≡ es (subst P s≡s' p)
-        ds≡es p = ⊑d-antisym _ _ (ds⊑es' p) (es⊑ds' p)
-        -- es⊑ds' : (p : P s)
-        --    (path : PathP (λ i → P (s≡s' (~ i))) p p') →
-        --    es p ⊑d ds p'
-        -- es⊑ds' = {!!}
+        module _ (p' : P s') where
+          ds'⊑es : ds (subst⁻ P s≡s' p') ⊑d es p'
+          ds'⊑es = ds⊑es _ _ (symP (subst⁻-filler P s≡s' p'))
 
-        foo : ∀ (p' : P s') → ds (subst⁻ P s≡s' p') ≡ es p'
-        foo p' = {!fromPathP!}
-      -- cong₂ unguarded eq (λ i x → {!ds!})
+          es⊑ds' : es p' ⊑d ds (subst⁻ P s≡s' p')
+          es⊑ds' = subst (λ s≡s' → es p' ⊑d ds (subst⁻ P s≡s' p'))
+            (isSetS _ _ _ _)
+            (es⊑ds _ _ (subst-filler P s'≡s p'))
+
+          ds'≡es : ds (subst⁻ P s≡s' p') ≡ es p'
+          ds'≡es = ⊑d-antisym _ _ ds'⊑es es⊑ds'
 
     -- bisimilarity
     data _≈d_ : |D| → |D| → Type ℓ where
