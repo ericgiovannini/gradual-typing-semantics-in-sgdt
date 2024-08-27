@@ -12,6 +12,7 @@ open import Cubical.Relation.Binary
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Transport
 open import Cubical.Data.Sigma
 
 open import Cubical.Reflection.Base
@@ -23,8 +24,9 @@ open import Common.Common
 open import Common.LaterProperties
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.DoublePoset.Constructions as Predomain
 open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.DPMorProofs
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 
 open import Common.Later
@@ -261,6 +263,97 @@ LiftPBRel {ℓc' = ℓc'} R = record {
   is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PBRel.is-prop-valued x y) ;
   is-antitone = λ x'≤x xRy -> lift (R .PBRel.is-antitone x'≤x (lower xRy)) ;
   is-monotone = λ xRy y≤y' -> lift (R .PBRel.is-monotone (lower xRy) y≤y') }
+
+
+
+
+predomrel-transport : {A₁ A₁' : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ A₂' : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  {c : PBRel A₁ A₂ ℓc} →
+  {c' : PBRel A₁' A₂' ℓc} →
+  (eq₁ : A₁ ≡ A₁') →
+  (eq₂ : A₂ ≡ A₂') →
+  (PathP (λ i → PBRel (eq₁ i) (eq₂ i) ℓc) c c') →
+  ∀ x y →
+  c  .R x y →
+  c' .R (transport (cong fst eq₁) x) (transport (cong fst eq₂) y)
+predomrel-transport eq₁ eq₂ path x y xRy =
+  transport
+    (λ i → (path i) .R
+      (transport-filler (λ j → ⟨ eq₁ j ⟩) x i)
+      (transport-filler (λ j → ⟨ eq₂ j ⟩) y i))
+    xRy
+
+
+-- Action of Σ on predomain relations
+ΣR : (X : hSet ℓX) → {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓc : Level} →
+  (A₁ : ⟨ X ⟩ → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) →
+  (A₂ : ⟨ X ⟩ → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  (rs : (x : ⟨ X ⟩) → PBRel (A₁ x) (A₂ x) ℓc) →
+  PBRel (ΣP X A₁) (ΣP X A₂) (ℓ-max ℓX ℓc)
+  
+ΣR X A₁ A₂ rs .R (x₁ , a₁) (x₂ , a₂) =
+  Σ[ eq ∈ (x₁ ≡ x₂) ] (rs x₂ .R (subst (λ x → ⟨ A₁ x ⟩) eq a₁) a₂)
+  
+ΣR X A₁ A₂ rs .is-prop-valued (x₁ , a₁) (x₂ , a₂) =
+  isPropΣ (X .snd x₁ x₂) (λ eq → rs x₂ .is-prop-valued _ _)
+  
+ΣR X A₁ A₂ rs .is-antitone
+  {x' = (x₁' , a₁')} {x = (x₁ , a₁)} {y = (x₂ , a₂)}
+  (eq , a₁'≤a₁) (eq' , a₁Ra₂) =
+  (eq ∙ eq') ,
+  rs x₂ .is-antitone lem a₁Ra₂
+
+  where
+    T₁ : ⟨ X ⟩ → Type _
+    T₁ x = ⟨ A₁ x ⟩
+
+    T₂ : ⟨ X ⟩ → Type _
+    T₂ x = ⟨ A₂ x ⟩
+
+    _⊑Ax₂_ = A₁ x₂ .snd .PosetBisimStr._≤_
+
+    lem : (subst T₁ (eq ∙ eq') a₁') ⊑Ax₂ (subst T₁ eq' a₁)
+    lem = subst
+      (λ z → z ⊑Ax₂ subst T₁ eq' a₁)
+      (sym (substComposite T₁ eq eq' a₁'))
+      (rel-transport-≤ {A = A₁ x₁} {B = A₁ x₂} (cong A₁ eq') a₁'≤a₁)
+      -- NTS (subst T₁ eq' (subst T₁ eq a₁'))  ⊑Ax₂  (subst T₁ eq' a₁)
+      -- STS               (subst T₁ eq a₁')   ⊑Ax₁  a₁
+
+ΣR X A₁ A₂ rs .is-monotone
+  {x = (x₁ , a₁)} {y = (x₂ , a₂)} {y' = (x₂' , a₂')}
+  (eq , a₁Ra₂) (eq' , a₁≤a₂') =
+  (eq ∙ eq') ,
+  rs x₂' .is-monotone lem a₁≤a₂'
+
+  where
+    T₁ : ⟨ X ⟩ → Type _
+    T₁ x = ⟨ A₁ x ⟩
+
+    T₂ : ⟨ X ⟩ → Type _
+    T₂ x = ⟨ A₂ x ⟩
+
+    lem : rs x₂' .R (subst T₁ (eq ∙ eq') a₁) (subst T₂ eq' a₂)
+    lem = subst
+      (λ z → rs x₂' .R z (subst T₂ eq' a₂))
+      (sym (substComposite T₁ eq eq' a₁))
+      (predomrel-transport {c = rs x₂} {c' = rs x₂'} (cong A₁ eq') (cong A₂ eq') (cong rs eq') (subst T₁ eq a₁) a₂ a₁Ra₂)   
+
+
+-- Action of Π on predomain relations
+ΠR : (X : Type ℓX) {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓc : Level} →
+  (A₁ : X → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) →
+  (A₂ : X → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  (rs : (x : X) → PBRel (A₁ x) (A₂ x) ℓc) →
+  PBRel (ΠP X A₁) (ΠP X A₂) (ℓ-max ℓX ℓc)
+ΠR X A₁ A₂ rs .R as bs =
+  ∀ x → rs x .R (as x) (bs x)
+ΠR X A₁ A₂ rs .is-prop-valued as bs =
+  isPropΠ (λ x → rs x .is-prop-valued _ _)
+ΠR X A₁ A₂ rs .is-antitone {x' = as'} {x = as} {y = bs} as'≤as as-R-bs =
+  λ x → rs x .is-antitone (as'≤as x) (as-R-bs x)
+ΠR X A₁ A₂ rs .is-monotone {x = as} {y = bs} {y' = bs'} as-R-bs bs≤bs' =
+  λ x → rs x .is-monotone (as-R-bs x) (bs≤bs' x)
 
 
 module _ {k : Clock} (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
