@@ -155,7 +155,7 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
       h = elim ⊕ᴰ (λ x →
           (λ m → funExt⁻ (cong fst (eq x)) m)
         , isProp→PathP (λ i → N .snd .is-set _ _) _ _
-        , {!!})
+        , λ _ _ → isProp→PathP (λ i → N .snd .is-set _ _) _ _)
     
   module _
     {P : Monoid ℓ''}
