@@ -313,17 +313,23 @@ A×-PrePtb .snd .IsMonoidHom.presε = refl
 A×-PrePtb .snd .IsMonoidHom.pres· x y = refl
 
 
-
-module _ {k : Clock} where
+-- Pre-perturbations for later
+module _ {k : Clock} {ℓA ℓ≤A ℓ≈A : Level} {A : PosetBisim ℓA ℓ≤A ℓ≈A} where
 
   open Clocked k
   open ClockedCombinators k
 
-  Endo▹ : {ℓA ℓ≤A ℓ≈A : Level} {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+  Endo▹ :
     ⟨ Endo A ⟩ → ⟨ Endo (PB▹ A) ⟩
   Endo▹ f .fst = Map▹ (f .fst)
-  Endo▹ f .snd x x' x≈x' t = f .snd (x t) (x' t) (x≈x' t)
+  Endo▹ f .snd x~ x'~ x~≈x'~ t =  f .snd (x~ t) (x'~ t) (x~≈x'~ t)
+  -- NTS: ▸ₜ[ f (x~ t) ≈ (x'~ t) ]
+  -- Know: f ≈ id and ▸ₜ[ (x~ t) ≈ (x'≈ t) ]
 
+  PrePtb▹ : MonoidHom (Endo A) (Endo (PB▹ A))
+  PrePtb▹ .fst = Endo▹
+  PrePtb▹ .snd .IsMonoidHom.presε = PrePtb≡ _ _ refl
+  PrePtb▹ .snd .IsMonoidHom.pres· f g = PrePtb≡ _ _ refl
 
 
 -- Iterated composition of pre-perturbations
