@@ -78,7 +78,7 @@ private
     ℓMB₁ ℓMB₂ ℓMB₃ : Level
     ℓMAᵢ ℓMAₒ ℓMBᵢ ℓMBₒ : Level
 
-open ValTypeStr
+-- open ValTypeStr
 open MonoidStr
 open IsMonoidHom
 open IsSemigroup
@@ -88,10 +88,10 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
          (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
   private
-    MA = A .snd .PtbV
-    iA = A .snd .interpV
-    MA' = A' .snd .PtbV
-    iA' = A' .snd .interpV
+    MA = PtbV A
+    iA = interpV A
+    MA' = PtbV A'
+    iA' = interpV A'
 
   VRelPtbSq : ⟨ MA ⟩ → ⟨ MA' ⟩ → Type _
   VRelPtbSq pA pA' = PBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
@@ -131,10 +131,13 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
   where
 
   private
-    MA = A .snd .PtbV
-    iA = A .snd .interpV
-    MA' = A' .snd .PtbV
-    iA' = A' .snd .interpV
+    MA = PtbV A
+    iA = interpV A
+    MA' = PtbV A'
+    iA' = interpV A'
+
+  VRelPP→PredomainRel : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc
+  VRelPP→PredomainRel = fst c
 
   pushV : MonoidHom MA MA'
   pushV = fstL' ∘hom corecΣ _ (c .snd .fst)
