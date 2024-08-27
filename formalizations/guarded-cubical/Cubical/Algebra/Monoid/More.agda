@@ -104,6 +104,34 @@ opCoRec ϕ^ .fst = ϕ^ .fst
 opCoRec ϕ^ .snd .presε = ϕ^ .snd .presε
 opCoRec ϕ^ .snd .pres· x y = ϕ^ .snd .pres· y x
 
+-- Homomorphism from (M^op)^op to M
+M^op^op→M : {M : Monoid ℓ} →
+  MonoidHom ((M ^op) ^op) M
+M^op^op→M .fst x = x
+M^op^op→M .snd .presε = refl
+M^op^op→M .snd .pres· x y = refl
+
+
+-- Homomorphism from M to (M^op)^op
+M→M^op^op : {M : Monoid ℓ} →
+  MonoidHom M ((M ^op) ^op)
+M→M^op^op .fst x = x
+M→M^op^op .snd .presε = refl
+M→M^op^op .snd .pres· x y = refl
+
+-- M^op^op→N : {M : Monoid ℓ} {N : Monoid ℓ'} →
+--   MonoidHom M N → MonoidHom ((M ^op) ^op) N
+-- M^op^op→N f = f ∘hom M^op^op→M
+
+-- M→N^op^op : {M : Monoid ℓ} {N : Monoid ℓ'} →
+--   MonoidHom M N → MonoidHom M ((N ^op) ^op)
+-- M→N^op^op f = M→M^op^op ∘hom f
+
+-- _^opHom' : {M : Monoid ℓ} {N : Monoid ℓ'} →
+--   MonoidHom (M ^op) (N ^op) → MonoidHom M N
+-- (h ^opHom') = M^op^op→M ∘hom (h ^opHom) ∘hom M→M^op^op
+
+
 -- Identity monoid homomorphism
 
 idMon : (M : Monoid ℓ) → MonoidHom M M
@@ -162,7 +190,11 @@ M1 ×M M2 = makeMonoid
       _·M1_ = M1 .snd ._·_
       _·M2_ = M2 .snd ._·_
 
-
+×M-intro : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''} →
+  MonoidHom M N → MonoidHom M P → MonoidHom M (N ×M P)
+×M-intro f g .fst x = f .fst x , g .fst x
+×M-intro f g .snd .presε = ≡-× (f .snd .presε) (g .snd .presε)
+×M-intro f g .snd .pres· x y = ≡-× (f .snd .pres· x y) (g .snd .pres· x y)
 
 _×CM_ : CommMonoid ℓ -> CommMonoid ℓ' -> CommMonoid (ℓ-max ℓ ℓ')
 M1 ×CM M2 = makeCommMonoid
