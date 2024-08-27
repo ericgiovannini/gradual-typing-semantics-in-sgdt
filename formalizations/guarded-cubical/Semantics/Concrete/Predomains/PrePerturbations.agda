@@ -24,8 +24,11 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Transport
+open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat hiding (_^_)
+open import Cubical.Relation.Nullary
 
 
 open import Cubical.Algebra.Monoid.Base
@@ -45,6 +48,7 @@ open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadRelationalResults k
 open import Semantics.Concrete.DoublePoset.MonadCombinators k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.DoublePoset.KleisliFunctors k
 
 
 
@@ -63,6 +67,12 @@ private
     A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'
 
 open PBMor
+
+decElim : ∀ {ℓ ℓ'} {P : Type ℓ} {A : Dec P → Type ℓ'} →
+  ((p : P) → A (yes p)) → ((¬p : ¬ P) → A (no ¬p)) →
+  (p : Dec P) → A p
+decElim ifyes ifno (yes p) = ifyes p
+decElim ifyes ifno (no ¬p) = ifno ¬p
 
 ---------------------------
 -- Value pre-perturbations
@@ -194,6 +204,16 @@ ptbC M iB m = iB .fst m .fst
 ------------------------------------------------------------------------
 
 
+-- Action of × on pre-perturbations
+
+_×PrePtb_ :
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  (f : PrePtb A₁) (g : PrePtb A₂) → PrePtb (A₁ ×dp A₂)
+(f ×PrePtb g) .fst = (f .fst) ×mor (g .fst)
+(f ×PrePtb g) .snd (x , y) (x' , y') (x≈x' , y≈y') =
+  (f .snd x x' x≈x') , (g .snd y y' y≈y')
+
+
 -- Convenience: action of ⟶ on pre-perturbations
 module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
   _⟶PrePtb_ :
@@ -223,7 +243,32 @@ A⟶-PrePtb .snd .IsMonoidHom.pres· g h =
     (arrowPresCompVertRight (PrePtbId .fst) (ϕ' .fst) (ϕ .fst))
 
 
+-- Kleisli actions on pre-perturbations
 
+-- TODO
+A⟶K-PrePtb : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+  MonoidHom ((CEndo (F-ob A)) ^op) (Endo (U-ob (A ⟶ob B)))
+A⟶K-PrePtb {B = B} .fst ϕ .fst = ϕ .fst ⟶Kᴸ B
+A⟶K-PrePtb .fst ϕ .snd = {!!}
+A⟶K-PrePtb .snd .IsMonoidHom.presε = EqEndomor→EqPrePtb _ _ (KlArrowMorphismᴸ-id _)
+A⟶K-PrePtb .snd .IsMonoidHom.pres· = {!!}
+
+
+-- TODO
+⟶KB-PrePtb : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+  MonoidHom (Endo (U-ob B)) (Endo (U-ob (A ⟶ob B)))
+⟶KB-PrePtb {A = A} .fst g .fst = A ⟶Kᴿ g .fst
+⟶KB-PrePtb {A = A} {B = B} .fst g .snd =
+  λ f f' f≈f' x y x≈y →
+    -- NTS: PBMor.f (g .fst) (PBMor.f f x) ≈ (PBMor.f f' y)
+    g .snd (f $ x) (f' $ y) (f≈f' x y x≈y)
+⟶KB-PrePtb .snd .IsMonoidHom.presε = EqEndomor→EqPrePtb _ _ (KlArrowMorphismᴿ-id _)
+⟶KB-PrePtb .snd .IsMonoidHom.pres· = {!!}
+
+
+
+-- Given a retraction from A to A', we can turn a pre-perturbation on
+-- A into a pre-pertubration on A'.
 PrePtbRetract : (f : PBMor A A') → (g : PBMor A' A) → (f ∘p g ≡ Id) →
   PrePtb A → PrePtb A'
 PrePtbRetract f g fg≡id h .fst = f ∘p (h .fst) ∘p g
@@ -233,6 +278,22 @@ PrePtbRetract {A = A} {A' = A'} f g fg≡id (h , h≈id) .snd =
     f∘h∘g≈f∘g : (f ∘p h ∘p g) ≈mon (f ∘p g)
     f∘h∘g≈f∘g x y x≈y = f .pres≈ (h≈id (g $ x) (g $ y) (g .pres≈ x≈y))
 
+
+-- Need g g' ≈ Id and ψ ψ' ≈ Id
+-- PrePtbIso :
+--   {A : PosetBisim ℓA ℓ≤A ℓ≈A}  {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+--   {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'} →
+--   (g : PBMor A' A) (g' : PBMor A A') (ψ : ErrorDomMor B B') (ψ' : ErrorDomMor B' B) →
+--   CPrePtb (A ⟶ob B) → CPrePtb (A' ⟶ob B')
+-- PrePtbIso g g' ψ ψ' p .fst = (g ⟶mor ψ) ∘ed (g' ⟶mor ψ')
+-- PrePtbIso g g' ψ ψ' p .snd g₁ g₂ g₁≈g₂ x y x≈y = {!ψ.pres≈ ?!}
+--   where
+--     module ψ = ErrorDomMor ψ
+--     module ψ' = ErrorDomMor ψ'
+--     module g = PBMor g
+--     module g' = PBMor g'
+--     module arr₁ = ErrorDomMor (g ⟶mor ψ)
+--     module arr₂ = ErrorDomMor (g' ⟶mor ψ')
 
 
 -- Action of the U functor on pre-perturbations
@@ -311,6 +372,52 @@ A×-PrePtb .fst p .fst = ×-intro π1 (p .fst ∘p π2 )
 A×-PrePtb .fst p .snd x y x≈y = x≈y .fst , (p .snd _ _ (x≈y .snd))
 A×-PrePtb .snd .IsMonoidHom.presε = refl
 A×-PrePtb .snd .IsMonoidHom.pres· x y = refl
+
+
+-- Pre-perturbations for Π
+module _
+  {ℓX : Level} (X : Type ℓX) (dec : ∀ (x y : X) → Dec (x ≡ y))
+  {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ ℓ≤ ℓ≈} where
+
+  liftΠ : ((x : X) → ⟨ Endo (B x) ⟩) → ⟨ Endo (ΠP X B) ⟩
+  liftΠ ps .fst = Π-mor _ _ _ (fst ∘ ps)
+  liftΠ ps .snd bs bs' bs≈bs' x = ps x .snd (bs x) (bs' x) (bs≈bs' x)
+
+  
+  Π-PrePtb : (x : X) → MonoidHom (Endo (B x)) (Endo (ΠP X B))
+  Π-PrePtb x .fst px = liftΠ (λ y → decRec
+    (λ eq → PrePtbRetract (mTransport (cong B eq)) (mTransport (sym (cong B eq))) (eqPBMor _ _ (funExt (λ by → transportTransport⁻ (λ i → ⟨ B (eq i) ⟩) by))) px)
+    (λ _ → PrePtbId)
+    (dec x y))
+  Π-PrePtb x .snd .IsMonoidHom.presε = PrePtb≡ _ _
+    {!!}
+    -- (funExt (λ bs → funExt (λ y → decElim {A = {!!}} {!!} {!!} {!!})))
+  Π-PrePtb x .snd .IsMonoidHom.pres· = {!!}
+
+
+-- Pre-perturbations for Σ
+module _
+  {ℓX : Level} (X : hSet ℓX) (dec : ∀ (x y : ⟨ X ⟩) → Dec (x ≡ y))
+  {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈} where
+  
+  open PosetBisimStr
+  
+  liftΣ : ((x : ⟨ X ⟩) → ⟨ Endo (B x) ⟩) → ⟨ Endo (ΣP X B) ⟩
+  liftΣ ps .fst = Σ-mor _ _ _ (fst ∘ ps)
+  liftΣ ps .snd (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≈b₂) =
+    x₁≡x₂ , subst
+      (λ z → (B x₂) .snd ._≈_ z b₂)
+      (sym (fromPathP λ i → ps (x₁≡x₂ i) .fst .f (subst-filler (λ x → ⟨ B x ⟩) x₁≡x₂ b₁ i)))
+      (ps x₂ .snd b₁₂ b₂ b₁₂≈b₂)
+    where
+      b₁₂ = subst (λ x → ⟨ B x ⟩) x₁≡x₂ b₁
+      
+    -- Goal   (subst T x₁≡x₂ (ps x₁ .fst .f b₁)) ≈ b₂
+    -- Know     ps x₂ .fst .f (subst T x₁≡x₂ b₁) ≈ b₂
+    -- Know     ps x₂ .fst .f b₁₂ ≡ subst T x₁≡x₂ (ps x₁ .fst .f b₁)
+
+  Σ-PrePtb : (x : ⟨ X ⟩) → MonoidHom (Endo (B x)) (Endo (ΣP X B))
+  Σ-PrePtb = {!!}
 
 
 -- Pre-perturbations for later
