@@ -83,14 +83,14 @@ _×_ : ValType ℓ ℓ≤ ℓ≈ ℓM
     → ValType ℓ' ℓ≤' ℓ≈' ℓM'
     → ValType _ _ _ _
 A × A' = mkValType (ValType→Predomain A ×dp ValType→Predomain A') M-× i-× where
-  M-× = A .snd .ValTypeStr.PtbV FP.⊕ A' .snd .ValTypeStr.PtbV
-  i-× = FP.rec (×A-PrePtb ∘hom A .snd .ValTypeStr.interpV) (A×-PrePtb ∘hom A' .snd .ValTypeStr.interpV)
+  M-× = PtbV A FP.⊕ PtbV A'
+  i-× = FP.rec (×A-PrePtb ∘hom interpV A) (A×-PrePtb ∘hom interpV A')
 
 F : ValType ℓ ℓ≤ ℓ≈ ℓM → CompType ℓ (ℓ-max ℓ ℓ≤) (ℓ-max ℓ ℓ≈) ℓM
 F A = mkCompType (F-ob (ValType→Predomain A)) M-FA iFA where
   open F-ob
-  M-FA = NatM FP.⊕ A .snd .ValTypeStr.PtbV
-  iFA = FP.rec (NatM→.h _ (δ*FA-as-PrePtb _)) (Endo-A→CEndo-FA ∘hom A .snd .ValTypeStr.interpV)
+  M-FA = NatM FP.⊕ PtbV A
+  iFA = FP.rec (NatM→.h _ (δ*FA-as-PrePtb _)) (Endo-A→CEndo-FA ∘hom interpV A)
 
 _⟶_ : ValType ℓ ℓ≤ ℓ≈ ℓM
       → CompType ℓ' ℓ≤' ℓ≈' ℓM'
@@ -102,10 +102,10 @@ _⟶_ : ValType ℓ ℓ≤ ℓ≈ ℓM
 A ⟶ B =
   mkCompType (ValType→Predomain A ⟶ob CompType→ErrorDomain B) M-Arrow i-Arrow
   where
-  M-Arrow = (A .snd .ValTypeStr.PtbV  ^op) FP.⊕ B .snd .snd .fst
+  M-Arrow = (PtbV A ^op) FP.⊕ B .snd .snd .fst
   i-Arrow = FP.rec
-    (A⟶-PrePtb ∘hom (A .snd .ValTypeStr.interpV ^opHom))
-    (⟶B-PrePtb ∘hom (B .snd .snd .snd))
+    (A⟶-PrePtb ∘hom (interpV A ^opHom))
+    (⟶B-PrePtb ∘hom interpC B)
 
 dyn' : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 dyn' = mkValType Dyn' PtbD ι-dyn' where

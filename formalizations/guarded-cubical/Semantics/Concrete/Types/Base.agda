@@ -19,6 +19,8 @@ module Semantics.Concrete.Types.Base (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Data.Sigma
 
 open import Cubical.Algebra.Monoid.Base
 
@@ -58,48 +60,62 @@ open PBMor
 
 -- A value type is a predomain A along with a monoid of perturbations on A.
 
-record ValTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (A : Type ℓ) :
-  Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM))) where
+-- If we make this a record type instead of a sigma, then the
+-- typechecking takes significantly longer.
+--
+-- On an example run, the profiler said that positivity checking took
+-- 60,499ms.
 
-  no-eta-equality
+-- record ValTypeStr {ℓ : Level} (ℓ≤ ℓ≈ ℓM : Level) (A : Type ℓ) :
+--   Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM))) where
 
-  constructor valtypestr
+--   no-eta-equality
 
-  field
-    is-poset-with-bisim : PosetBisimStr ℓ≤ ℓ≈ A
+--   constructor valtypestr
 
-  open PosetBisimStr is-poset-with-bisim public
-  predomain : PosetBisim ℓ ℓ≤ ℓ≈
-  predomain = A , is-poset-with-bisim
+--   field
+--     is-poset-with-bisim : PosetBisimStr ℓ≤ ℓ≈ A
 
-  field
-    PtbV : Monoid ℓM
-    interpV : MonoidHom PtbV (Endo predomain)
+--   open PosetBisimStr is-poset-with-bisim public
+--   predomain : PosetBisim ℓ ℓ≤ ℓ≈
+--   predomain = A , is-poset-with-bisim
+
+--   field
+--     PtbV : Monoid ℓM
+--     interpV : MonoidHom PtbV (Endo predomain)
 
 
-  ι : ⟨ PtbV ⟩ → PBMor predomain predomain
-  ι p = interpV .fst p .fst
+--   ι : ⟨ PtbV ⟩ → PBMor predomain predomain
+--   ι p = interpV .fst p .fst
+
+-- ValType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
+-- ValType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (ValTypeStr ℓ≤ ℓ≈ ℓM)
+
+ValTypeStr : ∀ {ℓ} ℓ≤ ℓ≈ ℓM → (A : Type ℓ) → Type _
+ValTypeStr ℓ≤ ℓ≈ ℓM A =
+  Σ[ A-predom ∈ PosetBisimStr ℓ≤ ℓ≈ A ]
+  Σ[ PtbV ∈ Monoid ℓM ]
+  MonoidHom PtbV (Endo (A , A-predom))
 
 ValType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
 ValType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (ValTypeStr ℓ≤ ℓ≈ ℓM)
 
 ValType→Predomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} → ValType ℓ ℓ≤ ℓ≈ ℓM → PosetBisim ℓ ℓ≤ ℓ≈
-ValType→Predomain A = ⟨ A ⟩ , (A .snd .is-poset-with-bisim)
-  where open ValTypeStr
+ValType→Predomain A = ⟨ A ⟩ , (A .snd .fst)
 
 PtbV : ValType ℓ ℓ≤ ℓ≈ ℓM → Monoid ℓM
-PtbV A = A .snd .ValTypeStr.PtbV
+PtbV A = A .snd .snd .fst
 
 interpV : (A : ValType ℓ ℓ≤ ℓ≈ ℓM) →
   MonoidHom (PtbV A) (Endo (ValType→Predomain A))
-interpV A = A .snd .ValTypeStr.interpV
+interpV A = A .snd .snd .snd
 
 mkValType :
   (A : PosetBisim ℓ ℓ≤ ℓ≈)
   → (PtbV : Monoid ℓM)
   → MonoidHom PtbV (Endo A)
   → ValType ℓ ℓ≤ ℓ≈ ℓM
-mkValType A P ι = ⟨ A ⟩ , (valtypestr (A .snd) P ι)
+mkValType A P ι = ⟨ A ⟩ , ((A .snd) ,  P ,  ι)
 
 -- Vertical morphisms of value types
 -------------------------------------
@@ -112,6 +128,18 @@ ValTypeMor :
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) →
   Type ((ℓ-max (ℓ-max ℓAᵢ (ℓ-max ℓ≤Aᵢ ℓ≈Aᵢ)) (ℓ-max ℓAₒ (ℓ-max ℓ≤Aₒ ℓ≈Aₒ))))
 ValTypeMor Aᵢ Aₒ = PBMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
+
+-- Isomorphism of value types
+module _
+  (Aᵢ : ValType ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓMAᵢ)
+  (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) where
+
+  open PBMor
+  
+  ValTypeIso : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓAᵢ ℓ≤Aᵢ) ℓ≈Aᵢ) ℓAₒ) ℓ≤Aₒ) ℓ≈Aₒ)
+  ValTypeIso = Σ[ fun ∈ ValTypeMor Aᵢ Aₒ ] Σ[ inv ∈ ValTypeMor Aₒ Aᵢ ]
+    (section (fun .f) (inv .f)) × (retract (fun .f) (inv .f))
+  
 
 ---------------------------------------------------------------
 -- Computation Types
