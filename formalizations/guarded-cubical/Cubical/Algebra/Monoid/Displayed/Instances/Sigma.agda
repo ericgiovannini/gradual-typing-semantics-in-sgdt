@@ -17,7 +17,7 @@ open import Cubical.Data.Sigma as Sigma hiding (_×_)
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.Displayed as Disp
-open import Cubical.Algebra.Monoid.Instances.CartesianProduct
+open import Cubical.Algebra.Monoid.Instances.CartesianProduct as Cart
 open import Cubical.Algebra.Semigroup.Base
 
 private
@@ -87,3 +87,22 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'} {Mᴰ : Monoidᴰ (M × N) ℓᴰ} wh
   sndR .fst (n , m , mᴰ) = mᴰ
   sndR .snd .fst = refl
   sndR .snd .snd x y = refl
+
+  module _ {ℓP}{P : Monoid ℓP} {ϕ : MonoidHom P M} where
+    open IsMonoidHom
+    corecL :
+      (ϕ' : MonoidHom P N)
+      → LocalSection (Cart.corec ϕ ϕ') Mᴰ
+      → LocalSection ϕ SigL
+    corecL ϕ' ψ .fst x = (ϕ' .fst x) , (ψ .fst x)
+    corecL ϕ' ψ .snd .fst = ΣPathP (ϕ' .snd .presε , ψ .snd .fst)
+    corecL ϕ' ψ .snd .snd x y = ΣPathP ((ϕ' .snd .pres· x y) , (ψ .snd .snd x y))
+  module _ {ℓP}{P : Monoid ℓP} {ϕ' : MonoidHom P N} where
+    open IsMonoidHom
+    corecR :
+      (ϕ : MonoidHom P M)
+      → LocalSection (Cart.corec ϕ ϕ') Mᴰ
+      → LocalSection ϕ' SigR
+    corecR ϕ ψ .fst x = (ϕ .fst x) , (ψ .fst x)
+    corecR ϕ ψ .snd .fst = ΣPathP (ϕ .snd .presε , ψ .snd .fst)
+    corecR ϕ ψ .snd .snd x y = ΣPathP ((ϕ .snd .pres· _ _) , (ψ .snd .snd _ _))

@@ -17,6 +17,7 @@ open import Cubical.Relation.Nullary.Base
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.Displayed
+open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
 open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct as FP
@@ -50,19 +51,24 @@ private
 ΠR : (X : DiscreteTy ℓX) →
   (A₁ : ⟨ X ⟩ → ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁) →
   (A₂ : ⟨ X ⟩ → ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂) →
-  (rs : (x : ⟨ X ⟩) → VRelPP (A₁ x) (A₂ x) ℓc) →
+  (R⟨_⟩ : (x : ⟨ X ⟩) → VRelPP (A₁ x) (A₂ x) ℓc) →
   VRelPP (ΠV X A₁) (ΠV X A₂) (ℓ-max ℓX ℓc)
 
 -- Predomain relation
-ΠR (X , dec) A₁ A₂ rs .fst =
-  PRel.ΠR X (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ rs)
+ΠR (X , dec) A₁ A₂ R⟨_⟩ .fst =
+  PRel.ΠR X (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩)
 
 -- Push
-ΠR X A₁ A₂ rs .snd .fst = Indexed.elim _ _ _ aux
+ΠR X A₁ A₂ R⟨_⟩ .snd .fst = Indexed.elim _ _ _ push-x -- suffices to provide a push for each x
   where
-    aux : _
-    aux x .fst p = {!!} -- rs x .snd .fst
-    aux x .snd = {!!}
+    push-x : ∀ (x : ⟨ X ⟩) → LocalSection (σ _ _ x) (Σl (VRelPtb (ΠV X A₁) (ΠV X A₂) _))
+    push-x x = corecL
+      (σ _ _ x ∘hom pushV R⟨ x ⟩)
+      (corecVRelPtb {!!})
 
 -- Pull
-ΠR X A₁ A₂ rs .snd .snd = {!!}
+ΠR X A₁ A₂ R⟨_⟩ .snd .snd = Indexed.elim _ _ _ pull-x
+  where
+    pull-x : ∀ x → LocalSection (σ _ _ x) (Σr (VRelPtb (ΠV X A₁) (ΠV X A₂) _))
+    pull-x x = corecR (σ _ _ x ∘hom pullV R⟨ x ⟩)
+      (corecVRelPtb {!!})

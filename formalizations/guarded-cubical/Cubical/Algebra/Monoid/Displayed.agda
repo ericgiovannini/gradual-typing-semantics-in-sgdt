@@ -254,3 +254,14 @@ _^opᴰ : ∀ {M : Monoid ℓ} → Monoidᴰ M ℓᴰ → Monoidᴰ (M ^op) ℓ�
 (Mᴰ ^opᴰ) .·Assocᴰ xᴰ yᴰ zᴰ = symP (Mᴰ .·Assocᴰ _ _ _)
 (Mᴰ ^opᴰ) .Monoidᴰ.isSetEltᴰ = Mᴰ .isSetEltᴰ
 
+
+mkSectionSubmonoid : ∀ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoidᴰ N ℓᴰ}
+  {ϕ : MonoidHom M N}
+  → (∀ y → isProp (P .eltᴰ y))
+  → (∀ x → P .eltᴰ (ϕ .fst x))
+  → LocalSection ϕ P
+mkSectionSubmonoid isPropEltᴰ f .fst = f
+mkSectionSubmonoid isPropEltᴰ f .snd .fst =
+  isProp→PathP (λ i → isPropEltᴰ _) _ _
+mkSectionSubmonoid isPropEltᴰ f .snd .snd x y =
+  isProp→PathP (λ i → isPropEltᴰ _) _ _

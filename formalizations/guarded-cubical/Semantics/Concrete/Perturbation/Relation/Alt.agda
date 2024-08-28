@@ -121,6 +121,14 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
 
   PushV = Section (Σl VRelPtb)
   PullV = Section (Σr VRelPtb)
+
+module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈' ℓM'}
+         {c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc} where
+  corecVRelPtb : ∀ {ℓm}{M : Monoid ℓm}{ϕ : MonoidHom M _}
+    → (∀ x → VRelPtbSq A A' c (ϕ .fst x .fst) (ϕ .fst x .snd))
+    → LocalSection ϕ (VRelPtb A A' c)
+  corecVRelPtb = mkSectionSubmonoid (λ _ → isPropVRelPtbSq A A' c _ _)
+
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
   VRelPP : ∀ (ℓc : Level) → Type _
   VRelPP ℓc = Σ[ c ∈ PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
