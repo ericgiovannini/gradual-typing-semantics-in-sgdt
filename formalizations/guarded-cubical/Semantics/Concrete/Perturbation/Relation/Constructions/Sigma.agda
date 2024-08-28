@@ -20,6 +20,7 @@ open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Algebra.Monoid.FreeProduct.Indexed as Indexed
+open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
 
 open import Cubical.Relation.Nullary
 
@@ -57,7 +58,9 @@ private
   PRel.ΣR (X , (Discrete→isSet dec)) (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ rs)
 
 -- Push
-ΣR X A₁ A₂ rs .snd .fst = Indexed.elim ⟨ X ⟩ _ _ λ x → {!!}
+ΣR X A₁ A₂ rs .snd .fst = Indexed.elim ⟨ X ⟩ _ _ λ x → corecL
+  (σ _ _ x ∘hom pushV (rs x))
+  (corecVRelPtb (λ δ₁ a₁ a₂ a₁~a₂ → {!a₁~a₂ .fst!} , {!!}))
 -- ΣR X A₁ A₂ rs .snd .fst .snd = {!!}
 
 -- Pull
