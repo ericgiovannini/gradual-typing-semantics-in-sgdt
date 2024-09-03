@@ -29,11 +29,15 @@ open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat hiding (_^_)
 open import Cubical.Relation.Nullary
+open import Cubical.Data.Empty as ⊥
 
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct
+open import Cubical.Algebra.Monoid.Displayed
+open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
+
 
 
 open import Common.Common
@@ -67,12 +71,6 @@ private
     A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'
 
 open PBMor
-
-decElim : ∀ {ℓ ℓ'} {P : Type ℓ} {A : Dec P → Type ℓ'} →
-  ((p : P) → A (yes p)) → ((¬p : ¬ P) → A (no ¬p)) →
-  (p : Dec P) → A p
-decElim ifyes ifno (yes p) = ifyes p
-decElim ifyes ifno (no ¬p) = ifno ¬p
 
 ---------------------------
 -- Value pre-perturbations
@@ -374,34 +372,114 @@ A×-PrePtb .snd .IsMonoidHom.presε = refl
 A×-PrePtb .snd .IsMonoidHom.pres· x y = refl
 
 
+
+-- Given a family of predomains B over a discrete type X, a distinguished value
+-- x : X and perturbation px* : Bx → Bx, define a family of perturbations p_y over
+-- (y : X) such that p_y = px* if y ≡ x, and p_y = Id otherwise.
+module PtbIfEqual  {ℓX : Level} (X : Type ℓX) (dec : ∀ (x y : X) → Dec (x ≡ y))
+  {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ ℓ≤ ℓ≈} where
+
+  isSetX : isSet X
+  isSetX = Discrete→isSet dec
+
+
+  PtbIfEqual : ∀ x → ⟨ Endo (B x) ⟩ → ∀ y → ⟨ Endo (B y) ⟩
+  PtbIfEqual x px y with (dec x y)
+  -- TODO: not sure about how this will behave definitionally
+  ... | yes eq = subst (λ z → ⟨ Endo (B z) ⟩) eq px 
+  ... | no ¬p = PrePtbId
+
+  -- Beta laws
+  PtbIfEqual-eq : ∀ x y p → (eq : x ≡ y) →
+    PtbIfEqual x p y ≡ subst _ eq p
+  PtbIfEqual-eq x y p eq with (dec x y)
+  ... | yes eq' = λ i → subst (λ z → ⟨ Endo (B z) ⟩) (eq'≡eq i) p
+    where
+      eq'≡eq : eq' ≡ eq
+      eq'≡eq = isSetX x y eq' eq
+  ... | no neq = ⊥.rec (neq eq)
+
+  PtbIfEqual-neq : ∀ x y p → (neq : ¬ (x ≡ y)) →
+    PtbIfEqual x p y ≡ PrePtbId
+  PtbIfEqual-neq x y p neq with (dec x y)
+  ... | yes eq = ⊥.rec (neq eq)
+  ... | no _ = refl
+
+
+  -- Identity and composition
+  
+  PtbIfEqual-ε : ∀ x y →
+    PtbIfEqual x (PrePtbId {A = B x}) y ≡ PrePtbId
+  PtbIfEqual-ε x y with (dec x y)
+  ... | yes eq = path2
+    where
+      path1 : PathP (λ i → ⟨ Endo (B (eq i)) ⟩) (PrePtbId {A = B x}) (PrePtbId {A = B y})
+      path1 i = PrePtbId {A = B (eq i)}
+
+      path2 : subst (λ z → ⟨ Endo (B z) ⟩) eq (PrePtbId {A = B x}) ≡ PrePtbId {A = B y}
+      path2 = fromPathP path1
+  ... | no _ = refl
+
+  PtbIfEqual-comp : ∀ x y px px' →
+    PtbIfEqual x (PrePtb∘ {A = B x} px px') y ≡ PrePtb∘ (PtbIfEqual x px y) (PtbIfEqual x px' y)
+  PtbIfEqual-comp x y px px' with (dec x y)
+  ... | yes eq = path
+    where
+      path : subst (λ z → ⟨ Endo (B z) ⟩) eq (PrePtb∘ px px') ≡
+             PrePtb∘ (subst (λ z → ⟨ Endo (B z) ⟩) eq px)
+                     (subst (λ z → ⟨ Endo (B z) ⟩) eq px')
+      path = fromPathP (congP₂ (λ i → PrePtb∘ {A = B (eq i)}) (subst-filler _ eq px) (subst-filler _ eq px'))
+  ... | no _ = refl
+
+  --PtbIfEqual-hom : ∀ x → Section {!wkn!}
+
+
+---------------------------
 -- Pre-perturbations for Π
+---------------------------
 module _
   {ℓX : Level} (X : Type ℓX) (dec : ∀ (x y : X) → Dec (x ≡ y))
   {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ ℓ≤ ℓ≈} where
+
+  open PtbIfEqual X dec
 
   liftΠ : ((x : X) → ⟨ Endo (B x) ⟩) → ⟨ Endo (ΠP X B) ⟩
   liftΠ ps .fst = Π-mor _ _ _ (fst ∘ ps)
   liftΠ ps .snd bs bs' bs≈bs' x = ps x .snd (bs x) (bs' x) (bs≈bs' x)
 
+  liftΠ-Id : liftΠ (λ x → PrePtbId) ≡ PrePtbId
+  liftΠ-Id = PrePtb≡ _ _ refl -- surprised it works
+
+  liftΠ-Comp : ∀ ps ps' →
+    liftΠ (λ x → PrePtb∘ (ps x) (ps' x)) ≡ PrePtb∘ (liftΠ ps) (liftΠ ps')
+  liftΠ-Comp ps ps' = PrePtb≡ _ _ refl -- surprised it works
+
   
   Π-PrePtb : (x : X) → MonoidHom (Endo (B x)) (Endo (ΠP X B))
-  Π-PrePtb x .fst px = liftΠ (λ y → decRec
-    (λ eq → PrePtbRetract (mTransport (cong B eq)) (mTransport (sym (cong B eq))) (eqPBMor _ _ (funExt (λ by → transportTransport⁻ (λ i → ⟨ B (eq i) ⟩) by))) px)
-    (λ _ → PrePtbId)
-    (dec x y))
-  Π-PrePtb x .snd .IsMonoidHom.presε = PrePtb≡ _ _
-    {!!}
+  Π-PrePtb x .fst px = liftΠ (PtbIfEqual x px)
+  Π-PrePtb x .snd .IsMonoidHom.presε =
+    (cong liftΠ (funExt (λ y → PtbIfEqual-ε x y)) ∙ liftΠ-Id)
     -- (funExt (λ bs → funExt (λ y → decElim {A = {!!}} {!!} {!!} {!!})))
-  Π-PrePtb x .snd .IsMonoidHom.pres· = {!!}
+  Π-PrePtb x .snd .IsMonoidHom.pres· px px' =
+    (cong liftΠ (funExt (λ y → PtbIfEqual-comp x y px px'))) ∙ (liftΠ-Comp _ _)
 
 
+---------------------------
 -- Pre-perturbations for Σ
+---------------------------
 module _
   {ℓX : Level} (X : hSet ℓX) (dec : ∀ (x y : ⟨ X ⟩) → Dec (x ≡ y))
   {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈} where
   
   open PosetBisimStr
-  
+  open PtbIfEqual ⟨ X ⟩ dec
+
+  private
+    module EndoB (x : ⟨ X ⟩) where
+      open MonoidStr (Endo (B x) .snd) public
+
+  -- Turn a family of semantic perturbations into a semantic
+  -- perturbation on Σ X B.
   liftΣ : ((x : ⟨ X ⟩) → ⟨ Endo (B x) ⟩) → ⟨ Endo (ΣP X B) ⟩
   liftΣ ps .fst = Σ-mor _ _ _ (fst ∘ ps)
   liftΣ ps .snd (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≈b₂) =
@@ -416,8 +494,20 @@ module _
     -- Know     ps x₂ .fst .f (subst T x₁≡x₂ b₁) ≈ b₂
     -- Know     ps x₂ .fst .f b₁₂ ≡ subst T x₁≡x₂ (ps x₁ .fst .f b₁)
 
+  liftΣ-Id : liftΣ (λ x → PrePtbId) ≡ PrePtbId
+  liftΣ-Id = PrePtb≡ _ _ refl -- surprised it works
+
+  liftΣ-Comp : ∀ ps ps' →
+    liftΣ (λ x → PrePtb∘ (ps x) (ps' x)) ≡ PrePtb∘ (liftΣ ps) (liftΣ ps')
+  liftΣ-Comp ps ps' = PrePtb≡ _ _ refl -- surprised it works
+
+
   Σ-PrePtb : (x : ⟨ X ⟩) → MonoidHom (Endo (B x)) (Endo (ΣP X B))
-  Σ-PrePtb = {!!}
+  Σ-PrePtb x .fst px = liftΣ (PtbIfEqual x px)
+  Σ-PrePtb x .snd .IsMonoidHom.presε =
+    (cong liftΣ (funExt (λ y → PtbIfEqual-ε x y))) ∙ liftΣ-Id
+  Σ-PrePtb x .snd .IsMonoidHom.pres· px px' =
+    (cong liftΣ (funExt (λ y → PtbIfEqual-comp x y px px'))) ∙ (liftΣ-Comp _ _)
 
 
 -- Pre-perturbations for later
