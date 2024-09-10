@@ -345,7 +345,7 @@ module ExtAsEDMorphism
     (λ x~ y~ H~ → B.θ.pres≈ H~)
     B.δ≈id
 
-  module Equations (f : PBMor A (U-ob B)) where
+  module Equations-U (f : PBMor A (U-ob B)) where
 
     open Equations' (f .PBMor.f) public
 
@@ -355,8 +355,13 @@ module ExtAsEDMorphism
     ext-mon (f .PBMor.f) (f .PBMor.f) (≤mon→≤mon-het f f (≤mon-refl f)) _ _
   Ext f .ErrorDomMor.f .PBMor.pres≈ =
     strong-ext-pres≈ (λ _ → f .PBMor.f) (λ _ → f .PBMor.f) (λ _ _ _ → ≈mon-refl f) tt tt tt _ _
-  Ext f .ErrorDomMor.f℧ = Equations.ext-℧ f
-  Ext f .ErrorDomMor.fθ = Equations.ext-θ f
+  Ext f .ErrorDomMor.f℧ = Equations-U.ext-℧ f
+  Ext f .ErrorDomMor.fθ = Equations-U.ext-θ f
+
+  module Equations (f : PBMor A (U-ob B)) where
+
+   Ext-η : U-mor (Ext f) ∘p η-mor ≡ f
+   Ext-η = eqPBMor _ _ (funExt (λ x → Equations-U.ext-η f x))
 
 
 
@@ -552,19 +557,34 @@ module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ
   open F-ob
 
   F-extensionality : (ϕ ϕ' : ErrorDomMor (F-ob A) B) →
-    (∀ x → ϕ .ErrorDomMor.fun (η x) ≡ ϕ' .ErrorDomMor.fun (η x)) →
+    (U-mor ϕ ∘p η-mor ≡ U-mor ϕ' ∘p η-mor) →
     ϕ ≡ ϕ'
   F-extensionality ϕ ϕ' eq = eqEDMor _ _ (funExt (fix aux))
     where
       module ϕ = ErrorDomMor ϕ
       module ϕ' = ErrorDomMor ϕ'
       aux : ▹ _ → _
-      aux _ (η x) = eq x
+      aux _ (η x) = funExt⁻ (cong PBMor.f eq) x
       aux _ ℧ = ϕ.f℧ ∙ sym ϕ'.f℧
       aux IH (θ lx~) =
           (ϕ.fθ lx~)
         ∙ cong B.θ.f (later-ext (λ t → IH t (lx~ t)))
         ∙ (sym (ϕ'.fθ lx~))
+
+  -- F-extensionality : (ϕ ϕ' : ErrorDomMor (F-ob A) B) →
+  --   (∀ x → ϕ .ErrorDomMor.fun (η x) ≡ ϕ' .ErrorDomMor.fun (η x)) →
+  --   ϕ ≡ ϕ'
+  -- F-extensionality ϕ ϕ' eq = eqEDMor _ _ (funExt (fix aux))
+  --   where
+  --     module ϕ = ErrorDomMor ϕ
+  --     module ϕ' = ErrorDomMor ϕ'
+  --     aux : ▹ _ → _
+  --     aux _ (η x) = eq x
+  --     aux _ ℧ = ϕ.f℧ ∙ sym ϕ'.f℧
+  --     aux IH (θ lx~) =
+  --         (ϕ.fθ lx~)
+  --       ∙ cong B.θ.f (later-ext (λ t → IH t (lx~ t)))
+  --       ∙ (sym (ϕ'.fθ lx~))
 
 
 
@@ -581,21 +601,12 @@ module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ
     (ϕ : ErrorDomMor (F-ob.F-ob A) B) →
     ∃![ f ∈ PBMor A (U-ob B) ] ϕ ≡ Ext f
   ext-unique ϕ .fst .fst = U-mor ϕ ∘p η-mor
-  ext-unique ϕ .fst .snd = F-extensionality ϕ _ (λ x → sym (Equations.ext-η (U-mor ϕ ∘p η-mor) x))
-  ext-unique ϕ .snd (g , eq) = ΣPathPProp (λ g → EDMorIsSet ϕ (Ext g)) (eqPBMor _ _ (funExt aux))
-    where
-      aux : _
-      aux x = (funExt⁻ (cong ErrorDomMor.fun eq) (η x)) ∙ (Equations.ext-η g x)
+  ext-unique ϕ .fst .snd = F-extensionality ϕ _ (sym (Equations.Ext-η _))
+  ext-unique ϕ .snd (g , eq) =
+    ΣPathPProp (λ g → EDMorIsSet ϕ (Ext g)) (cong₂ _∘p_ (cong U-mor eq) refl ∙ (Equations.Ext-η g))
   
-    -- ΣPathPProp (λ g → isSet→ B.is-set _ _) (eqPBMor _ _ (funExt aux))
-    -- where
-    --   aux : _
-    --   aux x = (λ i → eq i (η x)) ∙ (Equations.ext-η _ x)
       -- know : ϕ ≡ ext g
       -- NTS: Uϕ ∘ η ≡ g
-
-
--- If f ≡ g, then 
 
 
 -- module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} where
