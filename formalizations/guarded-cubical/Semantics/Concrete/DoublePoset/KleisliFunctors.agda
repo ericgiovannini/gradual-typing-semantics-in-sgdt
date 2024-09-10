@@ -12,7 +12,7 @@ open import Common.Later
 module Semantics.Concrete.DoublePoset.KleisliFunctors (k : Clock) where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
+open import Cubical.Foundations.Function hiding (_$_)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Structure
 
@@ -61,10 +61,23 @@ private
     ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
     ℓA₂' ℓ≤A₂' ℓ≈A₂' : Level
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
+    ℓA₁'' ℓ≤A₁'' ℓ≈A₁'' : Level
+    ℓA₂'' ℓ≤A₂'' ℓ≈A₂'' : Level
 
     ℓB₁ ℓ≤B₁ ℓ≈B₁ : Level
     ℓB₂ ℓ≤B₂ ℓ≈B₂ : Level
     ℓB₃ ℓ≤B₃ ℓ≈B₃ : Level
+
+    ℓAᵢ₁  ℓ≤Aᵢ₁  ℓ≈Aᵢ₁ : Level
+    ℓAᵢ₁' ℓ≤Aᵢ₁' ℓ≈Aᵢ₁' : Level
+    ℓAₒ₁  ℓ≤Aₒ₁  ℓ≈Aₒ₁ : Level
+    ℓAₒ₁' ℓ≤Aₒ₁' ℓ≈Aₒ₁' : Level
+    ℓAᵢ₂  ℓ≤Aᵢ₂  ℓ≈Aᵢ₂ : Level
+    ℓAₒ₂  ℓ≤Aₒ₂  ℓ≈Aₒ₂ : Level
+    ℓcᵢ₁ ℓcₒ₁ ℓc₂ ℓcᵢ₂ ℓcₒ₂ ℓc₁ : Level
+    
+    ℓAᵢ₂' ℓ≤Aᵢ₂' ℓ≈Aᵢ₂' : Level
+    ℓAₒ₂' ℓ≤Aₒ₂' ℓ≈Aₒ₂' : Level
    
 
 private
@@ -75,39 +88,6 @@ open F-ob
 open F-mor
 open LiftPredomain
 open PBMor
-
-
--- Pair' :
---   {ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
---   {A : PosetBisim ℓA ℓ≤A ℓ≈A}
---   {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
---   {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
---   PBMor A Aₒ₁ → PBMor A Aₒ₂ → PBMor A (Aₒ₁ ×dp Aₒ₂)
--- Pair' = {!PairFun!}
-
--- Times :
---   {ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁ ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂
---    ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁ ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂ : Level}
---   {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁}
---   {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂}
---   {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
---   {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} →
---   PBMor Aᵢ₁ Aₒ₁ → PBMor Aᵢ₂ Aₒ₂ → PBMor (Aᵢ₁ ×dp Aᵢ₂) (Aₒ₁ ×dp Aₒ₂)
--- Times f g = Pair' (f ∘p π1) (g ∘p π2)
-
--- Comp' :
---     {Γ : PosetBisim ℓΓ ℓ≤Γ ℓ≈Γ}
---     {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
---     {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
---     {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} →
---     ⟨ (Γ ×dp A₂ ==> A₃) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₂) ⟩ -> ⟨ (Γ ×dp A₁ ==> A₃) ⟩
--- Comp' {Γ = Γ} g f = g ∘p Pair' π1 f
--- record {
---   f = λ { (γ , a) → PBMor.f f (γ , (PBMor.f g (γ , a))) } ;
---   isMon = λ { {γ1 , a1} {γ2 , a2} (γ1≤γ2 , a1≤a2) →
---     isMon f (γ1≤γ2 , (isMon g (γ1≤γ2 , a1≤a2))) } ;
---   pres≈ = λ { {γ1 , a1} {γ2 , a2} (γ1≈γ2 , a1≈a2) →
---     pres≈ f (γ1≈γ2 , (pres≈ g (γ1≈γ2 , a1≈a2))) } }
 
 
 -----------------------------------------------
@@ -136,14 +116,11 @@ Id-KC : (B : ErrorDomain ℓB ℓ≤B ℓ≈B) → KlMorC B B
 Id-KC B = Id
 
 
---------------------
--- Kleisli Functors
---------------------
 
 
-
--- The Kleisli arrow functor
------------------------------
+-----------------------
+-- Kleisli arrow
+-----------------------
 
 _⟶kob_ : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (B : ErrorDomain ℓB ℓ≤B ℓ≈B) →
     ErrorDomain
@@ -151,31 +128,6 @@ _⟶kob_ : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (B : ErrorDomain ℓB ℓ≤B �
         (ℓ-max ℓA ℓ≤B)
         (ℓ-max (ℓ-max ℓA ℓ≈A) ℓ≈B)
 A ⟶kob B = A ⟶ob B
-
-
-
--- Some auxiliary definitions used below.
-
--- Map' : ∀ {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} →
---   PBMor Aᵢ Aₒ → PBMor (𝕃 Aᵢ) (𝕃 Aₒ)
--- Map' = U-mor ∘ F-mor
-
-Map' : ∀ {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} →
-  PBMor ((Aᵢ ==> Aₒ) ×dp 𝕃 Aᵢ) (𝕃 Aₒ)
-Map' = Uncurry MapCombinator.Map
--- ((Γ ×dp Aᵢ) ==> Aₒ) → ((Γ ×dp 𝕃 Aᵢ) ==> 𝕃 Aₒ)
-
-Uε : ∀ {B : ErrorDomain ℓB ℓ≤B ℓ≈B} → PBMor (𝕃 (U-ob B)) (U-ob B)
-Uε {B = B} = U-mor (Ext Id)
-  where
-    open ExtAsEDMorphism {A = U-ob B} {B = B}
-
-Uε-η : ∀ {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
-  ∀ b → Uε {B = B} .f (η b) ≡ b
-Uε-η {ℓB = ℓB} {B = B} b = Equations.ext-η Id b
-  where
-    open ExtAsEDMorphism {A = U-ob B} {B = B}
-    -- open CBPVExt {ℓA = ℓB} {ℓB = ℓB} ⟨ B ⟩ ⟨ B ⟩
 
 
 -- We are given a Kleisli value morphism ϕ from Aₒ to Aᵢ,
@@ -189,22 +141,13 @@ KlArrowMorphismᴸ :
     (ϕ : KlMorV Aₒ Aᵢ) (B : ErrorDomain ℓB ℓ≤B ℓ≈B) →
     KlMorC (Aᵢ ⟶kob B) (Aₒ ⟶kob B)
 KlArrowMorphismᴸ {Aᵢ = Aᵢ} {Aₒ = Aₒ} ϕ B =
-  Curry (With2nd Uε ∘p' Map' ∘p' With2nd (U-mor ϕ) ∘p' With2nd (η-mor))
-  
+  Curry (ext' ∘p' With2nd (U-mor ϕ) ∘p' With2nd η-mor)
+  where
+    open ExtAsEDMorphism
 
-  -- Curry ({!!} --> UFUB --> UB
-  --        ∘p' {!!} -- U (A ⟶kob B) ×dp UFAᵢ --> UFUB
-  --        ∘p' With2nd (U-mor ϕ)
-  --        ∘p' With2nd (η-mor Aₒ))
-         
--- Curry ({!!} ∘p  U-mor (F-mor {!!}) ∘p (U-mor ϕ) ∘p With2nd (η-mor Aₒ))
-
--- We need to return a predomain morphism from U(Aᵢ ⟶ B) to U(Aₒ ⟶ B).
--- 
--- So let g : U(Aᵢ ⟶ob B), i.e. g : Aᵢ ==> UB. Then we have
---
---       η          Uϕ          UFg          Uε
---  Aₒ -----> UFAₒ -----> UFAᵢ -----> UFUB -----> UB
+    ext' : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
+      ⟨ U-ob (A ⟶kob B) ×dp U-ob (F-ob A) ==> U-ob B ⟩
+    ext' = Uncurry ExtCombinator.Ext
 
 syntax KlArrowMorphismᴸ ϕ B = ϕ ⟶Kᴸ B
 
@@ -233,8 +176,9 @@ KlArrowMorphismᴿ A f = Curry (f ∘p App)
 
 _⟶Kᴿ_ = KlArrowMorphismᴿ
 
------------------------------------------------------------------
+
 -- Separate functoriality
+--------------------------
 
 open Map
 open MapProperties
@@ -243,21 +187,11 @@ open MapProperties
 KlArrowMorphismᴸ-id :
   {A : PosetBisim ℓA ℓ≤A ℓ≈A} (B : ErrorDomain ℓB ℓ≤B ℓ≈B) →
   (Id-KV A) ⟶Kᴸ B ≡ Id
-KlArrowMorphismᴸ-id {A = A} B = eqPBMor _ _ (funExt (λ g → eqPBMor _ _ (funExt
-  (λ x →
-    Uε .f (map (g .f) (η x))
-     ≡⟨ (λ i → Uε {B = B} .f (map-η (g .f) x i)) ⟩
-   Uε .f (η (g .f x))
-     ≡⟨ Uε-η (g .f x) ⟩
-   g .f x ∎))))
-
-  -- ((λ x → Uε .f (map (g .f) (η x)))
-  --   ≡⟨ {!!} ⟩
-  -- (λ x → Uε .f (η (g .f x)))
-  --   ≡⟨ {!!} ⟩
-  -- g .f ∎  )))
-
-  where open CBPVExt ⟨ A ⟩ ⟨ B ⟩
+KlArrowMorphismᴸ-id {A = A} B = eqPBMor _ _ (funExt (λ g → eqPBMor _ _ (funExt (λ x → 
+  _ ≡⟨ ext-η (g .f) x ⟩ g .f x ∎ ))))
+  where
+    module B = ErrorDomainStr (B .snd)
+    open CBPVExt.Equations _ _ _ _ -- ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f
 
 
 KlArrowMorphismᴿ-id :
@@ -265,23 +199,42 @@ KlArrowMorphismᴿ-id :
   A ⟶Kᴿ (Id-KC B) ≡ Id
 KlArrowMorphismᴿ-id B = eqPBMor _ _ (funExt (λ x → eqPBMor _ _ refl))
 
--- Not needed as of now...
 KlArrowMorphismᴸ-comp :
   {A₁ : PosetBisim  ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim  ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} →
   (ϕ : KlMorV A₃ A₂) (ϕ' : KlMorV A₂ A₁) (B : ErrorDomain ℓB ℓ≤B ℓ≈B) →
   (ϕ' ∘ed ϕ) ⟶Kᴸ B ≡ (ϕ ⟶Kᴸ B) ∘p (ϕ' ⟶Kᴸ B)
-KlArrowMorphismᴸ-comp ϕ ϕ' B =
-  eqPBMor _ _ (funExt (λ h → eqPBMor _ _ (funExt (λ x → {!!}))))
--- KlArrowMorphismᴸ-comp = {!!}
+KlArrowMorphismᴸ-comp {A₁ = A₁} {A₂ = A₂} {A₃ = A₃} ϕ ϕ' B =
+  eqPBMor _ _ (funExt (λ h → (eq1 h) ∙ (eq2 h) ∙ (eq3 h)))
   where
     open MonadLaws.Ext-Assoc
     open CBPVExt
+    open ExtAsEDMorphism
+    module ϕ = ErrorDomMor ϕ
+    module B = ErrorDomainStr (B .snd)
+
+    lemma1 : ∀ h → Ext ((ϕ' ⟶Kᴸ B) $ h) ≡ (Ext h) ∘ed ϕ'
+    lemma1 h = F-extensionality _ _
+      ((Equations.Ext-η _) ∙
+       (eqPBMor _ _ (funExt λ x → refl)))
+
+    eq1 : ∀ h →
+      f ((ϕ' ∘ed ϕ) ⟶Kᴸ B) h ≡
+      U-mor (Ext h ∘ed ϕ') ∘p (U-mor ϕ ∘p η-mor)
+    eq1 h = eqPBMor _ _ refl
+
+    eq2 : ∀ (h : ⟨ U-ob (A₁ ⟶kob B) ⟩) →
+      U-mor ((Ext h) ∘ed ϕ') ∘p (U-mor ϕ ∘p η-mor) ≡
+      U-mor (Ext ((ϕ' ⟶Kᴸ B) $ h)) ∘p (U-mor ϕ ∘p η-mor)
+    eq2 h = sym (cong₂ _∘p_ (cong U-mor (lemma1 h)) refl)
+
+    eq3 : ∀ h →
+      U-mor (Ext ((ϕ' ⟶Kᴸ B) $ h)) ∘p (U-mor ϕ ∘p η-mor) ≡
+      f (KlArrowMorphismᴸ ϕ B ∘p KlArrowMorphismᴸ ϕ' B) h
+    eq3 h = eqPBMor _ _ refl
 
 
--- LHS:
---       η           Uϕ         Uϕ'         UFg          Uε
---  A₃ -----> UFA₃ -----> UFA₂ -----> UFA₁ -----> UFUB -----> UB
-
+-- NTS: ext h (ϕ' (ϕ (η x))) ≡ ext (λ a → ext h (ϕ' (η a))) (ϕ (η x))
+-- STS: ext h ∘ ϕ' ≡ ext (ext h ∘ ϕ' ∘ η)
 
 
 
@@ -297,13 +250,12 @@ KlArrowMorphismᴿ-comp A f g =
 
 
 
-
------------------------------------------------------------------
 -- Action on squares
+--------------------
 
 open F-rel
 
-module KlArrowMorphismᴸ-sq
+module _
   {Aᵢ  : PosetBisim  ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ}
   {Aₒ  : PosetBisim  ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ}
   {Aᵢ' : PosetBisim  ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
@@ -321,54 +273,22 @@ module KlArrowMorphismᴸ-sq
   
   open PBRel
   open ErrorDomRel hiding (module B ; module B')
-  module B = ErrorDomainStr (B .snd)
-  module B' = ErrorDomainStr (B' .snd)
-  module cₒ = PBRel cₒ
-  module d = ErrorDomRel d
   
-  module ExtMon = ExtMonotone
-    ⟨ B ⟩ ⟨ B' ⟩ (d.R)
-    ⟨ B ⟩ (B.℧) (B.θ.f)
-    ⟨ B' ⟩ B'.℧ B'.θ.f
-    (d.R) (d.R℧) (d.Rθ)
-  -- (A : Type ℓA) (A' : Type ℓA') (_RAA'_ : A → A' → Type ℓRAA')
-  -- (B  : Type ℓB)  (℧B  : B)  (θB  : (▹ B) → B)
-  -- (B' : Type ℓB') (℧B' : B') (θB' : (▹ B') → B')
-  -- (_RBB'_ : B → B' → Type ℓRBB')
-  -- (R℧B⊥ : ∀ x → ℧B RBB' x)
-  -- (Rθ  : ∀ (x~ : ▹ B) (y~ : ▹ B') →
-  --   ▸ (λ t → (x~ t) RBB' (y~ t)) → (θB x~) RBB' (θB' y~))
-
-  module MapMon = MapMonotone
-    ⟨ Aᵢ ⟩ ⟨ Aᵢ' ⟩ ⟨ B ⟩ ⟨ B' ⟩ (cᵢ .R) (d .R)
-  module LiftRel = LiftOrd ⟨ Aₒ ⟩ ⟨ Aₒ' ⟩ (cₒ.R)
-
---   {ℓAᵢ ℓAᵢ' ℓAₒ ℓAₒ' ℓRᵢ ℓRₒ : Level}
---   (Aᵢ : Type ℓAᵢ) (Aᵢ' : Type ℓAᵢ')
---   (Aₒ : Type ℓAₒ) (Aₒ' : Type ℓAₒ')
---   (_Rᵢ_ : Aᵢ → Aᵢ' → Type ℓRᵢ)
---   (_Rₒ_ : Aₒ → Aₒ' → Type ℓRₒ)
+  private
+    module B = ErrorDomainStr (B .snd)
+    module B' = ErrorDomainStr (B' .snd)
+    module cₒ = PBRel cₒ
+    module d = ErrorDomRel d
+    module LiftRel = LiftOrd ⟨ Aₒ ⟩ ⟨ Aₒ' ⟩ (cₒ.R)
 
 
--- KlArrowMorphismᴸ {Aᵢ = Aᵢ} {Aₒ = Aₒ} ϕ B =
---   Curry (With2nd Uε ∘p' Map' ∘p' With2nd (U-mor ϕ) ∘p' With2nd (η-mor))
-
--- NTS: U-rel (cₒ ⟶rel d) .PBRel.R (KlArrowMorphismᴸ ϕ B .PBMor.f f)
---      (KlArrowMorphismᴸ ϕ' B' .PBMor.f g)
-
-  Sq : PBSq (U-rel (cᵢ ⟶rel d)) (U-rel (cₒ ⟶rel d)) (ϕ ⟶Kᴸ B) (ϕ' ⟶Kᴸ B')
-  Sq f g f≤g aₒ aₒ' H =
-    ExtMon.ext-mon
-      id id (ED-IdSqV d) _ _
-      (MapMon.map-monotone
-        (f .PBMor.f) (g .PBMor.f)
-        f≤g
-        (ϕ .ErrorDomMor.f .PBMor.f (η aₒ))
-        (ϕ' .ErrorDomMor.f .PBMor.f (η aₒ'))
-        (α (η aₒ) (η aₒ') (LiftRel.Properties.η-monotone H)))
+  KlArrowMorphismᴸ-sq : PBSq (U-rel (cᵢ ⟶rel d)) (U-rel (cₒ ⟶rel d)) (ϕ ⟶Kᴸ B) (ϕ' ⟶Kᴸ B')
+  KlArrowMorphismᴸ-sq f g f≤g aₒ aₒ' aₒRaₒ' =
+    Ext-sq cᵢ d f g f≤g (U-mor ϕ $ η aₒ) (U-mor ϕ' $ η aₒ')
+      (α (η aₒ) (η aₒ') (LiftRel.Properties.η-monotone aₒRaₒ'))
   
 
-module KlArrowMorphismᴿ-sq
+module _
   {A  : PosetBisim  ℓA  ℓ≤A  ℓ≈A}
   {A'  : PosetBisim  ℓA'  ℓ≤A'  ℓ≈A'}
   {Bᵢ  : ErrorDomain  ℓBᵢ  ℓ≤Bᵢ  ℓ≈Bᵢ}
@@ -384,8 +304,8 @@ module KlArrowMorphismᴿ-sq
   -- (β   : PBSq c c Id Id)
   where
 
-  Sq : PBSq (U-rel (c ⟶rel dᵢ)) (U-rel (c ⟶rel dₒ)) (A ⟶Kᴿ f) (A' ⟶Kᴿ g)
-  Sq h₁ h₂ h₁≤h₂ a a' caa' =
+  KlArrowMorphismᴿ-sq : PBSq (U-rel (c ⟶rel dᵢ)) (U-rel (c ⟶rel dₒ)) (A ⟶Kᴿ f) (A' ⟶Kᴿ g)
+  KlArrowMorphismᴿ-sq h₁ h₂ h₁≤h₂ a a' caa' =
     α (h₁ .PBMor.f a) (h₂ .PBMor.f a') (h₁≤h₂ a a' caa')
 
 
@@ -396,7 +316,7 @@ PBRel.R (dₒ .UR)
 -}
 
 -------------------------------
--- The Kleisli product functor
+-- Kleisli actions on product
 -------------------------------
 
 open ExtAsEDMorphism
@@ -421,19 +341,50 @@ KlProdMorphismᴸ {A₁ = A₁} {A₁' = A₁'} ϕ A₂ = Ext (pt2 ∘p pt1)
 
   -- (U-mor (Ext (? ×mor ?))) ∘p (U-mor ϕ) ∘p η-mor
 
-_×Kᴸ_ = KlArrowMorphismᴸ
+_×Kᴸ_ = KlProdMorphismᴸ
 
-test : {A₁ : Type ℓA₁} {A₁' : Type ℓA₁'} →
-    (ϕ : (L℧ A₁ → L℧ A₁')) (A₂ : Type ℓA₂) →
-    L℧ (A₁ × A₂) → L℧ (A₁' × A₂)
-test ϕ A₂ lp =
-  ext _ _ ℧ θ
-    (λ { (x , y) →
-      ext _ _ ℧ θ (λ x' → η (x' , y))
-                  (ϕ (η x))})
-    lp
-  where open CBPVExt
 
+-- Identity
+KlProdMorphismᴸ-Id :
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  (IdE {B = F-ob A₁}) ×Kᴸ A₂ ≡ IdE
+KlProdMorphismᴸ-Id = {!!}
+
+-- Composition
+KlProdMorphismᴸ-Comp :
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₁'' : PosetBisim ℓA₁'' ℓ≤A₁'' ℓ≈A₁''} →
+  (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) (ϕ : KlMorV A₁ A₁') (ϕ' : KlMorV A₁' A₁'') →
+  ((ϕ' ∘ed ϕ) ×Kᴸ A₂) ≡ (ϕ' ×Kᴸ A₂) ∘ed (ϕ ×Kᴸ A₂)
+KlProdMorphismᴸ-Comp = {!!}
+
+
+-- Action on squares
+module _
+  {Aᵢ₁  : PosetBisim  ℓAᵢ₁  ℓ≤Aᵢ₁  ℓ≈Aᵢ₁}
+  {Aᵢ₁' : PosetBisim  ℓAᵢ₁' ℓ≤Aᵢ₁' ℓ≈Aᵢ₁'}
+  {Aₒ₁  : PosetBisim  ℓAₒ₁  ℓ≤Aₒ₁  ℓ≈Aₒ₁}
+  {Aₒ₁' : PosetBisim  ℓAₒ₁' ℓ≤Aₒ₁' ℓ≈Aₒ₁'}
+  {A₂   : PosetBisim  ℓA₂   ℓ≤A₂   ℓ≈A₂}
+  {A₂'  : PosetBisim  ℓA₂'  ℓ≤A₂'  ℓ≈A₂'}
+  (cᵢ₁ : PBRel Aᵢ₁ Aᵢ₁' ℓcᵢ₁)
+  (cₒ₁ : PBRel Aₒ₁ Aₒ₁' ℓcₒ₁)
+  (c₂ :  PBRel A₂ A₂' ℓc₂) 
+  (ϕ  : KlMorV Aᵢ₁  Aₒ₁)
+  (ϕ' : KlMorV Aᵢ₁' Aₒ₁')
+
+  where
+  open F-rel
+
+  KlProdMorphismᴸ-Sq :
+    (α : ErrorDomSq (F-rel cᵢ₁) (F-rel cₒ₁) ϕ ϕ') →
+    ErrorDomSq (F-rel (cᵢ₁ ×pbmonrel c₂)) (F-rel (cₒ₁ ×pbmonrel c₂)) (ϕ ×Kᴸ A₂) (ϕ' ×Kᴸ A₂')
+  KlProdMorphismᴸ-Sq α = {!!}
+  
+
+
+----------------------------------------------------------------------
 
 KlProdMorphismᴿ :
     {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'}
@@ -447,14 +398,43 @@ KlProdMorphismᴿ {A₂ = A₂} {A₂' = A₂'} A₁ ϕ = Ext (pt2 ∘p pt1)
     pt2 : PBMor (A₁ ×dp (U-ob (F-ob A₂'))) (U-ob (F-ob (A₁ ×dp A₂')))
     pt2 = Uncurry (StrongExt .f (Curry η-mor))
 
-_×Kᴿ_ = KlArrowMorphismᴿ
+_×Kᴿ_ = KlProdMorphismᴿ
 
 
--- Separate functoriality
---
--- Not needed as of now.
+-- Identity
+KlProdMorphismᴿ-Id :
+  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) →
+  A₁ ×Kᴿ (IdE {B = F-ob A₂}) ≡ IdE
+KlProdMorphismᴿ-Id = {!!}
 
+-- Composition
+KlProdMorphismᴿ-Comp :
+    {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+    {A₂'' : PosetBisim ℓA₂'' ℓ≤A₂'' ℓ≈A₂''} →
+    (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) (ϕ : KlMorV A₂ A₂') (ϕ' : KlMorV A₂' A₂'') →
+    (A₁ ×Kᴿ (ϕ' ∘ed ϕ)) ≡ (A₁ ×Kᴿ ϕ') ∘ed (A₁ ×Kᴿ ϕ)
+KlProdMorphismᴿ-Comp = {!!}
 
 
 -- Action on squares
+module _
+  {A₁   : PosetBisim  ℓA₁   ℓ≤A₁   ℓ≈A₁}
+  {A₁'  : PosetBisim  ℓA₁'  ℓ≤A₁'  ℓ≈A₁'}
+  {Aᵢ₂  : PosetBisim  ℓAᵢ₂  ℓ≤Aᵢ₂  ℓ≈Aᵢ₂}
+  {Aᵢ₂' : PosetBisim  ℓAᵢ₂' ℓ≤Aᵢ₂' ℓ≈Aᵢ₂'}
+  {Aₒ₂  : PosetBisim  ℓAₒ₂  ℓ≤Aₒ₂  ℓ≈Aₒ₂}
+  {Aₒ₂' : PosetBisim  ℓAₒ₂' ℓ≤Aₒ₂' ℓ≈Aₒ₂'}
+  (cᵢ₂ : PBRel Aᵢ₂ Aᵢ₂' ℓcᵢ₂)
+  (cₒ₂ : PBRel Aₒ₂ Aₒ₂' ℓcₒ₂)
+  (c₁ :  PBRel A₁ A₁' ℓc₁) 
+  (ϕ  : KlMorV Aᵢ₂  Aₒ₂)
+  (ϕ' : KlMorV Aᵢ₂' Aₒ₂')
 
+  where
+  open F-rel
+
+  KlProdMorphismᴿ-Sq :
+    (α : ErrorDomSq (F-rel cᵢ₂) (F-rel cₒ₂) ϕ ϕ') →
+    ErrorDomSq (F-rel (c₁ ×pbmonrel cᵢ₂)) (F-rel (c₁ ×pbmonrel cₒ₂)) (A₁ ×Kᴿ ϕ) (A₁' ×Kᴿ ϕ')
+  KlProdMorphismᴿ-Sq α = {!!}
