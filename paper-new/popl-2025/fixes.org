@@ -1,0 +1,418 @@
+
+* Reviewer A
+
+** line 27—83. This only rehashes known ideas. Can you make it shorter?
+   Or, best, begin by describing a new idea.
+
+** line 84—104. This makes heavy going of introducing a few basic ideas.
+   And says nothing very useful to the reader, since neither ⇓ nor ≡
+   is defined. This explanation probably belongs later in the
+   introduction.
+
+** line 91. “First, it should be adequate: natural number constants should
+   step to themselves.”  This is a highly limited notion of adequacy,
+   I don’t recall seeing it defined this way before. Also, here you
+   use “step” for “big step”, which confused me because I usually take
+   it to mean “small step”. Perhaps “step” —> “evaluate”
+
+** line 99. “𝑀 ⇓ 𝑛 <=> 𝑁 ↓ 𝑛” —> “𝑀 ⇓ 𝑛 <=> 𝑁 ⇓ 𝑛”
+
+** line 127—129. “domain theory is incapable of modeling certain perversely
+   recursive features of programming languages such as dynamic type
+   tag generation and higher-order references” Why is type tag
+   generation “perversely recursive”? Higher-order references are
+   quite common—give an intuition as to why they cannot be handled in
+   domain theory.
+
+** line 135—136. “but more commonly as “step-indexed sets”” Step-indexing
+   appears often in works on gradual typing (e.g., in all the work on
+   gradual typing and parametricity), and I always find it immensely
+   difficult to follow. It also feels quite syntactic in nature. So if
+   you can give a disciplined and semantic approach to step-indexing
+   that is immediately appealing (to this reader at least). Perhaps
+   you might focus on this more in your introduction and motivation?
+
+** line 157. “Because bisimilarity, unlike equality, is not transitive”
+   Provide intuition as to why this is true and/or promise more
+   details later.
+
+** line 166. “is as simple as a semantics” [garbled]
+   —> “is as simple as giving a semantics” [or similar]
+
+** line 169. “would require significant theory of presheaves” [garbled]
+   —> “would require a significant theory of presheaves” [or similar]
+
+** line 176. “compatible with the restriction maps”
+   You haven’t mentioned restriction maps before. Please introduce
+   terms before use!
+
+** line 182. “{𝑋_n} – a family of elements 𝑥 ∈ 𝑋 for all 𝑖 ∈ N”
+   You defined X_n earlier, and {X_n} looks like a singleton set of
+   one of these. But I think what you have in mind is what I might
+   write as {x_i | x_i \in X_i, i \in Nat} or similar. Perhaps use
+   that notation again?
+
+** line 182. “the presheaf {𝑋_n}”
+   You just made a point of saying that one of the advantages of your
+   approach is that you don’t need presheafs. That was a relief to me,
+   because even though I know a fair bit of domain theory and category
+   theory I’ve never understood presheafs. Can you write your paper so
+   it is easily read by someone who has never head of presheafs? (That
+   doesn’t rule out having a few parenthetic remarks addressed to
+   readers who know about presheafs, connecting what you are saying to
+   the theory they are already familiar with.)
+
+** line 199 “A great deal of the work has further been verified in Guarded Cubical Agda”
+   I take it that means not everything has been verified. Explain what
+   has not been verified, and why not. [I see later this is discussed
+   in Section 6.2, so a forward pointer there will do.]
+
+** line 197—229. You have two numbered lists.
+   Are these in one-to-one correspondence, i.e. point (1) or the first
+   list is dealt with in point (1) of the second, and the same for (2)
+   through (5)? If so, make that clear. If not, perhaps label the
+   first list (a), (b), … and the second (1), (2), … to emphasise the
+   lack of correspondence.
+
+** line 197—229. Earlier, you mentioned bisimilarity as important.
+   Shouldn’t it also appear somewhere in this summary?
+
+** line 244. “as well as monotonicity” [garbled] —> “as well as”
+
+** Figure 1. The formulation you give is non-standard. A more common one is
+
+     ...
+
+   In this system, both reflexivity and transitivity can be
+   derived. Every inequation has a unique derivation, so you don’t need
+   any equations relating derivations. I presume you have a good reason
+   for using your formulation instead of this one, but you should say
+   what it is!
+
+** line 292—314. In the introduction, summarise why errors and divergence must arise,
+   and give a forward pointer to here for details.
+
+** line 350. “In particular, this axiom applies to propositions P : Prop;
+   proving a statement in this manner is known as Lob-induction.”  —>
+   “In particular, fix applies when type T is instantiated to a
+   proposition P : Prop; in that case, it corresponds to
+   Lob-induction.”
+
+** line 366 “to apply M to tick t, M must be”
+   —> “to apply M to tick t, then M must be” Symbols in different
+   formulas must be separated by words (to give the poor reader a
+   clear indication of where one formula ends and the next
+   begins). [See Knuth, Mathematical Writing, page 1, rule 1.]
+
+** line 440 Footnote 4 is incomplete.
+   “the 𝜃 structure is not algebraic in the strictest sense since it
+   does not have finite arity, but”
+
+** line 530. “The full definitions of the Kleisli actions are included in Appendix ??.”
+   Dangling reference.
+
+** line 542. “define a function”
+   —> “define a partial function”
+
+** line 551. “the type 𝐴𝑔𝑙” Tell the reader what “gl” stands for.
+   [At line 1109 it becomes clear it means “global” but that is rather
+   a long time for the poor reader to wait!]
+
+** line 563. “We can define a notion of termination in 𝑖 steps for the Delay monad 𝑑 ↓𝑖 𝑛”
+   Don’t just say you can define it, actually define it. I presume you
+   mean that n is whatever number d converges to in i steps, or is
+   error if d doesn’t converge in i steps, but you ought to say so.
+*** ERIC: Should I define this explicitly or is it obvious enough?
+
+** line 564. “From this, can define a partial function”
+   —> “From this, we can define a partial function” But again, don’t
+   claim you can define it, actually do so.
+*** ERIC: Same as above.
+
+** line 554—570. You never give a hint as to why clocks need to be introduced in this section.
+    Please explain!
+*** ERIC: The second paragraph discusses clocks and why we need to use them.
+    I'm not sure what more there is to be said. Maybe we could link
+    back to the informal discussion of global solutions given in the
+    introduction.
+
+** line 608. “just when they are in the ordering ⊑ on 𝐴”
+   Actually, Figure 4 uses ≤ not ⊑.
+
+** line 613 "final 4 cases” 
+   —> “final three cases” It is usually good style to spell out any
+   number ten or smaller.
+
+** line 647—648. “relations between the underlying sets of 𝐴, 𝐴′  
+   that are downward-closed in 𝐴 and upward-closed in 𝐴′” Add a
+   sentence to explain the requirement for downward and upward
+   closure.
+*** ERIC: Should we add this?
+
+
+** line 656. “where 𝑈𝐿℧⟦𝑐⟧ is a relational lifting of 𝑈 ◦𝐿℧” 
+   Spell this out in bit more detail. Did you mean “a relational
+   lifting of 𝑈 ◦𝐿℧ over ⟦𝑐⟧” or something else?
+*** ERIC: This isn't introduced until later in the paper (line 769).
+    At this point, we could say that it is "a lifting of the relation
+    ⟦𝑐⟧ that accounts for error and stepping"
+    
+
+** line 676. Horizontal identity. Please give the definitions of \leg A_i and \leq A_o.
+*** ERIC: These should be r(Aᵢ) and r(Aₒ).
+
+** line 714. “with a dual one related to UpR” 
+  Do you really mean dual, in the sense that all the arrows are
+  reversed? That’s not what I get when I write out what I expect for
+  UpR. I think it might be easier on the reader to just give the
+  squares for UpL and UpR side by side, and for completeness to also
+  give the squares for DnL and DnR side by side.
+
+** line 766. “It is straightforward to prove using Löb-induction 
+  that this relation is reflexive, transitive and anti-symmetric given
+  that the underlying relation 𝑅 has those properties.” —> “It is
+  straightforward to prove using Löb-induction that this relation is
+  reflexive, transitive and anti-symmetric given that the underlying
+  relation ⊑𝐴 has those properties.
+
+** line 769. “More generally we can define a heterogeneous version of this ordering 
+  that lifts poset relation 𝑐 : 𝐴 −−|−− 𝐴′ to a poset relation 𝐿℧𝑐 :
+  𝐿℧𝐴 −−|−− 𝐿℧𝐴′.” Surely the more general definition belongs in this
+  paper?
+*** ERIC: It's identical to the homogeneous one except for the η case,
+    where the LHS element comes from A and the RHS comes from A',
+    rather than both coming from A.
+
+** [conclusion to Section 4]
+  I’m a bit confused that bisimilarity is reflexive and symmetric but
+  not transitive. Intuitively, I think of bisimilarity as “equivalent
+  when ignoring the number of reduction steps” and that relationship
+  is transitive. So it would be helpful for you to explain how
+  bisimilarity differs from the relation I describe.
+
+** line 842. “extensional (if 𝑥 ≈𝐴 𝑥′, then 𝑓 (𝑥) ≈𝐴′ 𝑓 (𝑥′)).” 
+  Is that a good name for this property? Normally, extensionality
+  means if f x = g x for all x then f = g, which differs significantly
+  from what you’ve written. Wikipedia tells me a relation R is
+  compatible if x R y implies (f x) R (f y), so perhaps compatible is
+  a better name?
+*** ERIC: we can say that "f preserves bisimilarity"
+
+** line 847. “. Likewise for bisimilarity.”
+  —> “and likewise for bisimilarity”.
+
+** line 847. Note that this means that “𝑥 ̃ ≈▷A 𝑥 ̃′” does not imply that 
+  a x with zero steps relates to x’ with one step, or vice versa; they
+  both must have at least one step.
+*** ERIC: not sure what this comment means
+
+** line 875. “Details of this construction are in the appendix (Definition ??).” 
+  I think you need to give the construction in the paper.
+*** ERIC: we had discussed this and agreed it was better to put in the appendix. Should I move it?
+
+** line 877—879. You need to give the details of these constructions.
+*** ERIC: we introduce the concept of square in the previous section. 
+    Do we need to spell out the definitions for predomains and error domains?
+
+** line 899—900. e_Nat, e_\times, e_\to. I don’t recall where these were defined.
+   Please define or give a back reference.
+
+** line 924—925. “We define a value morphism to be a morphism of the
+  underlying predomains, and a computation morphism to be a morphism
+  of the underlying error domains.” Is there no requirement to
+  preserve anything connected with the monoids M_A and M_B? If so,
+  state this explicitly, and in the surrounding text explain why no
+  additional constraint is required.
+
+** line 969. “push-pull structure” 
+  I suggest adding a parenthetic note to clarify that the “push” here
+  has nothing to with the “push” in “call by push value”.
+
+** line 996—997. “Here 𝑓 ′ ≈ ^Ao_Ai 𝑓 is the natural extension of bisimilarity to morphisms: 
+  given bisimilar inputs the 𝐴𝑜 functions have bisimilar outputs.” Put
+  this definition before Definition 5.11.
+
+** line 1001. Theorem 5.12. This is not really a theorem statement, 
+  it is more an informal promise of a program that can be carried
+  out. Please rephrase. Give the informal statement of a program as an
+  informal statement, and follow it by a formal theorem.
+
+** line 1023—1024. “we need a syntactic perturbation in 𝑀𝐿℧𝐴 
+  that will be interpreted as (𝛿 ◦ 𝜂)†. We accomplish this by taking
+  the coproduct with N.” I don’t see where N comes in. Was 𝛿 meant to
+  be 𝛿^n.
+*** ERIC: Need to be more explicit about why we take the coproduct with N,
+    i.e. the fact that N is the free monoid on one generator, and the
+    generator is interpreted as the delay perturbation (𝛿 ◦ 𝜂)†.
+
+** line 1026. “(see appendix for details)” 
+  This seems to be a detail that should be in the paper, not an appendix.
+*** ERIC: Should we move these details to the body of the paper?
+
+** line 1031. “Since the perturbations for 𝐿℧𝐴 involve N, 
+  so must the perturbations for 𝑈 𝐵. The interpretation 𝑖 𝑈𝐵 of the
+  perturbations on 𝑈 𝐵 works in the same manner as that of 𝐿℧𝐴.” This
+  is great for motivating the construction, but you should also give
+  the construction.
+
+** line 1036. “(see appendix for the details)” See 1026.
+
+** line 1038. Here M_A is a monoid, so I’m not clear on how M^op_A differs from M_A.
+
+** line 1059—1061. You give homomorphisms for products and functions. 
+  Don’t you also need one for naturals?
+
+*** ERIC: No, since the monoid of perturbations for natural numbers is trivial.
+    But should we mention this in the paper?
+
+** line 1084—1085. “and that quasi-equivalence implies” [garbled] 
+  —> “and quasi-equivalence implies” [or similar]
+
+** line 1089—1092. A hint as to why the leftmost vertical looks as it does 
+  (the same two downarrow related by ≈) would be welcome. And, again,
+  I’m not sure where e_c was defined.
+
+** line 1102. Theorem 5.13. The emphasis here on closed terms of type N
+  seems misplaced.  Wouldn’t it be better to present a result for open
+  terms of any types from which this immediately follows as a
+  specialisation?
+
+*** ERIC: Can we extend the big-step term semantics and the adequacy
+    theorem to open terms?
+
+** line 1117. “𝑥 ⊑𝑔𝑙 𝑦 := ∀𝑘.𝑥[𝑘] ⊑ 𝑦[𝑘],” I have no idea what x[k] and y[k] mean here. 
+  I don’t think that notation appeared previously. (If it did, give a
+  back reference to refresh the reader’s memory.)
+
+** line 1120. “see Section ?? in the appendix” Dangling reference.
+
+** line 1145—1146. “do not fit into either framework, 
+  e.g., Typed Racket [30, 31] and the semantics produced is not always
+  the desired one” —> “do not fit into either framework, e.g., Typed
+  Racket [30, 31], and the semantics produced is not always the
+  desired one” [Parenthetic phrases should always have a comma on each
+  side; see Strunk and White.]
+
+** line 1157. “A line of work by New, Licata and Ahmed” 
+  You phrase this as if it is unrelated to the previous paragraph, but
+  references [23] and [24] are already mentioned there.
+
+** line 1189. “The work” Does this refer to [11] or to your own paper? 
+  If the former, better to use “his work”, if the latter “my work” or
+  “our work” or “this work”.
+
+
+* Reviewer B big-picture questions
+
+** First, what does the new denotational semantics for GTLC offer that
+   the previous seminal work by New and Licata does not? I see the
+   argument in the paper that, due to step-indexing, this new model
+   can facilitate extensions with first-class state and other
+   features. But, this is a projection to the future. As things are,
+   the paper seems to reformulate the previous result (that a
+   denotational semantics that has these properties exists for CBV
+   GTLC) using a different machinery.
+
+** Second, given that step-indexed logical relations (i) are becoming a
+   mainstream tool (ii) thanks to all the work for their
+   mechanization, using them and adapting them is significantly easier
+   than in the past, and (iii) have already been used extensively to
+   develop models for various kinds of gradual types, what are the
+   benefits of the papers denotational approach for the gradual typing
+   researcher?
+
+** Third, can the new machinery explain the variety of proposals about
+   what gradual typing is operationally? Gradual typing is a highly
+   diverse and fuzzy notion, but the denotational semantics seem to
+   prescribe (axiomatically) a particular way to interpret it. The
+   existing variety has sprung out of practical issues (related mainly
+   to performance), which are the biggest block for the adoption of
+   sound gradual typing. Can the denotational semantics of the paper
+   help in this direction in some way?
+
+** Fourth, does the new denotational semantics entail any new design
+   principles different than those of the previous work (the validity
+   of the two axioms and graduality) that can help those that design
+   new gradually typed languages?
+
+** Fifth, is there something new that we learn about gradual typing
+   through the lens of the new domain that we didn't know?
+
+
+* Reviewer B smaller fixes
+
+** line 16: missing ``the'' before gradually
+
+** line 292: missing comma after ``language''
+
+** line 403: redundant ``these in that''
+
+** line 417: \delta --> \delta_B
+
+** line 440: incomplete sentence
+
+** line 480: redundant ``be'' before ``modeled''
+
+** line 531 and through out the paper: missing references to the Appendix
+
+** line 613: ``4'' --> ``2''
+
+** line 639: redundant ``from'
+
+** line 702: redundant ``quantifies''
+
+** line 753: missing space after ``Theorem''
+
+** line 1017: ``we use'' --> ``that use''
+
+** line 1157: missing citation
+
+** line 1197: I think the no-go theorem is in section 4.
+
+
+* Reviewer C big-picture questions
+
+** The semantics developed isn't used for anything in the paper. 
+   The introduction talks about type-based reasoning (line 33, line
+   80), but this isn't shown in detail later on in the paper.
+
+** Some of the key ideas (error ordering, the use of double categories)
+   are already present in the work of New et al., and one could argue
+   that the additional complications of needing a bisimilarity
+   relation are self-inflicted by the use of SGDT. On the other hand,
+   I think "can we do this in SGDT?" is a good question to ask, as I
+   said above.
+
+** Arguably, the authors have chosen a relatively simple part of gradual typing,
+   without effects or polymorphism. On the other hand, one has to
+   start somewhere, and the combination of errors, non-termination,
+   and dynamic types even in the simplest gradual typed system are
+   already quite complex.
+
+* Reviewer C smaller fixes
+
+** Throughout there are references to the appendix, but these are all to 'Section/Appendix/Lemma ??'.
+
+** Line 195: could this footnote in inlined into the text?
+
+** Line 440: footnote contains an unfinished sentence.
+
+** Line 485: "homomorphism". 
+   I think you refer to these morphisms as "linear" elsewhere, though
+   homomorphism is also used on line 403.
+
+** Line 494: I assume [[ A'_o ]] and [[ A_i ]] refer to the identity functions 
+   on the interpretations of the respective types?
+
+** Line 627: would it be possible to put more detail about the proof here?
+   I feel like there is a simple "key" to this proof that would be
+   helpful for the reader to see here.
+*** ERIC: Should I give more detail about the proof here?
+
+** Line 927: "quasi-represntability": spelling, and similar on Line 939
+
+** Line 945: "uniqueley"
+
+** Lines 1149-1167: these two paragraphs are talking about the same works by New et al.,
+   but seem to have been written independently and then placed next to
+   each other?
