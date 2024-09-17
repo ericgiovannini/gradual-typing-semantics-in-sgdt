@@ -15,6 +15,7 @@ open import Cubical.Algebra.Semigroup.Base
 private
   variable
     ℓ ℓ' ℓ'' ℓ''' ℓᴰ ℓᴰ' : Level
+    ℓM ℓN ℓP ℓMᴰ ℓNᴰ ℓPᴰ : Level
 
 record Monoidᴰ (M : Monoid ℓ) ℓ' : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
   open MonoidStr (M .snd)
@@ -151,6 +152,22 @@ MonoidHomᴰ {M = M}{N} ϕ Mᴰ Nᴰ =
     module Nᴰ = Monoidᴰ Nᴰ
     open IsMonoidHom
 
+
+module _
+  {M : Monoid ℓM} {N : Monoid ℓN} {P : Monoid ℓP}
+  {Mᴰ : Monoidᴰ M ℓMᴰ} {Nᴰ : Monoidᴰ N ℓNᴰ} {Pᴰ : Monoidᴰ P ℓPᴰ}
+  {ψ : MonoidHom M N} {ϕ : MonoidHom N P} where
+
+  module Pᴰ = Monoidᴰ Pᴰ
+
+  _∘MonoidHomᴰ_ :
+   MonoidHomᴰ ϕ Nᴰ Pᴰ → MonoidHomᴰ ψ Mᴰ Nᴰ → MonoidHomᴰ (ϕ ∘hom ψ) Mᴰ Pᴰ
+  (ϕᴰ ∘MonoidHomᴰ ψᴰ) .fst xᴰ = ϕᴰ .fst (ψᴰ .fst xᴰ)
+  (ϕᴰ ∘MonoidHomᴰ ψᴰ) .snd .fst =
+    (congP (λ i → ϕᴰ .fst) (ψᴰ .snd .fst)) Pᴰ.∙ᴰ (ϕᴰ .snd .fst)
+  (ϕᴰ ∘MonoidHomᴰ ψᴰ) .snd .snd xᴰ yᴰ =
+    (congP (λ i → ϕᴰ .fst) (ψᴰ .snd .snd xᴰ yᴰ)) Pᴰ.∙ᴰ (ϕᴰ .snd .snd _ _)
+
 VMonoidHomᴰ : {M : Monoid ℓ}
   → Monoidᴰ M ℓᴰ
   → Monoidᴰ M ℓᴰ' → Type (ℓ-max (ℓ-max ℓ ℓᴰ) ℓᴰ')
@@ -243,6 +260,10 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoid ℓ''} where
   unWkn ψ .fst = ψ .fst
   unWkn ψ .snd .IsMonoidHom.presε = ψ .snd .fst
   unWkn ψ .snd .IsMonoidHom.pres· = ψ .snd .snd
+
+IdHomᴰ : (M : Monoid ℓ) →
+  MonoidHomᴰ {M = M} {N = M} (idMon M) (wkn M M) (wkn M M)
+IdHomᴰ M = wknHom (idMon M) (idMon M)
 
 open Monoidᴰ
 _^opᴰ : ∀ {M : Monoid ℓ} → Monoidᴰ M ℓᴰ → Monoidᴰ (M ^op) ℓᴰ
