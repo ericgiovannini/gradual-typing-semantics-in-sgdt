@@ -63,3 +63,39 @@ module _ {N : Monoid ℓ'} (ϕ : MonoidHom NatM N) (Nᴰ : Monoidᴰ N ℓᴰ) w
   elimNatLS : (e : Monoidᴰ.eltᴰ Nᴰ (ϕ .fst 1)) → LocalSection ϕ Nᴰ
   elimNatLS e = Section→LocalSection ϕ Nᴰ (elimNatSection (Reindex ϕ Nᴰ) e)
 
+
+module _
+  {ℓM ℓN ℓP : Level}
+  {M : Monoid ℓM}
+  {N : Monoid ℓN}
+  {P : Monoid ℓP}
+  {Nᴰ : Monoidᴰ N ℓᴰ}
+  {ψ : MonoidHom P M}
+  {ϕ : MonoidHom M N}
+  (s : LocalSection (ϕ ∘hom ψ) Nᴰ)  where
+
+  private
+    module P = MonoidStr (P .snd)
+    module ϕ = IsMonoidHom (ϕ .snd)
+    module ψ = IsMonoidHom (ψ .snd)
+    module Nᴰ = Monoidᴰ Nᴰ
+
+  ls-reind : LocalSection ψ (Reindex ϕ Nᴰ)
+  ls-reind .fst p = s .fst p
+  ls-reind .snd .fst = Nᴰ.rectify ((s .snd .fst) Nᴰ.∙ᴰ (Nᴰ.reind-filler _ _))
+  ls-reind .snd .snd x y = Nᴰ.rectify ((s .snd .snd x y) Nᴰ.∙ᴰ (Nᴰ.reind-filler _ _))
+
+
+{-
+module _ {N : Monoid ℓ'} (ϕ : MonoidHom NatM N) (Nᴰ : Monoidᴰ N ℓᴰ) where
+
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
+    module ϕ = IsMonoidHom (ϕ .snd)
+
+  module _ (e : Nᴰ.eltᴰ (ϕ .fst 1)) where
+
+    elimNatLS : LocalSection ϕ Nᴰ
+    elimNatLS = _gs⋆h_ {M = NatM} {N = N} {Mᴰ = Reindex ϕ Nᴰ} {Nᴰ = Nᴰ}
+      (elimNatSection (Reindex ϕ Nᴰ) e)  (π ϕ Nᴰ)
+-}
