@@ -85,11 +85,6 @@ discussion into the revision.
   version of our paper.
 
 ** Novelty compared with New-Licata denotational model
-
-  **Their model doesn't work in the guarded setting because of the intensionality**
-  **Future versions of this model will extend to higher order store and dynamic type generation, which can't be modeled using classical domain theory**
-  **Their compositional theory doesn't apply in the intensional/step-indexed setting**
-  **This work identifies an alternative compositional theory to get back some of the compositional analysis in a way that works with step-indexing**
    
   Our work takes as a starting point the denotational approach of New
   and Licata.  However, in the intensional (SGDT) setting, the
@@ -103,11 +98,12 @@ discussion into the revision.
   restrictions on what can be solved. In addition, work using
   classical domain theory for denotational semantics often requires an
   approach that is closely tied to the particular features of the
-  language in question. Our approach using SGDT should scale with
-  minimal changes to accommodate language features that classical
-  domain theory is unable to model, e.g., higher-order store and
-  dynamic type generation. Reviewer A requests an explanation for why
-  this is the case; we refer to ___________ for the details.
+  language in question. Our model is extensible and we anticipate that
+  future variations will be able to accommodate language features that
+  classical domain theory is unable to model, e.g., higher-order store
+  and dynamic type generation. Reviewer A requests an explanation for
+  why classical domain theory is unable to handle these features; we
+  refer to ___________ for the details.
 
   
  
@@ -191,8 +187,9 @@ discussion into the revision.
    using an extension of our semantics.
 
    Our work formalizes one particular system, but it should be
-   possible to use our framework to formalize other systems and compare
-   their relative costs.
+   possible to use our framework to formalize other systems to prove
+   graduality and utilize the intensional nature of our model to
+   compare their relative costs.
 
    For example, other cast semantics (e.g., shallow semantics)
    validate graduality but fail to satisfy the equational reasoning
@@ -211,8 +208,8 @@ discussion into the revision.
 
    In addition, our work presents a new semantic model and methodology
    for mechanized metatheory of gradually-typed languages which we
-   expect to find application to formalization of new gradually-typed
-   languages.
+   intend to extend to gradually-typed languages with advanced
+   features such as effects and higher-order store.
 
 
    
