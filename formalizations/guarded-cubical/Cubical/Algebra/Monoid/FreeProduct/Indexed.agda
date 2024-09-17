@@ -35,13 +35,13 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
 
   opaque
     ⊕ᵢ : Monoid (ℓ-max ℓ ℓ')
-  ⊕ᵢ = |⊕ᵢ| , (monoidstr εₑ _·ₑ_
-    (ismonoid (issemigroup trunc assocₑ) identityᵣₑ identityₗₑ))
+    ⊕ᵢ = |⊕ᵢ| , (monoidstr εₑ _·ₑ_
+      (ismonoid (issemigroup trunc assocₑ) identityᵣₑ identityₗₑ))
 
-  σ : ∀ x → MonoidHom (M x) ⊕ᵢ
-  σ x .fst = gen x
-  σ x .snd .IsMonoidHom.presε = gen-ε x
-  σ x .snd .IsMonoidHom.pres· = gen-· x
+    σ : ∀ x → MonoidHom (M x) ⊕ᵢ
+    σ x .fst = gen x
+    σ x .snd .IsMonoidHom.presε = gen-ε x
+    σ x .snd .IsMonoidHom.pres· = gen-· x
 
   module _
     (Mᴰ : Monoidᴰ ⊕ᵢ ℓᴰ)
@@ -52,24 +52,44 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
 
     opaque
       unfolding ⊕ᵢ
-    elim : Section Mᴰ
-    elim .fst = f where
-      f : ∀ x → Mᴰ.eltᴰ x
-      f (gen x m) = σᴰ x .fst m
-      f εₑ = Mᴰ.εᴰ
-      f (x ·ₑ y) = f x Mᴰ.·ᴰ f y 
-      f (identityᵣₑ x i) = Mᴰ.·IdRᴰ (f x) i
-      f (identityₗₑ x i) = Mᴰ.·IdLᴰ (f x) i
-      f (assocₑ x y z i) = Mᴰ.·Assocᴰ (f x) (f y) (f z) i
-      f (gen-ε x i) = σᴰ x .snd .fst i
-      f (gen-· x m n i) = σᴰ x .snd .snd m n i
-      f (trunc x y p q i j) =
-        isOfHLevel→isOfHLevelDep 2 (λ x → Mᴰ.isSetEltᴰ)
-          (f x) (f y)
-          (cong f p) (cong f q)
-          (trunc x y p q) i j
-    elim .snd .fst = refl
-    elim .snd .snd x y = refl
+      elim : Section Mᴰ
+      elim .fst = f where
+        f : ∀ x → Mᴰ.eltᴰ x
+        f (gen x m) = σᴰ x .fst m
+        f εₑ = Mᴰ.εᴰ
+        f (x ·ₑ y) = f x Mᴰ.·ᴰ f y 
+        f (identityᵣₑ x i) = Mᴰ.·IdRᴰ (f x) i
+        f (identityₗₑ x i) = Mᴰ.·IdLᴰ (f x) i
+        f (assocₑ x y z i) = Mᴰ.·Assocᴰ (f x) (f y) (f z) i
+        f (gen-ε x i) = σᴰ x .snd .fst i
+        f (gen-· x m n i) = σᴰ x .snd .snd m n i
+        f (trunc x y p q i j) =
+          isOfHLevel→isOfHLevelDep 2 (λ x → Mᴰ.isSetEltᴰ)
+            (f x) (f y)
+            (cong f p) (cong f q)
+            (trunc x y p q) i j
+      elim .snd .fst = refl
+      elim .snd .snd x y = refl
+
+
+  module _ {M : Monoid ℓ'}
+      (Mᴰ : Monoidᴰ M ℓᴰ)
+      (ϕ : MonoidHom ⊕ᵢ M) where
+    private
+      module Mᴰ = Monoidᴰ Mᴰ
+      
+    module _
+      (ϕσᴰ : ∀ x → LocalSection (ϕ ∘hom (σ x)) Mᴰ)
+      where
+
+      opaque
+        elimLocal : LocalSection ϕ Mᴰ
+        elimLocal =
+          _gs⋆h_
+            {Mᴰ = Reindex {M = ⊕ᵢ}{N = M} ϕ Mᴰ}
+            {Nᴰ = Mᴰ}
+            {ϕ = ϕ}
+            (elim (Reindex ϕ Mᴰ) (λ x → ls-reind (ϕσᴰ x))) (π ϕ Mᴰ)
 
   -- module _
   --   (Mᴰ : Monoidᴰ ⊕ᵢ ℓᴰ)
@@ -141,14 +161,14 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
     (⟦σ⟧ : ∀ x → MonoidHom (M x) N)
     where
     opaque
-    open IsMonoidHom
-    rec : MonoidHom ⊕ᵢ N
-    rec = unWkn {ϕ = idMon _} s where
-      s : Section (wkn ⊕ᵢ N)
-      s = elim (wkn ⊕ᵢ N)
-        ( λ x → (⟦σ⟧ x .fst)
-        , (⟦σ⟧ x .snd .presε
-        ,  ⟦σ⟧ x .snd .pres·))
+      open IsMonoidHom
+      rec : MonoidHom ⊕ᵢ N
+      rec = unWkn {ϕ = idMon _} s where
+        s : Section (wkn ⊕ᵢ N)
+        s = elim (wkn ⊕ᵢ N)
+          ( λ x → (⟦σ⟧ x .fst)
+          , (⟦σ⟧ x .snd .presε
+          ,  ⟦σ⟧ x .snd .pres·))
 
     opaque
       unfolding rec elim
@@ -159,20 +179,20 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
   opaque
     unfolding ⊕ᵢ elim rec
     rec-is-uniq : {ℓN : Level} {N : Monoid ℓN} {⟦σ⟧ : ∀ x → MonoidHom (M x) N} {ψ : MonoidHom ⊕ᵢ N}
-   → (∀ x → (⟦σ⟧ x) ≡ ψ ∘hom (σ x))
-   → rec N ⟦σ⟧ ≡ ψ
+     → (∀ x → (⟦σ⟧ x) ≡ ψ ∘hom (σ x))
+     → rec N ⟦σ⟧ ≡ ψ
     rec-is-uniq {ℓN = ℓN} {N = N} {⟦σ⟧ = ⟦σ⟧} {ψ = ψ} eq =
-    eqMonoidHom _ _ (funExt (λ m → h .fst m))
-    where
+      eqMonoidHom _ _ (funExt (λ m → h .fst m))
+      where
 
           ⊕ᴰ : Monoidᴰ ⊕ᵢ ℓN
-      ⊕ᴰ = Eq (rec N ⟦σ⟧) ψ
+          ⊕ᴰ = Eq (rec N ⟦σ⟧) ψ
 
-      h : Section ⊕ᴰ
-      h = elim ⊕ᴰ (λ x →
-          (λ m → funExt⁻ (cong fst (eq x)) m)
-        , isProp→PathP (λ i → N .snd .is-set _ _) _ _
-        , λ _ _ → isProp→PathP (λ i → N .snd .is-set _ _) _ _)
+          h : Section ⊕ᴰ
+          h = elim ⊕ᴰ (λ x →
+              (λ m → funExt⁻ (cong fst (eq x)) m)
+            , isProp→PathP (λ i → N .snd .is-set _ _) _ _
+            , λ _ _ → isProp→PathP (λ i → N .snd .is-set _ _) _ _)
     
   module _
     {P : Monoid ℓ''}
