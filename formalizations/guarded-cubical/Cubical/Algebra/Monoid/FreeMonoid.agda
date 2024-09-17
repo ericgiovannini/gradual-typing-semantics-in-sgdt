@@ -92,6 +92,45 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
         (λ b → wknHom (coHom b) (iB b))
         λ c → wknHom (opHom c) (iC c)
 
+
+  -- Case split (no recursion)
+  module _
+    (Mᴰ : Monoidᴰ FM ℓᴰ)
+    -- (σᴰ : ∀ x → LocalSection (σ x) Mᴰ)
+    where
+    private
+      module Mᴰ = Monoidᴰ Mᴰ
+    module _
+      (iA : ∀ a → Mᴰ.eltᴰ ⟦ a ⟧)
+      (iB : ∀ b → LocalSection (coHom b) Mᴰ)
+      (iC : ∀ c → LocalSection (opHom c) Mᴰ)
+      where
+
+      elimCases : Section Mᴰ
+      elimCases .fst = f where
+        f : ∀ x → Mᴰ.eltᴰ x
+        f ⟦ a ⟧ = iA a
+        f (⟦ b ⟧co x) = iB b .fst x
+        f (⟦ c ⟧op x) = iC c .fst x
+        f ε = Mᴰ.εᴰ
+        f (x · y) = f x Mᴰ.·ᴰ f y
+        f (identityᵣ x i) = Mᴰ.·IdRᴰ (f x) i
+        f (identityₗ x i) = Mᴰ.·IdLᴰ (f x) i
+        f (assoc x y z i) = Mᴰ.·Assocᴰ (f x) (f y) (f z) i
+        f (co-ε b i) = iB b .snd .fst i
+        f (co-· b x y i) = iB b .snd .snd x y i
+        f (op-ε c i) = iC c .snd .fst i
+        f (op-· c x y i) = iC c .snd .snd x y i
+        f (trunc x y p q i j) = isOfHLevel→isOfHLevelDep 2 (λ x → Mᴰ.isSetEltᴰ)
+          (f x) (f y)
+          (cong f p) (cong f q)
+          (trunc x y p q)
+          i j
+      elimCases .snd .fst = refl
+      elimCases .snd .snd x y = refl
+
+
+
 -- Here's a local elimination principle but only when we don't use the coHom/opHom
 module _ (A : Type ℓ) where
   FMsimp : Monoid ℓ
