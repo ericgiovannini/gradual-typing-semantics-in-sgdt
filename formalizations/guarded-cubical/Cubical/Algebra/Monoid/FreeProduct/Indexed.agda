@@ -1,5 +1,7 @@
 -- {-# OPTIONS --safe #-}
 {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --lossy-unification #-}
+
 module Cubical.Algebra.Monoid.FreeProduct.Indexed where
 
 open import Cubical.Foundations.Prelude
@@ -31,7 +33,8 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
     gen-· : ∀ x m n → gen x (M x .snd ._·_ m n) ≡ (gen x m ·ₑ gen x n)
     trunc     : isSet |⊕ᵢ|
 
-  ⊕ᵢ : Monoid _
+  opaque
+    ⊕ᵢ : Monoid (ℓ-max ℓ ℓ')
   ⊕ᵢ = |⊕ᵢ| , (monoidstr εₑ _·ₑ_
     (ismonoid (issemigroup trunc assocₑ) identityᵣₑ identityₗₑ))
 
@@ -46,6 +49,9 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
     where
     private
       module Mᴰ = Monoidᴰ Mᴰ
+
+    opaque
+      unfolding ⊕ᵢ
     elim : Section Mᴰ
     elim .fst = f where
       f : ∀ x → Mᴰ.eltᴰ x
@@ -130,9 +136,11 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
     Eq = Reindex (×M-intro f g) (MonPath N)
 
   module _
-    (N : Monoid ℓ'')
+    {ℓN : Level}
+    (N : Monoid ℓN)
     (⟦σ⟧ : ∀ x → MonoidHom (M x) N)
     where
+    opaque
     open IsMonoidHom
     rec : MonoidHom ⊕ᵢ N
     rec = unWkn {ϕ = idMon _} s where
@@ -142,13 +150,22 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
         , (⟦σ⟧ x .snd .presε
         ,  ⟦σ⟧ x .snd .pres·))
 
-  rec-is-uniq : {N : Monoid ℓ''} {⟦σ⟧ : ∀ x → MonoidHom (M x) N} {ψ : MonoidHom ⊕ᵢ N}
+    opaque
+      unfolding rec elim
+      rec-σ : ∀ x m → rec .fst (σ x .fst m) ≡ ⟦σ⟧ x .fst m
+      rec-σ x m = refl
+
+
+  opaque
+    unfolding ⊕ᵢ elim rec
+    rec-is-uniq : {ℓN : Level} {N : Monoid ℓN} {⟦σ⟧ : ∀ x → MonoidHom (M x) N} {ψ : MonoidHom ⊕ᵢ N}
    → (∀ x → (⟦σ⟧ x) ≡ ψ ∘hom (σ x))
    → rec N ⟦σ⟧ ≡ ψ
-  rec-is-uniq {N = N} {⟦σ⟧ = ⟦σ⟧} {ψ = ψ} eq =
+    rec-is-uniq {ℓN = ℓN} {N = N} {⟦σ⟧ = ⟦σ⟧} {ψ = ψ} eq =
     eqMonoidHom _ _ (funExt (λ m → h .fst m))
     where
-      ⊕ᴰ : Monoidᴰ ⊕ᵢ _
+
+          ⊕ᴰ : Monoidᴰ ⊕ᵢ ℓN
       ⊕ᴰ = Eq (rec N ⟦σ⟧) ψ
 
       h : Section ⊕ᴰ
@@ -166,6 +183,9 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
       (∀ x → ϕ ∘hom (σ x) ≡ ψ ∘hom (σ x))
       → ϕ ≡ ψ
     ind eq = sym (rec-is-uniq (λ x → refl)) ∙ rec-is-uniq eq
+
+
+
 
 
 -- module _ (X : Type ℓ) (M : X → Monoid ℓ') where
