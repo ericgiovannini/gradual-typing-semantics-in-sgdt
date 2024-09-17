@@ -7,6 +7,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Data.Sigma hiding (Σ)
 import Cubical.Data.Equality as Eq
+open import Cubical.Data.Nat hiding (_·_)
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
@@ -286,3 +287,61 @@ mkSectionSubmonoid isPropEltᴰ f .snd .fst =
   isProp→PathP (λ i → isPropEltᴰ _) _ _
 mkSectionSubmonoid isPropEltᴰ f .snd .snd x y =
   isProp→PathP (λ i → isPropEltᴰ _) _ _
+
+
+-- Universal property of Nat monoid
+
+
+
+  
+
+module _  (Nᴰ : Monoidᴰ NatM ℓᴰ) where
+
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
+
+    h : Nᴰ.eltᴰ 1 → (n : ℕ) → Nᴰ.eltᴰ n
+    h e zero = Nᴰ.εᴰ 
+    h e (suc n) = e Nᴰ.·ᴰ h e n
+
+  elimNatSection : Nᴰ.eltᴰ 1 → Section Nᴰ
+  elimNatSection e .fst = h e
+  elimNatSection e .snd .fst = refl
+  elimNatSection e .snd .snd = pf
+    where
+      pf : ∀ n m → h e (n + m) ≡ (h e n Nᴰ.·ᴰ h e m)
+      pf zero m = sym (Nᴰ.·IdLᴰ _)
+      pf (suc n) m =
+        (cong₂ Nᴰ._·ᴰ_ refl (pf n m)) ∙
+        (Nᴰ.·Assocᴰ e (h e n) (h e m))
+       
+
+{-
+module _ {N : Monoid ℓ'} (ϕ : MonoidHom NatM N) (Nᴰ : Monoidᴰ N ℓᴰ) where
+
+  private
+    module Nᴰ = Monoidᴰ Nᴰ
+    module ϕ = IsMonoidHom (ϕ .snd)
+
+  module _ (e : Nᴰ.eltᴰ (ϕ .fst 1)) where
+    private
+      h : (n : ℕ) → Nᴰ.eltᴰ (ϕ .fst n)
+      h zero = reind Nᴰ (sym ϕ.presε) Nᴰ.εᴰ
+      h (suc n) = reind Nᴰ (sym (ϕ.pres· 1 n)) (e Nᴰ.·ᴰ h n)
+
+      h-id : h zero  Nᴰ.≡[ ϕ.presε ]  Nᴰ.εᴰ
+      h-id = symP (reind-filler Nᴰ _ Nᴰ.εᴰ)
+
+      h-comp : ∀ n m →
+        h (n + m) Nᴰ.≡[ ϕ.pres· n m ] (h n Nᴰ.·ᴰ h m)
+      h-comp zero m = {!!}
+      h-comp (suc n) m = {!!}
+    
+    elimNatLS :  LocalSection ϕ Nᴰ
+    elimNatLS .fst = h
+    elimNatLS .snd .fst = h-id
+    elimNatLS .snd .snd = h-comp
+
+    -- foo : LocalSection ϕ Nᴰ
+    -- foo = elimNatSection {!reindex!} {!!} gs⋆h {!!}
+-}

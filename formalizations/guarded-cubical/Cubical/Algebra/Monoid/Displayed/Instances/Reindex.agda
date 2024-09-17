@@ -49,3 +49,17 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'}(ϕ : MonoidHom M N)
   π .fst = λ z → z
   π .snd .fst = symP (Mᴰ.reind-filler _ _)
   π .snd .snd xᴰ yᴰ = symP (Mᴰ.reind-filler _ _)
+
+
+module _ {M : Monoid ℓ} {N : Monoid ℓ'} (ϕ : MonoidHom M N) (Nᴰ : Monoidᴰ N ℓᴰ) where
+
+  Section→LocalSection : Section (Reindex ϕ Nᴰ) → LocalSection ϕ Nᴰ
+  Section→LocalSection s =
+    _gs⋆h_ {M = M} {N = N} {Mᴰ = Reindex ϕ Nᴰ} {Nᴰ = Nᴰ} s (π ϕ Nᴰ)
+
+
+module _ {N : Monoid ℓ'} (ϕ : MonoidHom NatM N) (Nᴰ : Monoidᴰ N ℓᴰ) where
+
+  elimNatLS : (e : Monoidᴰ.eltᴰ Nᴰ (ϕ .fst 1)) → LocalSection ϕ Nᴰ
+  elimNatLS e = Section→LocalSection ϕ Nᴰ (elimNatSection (Reindex ϕ Nᴰ) e)
+
