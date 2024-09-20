@@ -26,7 +26,7 @@ discussion into the revision.
 * Reviewer A confusion on lack of transitivity of weak bisimilarity
 
   Reviewer A notes that the lack of transitivity of our definition of
-  weak bisimiarity for L℧ A is unexpected given the intuitive meaning
+  weak bisimilarity for L℧ A is unexpected given the intuitive meaning
   of bisimilarity as being “equivalent when ignoring the number of
   reduction steps”.
 
@@ -36,14 +36,14 @@ discussion into the revision.
   the free error domain. It is true that the "global" version of weak
   bisimilarity for the free error domain (defined using quantification
   over clocks) coincides with the usual coinductive definition for the
-  Delay monad, and hence is transitive. However this form of
+  Delay monad, and hence is transitive. However, this form of
   transitivity has a big limitation: since it only applies globally,
   transitive reasoning cannot be combined with guarded recursion/Löb
   induction. For this reason we work as much as possible with strong
   bisimilarity, which is transitive even without moving to global
   reasoning.
 
-  The formal explanation for why weak bisimiarity is not transitive
+  The formal explanation for why weak bisimilarity is not transitive
   is given by our no-go theorem: If it were transitive, then it follows
   from the theorem that it would be the trivial relation.  We can
   spell out part of the proof of the theorem for the specific case of
@@ -99,8 +99,8 @@ discussion into the revision.
   Our main interest in using guarded domain theory over classical
   domain theory is in our future plans for this line of work. As
   discussed in the paper, Guarded domain theory can be used to model
-  languages with higher-order store or dynamically extensible sum
-  type, which are common in gradually typed languages, and indeed some
+  languages with higher-order store or a dynamically extensible sum
+  type. These are common in gradually typed languages, and indeed some
   logical relations models for gradual typing have modeled dynamically
   extensible sum types ([1], [2]). This paper is a first step towards
   a denotational account that scales to these common features.
@@ -111,7 +111,7 @@ discussion into the revision.
   equations, in classical domain theory only domain equations that
   satisfy certain continuity principles can be solved. However,
   languages with higher-order store or unrestricted dynamically
-  extensible sum types require solving a simultaneous domain
+  extensible sum types require solving simultaneous domain
   equations like
 
     World = Name ⇀_fin Type
@@ -119,10 +119,10 @@ discussion into the revision.
 
   (E.g., see https://doi.org/10.48550/arXiv.1208.3596 which uses 𝓟(Val) rather than Set)
 
-  For higher-order store, Name is the names of memory cells, for
+  For higher-order store, Name is the names of memory cells, and for
   extensible sum it is the tag names on the dynamic type. This
-  equation is solveable in guarded domain theory if we add a later to
-  the occurrence of Type, but it is not solveable in classical domain
+  equation is solvable in guarded domain theory if we add a later to
+  the occurrence of Type, but it is not solvable in classical domain
   theory because it is not continuous in Type.
 
 ** Benefits of the denotational approach for the gradual typing researcher
@@ -207,13 +207,19 @@ discussion into the revision.
    intend to extend to gradually-typed languages with advanced
    features such as effects and higher-order store.
    
-* Reviewer C's weaknesses
+* Reviewer C's comment on application of the semantics
 
   Reviewer C says that "The semantics developed isn't used for
-  anything in the paper". Perhaps it is not clear in the paper, but
-  the application is the sound interpretation of all the syntactic
-  rules of Section 2, giving a proof of graduality as well as βη
-  equivalence.
+  anything in the paper". However, this is not the case --- the
+  type-based reasoning mentioned in the introduction is a consequence
+  of the equational theory in Section 2, which we prove sound by
+  defining an interpretation of the rules into our model (Theorem
+  5.12, line 1002).
+
+  The application is provided in Theorem 5.12 (line 1002)
+  where we give an interpretation of the syntactic rules of Section 2,
+  thus providing a proof of graduality as well as the validity of the
+  equational theory.
 
 [1]: Ahmed, Findler, Siek, Wadler.: Blame For All, POPL 2011, https://doi.org/10.1145/1925844.1926409
 [2]: New, Jamner, Ahmed.: Graduality and parametricity: together again for the first time, POPL 2020 https://doi.org/10.1145/3371114
