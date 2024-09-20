@@ -10,18 +10,18 @@ discussion into the revision.
   axioms used in prior work where reflexivity and transitivity are
   admissible.
 
-  The reason behind this is somewhat technical, but the essential idea
-  is that in our system, equivalent type precision derivations do not
-  denote equal relations. They instead only denote relations that are
-  /quasi-order-equivalent/, i.e., if two terms are related by one then
-  they are related also by the other up to insertion of delays (see
-  the statement of Theorem 5.12, line 1007).
+  The reason behind this is that in our semantics, the equivalent type
+  precision derivations do not denote *equal* relations, they instead
+  only denote relations that are *quasi-order-equivalent*, i.e., if
+  two terms are related by one then they are related also by the other
+  up to insertion of delays (see the statement of Theorem 5.12, line
+  1007).
 
-  While the equivalent formulation is not sufficient for our purposes,
-  there is a translation from the equivalent formulation's type
-  precision derivations into our formulation that preserves type
-  precision.
-
+  However, because all type precision derivations in our system are
+  equivalent, it is straightforward to define a translation from the
+  more standard system of type and term precision into ours, so
+  ultimately our graduality proofs can still be applied to the
+  standard formulation.
 
 * Reviewer A confusion on lack of transitivity of weak bisimilarity
 
@@ -36,9 +36,12 @@ discussion into the revision.
   the free error domain. It is true that the "global" version of weak
   bisimilarity for the free error domain (defined using quantification
   over clocks) coincides with the usual coinductive definition for the
-  Delay monad, and hence is transitive. By that point, however, we
-  cannot apply guarded recursion to solve domain equations, so it is
-  too late for it to be useful in our development.
+  Delay monad, and hence is transitive. However this form of
+  transitivity has a big limitation: since it only applies globally,
+  transitive reasoning cannot be combined with guarded recursion/Löb
+  induction. For this reason we work as much as possible with strong
+  bisimilarity, which is transitive even without moving to global
+  reasoning.
 
   The formal explanation for why weak bisimiarity is not transitive
   is given by our no-go theorem: If it were transitive, then it follows
@@ -64,7 +67,6 @@ discussion into the revision.
   argument shows fix θ ≈ l for all l, and hence by transitivity we
   have l ≈ l for all l.
   
-  
 * Reviewer A's Q on why adequacy applies only to closed terms
 
   Reviewer A asks why we formulated our adequacy theorem for closed
@@ -87,26 +89,42 @@ discussion into the revision.
 ** Novelty compared with New-Licata denotational model
    
   Our work takes as a starting point the denotational approach of New
-  and Licata.  However, in the intensional (SGDT) setting, the
-  compositional theory of New-Licata breaks down. Our work identifies
-  a novel alternative theory to recover some amount of compositional
-  analysis in a way that is compatible with intensional reasoning.
+  and Licata. However, in the intensional (SGDT) setting, the
+  compositional theory of New-Licata breaks down: when accounting for
+  steps, the casts are no longer embedding-projection pairs. Our work
+  provides a novel refinement to their theory that allows for some
+  compositional analysis to be recovered even in the context of
+  intensional reasoning.
 
-  The benefit to using SGDT over classical domain theory is that it
-  allows for the solution of /arbitrary/ guarded domain equations,
-  whereas in classical domain theory there are complex technical
-  restrictions on what can be solved. In addition, work using
-  classical domain theory for denotational semantics often requires an
-  approach that is closely tied to the particular features of the
-  language in question. Our model is extensible and we anticipate that
-  future variations will be able to accommodate language features that
-  classical domain theory is unable to model, e.g., higher-order store
-  and dynamic type generation. Reviewer A requests an explanation for
-  why classical domain theory is unable to handle these features; we
-  refer to ___________ for the details.
+  Our main interest in using guarded domain theory over classical
+  domain theory is in our future plans for this line of work. As
+  discussed in the paper, Guarded domain theory can be used to model
+  languages with higher-order store or dynamically extensible sum
+  type, which are common in gradually typed languages, and indeed some
+  logical relations models for gradual typing have modeled dynamically
+  extensible sum types ([1], [2]). This paper is a first step towards
+  a denotational account that scales to these common features.
 
-  
- 
+  The reason that classical domain theory cannot be used for these
+  models is folklore and somewhat technical. While guarded domain
+  theory allows for the solution of *arbitrary* guarded domain
+  equations, in classical domain theory only domain equations that
+  satisfy certain continuity principles can be solved. However,
+  languages with higher-order store or unrestricted dynamically
+  extensible sum types require solving a simultaneous domain
+  equations like
+
+    World = Name ⇀_fin Type
+    Type  = Functor(World, Set)
+
+  (E.g., see https://doi.org/10.48550/arXiv.1208.3596 which uses 𝓟(Val) rather than Set)
+
+  For higher-order store, Name is the names of memory cells, for
+  extensible sum it is the tag names on the dynamic type. This
+  equation is solveable in guarded domain theory if we add a later to
+  the occurrence of Type, but it is not solveable in classical domain
+  theory because it is not continuous in Type.
+
 ** Benefits of the denotational approach for the gradual typing researcher
 
    Reviewer B asks about the benefits of the denotational approach for
@@ -134,68 +152,46 @@ discussion into the revision.
    independent of the particular syntax of the language.  This makes
    it particularly straightforward to accommodate additions to the
    language: adding support for a new type amounts to defining a new
-   object and extending the dynamic type accordingly. In contrast, the
-   operational semantics is not as readily extensible, generally
-   requiring adding cases to the logical relations and the inductive
-   proofs. Lastly, another benefit to the denotational approach is
-   that it is easy to establish the validity of the β and η
-   principles, because they are equalities in the semantics.
+   object and extending the dynamic type accordingly. It also may be
+   possible to model alternative cast semantics by changing the
+   definition of the dynamic type and some type casts.
 
-   We emphasize that, although the benefits of the denotational
-   approach are clear, the results of our work are not confined to the
-   denotational setting. Given that SGDT is a synthetic formulation of
-   step-indexing, it should be possible to formulate a version of our
-   model in the setting of step-indexed logical relations. For
-   example, there would be a logical relation for strong error
-   ordering and one for weak bisimilarity, corresponding to the fact
-   that objects in our denotational model have an error ordering and a
-   bisimilarity relation.
+   In contrast, the operational semantics is not as readily
+   extensible, generally requiring adding cases to the logical
+   relations and the inductive proofs. In a mechanized metatheory this
+   is a kind of "copy-paste" reusability rather than true code reuse
+   as you get with a denotational model. Lastly, another benefit to
+   the denotational approach is that it is trivial to establish the
+   validity of the β and η principles, because they are equalities in
+   the semantics, whereas they require tedious manual proof in the
+   logical relations approach.
 
-   
+   Additionally, while we advocate for a denotational approach, the
+   overall structure of our semantics could be applied to a logical
+   relations proof. For example, there could be a step-indexed logical
+   relation for strong error ordering and one for weak bisimilarity,
+   corresponding to the fact that objects in our denotational model
+   have an error ordering and a bisimilarity relation. Then the
+   precision rules for casts could be similarly proven using
+   perturbations.
+
 ** Implications for operational semantics of gradual typing?
 
    Reviewer B asks whether our work has implications for the variety
-   of design proposals for the operational semantics of gradual
-   typing.  Prior work [1] has established that the combination of
-   soundness of the equational theory and graduality places
-   restrictions on the operational behavior of casts. For example,
-   different cast semantics (e.g., shallow semantics) validate
-   graduality but fail to satisfy the equational reasoning principles.
+   of design proposals for the operational semantics of gradual typing
+   and if it informs new design principles for gradually typed
+   languages. While we have focused on a single semantics here, we
+   think our development could be adapted to prove graduality and
+   (more limited) equational reasoning for other cast semantics.
 
-   Our framework is designed to extend to other gradual typing systems
-   based on different cast semantics and validate that those systems
-   satisfy the graduality property. In addition, we can leverage the
-   intensional nature of our framework to compare the cost of
-   different cast semantics in terms of the number of steps that the
-   casts take. This is not relevant to the graduality theorem but is
-   crucial for optimizations.  For instance, one should be able to
-   show using our denotational semantics that the space-efficient
-   formulation of casts are equivalent to the standard system, but
-   that the cost of casts in the former system is less than that of
-   the latter.
+   In addition, while we have focused on proving extensional
+   properties in this work, the intensional nature of our semantics
+   could be viewed as a form of *cost semantics* where a runtime cost
+   is incurred from inspecting the dynamic type. This could possibly
+   be used to verify that cast optimizations such as space efficient
+   implementations are both extensionally correct but also reduce the
+   cost semantics. But this is all future work.
 
-   [1]: Max S. New, Daniel R. Licata, and Amal Ahmed. 2019. Gradual
-   Type Theory.
-
-   
-** New design principles?
-
-   Reviewer B also asks whether our work sheds light on new design
-   principles for gradually-typed languages. While this was not the
-   focus of our work, our approach will help in the development of new
-   designs for gradually-typed languages in that they can be justified
-   using an extension of our semantics.
-
-   Our work formalizes one particular system, but it should be
-   possible to use our framework to formalize other systems to prove
-   graduality and utilize the intensional nature of our model to
-   compare their relative costs.
-
-   For example, other cast semantics (e.g., shallow semantics)
-   validate graduality but fail to satisfy the equational reasoning
-   principles.  Our framework should still apply to prove graduality
-   of these systems.
-   
 ** What do we learn about gradual typing through this new lens?
 
    Although the application of our work is to semantics of gradual
@@ -210,19 +206,14 @@ discussion into the revision.
    for mechanized metatheory of gradually-typed languages which we
    intend to extend to gradually-typed languages with advanced
    features such as effects and higher-order store.
-
-
    
 * Reviewer C's weaknesses
 
-  Reviewer C mentions that the semantics we develop in the paper is
-  not applied to anything.
+  Reviewer C says that "The semantics developed isn't used for
+  anything in the paper". Perhaps it is not clear in the paper, but
+  the application is the sound interpretation of all the syntactic
+  rules of Section 2, giving a proof of graduality as well as βη
+  equivalence.
 
-  We note that the equations for GTLC have been demonstrated in prior
-  work to correspond to program optimizations. As mentioned, the η
-  laws were shown valid implicitly by virtue of defining the
-  denotational semantics.  Proving the retraction principle for our
-  model will validate optimizations involving casts.  In this work we
-  were focused on graduality, which does not require retraction.
-
-
+[1]: Ahmed, Findler, Siek, Wadler.: Blame For All, POPL 2011, https://doi.org/10.1145/1925844.1926409
+[2]: New, Jamner, Ahmed.: Graduality and parametricity: together again for the first time, POPL 2020 https://doi.org/10.1145/3371114
