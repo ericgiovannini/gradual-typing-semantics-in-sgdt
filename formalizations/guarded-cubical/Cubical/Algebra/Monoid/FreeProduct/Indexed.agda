@@ -12,6 +12,7 @@ open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Semigroup
 open import Cubical.Algebra.Monoid.Displayed
 open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
+open import Cubical.Algebra.Monoid.Displayed.Instances.Path
 
 open import Cubical.Data.Empty as Empty hiding (elim; rec)
 
@@ -91,69 +92,6 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
             {ϕ = ϕ}
             (elim (Reindex ϕ Mᴰ) (λ x → ls-reind (ϕσᴰ x))) (π ϕ Mᴰ)
 
-  -- module _
-  --   (Mᴰ : Monoidᴰ ⊕ᵢ ℓᴰ)
-  --   (σᴰ : ∀ x → LocalSection (σ x) Mᴰ)
-  --   (isProp
-
-  module _ {ℓ : Level} (N : Monoid ℓ) where
-    private
-      module N = MonoidStr (N .snd)
-      open Monoidᴰ
-
-    MonPath : Monoidᴰ (N ×M N) ℓ
-    MonPath = submonoid→Monoidᴰ sub
-      where
-        open Submonoid
-        sub : Submonoid (N ×M N) ℓ
-        sub .eltᴰ (x , y) = x ≡ y
-        sub .εᴰ = refl
-        sub ._·ᴰ_ p q = cong₂ N._·_ p q
-        sub .isPropEltᴰ = N.is-set _ _
-    
-    -- Eq : Monoidᴰ (N ×M N) ℓ
-    -- Eq .eltᴰ (x , y) = x ≡ y
-    -- Eq .εᴰ = refl
-    -- Eq ._·ᴰ_ {x = (x₁ , y₁)} {y = (x₂ , y₂)} p q = cong₂ N._·_ p q
-    -- Eq .·IdRᴰ {x = (x , y)} xᴰ = isProp→PathP (λ i → N.is-set _ _) _ _
-    -- Eq .·IdLᴰ xᴰ = isProp→PathP (λ i → N.is-set _ _) _ _
-    -- Eq .·Assocᴰ xᴰ yᴰ zᴰ = isProp→PathP (λ i → N.is-set _ _) _ _
-    -- Eq .isSetEltᴰ = isProp→isSet (N.is-set _ _)
-
-  -- Given a homomorphism f : M → N and a displayed monoid Nᴰ over N
-  -- the "pullback" Mᴰ of N along f is displayed over M.
-  
-  -- module _ {ℓ ℓ' ℓᴰ : Level} {M : Monoid ℓ} {N : Monoid ℓ'}
-  --   (f : MonoidHom M N)
-  --   (Nᴰ : Monoidᴰ N ℓᴰ) where
-
-  --   open Monoidᴰ
-  --   private
-  --     module M = MonoidStr (M .snd)
-  --     module Nᴰ = Monoidᴰ Nᴰ
-  --     module f = IsMonoidHom (f .snd)
-
-  --   pullback : Monoidᴰ M ℓᴰ
-  --   pullback .eltᴰ x = Nᴰ.eltᴰ (f .fst x)
-  --   pullback .εᴰ = reind Nᴰ (sym f.presε) Nᴰ.εᴰ
-  --   pullback ._·ᴰ_ {x = x} {y = y} n n' = reind Nᴰ (sym (f.pres· x y)) (Nᴰ._·ᴰ_ n n')
-  --   pullback .·IdRᴰ {x = x} xᴰ = let foo =
-  --     symP (reind-filler Nᴰ (λ i → f .fst (M.·IdR x i)) (reind Nᴰ (sym (f.pres· x M.ε)) {!!})) in {!!}
-  --   pullback .·IdLᴰ xᴰ = {!!}
-  --   pullback .·Assocᴰ = {!!}
-  --   pullback .isSetEltᴰ = Nᴰ.isSetEltᴰ
-
-  module _ {ℓ ℓ' : Level} {M : Monoid ℓ} {N : Monoid ℓ'}
-    (f g : MonoidHom M N) where
-
-    private
-      module N = MonoidStr (N .snd)
-      module f = IsMonoidHom (f .snd)
-      module g = IsMonoidHom (g .snd)
-      open Monoidᴰ
-
-    Eq : Monoidᴰ M ℓ'
-    Eq = Reindex (×M-intro f g) (MonPath N)
 
   module _
     {ℓN : Level}

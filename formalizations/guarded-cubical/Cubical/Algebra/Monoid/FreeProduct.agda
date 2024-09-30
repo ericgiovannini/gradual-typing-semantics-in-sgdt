@@ -12,6 +12,8 @@ open import Cubical.Foundations.HLevels
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
+open import Cubical.Algebra.Monoid.Displayed
+open import Cubical.Algebra.Monoid.Displayed.Instances.Path
 
 open import Cubical.Data.Sum hiding (rec; elim)
 open import Cubical.Data.Sigma
@@ -19,7 +21,7 @@ open import Cubical.Data.Sigma
 
 private
   variable
-    ℓ ℓ' ℓ'' ℓ''' : Level
+    ℓ ℓ' ℓ'' ℓ''' ℓᴰ : Level
 
 
 open IsMonoidHom
@@ -143,7 +145,7 @@ module Rec {ℓ''} {M : Monoid ℓ} {N : Monoid ℓ'}
 _⊕_ : Monoid ℓ -> Monoid ℓ' -> Monoid (ℓ-max ℓ ℓ')
 M ⊕ N = makeMonoid {M = FreeMonoidProd M N} ε _·_ trunc assoc identityᵣ identityₗ
 
-
+infixr 15 _⊕_
 
 -- isSetMonoidHom : (M : Monoid ℓ) (N : Monoid ℓ') → isSet (MonoidHom M N)
 -- isSetMonoidHom M N = {!!}
@@ -195,7 +197,7 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
         aux = ElimProp.f
           {B = λ x → case-hom .fst x ≡ h .fst x}
           (λ {xs} → P.is-set _ _)
-          (λ m → (funExt⁻ (cong fst eq1) m))   -- NTS:  f .fst m ≡ h .fst ⟦ m ⟧₁
+          (λ m → (funExt⁻ (cong fst eq1) m))   -- NTS: f .fst m ≡ h .fst ⟦ m ⟧₁
           (λ n → (funExt⁻ (cong fst eq2) n))   -- NTS: g .fst n ≡ h .fst ⟦ n ⟧₂
           (sym h.presε)
           λ {x y} p q → (cong₂ P._·_ p q) ∙ (sym (h.pres· x y))
@@ -258,6 +260,52 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
       ((liftM .fst) , eqMonoidHom _ _ (cong fst (liftM .snd)))
       ((liftN .fst) , eqMonoidHom _ _ (cong fst (liftN .snd)))
 
+
+-- Elim for displayed monoids
+
+module _
+    {M : Monoid ℓ} {N : Monoid ℓ'}
+    (Mᴰ : Monoidᴰ (M ⊕ N) ℓᴰ)
+    (i₁ᴰ : LocalSection i₁ Mᴰ)
+    (i₂ᴰ : LocalSection i₂ Mᴰ)
+    where
+    private
+      module Mᴰ = Monoidᴰ Mᴰ
+
+    opaque
+      elim : Section Mᴰ
+      elim .fst = Elim.f
+        (i₁ᴰ .fst) (i₂ᴰ .fst)
+        Mᴰ.εᴰ  Mᴰ._·ᴰ_
+        (i₁ᴰ .snd .fst) (i₂ᴰ .snd .fst)
+        (i₁ᴰ .snd .snd) (i₂ᴰ .snd .snd)
+        Mᴰ.·IdRᴰ  Mᴰ.·IdLᴰ  Mᴰ.·Assocᴰ
+        (λ _ → Mᴰ.isSetEltᴰ)
+
+      elim .snd .fst = refl
+      elim .snd .snd x y = refl  
+
+
+module _ {M : Monoid ℓ} {N : Monoid ℓ'} where
+
+  --
+  -- Homomorphism from (M ⊕ N)^op to M^op ⊕ N^op
+  --
+  ⊕op : MonoidHom ((M ⊕ N) ^op) ((M ^op) ⊕ (N ^op))
+  ⊕op = g ^opHom
+    where
+      g : MonoidHom (((M ⊕ N) ^op) ^op) ((M ^op ⊕ N ^op) ^op)
+      g = [ h1 ,hom h2 ] ∘hom M^op^op→M
+        where
+          h1 : MonoidHom M ((M ^op ⊕ N ^op) ^op)
+          h1 = (i₁ ^opHom) ∘hom M→M^op^op
+
+          h2 : MonoidHom N ((M ^op ⊕ N ^op) ^op)
+          h2 = (i₂ ^opHom) ∘hom M→M^op^op
+      
+
+
+
 -- Eliminating from M ⊕ N into a type A parameterized by elements of
 -- M ⊕ N and elements of an arbitrary monoid P.
 module Elim2
@@ -303,23 +351,6 @@ module Elim2
           (λ xs ys zx → toPathP (AProp _ _))
           (λ _ → isProp→isSet AProp)
 
-
-
-          -- Elim.f {B = λ x → Σ[ h ∈ MonoidHom (M ⊕ N) P ] (∀ (x : ⟨ M ⊕ N ⟩) → A (h .fst x))}
-          -- (λ m → {!!} , {!!})
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-          -- {!!}
-    -- Σ[ h ∈ MonoidHom (M ⊕ N) P ] (∀ (x : ⟨ M ⊕ N ⟩) → A (h .fst x))
   
   
  

@@ -254,6 +254,25 @@ wknHom ϕ ψ .fst = ψ .fst
 wknHom ϕ ψ .snd .fst = ψ .snd .presε
 wknHom ϕ ψ .snd .snd = ψ .snd .pres·
 
+MonoidHom→LocalSectionWkn :
+  {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''} →
+  {ϕ : MonoidHom P M} →
+  (ψ : MonoidHom P N) →
+  LocalSection ϕ (wkn M N)
+MonoidHom→LocalSectionWkn ψ .fst = ψ .fst
+MonoidHom→LocalSectionWkn ψ .snd .fst = ψ .snd .presε 
+MonoidHom→LocalSectionWkn ψ .snd .snd = ψ .snd .pres·
+
+LocalSection→MonoidHomᴰ :
+  {M : Monoid ℓ} {N : Monoid ℓ'}
+  {ϕ : MonoidHom M N}
+  {Nᴰ : Monoidᴰ N ℓᴰ} →
+  (s : LocalSection ϕ Nᴰ) →
+  MonoidHomᴰ ϕ (wkn M M) Nᴰ
+LocalSection→MonoidHomᴰ {ϕ = ϕ} s .fst {x = x} _ = s .fst x
+LocalSection→MonoidHomᴰ {ϕ = ϕ} s .snd .fst = s .snd .fst
+LocalSection→MonoidHomᴰ {ϕ = ϕ} s .snd .snd {x = x} {y = y} _ _ = s .snd .snd x y
+
 module _ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoid ℓ''} where
   unWkn : {ϕ : MonoidHom P M}
     → LocalSection ϕ (wkn M N)

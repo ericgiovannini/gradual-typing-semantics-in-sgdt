@@ -11,6 +11,7 @@ open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Semigroup
 open import Cubical.Algebra.Monoid.Displayed
 open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
+open import Cubical.Algebra.Monoid.Displayed.Instances.Path
 open import Cubical.Data.Empty as Empty hiding (elim; rec)
 
 private variable
@@ -92,6 +93,7 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
         (λ b → wknHom (coHom b) (iB b))
         λ c → wknHom (opHom c) (iC c)
 
+  
 
   -- Case split (no recursion)
   module _
@@ -128,7 +130,55 @@ module _  (A : Type ℓ) (B : Type ℓ') (C : Type ℓ'') where
           i j
       elimCases .snd .fst = refl
       elimCases .snd .snd x y = refl
+      
+  module _ (N : Monoid ℓ''')
+    (iA : A → ⟨ N ⟩)
+    (iB : B → MonoidHom FM N)
+    (iC : C → MonoidHom (FM ^op) N)
+    where
+    cases : MonoidHom FM N
+    cases = unWkn {ϕ = idMon _} s where
+      s : Section (wkn FM N)
+      s = elimCases (wkn FM N)
+        iA
+        (λ b → MonoidHom→LocalSectionWkn {ϕ = coHom b} (iB b))
+        (λ c → MonoidHom→LocalSectionWkn {ϕ = opHom c} (iC c))
+       
+  -- uniqueness principle for cases
+  module _ {N : Monoid ℓ'''}
+    {iA : A → ⟨ N ⟩}
+    {iB : B → MonoidHom FM N}
+    {iC : C → MonoidHom (FM ^op) N}
+    {ψ : MonoidHom FM N}
+    (agree-gen : ∀ a → iA a ≡ ψ .fst (gen a))
+    (agree-co  : ∀ b → iB b ≡ ψ ∘hom coHom b)
+    (agree-op  : ∀ c → iC c ≡ ψ ∘hom opHom c)
+    where
+    cases-uniq : cases N iA iB iC ≡ ψ
+    cases-uniq = eqMonoidHom _ _ (funExt (sec .fst))
+      where
+        sec : Section (Eq (cases N iA iB iC) ψ)
+        sec = elimCases (Eq (cases N iA iB iC) ψ)
+          (λ a → agree-gen a) ls-co ls-op
+            where
+              ls-co : ∀ b → LocalSection (coHom b) (Eq (cases N iA iB iC) ψ)
+              ls-co b = corecEq (cases N iA iB iC) ψ {P = FM} {ϕ = coHom b}
+                (eqMonoidHom _ _ (cong fst (agree-co b)))
 
+              ls-op : ∀ c → LocalSection (opHom c) (Eq (cases N iA iB iC) ψ)
+              ls-op c = corecEq (cases N iA iB iC) ψ {P = FM ^op} {ϕ = opHom c}
+                (eqMonoidHom _ _ (cong fst (agree-op c)))
+
+  -- induction principle for cases
+  module _ {N : Monoid ℓ'''} {ϕ ψ : MonoidHom FM N}
+    (agree-gen : ∀ a → ϕ .fst (gen a) ≡ ψ .fst (gen a))
+    (agree-co  : ∀ b → ϕ ∘hom coHom b ≡ ψ ∘hom coHom b)
+    (agree-op  : ∀ c → ϕ ∘hom opHom c ≡ ψ ∘hom opHom c)
+    where
+
+    cases-ind : ϕ ≡ ψ
+    cases-ind = sym (cases-uniq (λ a → refl) (λ b → refl) (λ c → refl)) ∙
+      (cases-uniq agree-gen agree-co agree-op)
 
 
 -- Here's a local elimination principle but only when we don't use the coHom/opHom
