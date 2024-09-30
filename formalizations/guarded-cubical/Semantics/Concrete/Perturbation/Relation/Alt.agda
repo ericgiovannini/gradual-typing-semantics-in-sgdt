@@ -99,40 +99,55 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   isPropVRelPtbSq : ∀ pA pA' → isProp (VRelPtbSq pA pA')
   isPropVRelPtbSq pA pA' = isPropPBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
 
-  VRelPtb : Monoidᴰ (MA Monoid.× MA') _
-  VRelPtb = submonoid→Monoidᴰ (record
-    { eltᴰ = λ (pA , pA') → VRelPtbSq pA pA'
-    ; εᴰ = subst2
-      (PBSq c c)
-      (cong fst (sym (iA .snd .presε)))
-      (cong fst (sym (iA' .snd .presε)))
-      (Predom-IdSqV c)
-    ; _·ᴰ_ = λ {(pA , pA')}{(qA , qA')} pSq qSq →
-      subst2
-      (PBSq c c)
-      (cong fst (sym (iA .snd .pres· pA qA)))
-      (cong fst (sym (iA' .snd .pres· pA' qA')))
-      (CompSqV {c₁ = c}{c₂ = c}{c₃ = c}
-        {f₁ = iA .fst qA .fst}{g₁ = iA' .fst qA' .fst}
-        {f₂ = iA .fst pA .fst}{g₂ = iA' .fst pA' .fst}
-        qSq pSq)
-    ; isPropEltᴰ = isPropVRelPtbSq _ _
-    })
+
+  opaque
+    VRelPtb : Monoidᴰ (MA Monoid.× MA') (ℓ-max (ℓ-max ℓ ℓ') ℓc)
+    VRelPtb = submonoid→Monoidᴰ (record
+      { eltᴰ = λ (pA , pA') → VRelPtbSq pA pA'
+      ; εᴰ = subst2
+        (PBSq c c)
+        (cong fst (sym (iA .snd .presε)))
+        (cong fst (sym (iA' .snd .presε)))
+        (Predom-IdSqV c)
+      ; _·ᴰ_ = λ {(pA , pA')}{(qA , qA')} pSq qSq →
+        subst2
+        (PBSq c c)
+        (cong fst (sym (iA .snd .pres· pA qA)))
+        (cong fst (sym (iA' .snd .pres· pA' qA')))
+        (CompSqV {c₁ = c}{c₂ = c}{c₃ = c}
+          {f₁ = iA .fst qA .fst}{g₁ = iA' .fst qA' .fst}
+          {f₂ = iA .fst pA .fst}{g₂ = iA' .fst pA' .fst}
+          qSq pSq)
+      ; isPropEltᴰ = isPropVRelPtbSq _ _
+      })
+
+    Sq→VRelPtb : ∀ {pA pA'} → VRelPtbSq pA pA' → VRelPtb .Monoidᴰ.eltᴰ (pA , pA')
+    Sq→VRelPtb sq = sq
 
   PushV = Section (Σl VRelPtb)
   PullV = Section (Σr VRelPtb)
 
 module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈' ℓM'}
          {c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc} where
-  corecVRelPtb : ∀ {ℓm}{M : Monoid ℓm}{ϕ : MonoidHom M _}
-    → (∀ x → VRelPtbSq A A' c (ϕ .fst x .fst) (ϕ .fst x .snd))
-    → LocalSection ϕ (VRelPtb A A' c)
-  corecVRelPtb = mkSectionSubmonoid (λ _ → isPropVRelPtbSq A A' c _ _)
+
+  opaque
+    unfolding VRelPtb
+    corecVRelPtb : ∀ {ℓm}{M : Monoid ℓm}{ϕ : MonoidHom M _}
+      → (∀ x → VRelPtbSq A A' c (ϕ .fst x .fst) (ϕ .fst x .snd))
+      → LocalSection ϕ (VRelPtb A A' c)
+    corecVRelPtb = mkSectionSubmonoid (λ _ → isPropVRelPtbSq A A' c _ _)
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
   VRelPP : ∀ (ℓc : Level) → Type _
   VRelPP ℓc = Σ[ c ∈ PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
     PushV A A' c Data.× PullV A A' c
+
+  mkVRelPP :
+    (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc) →
+    PushV A A' c →
+    PullV A A' c →
+    VRelPP ℓc
+  mkVRelPP c push pull = c , push , pull
 
 module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈' ℓM'} {ℓc}
          (c : VRelPP A A' ℓc)
@@ -150,14 +165,18 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
   pushV : MonoidHom MA MA'
   pushV = fstL' ∘hom corecΣ _ (c .snd .fst)
 
-  pushVSq : ∀ pA → VRelPtbSq A A' (c .fst) pA (pushV .fst pA)
-  pushVSq pA = snd (c .snd .fst .fst pA)
+  opaque
+    unfolding VRelPtb
+    pushVSq : ∀ pA → VRelPtbSq A A' (c .fst) pA (pushV .fst pA)
+    pushVSq pA = snd (c .snd .fst .fst pA)
 
   pullV : MonoidHom MA' MA
   pullV = fstR' ∘hom corecΣ _ (c .snd .snd)
 
-  pullVSq : ∀ pA' → VRelPtbSq A A' (c .fst) (pullV .fst pA') pA'
-  pullVSq pA' = snd (c .snd .snd .fst pA')
+  opaque
+    unfolding VRelPtb
+    pullVSq : ∀ pA' → VRelPtbSq A A' (c .fst) (pullV .fst pA') pA'
+    pullVSq pA' = snd (c .snd .snd .fst pA')
 
 module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ≈' ℓM') {ℓd}
          (d : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd)
@@ -177,30 +196,53 @@ module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ�
   isPropCRelPtbSq pB pB' =
     isPropErrorDomSq d d (iB .fst pB .fst) (iB' .fst pB' .fst)
 
-  CRelPtb : Monoidᴰ (MB Monoid.× MB') _
-  CRelPtb = submonoid→Monoidᴰ (record
-    { eltᴰ = λ (pB , pB') → CRelPtbSq pB pB'
-    ; εᴰ = subst2 (ErrorDomSq d d)
-      (cong fst (sym (iB .snd .presε)))
-      (cong fst (sym (iB' .snd .presε)))
-      (ED-IdSqV d)
-    ; _·ᴰ_ = λ {(pB , pB')}{(qB , qB')} pSq qSq → subst2 (ErrorDomSq d d)
-      (cong fst (sym (iB .snd .pres· pB qB)))
-      (cong fst (sym (iB' .snd .pres· pB' qB')))
-      (ED-CompSqV {d₁ = d}{d₂ = d}{d₃ = d}
-        {ϕ₁ = iB .fst qB .fst}{ϕ₁' = iB' .fst qB' .fst}
-        {ϕ₂ = iB .fst pB .fst}{ϕ₂' = iB' .fst pB' .fst}
-        qSq pSq)
-    ; isPropEltᴰ = isPropCRelPtbSq _ _
-    })
+  opaque
+    CRelPtb : Monoidᴰ (MB Monoid.× MB') (ℓ-max (ℓ-max ℓ ℓ') ℓd)
+    CRelPtb = submonoid→Monoidᴰ (record
+      { eltᴰ = λ (pB , pB') → CRelPtbSq pB pB'
+      ; εᴰ = subst2 (ErrorDomSq d d)
+        (cong fst (sym (iB .snd .presε)))
+        (cong fst (sym (iB' .snd .presε)))
+        (ED-IdSqV d)
+      ; _·ᴰ_ = λ {(pB , pB')}{(qB , qB')} pSq qSq → subst2 (ErrorDomSq d d)
+        (cong fst (sym (iB .snd .pres· pB qB)))
+        (cong fst (sym (iB' .snd .pres· pB' qB')))
+        (ED-CompSqV {d₁ = d}{d₂ = d}{d₃ = d}
+          {ϕ₁ = iB .fst qB .fst}{ϕ₁' = iB' .fst qB' .fst}
+          {ϕ₂ = iB .fst pB .fst}{ϕ₂' = iB' .fst pB' .fst}
+          qSq pSq)
+      ; isPropEltᴰ = isPropCRelPtbSq _ _
+      })
+      
+    Sq→CRelPtb : ∀ {pB pB'} → CRelPtbSq pB pB' → CRelPtb .Monoidᴰ.eltᴰ (pB , pB')
+    Sq→CRelPtb sq = sq
+
   PushC = Section (Σl CRelPtb)
   PullC = Section (Σr CRelPtb)
+
+module _ {B : CompType ℓ ℓ≤ ℓ≈ ℓM} {B' : CompType ℓ' ℓ≤' ℓ≈' ℓM'}
+         {d : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd} where
+
+  opaque
+    unfolding CRelPtb
+    corecCRelPtb : ∀ {ℓm}{M : Monoid ℓm}{ϕ : MonoidHom M _}
+      → (∀ x → CRelPtbSq B B' d (ϕ .fst x .fst) (ϕ .fst x .snd))
+      → LocalSection ϕ (CRelPtb B B' d)
+    corecCRelPtb = mkSectionSubmonoid (λ _ → isPropCRelPtbSq B B' d _ _)
+
 
 module _ (B : CompType ℓ ℓ≤ ℓ≈ ℓM) (B' : CompType ℓ' ℓ≤' ℓ≈' ℓM') where
   CRelPP : ∀ (ℓd : Level) → Type _
   CRelPP ℓd = Σ[ d ∈ ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd ]
     PushC B B' d
     Data.× PullC B B' d
+
+  mkCRelPP :
+    (d : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd) →
+    PushC B B' d →
+    PullC B B' d →
+    CRelPP ℓd
+  mkCRelPP d push pull = d , push , pull
 
 module _ {B : CompType ℓ ℓ≤ ℓ≈ ℓM} {B' : CompType ℓ' ℓ≤' ℓ≈' ℓM'} {ℓd}
          (d : CRelPP B B' ℓd)
@@ -213,14 +255,21 @@ module _ {B : CompType ℓ ℓ≤ ℓ≈ ℓM} {B' : CompType ℓ' ℓ≤' ℓ�
     module MB' = MonoidStr (MB' .snd)
     iB' = B' .snd .snd .snd
 
+  CRelPP→ErrorDomRel : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd
+  CRelPP→ErrorDomRel = fst d
+
   pushC : MonoidHom MB MB'
   pushC = fstL' ∘hom corecΣ _ (d .snd .fst)
 
-  pushCSq : ∀ pB → CRelPtbSq B B' (d .fst) pB (pushC .fst pB)
-  pushCSq pB = snd (d .snd .fst .fst pB)
+  opaque
+    unfolding CRelPtb
+    pushCSq : ∀ pB → CRelPtbSq B B' (d .fst) pB (pushC .fst pB)
+    pushCSq pB = snd (d .snd .fst .fst pB)
 
   pullC : MonoidHom MB' MB
   pullC = fstR' ∘hom corecΣ _ (d .snd .snd)
 
-  pullCSq : ∀ pB' → CRelPtbSq B B' (d .fst) (pullC .fst pB') pB'
-  pullCSq pB' = snd (d .snd .snd .fst pB')
+  opaque
+    unfolding CRelPtb
+    pullCSq : ∀ pB' → CRelPtbSq B B' (d .fst) (pullC .fst pB') pB'
+    pullCSq pB' = snd (d .snd .snd .fst pB')
