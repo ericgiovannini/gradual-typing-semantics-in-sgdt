@@ -38,6 +38,8 @@ open import Semantics.Concrete.Types.Base k
 open import Semantics.Concrete.Dyn k
 open import Semantics.Concrete.DynPerturb k
 
+open import Semantics.Concrete.LaterMonoid k
+
 private
   variable
     ℓ ℓ' ℓ'' ℓ''' : Level
@@ -76,6 +78,29 @@ U B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
   i-UB : MonoidHom _ _
   i-UB = FP.rec (NatM→.h _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
 
+{-
+U' : CompType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
+U' B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
+  MB = PtbC B
+  iB = interpC B
+  M-UB = NatM FP.⊕ MB FP.⊕ (Monoid▹ MB)
+
+  i-UB : MonoidHom _ _
+  i-UB = FP.rec
+    (NatM→.h _ (δB-as-PrePtb _))
+    (FP.rec (CEndo-B→Endo-UB ∘hom iB) ({!!} ∘hom monoidhom▹ iB))
+
+  |B| = CompType→ErrorDomain B
+
+  test : MonoidHom (Monoid▹ (CEndo (CompType→ErrorDomain B))) (Endo (U-ob (CompType→ErrorDomain B)))
+  test .fst m~ .fst .PBMor.f b = |B| .snd .ErrorDomainStr.θ .PBMor.f λ t → m~ t .fst .ErrorDomMor.fun b
+  test .fst m~ .fst .PBMor.isMon = {!!}
+  test .fst m~ .fst .PBMor.pres≈ = {!!}
+  test .fst m~ .snd = {!!}
+  test .snd .IsMonoidHom.presε = PrePtb≡ _ _ (funExt (λ x → {!refl!}))
+  test .snd .IsMonoidHom.pres· = {!!}
+-}
+
 Unit : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 Unit = flat (Unit.Unit , Unit.isSetUnit)
 
@@ -107,6 +132,16 @@ A ⟶ B =
     (A⟶-PrePtb ∘hom (interpV A ^opHom))
     (⟶B-PrePtb ∘hom interpC B)
 
+_⊎_ : ValType ℓ ℓ≤ ℓ≈ ℓM
+    → ValType ℓ' ℓ≤' ℓ≈' ℓM'
+    → ValType (ℓ-max ℓ ℓ') (ℓ-max ℓ≤ ℓ≤') (ℓ-max ℓ≈ ℓ≈') (ℓ-max ℓM ℓM')
+A ⊎ A' = mkValType ((ValType→Predomain A) ⊎p (ValType→Predomain A')) M-Sum i-Sum
+  where
+  M-Sum = (PtbV A) FP.⊕ (PtbV A')
+  i-Sum = FP.rec
+    (⊎A-PrePtb ∘hom interpV A)
+    (A⊎-PrePtb ∘hom interpV A')
+
 dyn' : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 dyn' = mkValType Dyn' PtbD ι-dyn' where
   open DynDef
@@ -122,38 +157,58 @@ dyn = mkValType Dyn PtbD ι-dyn where
 DiscreteTy : (ℓ : Level) → Type (ℓ-suc ℓ)
 DiscreteTy ℓ = Σ[ X ∈ Type ℓ ] (Discrete X)
 
-ΣV : (X : DiscreteTy ℓX) →
-  {ℓ ℓ≤ ℓ≈ ℓM : Level} →
-  (B : ⟨ X ⟩ → ValType ℓ ℓ≤ ℓ≈ ℓM) →
-  ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
-ΣV (X , dec) B = mkValType (ΣP (X , isSetX) (ValType→Predomain ∘ B)) M-Σ i-Σ
-  where
-  isSetX = Discrete→isSet dec
-  M-Σ = IFP.⊕ᵢ X (PtbV ∘ B)
-  i-Σ =
-    IFP.rec X (PtbV ∘ B) _ int
-    where
-      int : (x : X) → MonoidHom (PtbV (B x)) _
-      int x = (Σ-PrePtb (X , isSetX) dec x) ∘hom (interpV (B x))
-      
+module _
+  (X : DiscreteTy ℓX)
+  {ℓ ℓ≤ ℓ≈ ℓM : Level}
+  (B : ⟨ X ⟩ → ValType ℓ ℓ≤ ℓ≈ ℓM) where
 
-ΠV : (X : DiscreteTy ℓX) →
-  {ℓ ℓ≤ ℓ≈ ℓM : Level} →
-  (B : ⟨ X ⟩ → ValType ℓ ℓ≤ ℓ≈ ℓM) →
-  ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
-ΠV (X , dec) B = mkValType (ΠP X (ValType→Predomain ∘ B)) M-Π i-Π
-  where
-  M-Π = IFP.⊕ᵢ X (PtbV ∘ B)
-  i-Π = IFP.rec X (PtbV ∘ B) _ int
+  isSetX : isSet (X .fst)
+  isSetX = Discrete→isSet (X .snd)
+
+  P-Σ = ΣP (⟨ X ⟩ , isSetX) (ValType→Predomain ∘ B)
+
+  M-Σ : Monoid (ℓ-max ℓX ℓM)
+  M-Σ = IFP.⊕ᵢ (X .fst) (PtbV ∘ B)
+
+  i-Σ : MonoidHom (⊕ᵢ ⟨ X ⟩ (λ x → PtbV (B x))) (Endo P-Σ)
+  i-Σ =
+    IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
+    where
+      int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Σ)
+      int x = (Σ-PrePtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
+
+  ΣV : 
+    ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
+  ΣV = mkValType P-Σ M-Σ i-Σ
+    
+
+module _
+  (X : DiscreteTy ℓX)
+  {ℓ ℓ≤ ℓ≈ ℓM : Level}
+  (B : ⟨ X ⟩ → ValType ℓ ℓ≤ ℓ≈ ℓM) where
+
+  P-Π = (ΠP ⟨ X ⟩ (ValType→Predomain ∘ B))
+
+  M-Π : Monoid (ℓ-max ℓX ℓM)
+  M-Π = IFP.⊕ᵢ ⟨ X ⟩ (PtbV ∘ B)
+
+  i-Π : MonoidHom (⊕ᵢ ⟨ X ⟩ (λ x → PtbV (B x))) (Endo P-Π)
+  i-Π = IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
     where
       -- int' : X → ⟨ Endo (ΠP X (λ x → ValType→Predomain (B x))) ⟩
       -- int' x = Π-PrePtb X dec x .fst {!!} -- interpV (B x)
 
-      int : (x : X) → MonoidHom (PtbV (B x)) _
-      int x = (Π-PrePtb X dec x) ∘hom (interpV (B x))
+      int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Π)
+      int x = (Π-PrePtb ⟨ X ⟩ (X .snd) x) ∘hom (interpV (B x))
+
+  ΠV : 
+    ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
+  ΠV = mkValType P-Π M-Π i-Π
 
 
-module _ {k : Clock} where
+
+
+module _ where
 
   open Clocked k
   open IsMonoidHom
@@ -166,5 +221,59 @@ module _ {k : Clock} where
 
       h : MonoidHom MA (Endo (PB▹ ValType→Predomain A))
       h = PrePtb▹ ∘hom iA
+
+module _ where
+
+  open Clocked k
+  open IsMonoidHom
+
+  V▸ : ▹ k , (ValType ℓ ℓ≤ ℓ≈ ℓM) → ValType ℓ ℓ≤ ℓ≈ ℓM
+  V▸ A~ = mkValType
+    (PB▸ (λ t → ValType→Predomain (A~ t)))
+    (Monoid▸ (λ t → PtbV (A~ t)))
+    (Endo▸ ∘hom (monoidhom▸ (λ t → interpV (A~ t))))
+
+------------------------------
+
+{-
+module _ where
+
+  private
+    ▹_ : Type ℓ -> Type ℓ
+    ▹ A = ▹_,_ k A
+
+  open import Common.LaterProperties
+  open Clocked k
+
+  M▸ : ▹ Monoid ℓ -> Monoid ℓ
+  M▸ M~ = makeMonoid {M = ▸ (λ t -> ⟨ M~ t ⟩)}
+    (λ t → M~ t .snd .MonoidStr.ε)
+    (λ x~ y~ t → M~ t .snd .MonoidStr._·_ (x~ t) (y~ t))
+    (isSet▸ (λ t -> is-set (M~ t .snd)))
+    (λ x~ y~ z~ ->
+      later-ext (λ t -> ·Assoc (M~ t .snd) (x~ t) (y~ t) (z~ t)))
+    (λ x~ -> later-ext (λ t → ·IdR (M~ t .snd) (x~ t)))
+    (λ x~ -> later-ext λ t → ·IdL (M~ t .snd) (x~ t))
+    where
+      open MonoidStr
+    
+  C▸ : ▹ CompType ℓ ℓ≤ ℓ≈ ℓM → CompType ℓ ℓ≤ ℓ≈ ℓM
+  C▸ B~ = mkCompType ED M h
+    where
+      ED : ErrorDomain _ _ _
+      ED = ED▸ (λ t → CompType→ErrorDomain (B~ t))
+
+      M : Monoid _
+      M = M▸ (λ t → PtbC (B~ t))
       
-      
+      h : MonoidHom M (CEndo ED)
+      h .fst m~ .fst .ErrorDomMor.f .PBMor.f x~ t = interpC (B~ t) .fst (m~ t) .fst .ErrorDomMor.fun (x~ t)
+      h .fst m~ .fst .ErrorDomMor.f .PBMor.isMon x≤y t = interpC (B~ t) .fst (m~ t) .fst .ErrorDomMor.isMon (x≤y t)
+      h .fst m~ .fst .ErrorDomMor.f .PBMor.pres≈ x≈y t = interpC (B~ t) .fst (m~ t) .fst .ErrorDomMor.pres≈ (x≈y t)
+      h .fst m~ .fst .ErrorDomMor.f℧ = later-ext (λ t → interpC (B~ t) .fst (m~ t) .fst .ErrorDomMor.f℧)
+      h .fst m~ .fst .ErrorDomMor.fθ x~ = {!!}
+      h .fst m~ .snd x x' x₁ t = {!!}
+      h .snd = {!!}
+-}
+
+-- -- x~ t = interpC (B~ t) .fst (m~ t) .fst .ErrorDomMor.fun {!!}
