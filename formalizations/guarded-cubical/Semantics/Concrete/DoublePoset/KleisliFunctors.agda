@@ -165,7 +165,6 @@ KlArrowMorphismᴿ :
   {Bᵢ : ErrorDomain ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ} {Bₒ : ErrorDomain ℓBₒ ℓ≤Bₒ ℓ≈Bₒ} →
   (A : PosetBisim ℓA ℓ≤A ℓ≈A) → (f : KlMorC Bᵢ Bₒ) →
   KlMorC (A ⟶kob Bᵢ) (A ⟶kob Bₒ)
-KlArrowMorphismᴿ A f = Curry (f ∘p App)
 
 -- We need to return a predomain morphism from U(A ⟶ Bᵢ) to U(A ⟶ Bₒ).
 -- 
@@ -173,6 +172,8 @@ KlArrowMorphismᴿ A f = Curry (f ∘p App)
 --
 --       g          f         
 --   A -----> UBᵢ -----> UBₒ
+KlArrowMorphismᴿ A f = Curry (f ∘p App)
+
 
 _⟶Kᴿ_ = KlArrowMorphismᴿ
 
@@ -327,21 +328,23 @@ _×kob_ : (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) (A₂ : PosetBisim �
 A₁ ×kob A₂ = A₁ ×dp A₂
 
 
-KlProdMorphismᴸ :
-    {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
-    (ϕ : KlMorV A₁ A₁') (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+module _
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  (ϕ : KlMorV A₁ A₁') (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) where
+
+  KlProdᴸ-pt1 : PBMor (A₁ ×dp A₂) ((U-ob (F-ob A₁')) ×dp A₂)
+  KlProdᴸ-pt1 = (U-mor ϕ ∘p η-mor) ×mor Id
+
+  KlProdᴸ-pt2 : PBMor ((U-ob (F-ob A₁')) ×dp A₂) (U-ob (F-ob (A₁' ×dp A₂)))
+  KlProdᴸ-pt2 = (Uncurry (StrongExt .f (Curry (η-mor ∘p SwapPair)))) ∘p SwapPair
+
+  KlProdMorphismᴸ :
     KlMorV (A₁ ×kob A₂) (A₁' ×kob A₂)
-KlProdMorphismᴸ {A₁ = A₁} {A₁' = A₁'} ϕ A₂ = Ext (pt2 ∘p pt1)
-  where
-    pt1 : PBMor (A₁ ×dp A₂) ((U-ob (F-ob A₁')) ×dp A₂)
-    pt1 = (U-mor ϕ ∘p η-mor) ×mor Id
+  KlProdMorphismᴸ = Ext (KlProdᴸ-pt2 ∘p KlProdᴸ-pt1)
+     
+    -- (U-mor (Ext (? ×mor ?))) ∘p (U-mor ϕ) ∘p η-mor
 
-    pt2 : PBMor ((U-ob (F-ob A₁')) ×dp A₂) (U-ob (F-ob (A₁' ×dp A₂)))
-    pt2 = (Uncurry (StrongExt .f (Curry (η-mor ∘p SwapPair)))) ∘p SwapPair
-
-  -- (U-mor (Ext (? ×mor ?))) ∘p (U-mor ϕ) ∘p η-mor
-
-_×Kᴸ_ = KlProdMorphismᴸ
+  _×Kᴸ_ = KlProdMorphismᴸ
 
 
 -- Identity
@@ -373,14 +376,51 @@ module _
   (c₂ :  PBRel A₂ A₂' ℓc₂) 
   (ϕ  : KlMorV Aᵢ₁  Aₒ₁)
   (ϕ' : KlMorV Aᵢ₁' Aₒ₁')
-
+  (α : ErrorDomSq (F-rel cᵢ₁) (F-rel cₒ₁) ϕ ϕ')
   where
   open F-rel
+  open ExtAsEDMorphism
 
-  KlProdMorphismᴸ-Sq :
-    (α : ErrorDomSq (F-rel cᵢ₁) (F-rel cₒ₁) ϕ ϕ') →
+  KlProdMorphismᴸ-Sq :    
     ErrorDomSq (F-rel (cᵢ₁ ×pbmonrel c₂)) (F-rel (cₒ₁ ×pbmonrel c₂)) (ϕ ×Kᴸ A₂) (ϕ' ×Kᴸ A₂')
-  KlProdMorphismᴸ-Sq α = {!!}
+  KlProdMorphismᴸ-Sq x y H =
+    let foo = Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) (U-mor (ϕ ×Kᴸ A₂) ∘p η-mor) (U-mor (ϕ' ×Kᴸ A₂') ∘p η-mor) γ x y H in
+    let foo2 = F-rel-free (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) (ϕ ×Kᴸ A₂) (ϕ' ×Kᴸ A₂') {!!} x y H in {!!}
+    where
+      pt1 = KlProdᴸ-pt1 ϕ A₂
+      pt2 = KlProdᴸ-pt2 ϕ A₂
+
+      pt1' = KlProdᴸ-pt1 ϕ' A₂'
+      pt2' = KlProdᴸ-pt2 ϕ' A₂'
+
+      β : PBSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) (pt2 ∘p pt1) (pt2' ∘p pt1')
+      β = CompSqV
+            {c₁ = cᵢ₁ ×pbmonrel c₂} {c₂ = U-rel (F-rel cₒ₁) ×pbmonrel c₂} {c₃ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+            ({!!} ×-Sq (Predom-IdSqV c₂))
+            ?
+            -- (λ x y xRy → StrongExt-Sq cᵢ₁ {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!})
+
+      γ : PBSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂)))
+               (U-mor (ϕ ×Kᴸ A₂) ∘p η-mor) (U-mor (ϕ' ×Kᴸ A₂') ∘p η-mor)
+      γ = subst2
+        (λ p q → PBSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) p q)
+        {!!} {!!}
+        -- (Equations.Ext-η {!pt2 ∘p pt1!}) (Equations.Ext-η {!!})
+        β
+
+     
+
+{-
+      β = subst2
+        (λ p q → PBSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) p q)
+        (Equations.Ext-η _) (Equations.Ext-η _)
+        (λ { (x , y) (x' , y') (xRx' , yRy') →
+          Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) _ _ (λ p q pRq → Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) _ _ (λ v w vRw → Ext-sq (cₒ₁ ×pbmonrel c₂) {!F-rel (cₒ₁ ×pbmonrel c₂)!} {!!} {!!} {!!} {!!} {!!} {!!}) (η-mor $ p) (η-mor $ q) (η-sq _ p q pRq))
+                 (η-mor $ (x , y)) (η-mor $ (x' , y'))
+                 (η-sq (cᵢ₁ ×pbmonrel c₂) (x , y) (x' , y') (xRx' , yRy'))})
+-}                 
+  
+-- F-rel-free {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} -- Ext-sq {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!}
   
 
 
