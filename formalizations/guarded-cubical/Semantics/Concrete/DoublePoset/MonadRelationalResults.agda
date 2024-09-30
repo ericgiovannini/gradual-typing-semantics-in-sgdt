@@ -57,7 +57,7 @@ _×rel_ :
 
 module StrongExtMonotone
   {ℓRΓΓ' ℓRAA' ℓRBB' : Level}
-  (Γ : Type ℓΓ) (Γ' : Type ℓΓ)  (_RΓΓ'_ : Γ → Γ' → Type ℓRΓΓ')
+  (Γ : Type ℓΓ) (Γ' : Type ℓΓ')  (_RΓΓ'_ : Γ → Γ' → Type ℓRΓΓ')
   (A : Type ℓA) (A' : Type ℓA') (_RAA'_ : A → A' → Type ℓRAA')
   (B  : Type ℓB)  (℧B  : B)  (θB  : (▹ B) → B)
   (B' : Type ℓB') (℧B' : B') (θB' : (▹ B') → B')

@@ -129,14 +129,15 @@ module _ where
   
 
 
-  module MkErrorDomain
+  module _
     (A : PosetBisim ℓA ℓ≤A ℓ≈A)
     (℧ : ⟨ A ⟩)
     (℧⊥ : (∀ (x : ⟨ A ⟩) → (A .snd .PosetBisimStr._≤_) ℧ x))
     (θ : PBMor (PB▹ A) A) where
 
-    δ : PBMor A A
-    δ = θ ∘p Next
+    private
+      δ : PBMor A A
+      δ = θ ∘p Next
 
     mkErrorDomain : (δ ≈mon Id) → ErrorDomain ℓA ℓ≤A ℓ≈A
     mkErrorDomain H≈ .fst = ⟨ A ⟩
@@ -153,7 +154,7 @@ module _ where
   
   _×ed_ : (B₁ : ErrorDomain ℓB₁ ℓ≤B₁ ℓ≈B₁) → (B₂ : ErrorDomain ℓB₂ ℓ≤B₂ ℓ≈B₂) →
     ErrorDomain (ℓ-max ℓB₁ ℓB₂) (ℓ-max ℓ≤B₁ ℓ≤B₂) (ℓ-max ℓ≈B₁ ℓ≈B₂)
-  B₁ ×ed B₂ = MkErrorDomain.mkErrorDomain
+  B₁ ×ed B₂ = mkErrorDomain
     (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂)
     (B₁.℧ , B₂.℧)
     (λ {(x , y) → (B₁.℧⊥ x) , (B₂.℧⊥ y)})
@@ -167,8 +168,53 @@ module _ where
       --            (PB▹ (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂))
       --            (ErrorDomain→Predomain B₁ ×dp ErrorDomain→Predomain B₂)
       -- θ-prod .PBMor.f x~ = (B₁.θ $ (λ t → x~ t .fst)) , (B₂.θ $ (λ t → x~ t .snd))
-      
 
+
+  ED▸ : ▹ ErrorDomain ℓB ℓ≤B ℓ≈B → ErrorDomain ℓB ℓ≤B ℓ≈B
+  ED▸ B~ = mkErrorDomain
+    (PB▸ (λ t → ErrorDomain→Predomain (B~ t)))
+    (λ t → (B~ t) .snd .ErrorDomainStr.℧)
+    (λ x~ t → (B~ t) .snd .ErrorDomainStr.℧⊥ (x~ t))
+    θ▹
+    bisimId
+    where
+
+      ▹▸→▸▹ : {X~ : ▹ Type ℓ} →
+        ▹ (▸ X~) → ▸ (λ t → ▹ (X~ t))
+      ▹▸→▸▹ {X~ = X~} x~~ t t' =
+        transport (sym λ i → (tick-irrelevance X~ t t' i)) (x~~ t t')
+
+      -- x~~ : ∀ t₁ t₂ : Tick k . X~ t₂
+      -- x~~ t t' : X~ t'
+      -- By tick-irrelevance, X~ t' = X~ t
+
+      ▹▸→▸▹-as-mor : ∀ {ℓ ℓ≤ ℓ≈ : Level} {X~ : ▹ (PosetBisim ℓ ℓ≤ ℓ≈)} →
+        PBMor (PB▹ (PB▸ X~)) (PB▸ (λ t → PB▹ (X~ t)))
+      ▹▸→▸▹-as-mor {X~ = X~} = PBMor▸ (λ t → PBMor▸ (λ t' → mTransport (sym (tick-irrelevance X~ t t'))))    
+
+      map▸ : ∀ {X~ : ▹ Type ℓ} {Y~ : ▹ Type ℓ'} →
+        ((@tick t : Tick k) → X~ t → Y~ t) → ▸ X~ → ▸ Y~
+      map▸ f~ x~ t = f~ t (x~ t)
+
+      θ▹ : PBMor
+        (PB▹ PB▸ (λ t → ErrorDomain→Predomain (B~ t)))
+        (PB▸ (λ t → ErrorDomain→Predomain (B~ t)))
+      θ▹ = PBMor▸ (λ t → B~ t .snd .ErrorDomainStr.θ) ∘p ▹▸→▸▹-as-mor
+
+      bisimId : (θ▹ ∘p Next) ≈mon Id
+      bisimId x~ y~ x≈y t =
+        transport
+          (cong₂
+            (B~ t .snd .ErrorDomainStr._≈_)
+            --(λ i → PBMor.f (B~ t .snd .ErrorDomainStr.θ) λ t' → {!!})
+            (cong₂
+              PBMor.f
+              (refl {x = B~ t .snd .ErrorDomainStr.θ})
+              (later-ext λ t' → sym (fromPathP {!!}))) -- transport-filler (sym (tick-irrelevance (λ z → fst (B~ z)) t t')) (x~ t')
+            refl)
+          (B~ t .snd .ErrorDomainStr.δ≈id (x~ t) (y~ t) (x≈y t))
+          
+     -- x~ t ≡ x~ t' ≡ transport (sym (tick-irrelevance (λ z → fst (B~ z)) t t')) (x~ t')
 
   ---------------------------------------
   -- Vertical morphisms of error domains
@@ -737,9 +783,9 @@ module _ where
       open HorizontalCompUMP (idEDRel B) d IdE IdE IdE
 
 
-  sq-d⊙B'-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+  sq-d⊙idB'-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq (d ⊙ed idEDRel B') d IdE IdE
-  sq-d⊙B'-d {B = B} {B' = B'} d x y H = {!!} -- PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+  sq-d⊙idB'-d {B = B} {B' = B'} d x y H = {!!} -- PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
     where
       module d = ErrorDomRel d
       open HorizontalCompUMP
@@ -749,9 +795,9 @@ module _ where
     ErrorDomSq d (idEDRel B ⊙ed d) IdE IdE
   sq-d-idB⊙d = {!!}
 
-  sq-d-d⊙B' : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
+  sq-d-d⊙idB' : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq d (d ⊙ed idEDRel B') IdE IdE
-  sq-d-d⊙B' = {!!}
+  sq-d-d⊙idB' = {!!}
 
 
 

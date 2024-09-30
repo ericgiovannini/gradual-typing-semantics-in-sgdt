@@ -168,7 +168,7 @@ module MonadLawsStrong
         aux IH (η x) = eq1 ∙ (sym eq2)
           where
             eq1 = (λ i → A₂₃.ext g γ (A₁₂.Equations.ext-η f γ x i))
-            eq2 = A₁₃.Equations.ext-η _ γ x
+            eq2 = A₁₃.Equations.ext-η {!λ v v₁ → A₂₃.ext g v (f v v₁)!} γ x
           
         aux IH ℧ = eq1 ∙ (sym eq2)
           where

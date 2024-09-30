@@ -309,7 +309,7 @@ module F-ob (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
   -- module WeakBisimErrorA
 
   F-ob : ErrorDomain ℓA (ℓ-max ℓA ℓ≤A) (ℓ-max ℓA ℓ≈A)
-  F-ob = MkErrorDomain.mkErrorDomain
+  F-ob = mkErrorDomain
     (𝕃 A) ℧ (LockStepA.Properties.℧⊥ A) (θ-mor)
     (≈mon-sym Id (δ-mor)
       (BisimLift.Properties.δ-closed-r A (BisimErrorA.is-prop-valued A)))
@@ -360,8 +360,17 @@ module ExtAsEDMorphism
 
   module Equations (f : PBMor A (U-ob B)) where
 
-   Ext-η : U-mor (Ext f) ∘p η-mor ≡ f
+   Ext-η : (U-mor (Ext f) ∘p η-mor) ≡ f
    Ext-η = eqPBMor _ _ (funExt (λ x → Equations-U.ext-η f x))
+
+   Ext-℧ : (U-mor (Ext f) ∘p ℧-mor) ≡ (K B.Pre B.℧)
+   Ext-℧ = eqPBMor _ _ (funExt (λ x → Equations-U.ext-℧ f))
+
+   Ext-θ : (U-mor (Ext f) ∘p θ-mor) ≡ (B.θ ∘p (Map▹ (U-mor (Ext f))))
+   Ext-θ = eqPBMor _ _ (funExt (λ lx~ → Equations-U.ext-θ f lx~))
+
+   Ext-δ : (U-mor (Ext f) ∘p δ-mor) ≡ (B.δ ∘p U-mor (Ext f))
+   Ext-δ = eqPBMor _ _ (funExt (λ lx → Equations-U.ext-δ f lx))
 
 
 
@@ -394,6 +403,11 @@ module F-mor
     map-pres-≈ (λ z → f .PBMor.f z) (λ z → f .PBMor.f z) (λ x y x≈y → f .PBMor.pres≈ x≈y) _ _
   F-mor f .ErrorDomMor.f℧ = map-℧ (f .PBMor.f)
   F-mor f .ErrorDomMor.fθ = map-θ (f .PBMor.f)
+
+  module Equations (f : PBMor Aᵢ Aₒ) where
+
+    F-mor-η : (U-mor (F-mor f) ∘p η-mor) ≡ (η-mor ∘p f)
+    F-mor-η = eqPBMor _ _ (funExt (λ x → map-η (f .PBMor.f) x))
 
 -- Functoriality (identity and composition)
 open F-mor
@@ -429,15 +443,17 @@ module F-rel
   {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
   (c : PBRel A A' ℓc) where
 
-  module A  = PosetBisimStr (A  .snd)
-  module A' = PosetBisimStr (A' .snd)
-  module c = PBRel c
+  private
+    module A  = PosetBisimStr (A  .snd)
+    module A' = PosetBisimStr (A' .snd)
+    module c = PBRel c
 
   open F-ob
   open ErrorDomRel
   open PBRel
 
-  module Lc = LiftOrd ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R)
+  private
+    module Lc = LiftOrd ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R)
   open Lc.Properties
 
   F-rel : ErrorDomRel (F-ob A) (F-ob A') (ℓ-max (ℓ-max ℓA ℓA') ℓc)
@@ -545,6 +561,52 @@ module _
   Ext-sq : PBSq c (U-rel d) f g → ErrorDomSq (F-rel c) d (Ext f) (Ext g)
   Ext-sq α = ext-mon (f .PBMor.f) (g .PBMor.f) α
 
+
+module _
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  (c : PBRel A A' ℓc)
+  where
+  open F-rel
+
+  private
+    module Lc = LiftOrd ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R)
+  open Lc.Properties
+
+  η-sq : PBSq c (U-rel (F-rel c)) η-mor η-mor
+  η-sq x y xRy = η-monotone xRy
+
+
+
+-- TODO these next two don't really belong in this file since they apply to
+-- any error domain.
+module _
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'}
+  (d : ErrorDomRel B B' ℓd)
+  where
+
+  private
+    module B  = ErrorDomainStr (B .snd)
+    module B' = ErrorDomainStr (B' .snd)
+    module d = ErrorDomRel d
+
+--  θB-sq : PBSq ? ? ? ?
+  
+
+module _
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'}
+  (d : ErrorDomRel B B' ℓd)
+  where
+
+  private
+    module B  = ErrorDomainStr (B .snd)
+    module B' = ErrorDomainStr (B' .snd)
+    module d = ErrorDomRel d
+
+  δB-sq : PBSq (U-rel d) (U-rel d) B.δ B'.δ
+  δB-sq x y xRy = d.Rθ (next x) (next y) (next xRy)
+  -- This could be factored as the composition of a square
+  -- for θ with a square for next
+  
 
 
 -- If two error domain morphisms out of the free error domain agree on

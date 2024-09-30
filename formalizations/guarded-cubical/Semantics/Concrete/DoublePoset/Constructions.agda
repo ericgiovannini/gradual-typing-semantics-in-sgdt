@@ -46,6 +46,8 @@ private
     ℓB ℓ'B ℓ''B : Level
 
     ℓ≤A ℓ≈A : Level
+    ℓ≤B ℓ≈B : Level
+    ℓ≤ ℓ≈ : Level
 
     X : PosetBisim ℓX ℓ'X ℓ''X
     Y : PosetBisim ℓY ℓ'Y ℓ''Y
@@ -244,6 +246,85 @@ PBMorCurry {X = X} {Y = Y} {Z = Z} g = record {
 
 -- Coproduct of predomains
 
+module _ {A : Type ℓA} {B : Type ℓB} where
+
+  module _ (_≤A_ : Rel A A ℓ≤A) (_≤B_ : Rel B B ℓ≤B) where
+   
+    ⊎-ord : A ⊎ B -> A ⊎ B -> Type (ℓ-max ℓ≤A ℓ≤B)
+    ⊎-ord (inl a1) (inl a2) = Lift {j = ℓ≤B} (a1 ≤A a2)
+    ⊎-ord (inl a1) (inr b1) = ⊥*
+    ⊎-ord (inr b1) (inl a1) = ⊥*
+    ⊎-ord (inr b1) (inr b2) = Lift {j = ℓ≤A} (b1 ≤B b2)
+
+    ⊎-ord-prop-valued : isPropValued _≤A_ → isPropValued _≤B_ → isPropValued ⊎-ord
+    ⊎-ord-prop-valued HA HB (inl a1) (inl a2) = isOfHLevelLift 1 (HA a1 a2)
+    ⊎-ord-prop-valued HA HB (inr b1) (inr b2) = isOfHLevelLift 1 (HB b1 b2)
+
+    ⊎-ord-refl : isRefl _≤A_ → isRefl _≤B_ → isRefl ⊎-ord
+    ⊎-ord-refl HA HB (inl a) = lift (HA a)
+    ⊎-ord-refl HA HB (inr b) = lift (HB b)
+
+    ⊎-ord-trans : isTrans _≤A_ → isTrans _≤B_ → isTrans ⊎-ord
+    ⊎-ord-trans HA HB (inl a1) (inl a2) (inl a3) a1≤a2 a2≤a3 =
+      lift (HA a1 a2 a3 (lower a1≤a2) (lower a2≤a3))
+    ⊎-ord-trans HA HB (inr b1) (inr b2) (inr b3) b1≤b2 b2≤b3 =
+      lift (HB b1 b2 b3 (lower b1≤b2) (lower b2≤b3))
+
+    ⊎-ord-antisym : isAntisym _≤A_ → isAntisym _≤B_ → isAntisym ⊎-ord
+    ⊎-ord-antisym HA HB (inl a1) (inl a2) a≤b b≤a =
+      cong inl (HA _ _ (lower a≤b) (lower b≤a))
+    ⊎-ord-antisym HA HB (inr b1) (inr b2) a≤b b≤a =
+      cong inr (HB _ _ (lower a≤b) (lower b≤a))
+
+  module _ (_≈A_ : Rel A A ℓ≈A) (_≈B_ : Rel B B ℓ≈B) where
+
+    ⊎-bisim : A ⊎ B -> A ⊎ B -> Type (ℓ-max ℓ≈A ℓ≈B)
+    ⊎-bisim (inl a1) (inl a2) = Lift {j = ℓ≈B} (a1 ≈A a2)
+    ⊎-bisim (inl a1) (inr b1) = ⊥*
+    ⊎-bisim (inr b1) (inl a1) = ⊥*
+    ⊎-bisim (inr b1) (inr b2) = Lift {j = ℓ≈A} (b1 ≈B b2)
+
+    ⊎-bisim-refl : isRefl _≈A_ → isRefl _≈B_ → isRefl ⊎-bisim
+    ⊎-bisim-refl HA HB = λ { (inl a) → lift (HA a) ;
+                             (inr b) → lift (HB b) }
+
+    ⊎-bisim-sym : isSym _≈A_ → isSym _≈B_ → isSym ⊎-bisim
+    ⊎-bisim-sym HA HB = λ { (inl a1) (inl a2) a1≈a2 → lift (HA a1 a2 (lower a1≈a2)) ;
+                            (inr b1) (inr b2) b1≈b2 → lift (HB b1 b2 (lower b1≈b2))}
+
+    ⊎-bisim-prop-valued : isPropValued _≈A_ → isPropValued _≈B_ → isPropValued ⊎-bisim
+    ⊎-bisim-prop-valued HA HB (inl a1) (inl a2) = isOfHLevelLift 1 (HA a1 a2)
+    ⊎-bisim-prop-valued HA HB (inr b1) (inr b2) = isOfHLevelLift 1 (HB b1 b2)
+
+_⊎p_ : (A : PosetBisim ℓA ℓ'A ℓ''A) (B : PosetBisim ℓB ℓ'B ℓ''B) →
+    PosetBisim (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
+_⊎p_ A B = (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
+  posetbisimstr (isSet⊎ A.is-set B.is-set)
+  (⊎-ord A._≤_ B._≤_)
+  (isorderingrelation
+    (⊎-ord-prop-valued _ _ A.is-prop-valued B.is-prop-valued)
+    (⊎-ord-refl _ _ A.is-refl B.is-refl)
+    (⊎-ord-trans _ _ A.is-trans B.is-trans)
+    (⊎-ord-antisym _ _ A.is-antisym B.is-antisym))
+  (⊎-bisim A._≈_ B._≈_)
+  (isbisim
+    (⊎-bisim-refl _ _ A.is-refl-Bisim B.is-refl-Bisim)
+    (⊎-bisim-sym _ _ A.is-sym B.is-sym)
+    (⊎-bisim-prop-valued _ _ A.is-prop-valued-Bisim B.is-prop-valued-Bisim))
+  where
+    module A = PosetBisimStr (A .snd)
+    module B = PosetBisimStr (B .snd)
+
+{- posetbisimstr
+    (isSet⊎ (A.is-set) (B.is-set))
+    ⊎-ord (isorderingrelation ⊎-ord-prop-valued ⊎-ord-refl ⊎-ord-trans ⊎-ord-antisym)
+    ⊎-bisim (isbisim ⊎-bisim-refl ⊎-bisim-sym ⊎-bisim-prop-valued)
+    where
+      module A = PosetBisimStr (A .snd)
+      module B = PosetBisimStr (B .snd)
+  -}
+
+{-
 _⊎p_ : PosetBisim ℓA ℓ'A ℓ''A  -> PosetBisim ℓB ℓ'B ℓ''B -> PosetBisim (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
 _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B =
   (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
@@ -298,7 +379,7 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
     bisim-prop-valued : isPropValued bisim
     bisim-prop-valued (inl a1) (inl a2) = isOfHLevelLift 1 (prop-valued-≈ A a1 a2)
     bisim-prop-valued (inr b1) (inr b2) = isOfHLevelLift 1 (prop-valued-≈ B b1 b2)
-
+-}
 
 σ1 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> ⟨ A ==> (A ⊎p B) ⟩
 σ1 = record {
@@ -315,10 +396,63 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
 
 open PosetBisimStr
 
+module _ (X : Type ℓX) (B : X → Type ℓ)
+ 
+  where
+
+  private
+    Pi : Type (ℓ-max ℓX ℓ)
+    Pi = (x : X) → B x
+
+  module _ (ord-B : ∀ x → Rel (B x) (B x) ℓ≤) where
+  
+    Π-ord : Rel Pi Pi (ℓ-max ℓX ℓ≤)
+    Π-ord as bs = ∀ x → ord-B x (as x) (bs x)
+
+    Π-ord-prop-valued : (∀ x → isPropValued (ord-B x)) → isPropValued Π-ord
+    Π-ord-prop-valued H as bs p q = funExt (λ x → H x (as x) (bs x) (p x) (q x))
+
+    Π-ord-refl : (∀ x → isRefl (ord-B x)) → isRefl Π-ord
+    Π-ord-refl H as x = H x (as x)
+
+    Π-ord-trans : (∀ x → isTrans (ord-B x)) → isTrans Π-ord
+    Π-ord-trans H as bs cs as≤bs bs≤cs x = H x (as x) (bs x) (cs x) (as≤bs x) (bs≤cs x)
+
+    Π-ord-antisym : (∀ x → isAntisym (ord-B x)) → isAntisym Π-ord
+    Π-ord-antisym H as bs as≤bs bs≤as =
+     funExt (λ x → H x (as x) (bs x) (as≤bs x) (bs≤as x))
+
+    isOrderingΠ : (∀ x → IsOrderingRelation (ord-B x)) → IsOrderingRelation Π-ord
+    isOrderingΠ H = isorderingrelation
+      (Π-ord-prop-valued (IsOrderingRelation.is-prop-valued ∘ H))
+      (Π-ord-refl (IsOrderingRelation.is-refl ∘ H))
+      (Π-ord-trans (IsOrderingRelation.is-trans ∘ H))
+      (Π-ord-antisym (IsOrderingRelation.is-antisym ∘ H))
+
+  module _ (bisim-B : ∀ x → Rel (B x) (B x) ℓ≈) where
+
+    Π-bisim : Rel Pi Pi (ℓ-max ℓX ℓ≈)
+    Π-bisim as bs = ∀ x → bisim-B x (as x) (bs x)
+
+    Π-bisim-prop-valued : (∀ x → isPropValued (bisim-B x)) → isPropValued Π-bisim
+    Π-bisim-prop-valued H as bs p q =
+      funExt (λ x → H x (as x) (bs x) (p x) (q x))
+
+    Π-bisim-refl : (∀ x → isRefl (bisim-B x)) → isRefl Π-bisim
+    Π-bisim-refl H as x = H x (as x)
+
+    Π-bisim-sym : (∀ x → isSym (bisim-B x)) → isSym Π-bisim
+    Π-bisim-sym H as bs as≈bs x = H x (as x) (bs x) (as≈bs x)
+
+    isBisimΠ : (∀ x → IsBisim (bisim-B x)) → IsBisim Π-bisim
+    isBisimΠ H = isbisim
+      (Π-bisim-refl (IsBisim.is-refl ∘ H))
+      (Π-bisim-sym (IsBisim.is-sym ∘ H))
+      (Π-bisim-prop-valued (IsBisim.is-prop-valued ∘ H))
+   
+
 
 -- Indexed product of predomains (must be at the same universe levels)
-
-
 ΠP : (X : Type ℓX){ℓ ℓ≤ ℓ≈ : Level} → (A : X → PosetBisim ℓ ℓ≤ ℓ≈) →
   PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
 ΠP X A = (∀ (x : X) → ⟨ A x ⟩) ,
@@ -377,17 +511,119 @@ module _ {X : Type ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ �
   Π-elim x .PBMor.pres≈ {x = as} {y = bs} as≈bs = as≈bs x
 
 -- Action of Π on a family of morphisms
-Π-mor : ∀ {ℓ ℓ≤ ℓ≈}
+Π-mor :
   (X : Type ℓX) →
-  (A B : X → PosetBisim ℓ ℓ≤ ℓ≈) →
+  (A : X → PosetBisim ℓA ℓ≤A ℓ≈A) →
+  (B : X → PosetBisim ℓB ℓ≤B ℓ≈B) →
   ((x : X) → PBMor (A x) (B x)) →
   PBMor (ΠP X A) (ΠP X B)
 Π-mor X A B fs = Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
   
 
 
--- Σ for predomains (i.e. a Type-indexed coproduct of predomains)
+module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
 
+  private
+    Sigma : Type (ℓ-max ℓX ℓ)
+    Sigma = (Σ[ x ∈ ⟨ X ⟩ ] B x)
+
+  module _ (ord-B : ∀ x → Rel (B x) (B x) ℓ≤) where
+  
+    Σ-ord : Rel Sigma Sigma (ℓ-max ℓX ℓ≤)
+    Σ-ord (x₁ , b₁) (x₂ , b₂) =
+        Σ[ eq ∈ (x₁ ≡ x₂) ] (ord-B x₂ (subst (λ x → B x ) eq b₁) b₂)
+
+    Σ-ord-prop-valued : (∀ x → isPropValued (ord-B x)) → isPropValued Σ-ord
+    Σ-ord-prop-valued H (x₁ , b₁) (x₂ , b₂) (eq , b₁≤b₂) (eq' , b₁≤b₂') =
+      ΣPathP ((X .snd x₁ x₂ eq eq') ,
+              (isProp→PathP (λ i → H x₂ _ _) b₁≤b₂ b₁≤b₂'))
+
+    Σ-ord-refl : (∀ x → isRefl (ord-B x)) → isRefl Σ-ord
+    Σ-ord-refl H (x , b) = refl ,
+      subst
+        (λ y → ord-B x y b)
+        (sym (substRefl {B = B} b))
+        (H x b)
+
+    Σ-ord-trans : (∀ x → isTrans (ord-B x)) → isTrans Σ-ord
+    Σ-ord-trans H (x₁ , b₁) (x₂ , b₂) (x₃ , b₃) (x₁≡x₂ , b₁₂≤b₂) (x₂≡x₃ , b₂₃≤b₃) =
+      (x₁≡x₂ ∙ x₂≡x₃) ,
+      transport (λ i → ord-B x₃ (sym (substComposite T x₁≡x₂ x₂≡x₃ b₁) i) b₃) lem
+        where
+          T : ⟨ X ⟩ → Type _
+          T = λ x → B x
+        
+          b₁₃  = subst T (x₁≡x₂ ∙ x₂≡x₃) b₁
+          b₁₂  = subst T x₁≡x₂ b₁
+          b₁₂₃ = subst T x₂≡x₃ b₁₂
+          b₂₃  = subst T x₂≡x₃ b₂
+          
+          b₁₂₃≤b₂₃ : ord-B x₃ b₁₂₃ b₂₃
+          b₁₂₃≤b₂₃ = {!!} -- rel-transport-≤ (cong B x₂≡x₃) b₁₂≤b₂
+
+          -- Goal: b₁₃ (B x₃).≤ b₃
+          -- Know: b₁₃ = b₁₂₃ by substComposite
+          --
+          -- STS b₁₂₃ (B x₃).≤ b₃
+          -- By transitivity STS b₁₂₃ ≤ b₂₃ ≤ b₃.
+          -- The latter is true by assumption, and the former
+          -- follows by assumption b₁₂≤b₂ and the fact that B x₂ ≡ B x₃.
+          lem : ord-B x₃ b₁₂₃ b₃
+          lem = H x₃  b₁₂₃ b₂₃ b₃ b₁₂₃≤b₂₃ b₂₃≤b₃
+         
+    
+    Σ-ord-antisym : (∀ x → isAntisym (ord-B x)) → isAntisym Σ-ord
+    Σ-ord-antisym H (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≤b₂) (x₂≡x₁ , b₂₁≤b₁) =
+      ΣPathP (x₁≡x₂ , toPathP eq)
+        where
+          T : ⟨ X ⟩ → Type _
+          T = λ x → B x
+          
+          b₁₂  = subst T x₁≡x₂ b₁
+          b₁₂₁ = subst T x₂≡x₁ b₁₂
+          b₂₁  = subst T x₂≡x₁ b₂
+          b₂₁₂ = subst T x₁≡x₂ b₂₁
+
+          pf-inverse : x₁≡x₂ ≡ sym x₂≡x₁
+          pf-inverse = X .snd x₁ x₂ x₁≡x₂ (sym x₂≡x₁)
+
+          b₂₁₂≤b₁₂ : ord-B x₂ b₂₁₂ b₁₂
+          b₂₁₂≤b₁₂ = {!!} -- rel-transport-≤ (cong B x₁≡x₂) b₂₁≤b₁
+
+          b₂₁₂≡b₂ : b₂₁₂ ≡ b₂
+          b₂₁₂≡b₂ = let e1 = (λ i → subst T (pf-inverse i) b₂₁) in
+                    let e2 = subst⁻Subst T x₂≡x₁ b₂ in
+                    e1 ∙ e2
+          
+          eq : b₁₂ ≡ b₂
+          eq = H x₂ b₁₂ b₂ b₁₂≤b₂
+            (subst (λ z → ord-B x₂ z b₁₂) b₂₁₂≡b₂ b₂₁₂≤b₁₂)
+
+
+  module _ (bisim-B : ∀ x → Rel (B x) (B x) ℓ≈) where
+
+    Σ-bisim : Rel Sigma Sigma {!!}
+    Σ-bisim (x₁ , b₁) (x₂ , b₂) =
+      Σ[ eq ∈ (x₁ ≡ x₂) ] ((bisim-B x₂) (subst (λ x → B x) eq b₁) b₂)
+
+    Σ-bisim-refl : (∀ x → isRefl (bisim-B x)) → isRefl Σ-bisim
+    Σ-bisim-refl H (x , b) = refl ,
+      subst
+        (λ y → (bisim-B x) y b)
+        (sym (substRefl {B = λ x → B x} b))
+        (H x b)
+
+    Σ-bisim-sym : (∀ x → isSym (bisim-B x)) → isSym Σ-bisim
+    Σ-bisim-sym H (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≈b₂) =
+      (sym x₁≡x₂) , {!!} -- rel-transport-≈-lemma (cong B (sym x₁≡x₂)) (H x₂ _ _ b₁₂≈b₂)
+
+    Σ-bisim-prop-valued : (∀ x → isPropValued (bisim-B x)) → isPropValued Σ-bisim
+    Σ-bisim-prop-valued H (x₁ , b₁) (x₂ , b₂) (eq , b₁≈b₂) (eq' , b₁≈b₂') =
+      ΣPathP ((X .snd x₁ x₂ eq eq') ,
+              (isProp→PathP (λ i → H x₂ _ _) b₁≈b₂ b₁≈b₂'))
+  
+
+-- Σ for predomains (i.e. a Type-indexed coproduct of predomains)
 ΣP : (X : hSet ℓX) → {ℓ ℓ≤ ℓ≈ : Level} →
   (B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈) →
   PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
@@ -520,9 +756,10 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
   Σ-elim₂ = snd
 
 -- Action of Σ on a family of morphisms
-Σ-mor : ∀ {ℓ ℓ≤ ℓ≈}
+Σ-mor :
   (X : hSet ℓX) →
-  (A B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈) →
+  (A : ⟨ X ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A) →
+  (B : ⟨ X ⟩ → PosetBisim ℓB ℓ≤B ℓ≈B) →
   ((x : ⟨ X ⟩) → PBMor (A x) (B x)) →
   PBMor (ΣP X A) (ΣP X B)
 -- Σ-mor X A B fs = {!!}
@@ -564,6 +801,48 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
 -- Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
 
 
+
+-- Given types A and A' and a retraction g : A' → A, if A has a
+-- predomain structure then we can define a predomain structure on A'
+
+module _
+  {ℓA ℓA' ℓ≤A' ℓ≈A' : Level}
+  (A : Type ℓA)
+  (A' : Type ℓA')
+  (f : A → A')
+  (g : A' → A)
+  (retr : retract f g)
+  (isPredomA' : PosetBisimStr ℓ≤A' ℓ≈A' A') where
+
+  private
+    module A' = PosetBisimStr isPredomA'
+
+  isInjectivef : ∀ x₁ x₂ → f x₁ ≡ f x₂ → x₁ ≡ x₂
+  isInjectivef x₁ x₂ eq = sym (retr x₁) ∙ cong g eq ∙ retr x₂
+
+  predomRetractStr : PosetBisimStr ℓ≤A' ℓ≈A' A
+  predomRetractStr .is-set = isSetRetract f g retr A'.is-set
+  predomRetractStr .PosetBisimStr._≤_ x₁ x₂ = f x₁ A'.≤ f x₂
+  predomRetractStr .isOrderingRelation =
+    isorderingrelation
+      (λ x₁ x₂ → A'.is-prop-valued (f x₁) (f x₂))
+      (λ x → A'.is-refl (f x))
+      (λ x₁ x₂ x₃ fx₁≤fx₂ fx₂≤fx₃ → A'.is-trans (f x₁) (f x₂) (f x₃) fx₁≤fx₂ fx₂≤fx₃)
+      (λ x₁ x₂ fx₁≤fx₂ fx₂≤fx₁ → isInjectivef x₁ x₂ (A'.is-antisym (f x₁) (f x₂) fx₁≤fx₂ fx₂≤fx₁))
+  predomRetractStr ._≈_ x₁ x₂ = f x₁ A'.≈ f x₂
+  predomRetractStr .isBisim =
+    isbisim
+      (λ x → A'.is-refl-Bisim (f x))
+      (λ x₁ x₂ fx₁≈fx₂ → A'.is-sym (f x₁) (f x₂) fx₁≈fx₂)
+      (λ x₁ x₂ → A'.is-prop-valued-Bisim (f x₁) (f x₂))
+
+  predomRetract : PosetBisim ℓA ℓ≤A' ℓ≈A'
+  predomRetract = A , predomRetractStr
+
+  retractMorphism : PBMor predomRetract (A' , isPredomA')
+  retractMorphism .PBMor.f = f
+  retractMorphism .PBMor.isMon fx₁≤fx₂ = fx₁≤fx₂
+  retractMorphism .PBMor.pres≈ fx₁≈fx₂ = fx₁≈fx₂
 
 
 

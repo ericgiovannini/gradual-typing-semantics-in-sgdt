@@ -48,6 +48,7 @@ private
     ℓA₂ ℓ≤A₂ ℓ≈A₂ : Level
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
     ℓΓ ℓ≤Γ ℓ≈Γ : Level
+    ℓΓ' ℓ≤Γ' ℓ≈Γ' : Level
     ℓC : Level
     ℓc ℓc' ℓd ℓR : Level
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  : Level
@@ -55,6 +56,15 @@ private
     ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  : Level
     ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' : Level
     ℓcᵢ ℓcₒ : Level
+    ℓcΓ ℓcΓᵢ ℓcΓₒ : Level
+    ℓΓᵢ ℓ≤Γᵢ ℓ≈Γᵢ : Level
+    ℓΓᵢ' ℓ≤Γᵢ' ℓ≈Γᵢ' : Level
+    ℓΓₒ ℓ≤Γₒ ℓ≈Γₒ : Level
+    ℓΓₒ' ℓ≤Γₒ' ℓ≈Γₒ' : Level
+    ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ : Level
+    ℓBᵢ' ℓ≤Bᵢ' ℓ≈Bᵢ' : Level    
+    ℓBₒ ℓ≤Bₒ ℓ≈Bₒ : Level
+    ℓBₒ' ℓ≤Bₒ' ℓ≈Bₒ' : Level
     
    
 
@@ -75,9 +85,10 @@ module StrongExtCombinator
   {A : PosetBisim ℓA ℓ≤A ℓ≈A}
   {B : ErrorDomain ℓB ℓ≤B ℓ≈B} where
 
-  module Γ = PosetBisimStr (Γ .snd)
-  module A = PosetBisimStr (A .snd)
-  module B = ErrorDomainStr (B .snd)
+  private
+    module Γ = PosetBisimStr (Γ .snd)
+    module A = PosetBisimStr (A .snd)
+    module B = ErrorDomainStr (B .snd)
   open StrongCBPVExt ⟨ Γ ⟩ ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f
   module LA = LiftOrdHomogenous ⟨ A ⟩ A._≤_
   LA-refl = LA.Properties.⊑-refl A.is-refl
@@ -135,8 +146,13 @@ module StrongExtCombinator
     λ γ lx → strong-ext-mon _ _ α γ γ (Γ.is-refl γ) lx lx (LA-refl lx)
     where
       α : TwoCell Γ._≤_ (TwoCell A._≤_ B._≤_) _ _
-      α γ γ' γ≤γ' a a' a≤a' = {!≤mon→≤mon-het g₁ g₂ g₁≤g₂ γ γ' γ≤γ'!}
+      α γ γ' γ≤γ' a a' a≤a' =
+        let g₁γ≤g₂γ' = λ x → U-ob (A ⟶ob B) .snd .PosetBisimStr.is-trans (g₁ .PBMor.f γ) (g₂ .PBMor.f γ) (g₂ .PBMor.f γ') (g₁≤g₂ γ) (g₂ .PBMor.isMon γ≤γ') x in
+        ≤mon→≤mon-het (g₁ $ γ) (g₂ $ γ') g₁γ≤g₂γ' a a' a≤a' -- ≤mon→≤mon-het g₁ g₂ g₁≤g₂ γ γ' γ≤γ'
   StrongExt .pres≈ {x = g} {y = h} = strong-ext-pres≈ _ _
+ 
+  -- Goal :              (a : A .fst) → f (f g₁ γ) a B.≤ f (f g₂ γ') a
+  -- Have:  (γ : Γ .fst) (a : A .fst) → f (f g₁ γ) a B.≤ f (f g₂ γ) a
 
   -- Ext : ErrorDomMor (Γ ⟶ob (A ⟶ob B)) ((Γ ⟶ob (𝕃 A ⟶ob B)))
   -- Ext .f℧ = eqPBMor _ _ (funExt (λ γ → eqPBMor _ _ (funExt (λ lx → {!Equations.ext-℧ ? ? ?!}))))
@@ -219,12 +235,51 @@ module _ {A : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} where
 
 δ*Sq : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
   (c : PBRel A A' ℓc) → ErrorDomSq (F-rel.F-rel c) (F-rel.F-rel c) δ* δ*
-δ*Sq {A = A} {A' = A'} c = ext-mon _ _ (λ a a' caa' →
-  Lc.Properties.δ-monotone (Lc.Properties.η-monotone caa'))
+δ*Sq {A = A} {A' = A'} c =
+  Ext-sq c (F-rel.F-rel c) (δ-mor ∘p η-mor) (δ-mor ∘p η-mor)
+  (CompSqV
+    {c₁ = c} {c₂ = U-rel (F-rel.F-rel c)} {c₃ = U-rel (F-rel.F-rel c)}
+    (η-sq c) (δB-sq (F-rel.F-rel c)))
+
+{-
+ext-mon _ _ (λ a a' caa' →
+  -- Lc.Properties.δ-monotone (Lc.Properties.η-monotone caa'))
+  {!!} {!!})
   where
     open F-ob
-    open F-rel c
+    -- open F-rel c
+    open F-rel
     
-    open ExtMonotone ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R) (L℧ ⟨ A ⟩) ℧ θ (L℧ ⟨ A' ⟩) ℧ θ (Lc._⊑_)
-      (Lc.Properties.℧⊥) (λ _ _ → Lc.Properties.θ-monotone)
+    open ExtMonotone ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R) (L℧ ⟨ A ⟩) ℧ θ (L℧ ⟨ A' ⟩) ℧ θ (F-rel c .ErrorDomRel.R)
+      (F-rel c .ErrorDomRel.R℧) (F-rel c .ErrorDomRel.Rθ)
+      -- (Lc.Properties.℧⊥) (λ _ _ → Lc.Properties.θ-monotone)
 
+-}
+
+module _
+  {Γ : PosetBisim ℓΓ ℓ≤Γ ℓ≈Γ}   {Γ' : PosetBisim ℓΓ' ℓ≤Γ' ℓ≈Γ'}
+  {A : PosetBisim ℓA ℓ≤A ℓ≈A}   {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  {B : ErrorDomain ℓB ℓ≤B ℓ≈B}  {B' : ErrorDomain ℓB' ℓ≤B' ℓ≈B'}
+  (cΓ : PBRel Γ Γ' ℓcΓ)
+  (c : PBRel A A' ℓc)
+  (d : ErrorDomRel B B' ℓd)
+  (f : U-ob (Γ  ⟶ob (A  ⟶ob B)) .fst)
+  (g : U-ob (Γ' ⟶ob (A' ⟶ob B')) .fst)
+  where
+  open StrongExtCombinator
+
+  private
+    module B  = ErrorDomainStr (B .snd)
+    module B' = ErrorDomainStr (B' .snd)
+
+  open StrongExtMonotone
+    ⟨ Γ ⟩ ⟨ Γ' ⟩ (cΓ .PBRel.R)
+    ⟨ A ⟩ ⟨ A' ⟩ (c .PBRel.R)
+    ⟨ B ⟩  B.℧  B.θ.f
+    ⟨ B' ⟩ B'.℧ B'.θ.f
+    (d .ErrorDomRel.R) (d .ErrorDomRel.R℧) (d .ErrorDomRel.Rθ)
+
+  StrongExt-Sq :
+    PBSq cΓ (U-rel (c ⟶rel d)) f g →
+    PBSq cΓ (U-rel (U-rel (F-rel.F-rel c) ⟶rel d)) (StrongExt .PBMor.f f) (StrongExt .PBMor.f g)
+  StrongExt-Sq = strong-ext-mon (λ γ → f .PBMor.f γ .PBMor.f) (λ γ' → g .PBMor.f γ' .PBMor.f)

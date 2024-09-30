@@ -200,6 +200,15 @@ CompSqV-iterate c f g α (suc n) =
           {f₁ = f ^m n} {g₁ = g ^m n} {f₂ = f} {g₂ = g}
           (CompSqV-iterate c f g α n) α
 
+CompSqV-iterate-idL :
+  {A₁  : PosetBisim ℓA₁  ℓ≤A₁  ℓ≈A₁ }
+  {A₂  : PosetBisim ℓA₂  ℓ≤A₂  ℓ≈A₂ }
+  (c : PBRel A₁ A₂ ℓc) →
+  (g : PBMor A₂ A₂) →
+  (PBSq c c Id g) →
+  (n : ℕ) → PBSq c c Id (g ^m n)
+CompSqV-iterate-idL = {!!}
+
 -- TwoCell-iterated R f g α zero = λ _ _ → id
 -- TwoCell-iterated R f g α (suc n) = λ x₁ x₂ Rx₁x₂ →
 --   α ((f ^ n) x₁)
@@ -317,7 +326,8 @@ module _
 
 
 -- Squares corresponding to the identity and associativity of
--- composition of predomain relatinos
+-- composition of predomain relations
+---------------------------------------------------------------
 
 sq-idA⊙c-c : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim  ℓA' ℓ≤A' ℓ≈A'} (c : PBRel A A' ℓc) →
   PBSq (idPRel A ⊙ c) c Id Id
@@ -391,3 +401,158 @@ PredomainRel-Comp-IdR c = eqPBRel _ _ (funExt λ x → funExt λ y →
   where module c = PBRel c
 
 -- TODO associativity
+
+
+
+
+
+-- Action of × on squares
+--------------------------
+
+module _
+  {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁} {Aᵢ₁' : PosetBisim ℓAᵢ₁' ℓ≤Aᵢ₁' ℓ≈Aᵢ₁'}
+  {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂} {Aᵢ₂' : PosetBisim ℓAᵢ₂' ℓ≤Aᵢ₂' ℓ≈Aᵢ₂'}
+  {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁} {Aₒ₁' : PosetBisim ℓAₒ₁' ℓ≤Aₒ₁' ℓ≈Aₒ₁'}
+  {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} {Aₒ₂' : PosetBisim ℓAₒ₂' ℓ≤Aₒ₂' ℓ≈Aₒ₂'}
+  {cᵢ₁ : PBRel Aᵢ₁ Aᵢ₁' ℓcᵢ₁}
+  {cᵢ₂ : PBRel Aᵢ₂ Aᵢ₂' ℓcᵢ₂}
+  {cₒ₁ : PBRel Aₒ₁ Aₒ₁' ℓcₒ₁}
+  {cₒ₂ : PBRel Aₒ₂ Aₒ₂' ℓcₒ₂}
+  {f₁ : PBMor Aᵢ₁ Aₒ₁}
+  {g₁ : PBMor Aᵢ₁' Aₒ₁'}
+  {f₂ : PBMor Aᵢ₂ Aₒ₂}
+  {g₂ : PBMor Aᵢ₂' Aₒ₂'}
+  where
+
+  _×-Sq_ :
+    PBSq cᵢ₁ cₒ₁ f₁ g₁ →
+    PBSq cᵢ₂ cₒ₂ f₂ g₂ →
+    PBSq (cᵢ₁ ×pbmonrel cᵢ₂) (cₒ₁ ×pbmonrel cₒ₂) (f₁ ×mor f₂) (g₁ ×mor g₂)
+  (α₁ ×-Sq α₂) (aᵢ₁ , aᵢ₂) (aᵢ₁' , aᵢ₂') (R₁₂ , R₁₂') =
+    (α₁ aᵢ₁ aᵢ₁' R₁₂) , (α₂ aᵢ₂ aᵢ₂' R₁₂')
+
+
+-- Action of ⊎ on squares
+--------------------------
+
+module _
+  {Aᵢ₁ : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁} {Aᵢ₁' : PosetBisim ℓAᵢ₁' ℓ≤Aᵢ₁' ℓ≈Aᵢ₁'}
+  {Aᵢ₂ : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂} {Aᵢ₂' : PosetBisim ℓAᵢ₂' ℓ≤Aᵢ₂' ℓ≈Aᵢ₂'}
+  {Aₒ₁ : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁} {Aₒ₁' : PosetBisim ℓAₒ₁' ℓ≤Aₒ₁' ℓ≈Aₒ₁'}
+  {Aₒ₂ : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂} {Aₒ₂' : PosetBisim ℓAₒ₂' ℓ≤Aₒ₂' ℓ≈Aₒ₂'}
+  {cᵢ₁ : PBRel Aᵢ₁ Aᵢ₁' ℓcᵢ₁}
+  {cᵢ₂ : PBRel Aᵢ₂ Aᵢ₂' ℓcᵢ₂}
+  {cₒ₁ : PBRel Aₒ₁ Aₒ₁' ℓcₒ₁}
+  {cₒ₂ : PBRel Aₒ₂ Aₒ₂' ℓcₒ₂}
+  {f₁ : PBMor Aᵢ₁ Aₒ₁}
+  {g₁ : PBMor Aᵢ₁' Aₒ₁'}
+  {f₂ : PBMor Aᵢ₂ Aₒ₂}
+  {g₂ : PBMor Aᵢ₂' Aₒ₂'}
+  where
+
+  _⊎-Sq_ :
+    PBSq cᵢ₁ cₒ₁ f₁ g₁ →
+    PBSq cᵢ₂ cₒ₂ f₂ g₂ →
+    PBSq (cᵢ₁ ⊎-rel cᵢ₂) (cₒ₁ ⊎-rel cₒ₂) (f₁ ⊎-mor f₂) (g₁ ⊎-mor g₂)
+  (α ⊎-Sq β) (inl xᵢ₁) (inl xᵢ₁') H = lift (α xᵢ₁ xᵢ₁' (lower H))
+  (α ⊎-Sq β) (inr xᵢ₂) (inr xᵢ₂') H = lift (β xᵢ₂ xᵢ₂' (lower H))
+
+
+-- Action of Π on squares
+--------------------------
+
+module _ (X : Type ℓ)
+  (Aᵢ : X → PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ) (Aᵢ' : X → PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ')
+  (Aₒ : X → PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ) (Aₒ' : X → PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ')
+  (cᵢ : ∀ x → PBRel (Aᵢ x) (Aᵢ' x) ℓcᵢ)
+  (cₒ : ∀ x → PBRel (Aₒ x) (Aₒ' x) ℓcₒ)
+  (f : ∀ x → PBMor (Aᵢ  x) (Aₒ  x))
+  (g : ∀ x → PBMor (Aᵢ' x) (Aₒ' x)) 
+  where 
+
+  Π-Sq :
+    (∀ x → PBSq (cᵢ x) (cₒ x) (f x) (g x)) →
+    PBSq (ΠR X Aᵢ Aᵢ' cᵢ) (ΠR X Aₒ Aₒ' cₒ) (Π-mor X _ _ f) (Π-mor X _ _ g)
+  Π-Sq αs as as' asRas' x = αs x (as x) (as' x) (asRas' x)
+
+
+-- Action of Σ on squares
+--------------------------
+
+module _ (X : hSet ℓ)
+  (Aᵢ : ⟨ X ⟩ → PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ) (Aᵢ' : ⟨ X ⟩ → PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ')
+  (Aₒ : ⟨ X ⟩ → PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ) (Aₒ' : ⟨ X ⟩ → PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ')
+  (cᵢ : ∀ x → PBRel (Aᵢ x) (Aᵢ' x) ℓcᵢ)
+  (cₒ : ∀ x → PBRel (Aₒ x) (Aₒ' x) ℓcₒ)
+  (f : ∀ x → PBMor (Aᵢ  x) (Aₒ  x))
+  (g : ∀ x → PBMor (Aᵢ' x) (Aₒ' x)) 
+  where 
+
+  Σ-Sq :
+    (∀ x → PBSq (cᵢ x) (cₒ x) (f x) (g x)) →
+    PBSq (ΣR X Aᵢ Aᵢ' cᵢ) (ΣR X Aₒ Aₒ' cₒ) (Σ-mor X _ _ f) (Σ-mor X _ _ g)
+  Σ-Sq αs (x₁ , a₁) (x₂ , a₂) (x₁≡x₂ , a₁₂≤a₂) =
+    x₁≡x₂ ,
+    let sq = αs x₂ (subst (λ z → ⟨ Aᵢ z ⟩) x₁≡x₂ a₁) a₂ a₁₂≤a₂ in
+    subst (λ z → cₒ x₂ .PBRel.R z (g x₂ .PBMor.f a₂)) lem sq
+
+    where
+    
+      --        subst          f x₂
+      -- Aᵢ x₁ -------> Aᵢ x₂ -------> Aₒ x₂
+      --
+      --
+      --                  =
+      --
+      --         f x₁          subst
+      -- Aᵢ x₁ -------> Aₒ x₁ -------> Aₒ x₂
+      
+      lem : f x₂ .PBMor.f (subst (λ z → ⟨ Aᵢ z ⟩) x₁≡x₂ a₁) ≡
+            subst (λ x → ⟨ Aₒ x ⟩) x₁≡x₂ (f x₁ .PBMor.f a₁)
+      lem = sym (fromPathP (λ i → f (x₁≡x₂ i) .PBMor.f (subst-filler (λ x → ⟨ Aᵢ x ⟩) x₁≡x₂ a₁ i)))
+
+
+-- Action of transport on squares
+
+open PBRel
+
+transport-square : {A₁ A₁' : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ A₂' : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  {c : PBRel A₁ A₂ ℓc} →
+  {c' : PBRel A₁' A₂' ℓc} →
+  (eq₁ : A₁ ≡ A₁') →
+  (eq₂ : A₂ ≡ A₂') →
+  (PathP (λ i → PBRel (eq₁ i) (eq₂ i) ℓc) c c') →
+  PBSq c c' (mTransport eq₁) (mTransport eq₂)
+transport-square eq₁ eq₂ path x y xRy =
+  transport
+    (λ i → (path i) .R
+      (transport-filler (λ j → ⟨ eq₁ j ⟩) x i)
+      (transport-filler (λ j → ⟨ eq₂ j ⟩) y i))
+    xRy
+
+
+module _
+  {Aᵢ₁ Aᵢ₁' : PosetBisim ℓAᵢ₁ ℓ≤Aᵢ₁ ℓ≈Aᵢ₁}
+  {Aᵢ₂ Aᵢ₂' : PosetBisim ℓAᵢ₂ ℓ≤Aᵢ₂ ℓ≈Aᵢ₂}
+  {Aₒ₁ Aₒ₁' : PosetBisim ℓAₒ₁ ℓ≤Aₒ₁ ℓ≈Aₒ₁}
+  {Aₒ₂ Aₒ₂' : PosetBisim ℓAₒ₂ ℓ≤Aₒ₂ ℓ≈Aₒ₂}
+  {cᵢ  : PBRel Aᵢ₁  Aᵢ₂  ℓcᵢ}
+  {cᵢ' : PBRel Aᵢ₁' Aᵢ₂' ℓcᵢ}
+  {cₒ  : PBRel Aₒ₁  Aₒ₂  ℓcₒ}
+  {cₒ' : PBRel Aₒ₁' Aₒ₂' ℓcₒ}
+  {f  : PBMor Aᵢ₁  Aₒ₁}
+  {f' : PBMor Aᵢ₁' Aₒ₁'}
+  {g  : PBMor Aᵢ₂  Aₒ₂}
+  {g' : PBMor Aᵢ₂' Aₒ₂'}
+  (eqᵢ₁ : Aᵢ₁ ≡ Aᵢ₁')
+  (eqᵢ₂ : Aᵢ₂ ≡ Aᵢ₂')
+  (eqₒ₁ : Aₒ₁ ≡ Aₒ₁')
+  (eqₒ₂ : Aₒ₂ ≡ Aₒ₂')
+  (cᵢ≡cᵢ' : PathP (λ i → PBRel (eqᵢ₁ i) (eqᵢ₂ i) ℓcᵢ) cᵢ cᵢ')
+  (cₒ≡cₒ' : PathP (λ i → PBRel (eqₒ₁ i) (eqₒ₂ i) ℓcₒ) cₒ cₒ') where
+  
+  transport-sq : PBSq cᵢ cₒ f g → PBSq cᵢ' cₒ' {!!} {!!}
+  transport-sq = {!!}
+
+  --c  .R x y →
+  --c' .R (transport (cong fst eq₁) x) (transport (cong fst eq₂) y)
