@@ -304,6 +304,75 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}{A' : ValType ℓA' ℓ≤A' �
            (pullVSq c pA')))
 -}
 
+
+-- Injections for coproduct
+-- Note that this is not the action of the coproduct on push-pull relations!
+module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
+          {A₂ : ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂}
+  where
+  private
+    |A₁| = ValType→Predomain A₁
+    |A₂| = ValType→Predomain A₂
+
+    module |A₁| = PosetBisimStr (|A₁| .snd)
+    module |A₂| = PosetBisimStr (|A₂| .snd)
+    
+    module MA₁ = MonoidStr (PtbV A₁ .snd)
+    module MA₂ = MonoidStr (PtbV A₂ .snd)
+
+    module iA₁ = IsMonoidHom (interpV A₁ .snd)
+    module iA₂ = IsMonoidHom (interpV A₂ .snd)
+    
+  ⊎-inl : VRelPP A₁ (A₁ Types.⊎ A₂) _
+  ⊎-inl = mkVRelPP A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl |A₁| |A₂|)
+    -- Push
+    (corecL i₁ (corecVRelPtb sq1))
+
+    -- Pull
+    (FP.elim (Σr (VRelPtb A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl |A₁| |A₂|)))
+
+      -- Case inl
+      (corecR (idMon (PtbV A₁)) (corecVRelPtb sq1))
+
+      -- Case inr
+      (corecR ε-hom (corecVRelPtb sq2)))
+    where
+      sq1 : ∀ (pA₁ : ⟨ PtbV A₁ ⟩) →
+        VRelPtbSq A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl _ _) pA₁ (i₁ .fst pA₁)
+      sq1 pA₁ x (inl y) xRy = lift (interpV A₁ .fst pA₁ .fst .PBMor.isMon (lower xRy))
+
+      sq2 : ∀ (pA₂ : ⟨ PtbV A₂ ⟩) →
+        VRelPtbSq A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl _ _) (ε-hom .fst pA₂) (i₂ .fst pA₂)
+      sq2 pA₂ x (inl y) xRy = lift
+        (transport
+          (λ i → (sym iA₁.presε i .fst .PBMor.f x) |A₁|.≤ y)
+          (lower xRy))
+
+  ⊎-inr : VRelPP A₂ (A₁ Types.⊎ A₂) _
+  ⊎-inr = mkVRelPP A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr |A₁| |A₂|)
+  -- Push
+    (corecL i₂ (corecVRelPtb sq2))
+
+  -- Pull
+    (FP.elim (Σr (VRelPtb A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr |A₁| |A₂|)))
+
+      -- Case inl
+      (corecR ε-hom (corecVRelPtb sq1))
+
+      -- Case inr
+      (corecR (idMon (PtbV A₂)) (corecVRelPtb sq2)))
+    where
+    sq1 : ∀ (pA₁ : ⟨ PtbV A₁ ⟩) →
+      VRelPtbSq A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr _ _) (ε-hom .fst pA₁) (i₁ .fst pA₁)
+    sq1 pA₁ x (inr y) xRy = lift
+      (transport
+        (λ i → (sym iA₂.presε i .fst .PBMor.f x) |A₂|.≤ y)
+        (lower xRy))
+
+    sq2 : ∀ (pA₂ : ⟨ PtbV A₂ ⟩) →
+      VRelPtbSq A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr _ _) pA₂ (i₂ .fst pA₂)
+    sq2 pA₂ x (inr y) xRy = lift (interpV A₂ .fst pA₂ .fst .PBMor.isMon (lower xRy))
+
 -- TODO: inj-arr , inj-× , inj-nat
 
 module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
