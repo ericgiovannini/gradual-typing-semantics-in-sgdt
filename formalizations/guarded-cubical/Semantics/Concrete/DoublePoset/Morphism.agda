@@ -35,6 +35,9 @@ private
     ℓZ ℓ'Z ℓ''Z : Level
     ℓW ℓ'W ℓ''W : Level
 
+    ℓA ℓ≤A ℓ≈A : Level
+    ℓA' ℓ≤A' ℓ≈A' : Level
+
     ℓ≤X ℓ≈X : Level
     ℓ≤Y ℓ≈Y : Level
     ℓ≤Z ℓ≈Z : Level
@@ -329,14 +332,29 @@ module _ where
 
 
 
-{-
-  IdL : (f : PBMor X Y) → Comp Id f ≡ f
-  IdL f = eqPBMor (Comp Id f) f refl refl
+-- Isomorphism of predomains
 
-  Assoc : (f : PBMor X Y) (g : PBMor Y Z) (h : PBMor Z W) →
-    Comp (Comp f g) h ≡ Comp f (Comp g h)
-  Assoc f g h = eqPBMor _ _ refl refl
--}
+record PredomIso (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' ℓ≈A') :
+  Type (ℓ-max (ℓ-max (ℓ-max ℓA ℓ≤A) ℓ≈A) (ℓ-max (ℓ-max ℓA' ℓ≤A') ℓ≈A')) where
+  open PBMor
+  field
+    fun : PBMor A A'
+    inv : PBMor A' A
+    invRight : section (fun .f) (inv .f)
+    invLeft  : retract (fun .f) (inv .f)
 
+module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+  (isom : PredomIso A A') where
+
+  open PredomIso
+
+  private
+    module isom = PredomIso isom
+
+  PredomIso-Inv : PredomIso A' A
+  PredomIso-Inv .fun = isom.inv
+  PredomIso-Inv .inv = isom.fun
+  PredomIso-Inv .invRight = isom.invLeft
+  PredomIso-Inv .invLeft = isom.invRight
 
 
