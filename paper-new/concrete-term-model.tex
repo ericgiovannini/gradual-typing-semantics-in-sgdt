@@ -2,7 +2,7 @@
 
 As a first step to giving a well-behaved semantics of GTLC, in this
 section we define a simpler semantics that validates all of our
-desired properties except for graduality: that is it is adequate and
+desired properties except for graduality: that is, it is adequate and
 validates $\beta\eta$ equality. Our relational semantics will then be
 a refinement of this simpler design. In the process we will introduce
 some of the technical tools we will use in the refined semantics:
@@ -209,6 +209,8 @@ guarded lift monad to accommodate the additional effect of failure.
   $f^\dagger : \li A \multimap B$ satisfying $Uf^\dagger \circ \eta =
   f$. In other words, the free error monad is left adjoint $\li \dashv
   U$ to the forgetful functor, with $\eta$ the unit of the adjunction.
+  %
+  We will write $\theta_t(\dots)$ to mean $\theta (\lambda t. \dots)$.
 \end{definition}
 %% %
 %% Unless otherwise mentioned, all constructs involving $\later$ or $\fix$ are

@@ -315,9 +315,12 @@ and the bisimilarity relation is analogous.
 
 \subsection{Functorial Actions on Syntactic Perturbations}
 
+We provide details on the definition of the homomorphisms specifying the
+interpretation of perturbations corresponding for the functors $\li$, $U$,
+$\times$, and $\arr$.
+
 \begin{itemize}
-  % \li
-  \item Then to interpret the perturbations as endomorphisms, by the universal property
+  \item To define the homomorphism $i_{\li A}$, by the universal property
   of the coproduct of monoids it suffices to define two homomorphisms, one from
   $\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
   The first homomorphism sends the generator $1 \in \mathbb{N}$ to the error
@@ -326,15 +329,13 @@ and the bisimilarity relation is analogous.
   endomorphisms are bisimilar to the identity since the action of $\li$ on
   morphisms preserves bisimilarity.
 
-
-  \item To construct the homomorphism $i_{A_1 \times A_2}$, we
+  \item To define the homomorphism $i_{A_1 \times A_2}$, we
   appeal to the universal property and give homomorphisms $M_{A_1} \to
   \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
   former applies $i_{A_1}$ in the first component and the identity in the second
   component, while the latter does the reverse with $i_{A_2}$.
 
-  \item To
-  construct the interpretation as endomorphisms $i_{A \arr B}$ it suffices to define a
+  \item To define the homomorphism $i_{A \arr B}$ it suffices to define a
   homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
   \arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
   UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined

@@ -237,17 +237,17 @@ property that holds in the limit, we must reason about all finite
 approximations. In the setting of the topos of trees, this manifests as the need
 to consider \emph{global elements} of the presheaves, i.e., a family of elements
 $x_i \in X_i$ compatible with the restriction maps. For example, consider the
-set of programs that may take a computational step or return unit. In the topos
-of trees, we can model this set as the indexed family of sets $X_n =
+set of programs that may take a computational step or return unit.\footnote{This example is adapted from \cite{mogelberg-paviotti2016}.} In the
+topos of trees, we can model this set as the indexed family of sets $X_n =
 \{0,1,\dots,n-1, \bot\}$ for $n \ge 1$, where $i$ denotes a program that steps
 $i$ times and then returns, and $\bot$ denotes a program that fails to terminate
 in $n-1$ steps or fewer. For any fixed $n$, the set $X_n$ fails to distinguish a
 program that takes $n$ steps and then terminates from a program that never
 terminates. On the other hand, if we instead consider the denotation of a
-program to be a global element of the presheaf $\{X_n\}$ -- a family of
-elements $x_i \in X_i$ for all $i \in \mathbb{N}$ -- then the denotation of the
-diverging program will be distinct from that of a program that terminates,
-regardless of the number of steps it takes.
+program to be a global element of the presheaf $\{X_n\}$ -- a family of elements
+$x_i \in X_i$ for all $i \in \mathbb{N}$ -- then the denotation of the diverging
+program will be distinct from that of a program that terminates, regardless of
+the number of steps it takes.
 
 In the setting of synthetic guarded domain theory, this same idea applies. To
 construct a global solution we must use an additional construct, e.g., the
