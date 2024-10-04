@@ -105,7 +105,7 @@ terms of the language $M \equiv N$ for when two terms should be
 considered equivalent. Then we want to verify that the big step
 semantics respects this equational theory: if closed programs $M \equiv
 N$ are equivalent in the equational theory then they have the same
-semantics, $M \Downarrow n \iff N \downarrow n$ and $M\Uparrow \iff N
+semantics, $M \Downarrow n \iff N \Downarrow n$ and $M\Uparrow \iff N
 \Uparrow$ and $M \Downarrow \mho \iff N \Downarrow \mho$.
 %
 Lastly, the graduality property is defined by giving an
@@ -174,10 +174,13 @@ theory}, which we adopt in this work. While classical domain theory is
 based on modeling types as ordered sets with certain joins, guarded
 domain theory is based on an entirely different foundations, sometimes
 (ultra)metric spaces but more commonly as ``step-indexed sets'', i.e.,
-objects in the \emph{topos of trees}, i.e., presheaves on the poset of
-natural numbers\cite{birkedal-mogelberg-schwinghammer-stovring2011}. We think of such a
-$\mathbb{N}$-indexed set as modeling a kind of ``sequence of
-approximations'' to the true type being modeled.
+objects in the \emph{topos of trees} \cite{birkedal-mogelberg-schwinghammer-stovring2011}. 
+Such an object consists of a family $\{X_n\}_{n \in \mathbb{N}}$ of sets
+along with restriction functions $r_n : X_{n+1} \to X_n$ for all $n$.
+(These are simply presheaves on the poset of natural numbers, for the
+reader familiar with this terminology.)
+We think of such a $\mathbb{N}$-indexed set as modeling a kind of 
+``sequence of approximations'' to the true type being modeled.
 %
 Key to guarded domain theory is that there is a ``later'' operator
 $\triangleright$ on types. Thinking of types as a sequence of
@@ -207,8 +210,17 @@ ordering but also a \emph{bisimilarity} relation that reflects when
 elements differ only in the number of abstract computational steps
 that they take.
 %
-Because bisimilarity, unlike equality, is not transitive this
-necessitates further changes to the core concepts of our semantics.
+% ERIC: This could be merged into the summary at the end of the section
+The reason for requiring these two separate notions is that in the setting of
+guarded domain theory, it is not possible to carry out transitive reasoning
+while being oblivious to the number of steps the elements take. We turn this
+statement into a formal theorem in \ref{sec:towards-relational-model}. To overcome
+this limitation, we develop further changes to the core concepts of our
+semantics as discussed in that section.
+
+% Because bisimilarity, unlike equality, is not transitive in the guarded
+% setting, this necessitates further changes to the core
+% concepts of our semantics. These challenges are discussed in Section \ref{sec:towards-relational-model}.
 
 \subsection{Synthetic Guarded Domain Theory}
 
@@ -219,12 +231,12 @@ non-standard foundation such as guarded type theory where the later
 modality is taken as a primitive operation on types, and we take as an
 axiom that guarded domain equations have a (necessarily unique)
 solution. This has the added benefit that providing a denotational
-semantics of gradually typed terms is as simple as a semantics of an
+semantics of gradually typed terms is as simple as defining the semantics of an
 effectful language using a monad on the category of sets. Not only
 does this make on-paper reasoning about guarded domain theory easier,
 it also enables a simpler avenue to verification in a proof
 assistant. Whereas formalizing analytic guarded domain theory would
-require significant theory of presheaves and making sure that all
+require a significant theory of presheaves and making sure that all
 constructions are functors on categories of presheaves, formalizing
 synthetic guarded domain theory can be done by directly adding the
 later modality and the guarded fixed point property axiomatically.
@@ -238,13 +250,13 @@ approximations. In the setting of the topos of trees, this manifests as the need
 to consider \emph{global elements} of the presheaves, i.e., a family of elements
 $x_i \in X_i$ compatible with the restriction maps. For example, consider the
 set of programs that may take a computational step or return unit.\footnote{This example is adapted from \cite{mogelberg-paviotti2016}.} In the
-topos of trees, we can model this set as the indexed family of sets $X_n =
-\{0,1,\dots,n-1, \bot\}$ for $n \ge 1$, where $i$ denotes a program that steps
+topos of trees, we can model this set as the indexed family of sets $\{X_n\}_{n \in \mathbb{N}}$
+where for each $n \ge 1$ we define $X_n = \{0,1,\dots,n-1, \bot\}$. Here, $i$ denotes a program that steps
 $i$ times and then returns, and $\bot$ denotes a program that fails to terminate
 in $n-1$ steps or fewer. For any fixed $n$, the set $X_n$ fails to distinguish a
 program that takes $n$ steps and then terminates from a program that never
 terminates. On the other hand, if we instead consider the denotation of a
-program to be a global element of the presheaf $\{X_n\}$ -- a family of elements
+program to be a global element of the presheaf $\{X_n\}_{n \in \mathbb{N}}$ -- a family of elements
 $x_i \in X_i$ for all $i \in \mathbb{N}$ -- then the denotation of the diverging
 program will be distinct from that of a program that terminates, regardless of
 the number of steps it takes.
@@ -280,6 +292,7 @@ semantics for gradually typed languages that validates $\beta\eta$
 equality and satisfies a graduality theorem. A great deal of the work
 has further been verified in Guarded Cubical Agda \cite{veltri-vezzosi2020}, 
 demonstrating that the semantics is readily mechanizable.
+We provide an overview of the mechanization effort in Section \ref{sec:mechanization}.
 
 \begin{enumerate}
 \item First, we give a simple concrete term semantics where we show
@@ -313,6 +326,18 @@ The paper is laid out as follows:
   New-Licata classical domain theoretic approach fails to adapt
   cleanly to the guarded setting and explore the difficulties of
   proving graduality in an intensional model.
+  %
+  % ... including the reason why we need to introduce weak bisimilarity.
+  %
+  The key technical issue is that reasoning principles that are simultaneously
+  extensional \emph{and} compositional are not compatible with guarded domain
+  theory (here, extensional means relating elements that differ only in the
+  number of computational steps they take). We make this statement precise with
+  a no-go theorem (Theorem \ref{thm:no-go}). As a result, we split the
+  graduality ordering into two relations: a strong error ordering in which
+  elements must take the same number of steps, and a weak bisimilarity relation
+  where elements differing only in their stepping behavior are related.
+  
 \item In Section \ref{sec:concrete-relational-model} we describe the resulting
   model in detail. We then prove that the resulting denotational model is
   \emph{adequate} for the graduality property: a closed term precision $M \ltdyn

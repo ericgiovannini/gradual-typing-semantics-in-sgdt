@@ -15,14 +15,18 @@
    use “step” for “big step”, which confused me because I usually take
    it to mean “small step”. Perhaps “step” —> “evaluate”
 
-** line 99. “𝑀 ⇓ 𝑛 <=> 𝑁 ↓ 𝑛” —> “𝑀 ⇓ 𝑛 <=> 𝑁 ⇓ 𝑛”
+   *** ERIC: Should we not call this notion adequacy?
 
-** line 127—129. “domain theory is incapable of modeling certain perversely
+** DONE line 99. “𝑀 ⇓ 𝑛 <=> 𝑁 ↓ 𝑛” —> “𝑀 ⇓ 𝑛 <=> 𝑁 ⇓ 𝑛”
+
+** TODO line 127—129. “domain theory is incapable of modeling certain perversely
    recursive features of programming languages such as dynamic type
    tag generation and higher-order references” Why is type tag
    generation “perversely recursive”? Higher-order references are
    quite common—give an intuition as to why they cannot be handled in
    domain theory.
+
+*** ERIC: TODO - add an intuitive explanation for this, and if possible provide a reference
 
 ** line 135—136. “but more commonly as “step-indexed sets”” Step-indexing
    appears often in works on gradual typing (e.g., in all the work on
@@ -32,19 +36,25 @@
    that is immediately appealing (to this reader at least). Perhaps
    you might focus on this more in your introduction and motivation?
 
+   *** ERIC: Such an approach is given by guarded type theory, but that is not our contribution.
+
 ** line 157. “Because bisimilarity, unlike equality, is not transitive”
    Provide intuition as to why this is true and/or promise more
    details later.
 
-** line 166. “is as simple as a semantics” [garbled]
+   *** ERIC: Added a reference to the section where this is discussed.
+
+** DONE line 166. “is as simple as a semantics” [garbled]
    —> “is as simple as giving a semantics” [or similar]
 
-** line 169. “would require significant theory of presheaves” [garbled]
+** DONE line 169. “would require significant theory of presheaves” [garbled]
    —> “would require a significant theory of presheaves” [or similar]
 
-** line 176. “compatible with the restriction maps”
+** DONE line 176. “compatible with the restriction maps”
    You haven’t mentioned restriction maps before. Please introduce
    terms before use!
+
+   *** ERIC: I added the definition of restriction maps above.
 
 ** line 182. “{𝑋_n} – a family of elements 𝑥 ∈ 𝑋 for all 𝑖 ∈ N”
    You defined X_n earlier, and {X_n} looks like a singleton set of
@@ -52,7 +62,9 @@
    write as {x_i | x_i \in X_i, i \in Nat} or similar. Perhaps use
    that notation again?
 
-** line 182. “the presheaf {𝑋_n}”
+   *** ERIC: I changed ${X_n}$ to $\{X_n\}_{n \in \mathbb{N}}$
+
+** TODO line 182. “the presheaf {𝑋_n}”
    You just made a point of saying that one of the advantages of your
    approach is that you don’t need presheafs. That was a relief to me,
    because even though I know a fair bit of domain theory and category
@@ -62,7 +74,9 @@
    readers who know about presheafs, connecting what you are saying to
    the theory they are already familiar with.)
 
-** line 199 “A great deal of the work has further been verified in Guarded Cubical Agda”
+   *** ERIC: Make sure the intro doesn't rely on prior knowlege of presheaves.
+
+** DONE line 199 “A great deal of the work has further been verified in Guarded Cubical Agda”
    I take it that means not everything has been verified. Explain what
    has not been verified, and why not. [I see later this is discussed
    in Section 6.2, so a forward pointer there will do.]
@@ -74,12 +88,19 @@
    first list (a), (b), … and the second (1), (2), … to emphasise the
    lack of correspondence.
 
+   *** ERIC: Should we change this?
+
 ** line 197—229. Earlier, you mentioned bisimilarity as important.
    Shouldn’t it also appear somewhere in this summary?
 
+   *** ERIC: I added some sentences to the summary mentioning bisimilarity,
+       but I'm not sure if it's too detailed.
+
 ** line 244. “as well as monotonicity” [garbled] —> “as well as”
 
-** Figure 1. The formulation you give is non-standard. A more common one is
+  *** ERIC: There isn't actually anything wrong here...
+
+** TODO Figure 1. The formulation you give is non-standard. A more common one is
 
      ...
 
@@ -88,6 +109,8 @@
    any equations relating derivations. I presume you have a good reason
    for using your formulation instead of this one, but you should say
    what it is!
+
+   *** ERIC: TODO - discuss the more common formulation and mention why we don't use it
 
 ** line 292—314. In the introduction, summarise why errors and divergence must arise,
    and give a forward pointer to here for details.
