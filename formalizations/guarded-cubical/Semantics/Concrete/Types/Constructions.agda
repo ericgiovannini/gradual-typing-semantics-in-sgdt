@@ -43,8 +43,6 @@ open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
 
-open import Semantics.Concrete.Dyn k
-open import Semantics.Concrete.DynPerturb k
 open import Semantics.Concrete.LaterMonoid k
 
 private
@@ -159,15 +157,6 @@ A ⊎ A' = mkValType ((ValType→Predomain A) ⊎p (ValType→Predomain A')) M-S
     (⊎A-PrePtb ∘hom interpV A)
     (A⊎-PrePtb ∘hom interpV A')
 
-dyn' : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
-dyn' = mkValType Dyn' PtbD ι-dyn' where
-  open DynDef
-  open Guarded (next Dyn)
-
-dyn : ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
-dyn = mkValType Dyn PtbD ι-dyn where
-  open DynDef
-
 
 -- Sigma and Pi
 
@@ -239,6 +228,8 @@ module _ where
       h : MonoidHom MA (Endo (PB▹ ValType→Predomain A))
       h = PrePtb▹ ∘hom iA
 
+
+
 module _ where
 
   open Clocked k
@@ -250,12 +241,9 @@ module _ where
     (Monoid▸ (λ t → PtbV (A~ t)))
     (Endo▸ ∘hom (monoidhom▸ (λ t → interpV (A~ t))))
 
-------------------------------
-
-
-
 
 {-
+
 module _ where
 
   private
