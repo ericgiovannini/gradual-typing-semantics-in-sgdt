@@ -73,7 +73,7 @@ module _ (X : Type ℓ) (M : X → Monoid ℓ') where
       elim .snd .snd x y = refl
 
 
-  module _ {M : Monoid ℓ'}
+  module _ {ℓM : Level} {M : Monoid ℓM}
       (Mᴰ : Monoidᴰ M ℓᴰ)
       (ϕ : MonoidHom ⊕ᵢ M) where
     private

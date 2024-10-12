@@ -8,6 +8,7 @@ open import Cubical.Data.Unit
 
 open import Cubical.Algebra.Monoid
 open import Cubical.Algebra.Semigroup
+open import Cubical.Algebra.Monoid.More
 
 open MonoidStr
 
@@ -29,3 +30,7 @@ corec : ∀ {ℓ}{M : Monoid ℓ} → MonoidHom M TrivialMonoid
 corec .fst x = tt
 corec .snd .IsMonoidHom.presε = refl
 corec .snd .IsMonoidHom.pres· x y = refl
+
+ind : ∀ {ℓ} {M : Monoid ℓ} → (ϕ ψ : MonoidHom TrivialMonoid M) → ϕ ≡ ψ
+ind ϕ ψ = eqMonoidHom _ _ (funExt λ tt →
+    (ϕ .snd .IsMonoidHom.presε) ∙ (sym (ψ .snd .IsMonoidHom.presε)))

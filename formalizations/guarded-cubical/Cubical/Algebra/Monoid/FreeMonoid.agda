@@ -13,6 +13,7 @@ open import Cubical.Algebra.Monoid.Displayed
 open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
 open import Cubical.Algebra.Monoid.Displayed.Instances.Path
 open import Cubical.Data.Empty as Empty hiding (elim; rec)
+open import Cubical.Data.Unit renaming (Unit to ⊤)
 
 private variable
   ℓ ℓ' ℓ'' ℓ''' ℓᴰ ℓᴰ' : Level
@@ -199,3 +200,44 @@ module _ (A : Type ℓ) where
           {Nᴰ = Mᴰ}
           {ϕ = ϕ}
           (elim A ⊥ ⊥ (Reindex ϕ Mᴰ) iA Empty.elim Empty.elim) (π ϕ Mᴰ)
+
+
+
+
+-- Convenient shorthand for the free monoid on one generator
+
+FM-1 : Monoid ℓ-zero
+FM-1 = FM ⊤ ⊥ ⊥
+
+FM-1-gen : ⟨ FM-1 ⟩
+FM-1-gen = gen ⊤ ⊥ ⊥ tt
+
+module _ (Mᴰ : Monoidᴰ FM-1 ℓᴰ) where
+  private
+    module Mᴰ = Monoidᴰ Mᴰ
+   
+  FM-1-elim : (pt : Mᴰ.eltᴰ ⟦ tt ⟧) → Section Mᴰ
+  FM-1-elim pt = elim ⊤ ⊥ ⊥ Mᴰ (λ _ → pt) Empty.elim Empty.elim
+
+module _ {M : Monoid ℓ'}
+  (ϕ : MonoidHom FM-1 M)
+  (Mᴰ : Monoidᴰ M ℓᴰ') where
+
+  private
+    module Mᴰ = Monoidᴰ Mᴰ
+
+  FM-1-elimLocal : (pt : Mᴰ.eltᴰ (ϕ .fst (gen _ _ _ tt)))
+    → LocalSection ϕ Mᴰ
+  FM-1-elimLocal pt = elimLocal ⊤ Mᴰ ϕ (λ _ → pt)
+    
+module _ (N : Monoid ℓ''') (pt : ⟨ N ⟩) where
+
+  FM-1-rec : MonoidHom FM-1 N
+  FM-1-rec = rec ⊤ ⊥ ⊥ N (λ _ → pt) Empty.rec Empty.rec
+  
+module _ {N : Monoid ℓ'''} (ϕ ψ : MonoidHom FM-1 N)
+  (agree-tt : ϕ .fst (gen _ _ _ tt) ≡ ψ .fst (gen _ _ _ tt))
+  where
+
+  FM-1-ind : ϕ ≡ ψ
+  FM-1-ind = cases-ind ⊤ ⊥ ⊥ (λ _ → agree-tt) Empty.elim Empty.elim

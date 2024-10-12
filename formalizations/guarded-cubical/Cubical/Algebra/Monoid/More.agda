@@ -8,6 +8,8 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv.Properties
+
 
 open import Cubical.Data.Nat hiding (_·_ ; _^_)
 open import Cubical.Data.Unit
@@ -146,9 +148,19 @@ _∘hom_ : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''} ->
 g ∘hom f = fst g ∘ fst f  ,
            monoidequiv
              ((cong (fst g) (snd f .presε)) ∙ (snd g .presε))
-             λ m m' -> cong (fst g) (snd f .pres· m m') ∙ snd g .pres· _ _
+             λ m m' -> cong (fst g) (snd f .pres· m m') ∙ snd g .pres· _ _           
 
 infixr 9 _∘hom_
+
+∘hom-IdL : {M : Monoid ℓ} {N : Monoid ℓ'} →
+  (f : MonoidHom M N)
+  → idMon N ∘hom f ≡ f
+∘hom-IdL f = eqMonoidHom _ _ refl
+
+∘hom-IdR : {M : Monoid ℓ} {N : Monoid ℓ'} →
+  (f : MonoidHom M N)
+  → f ∘hom idMon M ≡ f
+∘hom-IdR f = eqMonoidHom _ _ refl
 
 ∘hom-Assoc : {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''}{Q : Monoid ℓ'''} ->
   (f : MonoidHom M N) (g : MonoidHom N P) (h : MonoidHom P Q)
@@ -443,3 +455,120 @@ module _ {M : Monoid ℓ}{N : Monoid ℓ'}{P : Monoid ℓ''}
     → factorization π ϕ
   elimOp opFact .fst = opRec (opFact .fst)
   elimOp opFact .snd = eqMonoidHom _ _ (cong fst (opFact .snd))
+
+
+-- Isomorphism of monoids
+-- IsMonoidIso : {A : Type ℓ} {B : Type ℓ'} (M : MonoidStr A) (isom : Iso A B) (N : MonoidStr B)
+--   → Type (ℓ-max ℓ ℓ')
+-- IsMonoidIso M e N = IsMonoidHom M (e .fst) N
+
+-- MonoidEquiv : (M : Monoid ℓ) (N : Monoid ℓ') → Type (ℓ-max ℓ ℓ')
+-- MonoidEquiv M N = Σ[ e ∈ ⟨ M ⟩ ≃ ⟨ N ⟩ ] IsMonoidEquiv (M .snd) e (N .snd)
+
+
+record MonoidIso (M : Monoid ℓ) (N : Monoid ℓ') : Type (ℓ-max ℓ ℓ') where
+  no-eta-equality
+  constructor monoidiso
+  field
+    fun : MonoidHom M N
+    inv : MonoidHom N M
+    rightInv : section (fun .fst) (inv .fst)
+    leftInv  : retract (fun .fst) (inv .fst)
+
+module _
+  {M : Monoid ℓ} {N : Monoid ℓ'}
+  (fun : MonoidHom M N)
+  (inv : MonoidHom N M)
+  (rightInv : fun ∘hom inv ≡ idMon N)
+  (leftInv  : inv ∘hom fun ≡ idMon M)
+  where
+
+  mkMonoidIso : MonoidIso M N
+  mkMonoidIso .MonoidIso.fun = fun
+  mkMonoidIso .MonoidIso.inv = inv
+  mkMonoidIso .MonoidIso.rightInv = funExt⁻ (cong fst rightInv)
+  mkMonoidIso .MonoidIso.leftInv = funExt⁻ (cong fst leftInv)
+  
+
+module _
+  {M : Monoid ℓ} {N : Monoid ℓ'}
+  (isom : MonoidIso M N) where
+
+  private
+    module isom = MonoidIso isom
+
+  MonoidIso→RightInv : isom.fun ∘hom isom.inv ≡ idMon N
+  MonoidIso→RightInv = eqMonoidHom _ _ (funExt isom.rightInv)
+
+  MonoidIso→LeftInv : isom.inv ∘hom isom.fun ≡ idMon M
+  MonoidIso→LeftInv = eqMonoidHom _ _ (funExt isom.leftInv)
+
+  MonoidIso→TypeIso : Iso (M .fst) (N .fst)
+  MonoidIso→TypeIso .Iso.fun = isom.fun .fst
+  MonoidIso→TypeIso .Iso.inv = isom.inv .fst
+  MonoidIso→TypeIso .Iso.rightInv = isom.rightInv
+  MonoidIso→TypeIso .Iso.leftInv = isom.leftInv
+
+  MonoidIso→MonoidEquiv : MonoidEquiv M N
+  MonoidIso→MonoidEquiv .fst = isoToEquiv MonoidIso→TypeIso
+  MonoidIso→MonoidEquiv .snd .presε = isom.fun .snd .presε
+  MonoidIso→MonoidEquiv .snd .pres· = isom.fun .snd .pres·
+
+  MonoidIso-Inv : MonoidIso N M
+  MonoidIso-Inv .MonoidIso.fun = isom.inv
+  MonoidIso-Inv .MonoidIso.inv = isom.fun
+  MonoidIso-Inv .MonoidIso.rightInv = isom.leftInv
+  MonoidIso-Inv .MonoidIso.leftInv = isom.rightInv
+
+idMonoidIso : {M : Monoid ℓ} →
+  MonoidIso M M
+idMonoidIso .MonoidIso.fun = idMon _
+idMonoidIso .MonoidIso.inv = idMon _
+idMonoidIso .MonoidIso.rightInv x = refl
+idMonoidIso .MonoidIso.leftInv x = refl
+
+module _
+  {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''}
+  (f : MonoidIso M N)
+  (g : MonoidIso N P)
+  where
+
+  private
+    module f = MonoidIso f
+    module g = MonoidIso g
+  
+  compMonoidIso : MonoidIso M P
+  compMonoidIso .MonoidIso.fun = g.fun ∘hom f.fun
+  compMonoidIso .MonoidIso.inv = f.inv ∘hom g.inv
+  compMonoidIso .MonoidIso.rightInv x = (cong (fst g.fun) (f.rightInv _)) ∙ g.rightInv x
+  compMonoidIso .MonoidIso.leftInv x = (cong (fst f.inv) (g.leftInv _)) ∙ f.leftInv x
+
+
+{-
+module _
+  {M : Monoid ℓ} {N : Monoid ℓ'}
+  (equiv : MonoidEquiv M N) where
+
+  private
+    hom : MonoidHom M N
+    hom .fst = equiv .fst .fst
+    hom .snd = equiv .snd
+
+    inv : MonoidHom N M
+    inv .fst = invEquiv (equiv .fst) .fst
+    -- These follow from the fact that hom is a homomorphism
+    -- and that the underlying types are isomorphic.
+    inv .snd .presε =
+      sym (invEq (equivAdjointEquiv (equiv .fst)) (equiv .snd .presε))
+    inv .snd .pres· x y =
+      sym (invEq (equivAdjointEquiv (equiv .fst)) {!equiv .snd .pres· ? ?!})
+
+    isom : Iso ⟨ M ⟩ ⟨ N ⟩
+    isom = equivToIso (equiv .fst)
+
+  MonoidEquiv→MonoidIso : MonoidIso M N
+  MonoidEquiv→MonoidIso .MonoidIso.fun = hom
+  MonoidEquiv→MonoidIso .MonoidIso.inv = inv
+  MonoidEquiv→MonoidIso .MonoidIso.rightInv = isom .Iso.rightInv
+  MonoidEquiv→MonoidIso .MonoidIso.leftInv = isom .Iso.leftInv
+-}
