@@ -18,7 +18,7 @@ open import Cubical.Data.Nat renaming (ℕ to Nat)
 open import Cubical.Data.Unit.Properties
 open import Cubical.Data.Sigma.Base
 open import Cubical.Data.Sigma.Properties
-open import Cubical.Data.Sum.Base
+open import Cubical.Data.Sum.Base as Sum
 open import Cubical.Data.Sum.Properties
 open import Cubical.Data.Empty.Base
 
@@ -46,8 +46,12 @@ private
     ℓB ℓ'B ℓ''B : Level
 
     ℓ≤A ℓ≈A : Level
+    ℓA' ℓ≤A' ℓ≈A' : Level
     ℓ≤B ℓ≈B : Level
+    ℓC ℓ'C ℓ''C : Level
     ℓ≤ ℓ≈ : Level
+    ℓX₁ ℓX₂ : Level
+    ℓX' : Level
 
     X : PosetBisim ℓX ℓ'X ℓ''X
     Y : PosetBisim ℓY ℓ'Y ℓ''Y
@@ -73,6 +77,14 @@ flat h = ⟨ h ⟩ , (posetbisimstr
 
 ℕ : PosetBisim ℓ-zero ℓ-zero ℓ-zero
 ℕ = flat (Nat , isSetℕ)
+
+flatRec : (X : hSet ℓ) (A : PosetBisim ℓA ℓ≤A ℓ≈A) → (⟨ X ⟩ → ⟨ A ⟩) →
+  PBMor (flat X) A
+flatRec X A f .PBMor.f = f
+flatRec X A f .PBMor.isMon {x = x} {y = y} x≡y =
+  subst (λ z → A .snd .PosetBisimStr._≤_ (f x) z) (cong f x≡y) (A .snd .PosetBisimStr.is-refl (f x))
+flatRec X A f .PBMor.pres≈ {x = x} {y = y} x≡y =
+  subst (λ z → A .snd .PosetBisimStr._≈_ (f x) z) (cong f x≡y) (A .snd .PosetBisimStr.is-refl-Bisim (f x))
 
 -- Any function defined on Nat as a flat dbposet is monotone
 flatNatFun-monotone : (f : Nat -> Nat) -> monotone {X = ℕ} {Y = ℕ} f
@@ -100,6 +112,13 @@ UnitPB = flat (Unit , isSetUnit)
 -- unique morphism into UnitP
 UnitPB! : {A : PosetBisim ℓ ℓ' ℓ''} -> PBMor A UnitPB
 UnitPB! = record { f = λ _ → tt ; isMon = λ _ → refl ; pres≈ = λ _ → refl }
+
+recUnitPB : {A : PosetBisim ℓ ℓ' ℓ''} → ⟨ A ⟩ → PBMor UnitPB A
+recUnitPB {A = A} x =
+  record {
+    f = λ _ → x
+  ; isMon = λ _ → A .snd .PosetBisimStr.is-refl x
+  ; pres≈ = λ _ → A .snd .PosetBisimStr.is-refl-Bisim x}
 
 
 LiftPosetBisim : {ℓ1 ℓ'1 ℓ''1 : Level} (X : PosetBisim ℓ1 ℓ'1 ℓ''1) ->
@@ -393,6 +412,16 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
   isMon = λ {x} {y} x≤y → lift x≤y ;
   pres≈ = λ {x} {y} x≈y → lift x≈y }
 
+⊎p-rec :
+  {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} {C : PosetBisim ℓC ℓ'C ℓ''C} →
+  ⟨ A ==> C ⟩ -> ⟨ B ==> C ⟩ -> ⟨ (A ⊎p B) ==> C ⟩
+⊎p-rec f g = record {
+  f = λ { (inl a) → PBMor.f f a ; (inr b) → PBMor.f g b} ;
+  isMon = λ { {inl a1} {inl a2} a1≤a2 → PBMor.isMon f (lower a1≤a2) ;
+              {inr b1} {inr b2} b1≤b2 → PBMor.isMon g (lower b1≤b2) }  ;
+  pres≈ = λ { {inl a1} {inl a2} a1≤a2 → PBMor.pres≈ f (lower a1≤a2) ;
+              {inr b1} {inr b2} b1≤b2 → PBMor.pres≈ g (lower b1≤b2) } }
+
 
 open PosetBisimStr
 
@@ -559,7 +588,8 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
           b₂₃  = subst T x₂≡x₃ b₂
           
           b₁₂₃≤b₂₃ : ord-B x₃ b₁₂₃ b₂₃
-          b₁₂₃≤b₂₃ = {!!} -- rel-transport-≤ (cong B x₂≡x₃) b₁₂≤b₂
+          b₁₂₃≤b₂₃ = transport-rel (cong B x₂≡x₃) (ord-B x₂) (ord-B x₃) (cong ord-B x₂≡x₃) b₁₂≤b₂
+          -- rel-transport-≤ (cong B x₂≡x₃) b₁₂≤b₂
 
           -- Goal: b₁₃ (B x₃).≤ b₃
           -- Know: b₁₃ = b₁₂₃ by substComposite
@@ -588,7 +618,8 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
           pf-inverse = X .snd x₁ x₂ x₁≡x₂ (sym x₂≡x₁)
 
           b₂₁₂≤b₁₂ : ord-B x₂ b₂₁₂ b₁₂
-          b₂₁₂≤b₁₂ = {!!} -- rel-transport-≤ (cong B x₁≡x₂) b₂₁≤b₁
+          b₂₁₂≤b₁₂ = transport-rel (cong B x₁≡x₂) (ord-B x₁) (ord-B x₂) (cong ord-B x₁≡x₂) b₂₁≤b₁
+          -- rel-transport-≤ (cong B x₁≡x₂) b₂₁≤b₁
 
           b₂₁₂≡b₂ : b₂₁₂ ≡ b₂
           b₂₁₂≡b₂ = let e1 = (λ i → subst T (pf-inverse i) b₂₁) in
@@ -602,7 +633,7 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
 
   module _ (bisim-B : ∀ x → Rel (B x) (B x) ℓ≈) where
 
-    Σ-bisim : Rel Sigma Sigma {!!}
+    Σ-bisim : Rel Sigma Sigma (ℓ-max ℓX ℓ≈)
     Σ-bisim (x₁ , b₁) (x₂ , b₂) =
       Σ[ eq ∈ (x₁ ≡ x₂) ] ((bisim-B x₂) (subst (λ x → B x) eq b₁) b₂)
 
@@ -615,7 +646,9 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
 
     Σ-bisim-sym : (∀ x → isSym (bisim-B x)) → isSym Σ-bisim
     Σ-bisim-sym H (x₁ , b₁) (x₂ , b₂) (x₁≡x₂ , b₁₂≈b₂) =
-      (sym x₁≡x₂) , {!!} -- rel-transport-≈-lemma (cong B (sym x₁≡x₂)) (H x₂ _ _ b₁₂≈b₂)
+      (sym x₁≡x₂) ,
+      transport-rel-lemma (cong B (sym x₁≡x₂)) (bisim-B x₂) (bisim-B x₁)
+      (cong bisim-B (sym x₁≡x₂)) (H x₂ _ _ b₁₂≈b₂) -- rel-transport-≈-lemma (cong B (sym x₁≡x₂)) (H x₂ _ _ b₁₂≈b₂)
 
     Σ-bisim-prop-valued : (∀ x → isPropValued (bisim-B x)) → isPropValued Σ-bisim
     Σ-bisim-prop-valued H (x₁ , b₁) (x₂ , b₂) (eq , b₁≈b₂) (eq' , b₁≈b₂') =
@@ -736,11 +769,11 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
   Σ-intro x .PBMor.pres≈ {x = b₁} {y = b₂} b₁≈b₂ =
     refl , subst (λ b → rel-≈ (B x) b b₂) (sym (transportRefl b₁)) b₁≈b₂
 
-  Σ-intro' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
-    (g : ⟨ A ⟩ → ⟨ X ⟩) → ((a : ⟨ A ⟩) → PBMor A (B (g a))) → PBMor A (ΣP X B)
-  Σ-intro' g h .PBMor.f a = (g a) , h a .PBMor.f a
-  Σ-intro' g h .PBMor.isMon {x = a₁} {y = a₂} a₁≤a₂ = {!!} , {!!}
-  Σ-intro' g h .PBMor.pres≈ = {!!}
+  -- Σ-intro' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+  --   (g : ⟨ A ⟩ → ⟨ X ⟩) → ((a : ⟨ A ⟩) → PBMor A (B (g a))) → PBMor A (ΣP X B)
+  -- Σ-intro' g h .PBMor.f a = (g a) , h a .PBMor.f a
+  -- Σ-intro' g h .PBMor.isMon {x = a₁} {y = a₂} a₁≤a₂ = {!!} , {!!}
+  -- Σ-intro' g h .PBMor.pres≈ = {!!}
     -- record {
     -- f = λ x → g.f x , h.f x
     -- ; isMon = λ x≤y → (g.isMon x≤y) , (h.isMon x≤y)
@@ -755,6 +788,47 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
   Σ-elim₂ : (p : ⟨ ΣP X B ⟩) → ⟨ B (Σ-elim₁ p) ⟩
   Σ-elim₂ = snd
 
+  Σ-elim : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+    ((x : ⟨ X ⟩) → PBMor (B x) A) →
+    PBMor (ΣP X B) A
+  Σ-elim fs .PBMor.f (x , b) = fs x .PBMor.f b
+  Σ-elim {A = A} fs .PBMor.isMon {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≤b₂) =
+    transport
+      (λ i → rel-≤ A
+        (fs (sym x₁≡x₂ i) .PBMor.f (path i))
+        (fs x₂ .PBMor.f b₂))
+      (fs x₂ .PBMor.isMon b₁≤b₂)
+      where
+        path : PathP (λ i → ⟨ B (x₁≡x₂ (~ i)) ⟩) (subst (λ x → ⟨ B x ⟩) x₁≡x₂ b₁) b₁
+        path = symP (subst-filler (λ x → ⟨ B x ⟩) x₁≡x₂ b₁)
+  Σ-elim {A = A} fs .PBMor.pres≈ {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≈b₂) =
+     transport
+      (λ i → rel-≈ A
+        (fs (sym x₁≡x₂ i) .PBMor.f (path i))
+        (fs x₂ .PBMor.f b₂))
+      (fs x₂ .PBMor.pres≈ b₁≈b₂)
+      where
+        path : PathP (λ i → ⟨ B (x₁≡x₂ (~ i)) ⟩) (subst (λ x → ⟨ B x ⟩) x₁≡x₂ b₁) b₁
+        path = symP (subst-filler (λ x → ⟨ B x ⟩) x₁≡x₂ b₁)
+
+
+module _
+  (X : hSet ℓX)
+  (X' : hSet ℓX')
+  (f : ⟨ X ⟩ → ⟨ X' ⟩)
+  (A : ⟨ X ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A' : ⟨ X' ⟩ → PosetBisim ℓA' ℓ≤A' ℓ≈A')
+  (g : (x : ⟨ X ⟩) → PBMor (A x) (A' (f x)))
+  where
+
+  Σ-mor' : PBMor (ΣP X A) (ΣP X' A')
+  Σ-mor' = Σ-elim {B = A} {A = (ΣP X' A')} (λ x → (Σ-intro {B = A'} (f x)) ∘p (g x))
+  -- Σ-mor' .PBMor.f (x , a) = (f x) , g x .PBMor.f a
+  -- Σ-mor' .PBMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≤a₂) =
+  --   (cong f x₁≡x₂) , {!!}
+  -- Σ-mor' .PBMor.pres≈ {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≈a₂) =
+  --   {!!}
+
 -- Action of Σ on a family of morphisms
 Σ-mor :
   (X : hSet ℓX) →
@@ -763,6 +837,9 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
   ((x : ⟨ X ⟩) → PBMor (A x) (B x)) →
   PBMor (ΣP X A) (ΣP X B)
 -- Σ-mor X A B fs = {!!}
+Σ-mor X A B fs = Σ-mor' X X (λ x → x) A B fs
+
+{-
 Σ-mor X A B fs .PBMor.f (x , a) = (x , fs x .PBMor.f a)
 
 Σ-mor X A B fs .PBMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁₂≤a₂) = x₁≡x₂ , aux
@@ -795,12 +872,114 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
     --   _ ∎
  
     aux : rel-≤ (B x₂) (subst TB x₁≡x₂ (fs x₁ .f a₁)) (fs x₂ .f a₂)
-    aux = subst (λ z → rel-≤ (B x₂) z (fs x₂ .f a₂)) (sym lem3) lem1 
+    aux = subst (λ z → rel-≤ (B x₂) z (fs x₂ .f a₂)) (sym lem3) lem1
+
   
 Σ-mor X A B fs .PBMor.pres≈ = {!!}
 -- Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
+-}
 
 
+module _
+  (X₁ : hSet ℓX₁)
+  (X₂ : hSet ℓX₂)
+  (A₁ : ⟨ X₁ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A₂ : ⟨ X₂ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  where
+
+  private
+    X₁⊎X₂ : hSet (ℓ-max ℓX₁ ℓX₂)
+    X₁⊎X₂ = (⟨ X₁ ⟩ ⊎ ⟨ X₂ ⟩) , isSet⊎ (X₁ .snd) (X₂ .snd)
+
+    A₁⊎A₂ : ⟨ X₁⊎X₂ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A
+    A₁⊎A₂ = Sum.rec A₁ A₂
+  
+  Iso-⊎Σ-Σ⊎ : PredomIso
+    (ΣP X₁⊎X₂ (Sum.rec A₁ A₂))
+    ((ΣP X₁ A₁) ⊎p (ΣP X₂ A₂))
+  Iso-⊎Σ-Σ⊎ .PredomIso.fun =
+    Σ-elim {B = A₁⊎A₂} {A = (ΣP X₁ A₁) ⊎p (ΣP X₂ A₂)}
+      (Sum.elim (λ x₁ → (σ1 {B = ΣP X₂ A₂}) ∘p (Σ-intro {B = A₁} x₁))
+                (λ x₂ → (σ2 {A = ΣP X₁ A₁}) ∘p (Σ-intro {B = A₂} x₂)))
+  Iso-⊎Σ-Σ⊎ .PredomIso.inv =
+    ⊎p-rec {A = ΣP X₁ A₁} {B = ΣP X₂ A₂}
+      (Σ-mor' X₁ X₁⊎X₂ inl A₁ A₁⊎A₂ (λ x₁ → Id))
+      (Σ-mor' X₂ X₁⊎X₂ inr A₂ A₁⊎A₂ (λ x₂ → Id))
+  Iso-⊎Σ-Σ⊎ .PredomIso.invRight (inl _) = refl
+  Iso-⊎Σ-Σ⊎ .PredomIso.invRight (inr _) = refl
+  Iso-⊎Σ-Σ⊎ .PredomIso.invLeft (inl _ , _) = refl
+  Iso-⊎Σ-Σ⊎ .PredomIso.invLeft (inr _ , _) = refl
+
+
+module _ {ℓY : Level}
+  (X₁ : hSet ℓX₁)
+  (X₂ : hSet ℓX₂)
+  (Y₁ : ⟨ X₁ ⟩ → Type ℓY)
+  (Y₂ : ⟨ X₂ ⟩ → Type ℓY)
+  (A₁ : (x₁ : ⟨ X₁ ⟩) → Y₁ x₁ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A₂ : (x₂ : ⟨ X₂ ⟩) → Y₂ x₂ → PosetBisim ℓA ℓ≤A ℓ≈A)
+
+  where
+
+  private
+    X₁⊎X₂ : hSet (ℓ-max ℓX₁ ℓX₂)
+    X₁⊎X₂ = (⟨ X₁ ⟩ ⊎ ⟨ X₂ ⟩) , isSet⊎ (X₁ .snd) (X₂ .snd)
+
+    A₁⊎A₂ : (s : ⟨ X₁⊎X₂ ⟩) (z : Sum.rec Y₁ Y₂ s) → PosetBisim ℓA ℓ≤A ℓ≈A
+    A₁⊎A₂ = Sum.elim {C = λ s → Sum.rec Y₁ Y₂ s → PosetBisim ℓA ℓ≤A ℓ≈A} A₁ A₂
+
+    Π-s : ∀ (s : ⟨ X₁⊎X₂ ⟩) → PosetBisim (ℓ-max ℓA ℓY) (ℓ-max ℓY ℓ≤A) (ℓ-max ℓY ℓ≈A)
+    Π-s s = ΠP (Sum.rec Y₁ Y₂ s)
+      (Sum.elim {C = λ s' → Sum.rec Y₁ Y₂ s' → PosetBisim ℓA ℓ≤A ℓ≈A} A₁ A₂ s)
+
+    LHS = (ΣP X₁⊎X₂ Π-s)
+                
+    RHS = ((ΣP X₁ (λ x₁ → ΠP (Y₁ x₁) (A₁ x₁))) ⊎p
+           (ΣP X₂ (λ x₂ → ΠP (Y₂ x₂) (A₂ x₂))))
+
+  Predom-Iso-ΣΠ-⊎ : PredomIso LHS RHS
+  Predom-Iso-ΣΠ-⊎ .PredomIso.fun = Σ-elim {B = Π-s} {A = RHS}
+    (Sum.elim
+      (λ x₁ →
+           σ1 {B = ΣP X₂ (λ x₂ → ΠP (Y₂ x₂) (A₂ x₂))}
+        ∘p Σ-intro {B = λ x → ΠP (Y₁ x) (A₁ x)} x₁)
+      (λ x₂ →
+           σ2 {A = ΣP X₁ λ x₁ → ΠP (Y₁ x₁) (A₁ x₁)}
+       ∘p Σ-intro {B = λ x → ΠP (Y₂ x) (A₂ x)} x₂))
+  Predom-Iso-ΣΠ-⊎ .PredomIso.inv = ⊎p-rec
+    {A = ΣP X₁ (λ x₁ → ΠP (Y₁ x₁) (A₁ x₁))} {B = ΣP X₂ (λ x₂ → ΠP (Y₂ x₂) (A₂ x₂))}
+    (Σ-mor' X₁ X₁⊎X₂ inl (λ x₁ → ΠP (Y₁ x₁) (A₁ x₁)) Π-s (λ x₁ → Id))
+    (Σ-mor' X₂ X₁⊎X₂ inr (λ x₂ → ΠP (Y₂ x₂) (A₂ x₂)) Π-s (λ x₂ → Id))
+  
+  Predom-Iso-ΣΠ-⊎ .PredomIso.invRight (inl _) = refl
+  Predom-Iso-ΣΠ-⊎ .PredomIso.invRight (inr _) = refl
+  
+  Predom-Iso-ΣΠ-⊎ .PredomIso.invLeft (inl _ , _) = refl
+  Predom-Iso-ΣΠ-⊎ .PredomIso.invLeft (inr _ , _) = refl
+    
+
+{-
+module _ {ℓY₁ ℓY₂ : Level}
+  (X₁ : Type ℓX₁)
+  (X₂ : Type ℓX₂)
+  (Y₁ : X₁ → Type ℓY₁)
+  (Y₂ : X₂ → Type ℓY₂)
+  (A₁ : (x₁ : X₁) → Y₁ x₁ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A₂ : (x₂ : X₂) → Y₂ x₂ → PosetBisim ℓA ℓ≤A ℓ≈A) 
+  where
+
+  test : (s : X₁ ⊎ X₂) → PredomIso
+    (Sum.rec
+      (λ x₁ → ΠP (Lift {j = ℓY₂} (Y₁ x₁)) (A₁ x₁ ∘ lower))
+      (λ x₂ → ΠP (Lift {j = ℓY₁} (Y₂ x₂)) (A₂ x₂ ∘ lower)) s)
+      
+    (ΠP (Sum.rec ((Lift {j = ℓY₂}) ∘ Y₁) ((Lift {j = ℓY₁}) ∘ Y₂) s)
+      (Sum.elim
+        {C = λ s' → Sum.rec (Lift ∘ Y₁) (Lift ∘ Y₂) s' → PosetBisim ℓA ℓ≤A ℓ≈A}
+        (λ x₁ y₁ → A₁ x₁ (lower y₁) ) (λ x₂ y₂ → A₂ x₂ (lower y₂)) s))
+  test (inl x) = {!!}
+  test (inr x) = {!!}
+-}
 
 -- Given types A and A' and a retraction g : A' → A, if A has a
 -- predomain structure then we can define a predomain structure on A'
@@ -975,3 +1154,7 @@ UnitP-×L-equiv .snd = makeIsPosetEquiv Unit-×L is-mon is-mon-inv
 
 UnitP-×L : {X : Poset ℓ ℓ'} -> (UnitP ×p X) ≡ X
 UnitP-×L {X = X} = equivFun (PosetPath (UnitP ×p X) X) UnitP-×L-equiv-}
+
+
+
+

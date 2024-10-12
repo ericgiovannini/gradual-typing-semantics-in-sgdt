@@ -11,6 +11,7 @@ module Semantics.Concrete.DoublePoset.DblPosetCombinators where
 open import Cubical.Relation.Binary
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Function hiding (_$_)
 
 open import Semantics.Concrete.DoublePoset.Base
@@ -22,7 +23,7 @@ open import Semantics.Concrete.DoublePoset.Constructions
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
-open import Cubical.Data.Empty
+open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Sum
 
 open import Common.Common
@@ -42,6 +43,14 @@ private
     C :  PosetBisim ℓC ℓ'C ℓ''C
     C' : PosetBisim ℓC' ℓ'C' ℓ''C'
     D : PosetBisim ℓD ℓ'D ℓ''D
+    ℓX : Level
+    ℓ≤A ℓ≈A : Level
+    ℓA₁  ℓ≤A₁  ℓ≈A₁  : Level
+    ℓA₁' ℓ≤A₁' ℓ≈A₁' : Level
+    ℓA₂  ℓ≤A₂  ℓ≈A₂  : Level
+    ℓA₂' ℓ≤A₂' ℓ≈A₂' : Level
+    ℓA₃  ℓ≤A₃  ℓ≈A₃  : Level
+
     
 open PBMor
 open import Semantics.Concrete.DoublePoset.DPMorProofs
@@ -473,3 +482,90 @@ module ClockedCombinators (k : Clock) where
   mFunProj A A' B B' fAA' fB'LB = {!!}
     -- mRet' (mExt' (K fB'LB) ∘m Id ∘m (K fAA'))
 -}
+
+
+module _
+  (X : hSet ℓX) where
+  
+  isoSigmaUnit : PredomIso (ΣP X (λ _ → UnitPB)) (flat X)
+  isoSigmaUnit .PredomIso.fun = Σ-elim (λ x → K _ x)
+  isoSigmaUnit .PredomIso.inv = flatRec X _ (λ x → x , tt)
+  isoSigmaUnit .PredomIso.invRight x = refl
+  isoSigmaUnit .PredomIso.invLeft (x , tt) = refl
+
+-- module _ {ℓ ℓ≤ ℓ≈ : Level} where
+--   isoPiBot : PredomIso {ℓA = ℓ} (ΠP ⊥ {ℓ = ℓ} {ℓ≤ = ℓ≤} {ℓ≈ = ℓ≈} ⊥.rec) UnitPB
+--   isoPiBot .PredomIso.fun = UnitPB!
+--   isoPiBot .PredomIso.inv = recUnitPB (λ x → ⊥.rec x)
+--   isoPiBot .PredomIso.invRight tt = refl
+--   isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
+
+module _ {ℓ ℓ≤ ℓ≈ : Level} {A : PosetBisim ℓA ℓ≤A ℓ≈A} where
+  isoPiBot : PredomIso (ΠP ⊥ (λ _ → A)) UnitPB
+  isoPiBot .PredomIso.fun = UnitPB!
+  isoPiBot .PredomIso.inv = recUnitPB (λ x → ⊥.rec x)
+  isoPiBot .PredomIso.invRight tt = refl
+  isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
+
+
+idPredomIso : {A : PosetBisim ℓA ℓ≤A ℓ≈A} → PredomIso A A
+idPredomIso .PredomIso.fun = Id
+idPredomIso .PredomIso.inv = Id
+idPredomIso .PredomIso.invRight _ = refl
+idPredomIso .PredomIso.invLeft _ = refl
+
+
+module _
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+  (iso₁ : PredomIso A₁ A₁') (iso₂ : PredomIso A₂ A₂')
+  where
+
+  ×-PredomIso : PredomIso (A₁ ×dp A₂) (A₁' ×dp A₂')
+  ×-PredomIso .PredomIso.fun = iso₁ .PredomIso.fun ×mor iso₂ .PredomIso.fun
+  ×-PredomIso .PredomIso.inv = iso₁ .PredomIso.inv ×mor iso₂ .PredomIso.inv
+  ×-PredomIso .PredomIso.invRight (x , y) = ≡-× (iso₁ .PredomIso.invRight x) (iso₂ .PredomIso.invRight y)
+  ×-PredomIso .PredomIso.invLeft (x , y)  = ≡-× (iso₁ .PredomIso.invLeft x) (iso₂ .PredomIso.invLeft y)
+  
+
+module _
+  (X : hSet ℓX)
+  (A₁ : ⟨ X ⟩ → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
+  (A₂ : ⟨ X ⟩ → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
+  (isom : ((x : ⟨ X ⟩) → PredomIso (A₁ x) (A₂ x)))
+  where
+
+  ΣP-cong-iso-snd : PredomIso (ΣP X A₁) (ΣP X A₂)
+  ΣP-cong-iso-snd .PredomIso.fun = Σ-mor X A₁ A₂ (PredomIso.fun ∘ isom)
+  ΣP-cong-iso-snd .PredomIso.inv = Σ-mor X A₂ A₁ (PredomIso.inv ∘ isom)
+  ΣP-cong-iso-snd .PredomIso.invRight (x , a₂) = ΣPathP (refl , (PredomIso.invRight (isom x) a₂))
+  ΣP-cong-iso-snd .PredomIso.invLeft (x , a₁) = ΣPathP (refl , (PredomIso.invLeft (isom x) a₁))
+
+module _
+  (X : Type ℓ)
+  (A₁ : X → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
+  (A₂ : X → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
+  (isom : ((x : X) → PredomIso (A₁ x) (A₂ x)))
+  where
+
+  ΠP-iso : PredomIso (ΠP X A₁) (ΠP X A₂)
+  ΠP-iso .PredomIso.fun = Π-mor X A₁ A₂ (PredomIso.fun ∘ isom)
+  ΠP-iso .PredomIso.inv = Π-mor X A₂ A₁ (PredomIso.inv ∘ isom)
+  ΠP-iso .PredomIso.invRight as = funExt (λ x → PredomIso.invRight (isom x) (as x))
+  ΠP-iso .PredomIso.invLeft as = funExt (λ x → PredomIso.invLeft (isom x) (as x))
+
+module _
+  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+  (f : PredomIso A₁ A₂)
+  (g : PredomIso A₂ A₃)
+  where
+
+  compPredomIso : PredomIso A₁ A₃
+  compPredomIso .PredomIso.fun = PredomIso.fun g ∘p PredomIso.fun f
+  compPredomIso .PredomIso.inv = PredomIso.inv f ∘p PredomIso.inv g
+  compPredomIso .PredomIso.invRight x =
+    cong (PBMor.f (PredomIso.fun g)) (PredomIso.invRight f _) ∙ PredomIso.invRight g x
+  compPredomIso .PredomIso.invLeft x =
+    cong (PBMor.f (PredomIso.inv f)) (PredomIso.invLeft g _) ∙ PredomIso.invLeft f x

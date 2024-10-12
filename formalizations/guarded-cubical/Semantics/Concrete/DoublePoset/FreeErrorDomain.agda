@@ -373,6 +373,11 @@ module ExtAsEDMorphism
    Ext-δ = eqPBMor _ _ (funExt (λ lx → Equations-U.ext-δ f lx))
 
 
+Ext-unit-right : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
+  ExtAsEDMorphism.Ext η-mor ≡ IdE {B = F-ob.F-ob A}
+Ext-unit-right {A = A} = eqEDMor _ _ (funExt (λ lx → MonadLaws.Unit-Right.monad-unit-right ⟨ A ⟩ lx))
+
+
 
 ---------------------------------------
 -- 2. Action of F on vertical morphisms

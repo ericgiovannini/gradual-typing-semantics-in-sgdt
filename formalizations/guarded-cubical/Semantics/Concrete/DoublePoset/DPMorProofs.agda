@@ -43,7 +43,38 @@ private
     B' : PosetBisim ℓB' ℓ'B' ℓ''B'
     C :  PosetBisim ℓC ℓ'C ℓ''C
     C' : PosetBisim ℓC' ℓ'C' ℓ''C'
+    ℓRA ℓRB : Level
 
+
+transport-rel :
+  {A B : Type ℓ}
+  (eq : A ≡ B) →
+  (RA : Rel A A ℓR) →
+  (RB : Rel B B ℓR) →
+  (PathP (λ i → Rel (eq i) (eq i) ℓR) RA RB) →
+  {x y : A} →
+  (RA x y) →
+  RB (transport eq x) (transport eq y)
+transport-rel eq RA RB path {x = x} {y = y} xRy =
+  transport (λ i → (path i) (transport-filler eq x i) (transport-filler eq y i)) xRy
+
+transport-rel-lemma :
+  {A B : Type ℓ}
+  (eq : A ≡ B) →
+  (RA : Rel A A ℓR) →
+  (RB : Rel B B ℓR) →
+  (PathP (λ i → Rel (eq i) (eq i) ℓR) RA RB) →
+  {x : A} {y : B} →
+  RA x (transport (λ i → eq (~ i)) y) →
+  RB (transport (λ i → eq i) x) y
+transport-rel-lemma eq RA RB path {x = x} {y = y} xRy =
+  subst (λ x → RB ab x) (transportTransport⁻ eq y) lem
+  where
+    ab = transport eq x
+    bab = transport eq (transport (sym eq) y)
+    
+    lem : RB ab bab
+    lem = transport-rel eq RA RB path xRy
 
 rel-transport-≤ :
   {A B : PosetBisim ℓ ℓ' ℓ''} ->
