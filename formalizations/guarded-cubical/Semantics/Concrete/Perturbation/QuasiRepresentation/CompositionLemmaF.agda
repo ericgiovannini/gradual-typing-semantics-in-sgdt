@@ -14,11 +14,11 @@ open import Cubical.Algebra.Monoid.Base
 
 open import Common.Common
 
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Relation as PRel
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Types k as Types
 open import Semantics.Concrete.Perturbation.Relation.Alt k

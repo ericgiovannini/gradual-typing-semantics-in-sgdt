@@ -1,4 +1,3 @@
-{- Extension of pertubrations from types to relations, and push-pull -}
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
 {-# OPTIONS --allow-unsolved-metas #-}
@@ -15,14 +14,14 @@ open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Algebra.Monoid.FreeMonoid as Free
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
 
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.Monad k
-open import Semantics.Concrete.DoublePoset.MonadCombinators k
-import Semantics.Concrete.DoublePoset.KleisliFunctors k as Kl
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Monad k
+open import Semantics.Concrete.Predomain.MonadCombinators k
+import Semantics.Concrete.Predomain.Kleisli k as Kl
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types -- hiding (U; F; _⟶_)
 
@@ -113,18 +112,18 @@ module _
 -- ∀ (pFA : ⟨ PtbC (F A) ⟩) →
   ⟶Kᴸ-lemma :
      (interpV (Types.U (A ⟶ B)) ∘hom (Kl-Arrow-Ptb-L A B)) 
-   ≡ (⟶KB-PrePtb {A = |A|} {B = |B|}) ∘hom (interpC (Types.F A) ^opHom)
+   ≡ (⟶KB-SemPtb {A = |A|} {B = |B|}) ∘hom (interpC (Types.F A) ^opHom)
   ⟶Kᴸ-lemma = op-ind _ _
     (FP.ind
       -- nat case
-      (Free.FM-1-ind _ _ (PrePtb≡ {ℓ = level} _ _ (funExt (λ g → eqPBMor _ _ (funExt (λ x → sym
-        ((ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PBMor.f) (δ* .ErrorDomMor.fun (η-mor .PBMor.f x)))
+      (Free.FM-1-ind _ _ (SemPtb≡ {ℓ = level} _ _ (funExt (λ g → eqPMor _ _ (funExt (λ x → sym
+        ((ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PMor.f) (δ* .ErrorDomMor.fun (η-mor .PMor.f x)))
         ≡⟨ {!!} ⟩
-        (ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PBMor.f) (δ-mor {A = |A|} .PBMor.f (η-mor .PBMor.f x)))
+        (ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PMor.f) (δ-mor {A = |A|} .PMor.f (η-mor .PMor.f x)))
         ≡⟨ {!!} ⟩
-        |B|.δ .PBMor.f (ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PBMor.f) (η-mor {A = |A|} .PBMor.f x)) 
+        |B|.δ .PMor.f (ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PMor.f) (η-mor {A = |A|} .PMor.f x)) 
         ≡⟨ {!!} ⟩
-        |B|.δ .PBMor.f (g .PBMor.f x) ∎)))))))
+        |B|.δ .PMor.f (g .PMor.f x) ∎)))))))
        
 
       -- MA case
@@ -139,7 +138,7 @@ module _
 
 
 {-
-LHS:  B.θ (λ t → PBMor.f g x)
+LHS:  B.θ (λ t → PMor.f g x)
 RHS: 
 -}
 
@@ -147,14 +146,14 @@ RHS:
 {-
   ⟶Kᴿ-lemma :
      (interpV (Types.U (A ⟶ B)) ∘hom (Kl-Arrow-Ptb-R A B))
-   ≡ (A⟶K-PrePtb {A = |A|} {B = |B|} ∘hom interpV (Types.U B))
+   ≡ (A⟶K-SemPtb {A = |A|} {B = |B|} ∘hom interpV (Types.U B))
   ⟶Kᴿ-lemma = FP.ind
       -- nat case
-      (NatM-ind _ _ (PrePtb≡ _ _ (funExt (λ g →
-        eqPBMor (((interpV (U (A ⟶ B)) ∘hom Kl-Arrow-Ptb-R A B) ∘hom i₁) .fst 1 .fst .PBMor.f g) _ refl))))
+      (NatM-ind _ _ (SemPtb≡ _ _ (funExt (λ g →
+        eqPMor (((interpV (U (A ⟶ B)) ∘hom Kl-Arrow-Ptb-R A B) ∘hom i₁) .fst 1 .fst .PMor.f g) _ refl))))
 
       -- MB case
-      (eqMonoidHom _ _ (funExt (λ pB → PrePtb≡ _ _ refl)))
+      (eqMonoidHom _ _ (funExt (λ pB → SemPtb≡ _ _ refl)))
 
   
 -}

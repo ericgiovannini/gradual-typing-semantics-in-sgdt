@@ -30,17 +30,17 @@ open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
 open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel hiding (⊎-inl ; ⊎-inr)
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (U)
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.KleisliFunctors k
-open import Semantics.Concrete.DoublePoset.MonadCombinators k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Convenience
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation as PRel hiding (⊎-inl ; ⊎-inr)
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Combinators hiding (U)
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Kleisli k
+open import Semantics.Concrete.Predomain.MonadCombinators k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types hiding (U; F; _⟶_ ; _×_ ; _⊎_)
@@ -365,8 +365,8 @@ module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
     |A₁| = ValType→Predomain A₁
     |A₂| = ValType→Predomain A₂
 
-    module |A₁| = PosetBisimStr (|A₁| .snd)
-    module |A₂| = PosetBisimStr (|A₂| .snd)
+    module |A₁| = PredomainStr (|A₁| .snd)
+    module |A₂| = PredomainStr (|A₂| .snd)
     
     module MA₁ = MonoidStr (PtbV A₁ .snd)
     module MA₂ = MonoidStr (PtbV A₂ .snd)
@@ -390,13 +390,13 @@ module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
     where
       sq1 : ∀ (pA₁ : ⟨ PtbV A₁ ⟩) →
         VRelPtbSq A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl _ _) pA₁ (i₁ .fst pA₁)
-      sq1 pA₁ x (inl y) xRy = lift (interpV A₁ .fst pA₁ .fst .PBMor.isMon (lower xRy))
+      sq1 pA₁ x (inl y) xRy = lift (interpV A₁ .fst pA₁ .fst .PMor.isMon (lower xRy))
 
       sq2 : ∀ (pA₂ : ⟨ PtbV A₂ ⟩) →
         VRelPtbSq A₁ (A₁ Types.⊎ A₂) (PRel.⊎-inl _ _) (ε-hom .fst pA₂) (i₂ .fst pA₂)
       sq2 pA₂ x (inl y) xRy = lift
         (transport
-          (λ i → (sym iA₁.presε i .fst .PBMor.f x) |A₁|.≤ y)
+          (λ i → (sym iA₁.presε i .fst .PMor.f x) |A₁|.≤ y)
           (lower xRy))
 
   ⊎-inr : VRelPP A₂ (A₁ Types.⊎ A₂) _
@@ -417,12 +417,12 @@ module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
       VRelPtbSq A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr _ _) (ε-hom .fst pA₁) (i₁ .fst pA₁)
     sq1 pA₁ x (inr y) xRy = lift
       (transport
-        (λ i → (sym iA₂.presε i .fst .PBMor.f x) |A₂|.≤ y)
+        (λ i → (sym iA₂.presε i .fst .PMor.f x) |A₂|.≤ y)
         (lower xRy))
 
     sq2 : ∀ (pA₂ : ⟨ PtbV A₂ ⟩) →
       VRelPtbSq A₂ (A₁ Types.⊎ A₂) (PRel.⊎-inr _ _) pA₂ (i₂ .fst pA₂)
-    sq2 pA₂ x (inr y) xRy = lift (interpV A₂ .fst pA₂ .fst .PBMor.isMon (lower xRy))
+    sq2 pA₂ x (inr y) xRy = lift (interpV A₂ .fst pA₂ .fst .PMor.isMon (lower xRy))
 
 
 
@@ -452,7 +452,7 @@ module _ {ℓX₁ ℓX₂ : Level}
     X₂Set : hSet ℓX₂
     X₂Set = (⟨ X₂ ⟩ , Discrete→isSet (X₂ .snd))
 
-    fun : PBMor (ValType→Predomain (Sigma₁ Types.⊎ Sigma₂)) (ValType→Predomain Sigma)
+    fun : PMor (ValType→Predomain (Sigma₁ Types.⊎ Sigma₂)) (ValType→Predomain Sigma)
     fun =  ⊎p-rec
         (Σ-mor' X₁Set ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) Sum.inl _ _ (λ x₁ → Id))
         (Σ-mor' X₂Set ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) Sum.inr _ _ (λ x₂ → Id))
@@ -479,20 +479,20 @@ module _ {ℓX₁ ℓX₂ : Level}
           (λ x₁ → corecR (i₁ ∘hom IFP.σ _ _ x₁) (corecVRelPtb (λ pA₁ → pull-sq₁ x₁ pA₁)))
           (λ x₂ → corecR (i₂ ∘hom IFP.σ _ _ x₂) (corecVRelPtb (λ pA₂ → pull-sq₂ x₂ pA₂)))))
           where
-            relation : PBRel (ValType→Predomain (Sigma₁ Types.⊎ Sigma₂)) (ValType→Predomain Sigma)
+            relation : PRel (ValType→Predomain (Sigma₁ Types.⊎ Sigma₂)) (ValType→Predomain Sigma)
               (ℓ-max (ℓ-max ℓX₁ ℓX₂) ℓ≤A)
             relation = (functionalRel fun Id (idPRel (ValType→Predomain Sigma)))
             
             pull-sq₁ : ∀ (x₁ : ⟨ X₁ ⟩) (pA₁ : ⟨ PtbV (A₁ x₁) ⟩) →
-              PBSq relation relation
+              PSq relation relation
                 (iSum (i₁ .fst (IFP.σ _ _ x₁ .fst pA₁))) (iSigma (IFP.σ _ _ (inl x₁) .fst pA₁))
             pull-sq₁ x₁ pA₁ (inl (x₁' , a₁')) (inl x₁'' , a'') (eq , rel) = eq , {!!} --aux (X₁ .snd x₁ x₁')
               where
-                aux : ∀ (x₁≡x₁'? : Dec (x₁ ≡ x₁')) → rA₁ x₁'' .PBRel.R
+                aux : ∀ (x₁≡x₁'? : Dec (x₁ ≡ x₁')) → rA₁ x₁'' .PRel.R
                   ((subst (λ x → ⟨ ValType→Predomain (Sum.rec A₁ A₂ x) ⟩) eq
-                  (PBMor.f fun (iSum (i₁ .fst (|⊕ᵢ|.gen x₁ pA₁)) .PBMor.f (inl (x₁' , a₁'))) .snd)))
+                  (PMor.f fun (iSum (i₁ .fst (|⊕ᵢ|.gen x₁ pA₁)) .PMor.f (inl (x₁' , a₁'))) .snd)))
                   
-                  ((iSigma (|⊕ᵢ|.gen (inl x₁) pA₁) .PBMor.f (inl x₁'' , a'') .snd))
+                  ((iSigma (|⊕ᵢ|.gen (inl x₁) pA₁) .PMor.f (inl x₁'' , a'') .snd))
                 aux (yes eq) = {!!}
                 aux (no neq) = {!!}
             pull-sq₁ x₁ pA₁ (inl (x₁' , a₁')) (inr x₂ , a₂) (eq , rel) = ⊥.rec (inl≠inr _ _ eq) 
@@ -500,7 +500,7 @@ module _ {ℓX₁ ℓX₂ : Level}
             pull-sq₁ x₁ pA₁ (inr (x₂ , a')) (inr x₂' , a'') (eq , rel) = eq , {!!}
 
             pull-sq₂ : ∀ (x₂ : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) →
-              PBSq relation relation
+              PSq relation relation
                 (iSum (i₂ .fst (IFP.σ _ _ x₂ .fst pA₂))) (iSigma (IFP.σ _ _ (inr x₂) .fst pA₂))
             pull-sq₂ = {!!}
               
@@ -525,11 +525,11 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
 
     -- push
     (corecL (idMon _) (corecVRelPtb (λ pA →
-      λ x y~ H t → PBMor.isMon (iA .fst pA .fst) (H t)))) -- NTS: (iA pA x) ⊑A (iA pA (y~ t))
+      λ x y~ H t → PMor.isMon (iA .fst pA .fst) (H t)))) -- NTS: (iA pA x) ⊑A (iA pA (y~ t))
 
     -- pull
     (corecR (idMon _) (corecVRelPtb (λ pA →
-      λ x y~ H t → PBMor.isMon (iA .fst pA .fst) (H t))))
+      λ x y~ H t → PMor.isMon (iA .fst pA .fst) (H t))))
 
 
 
@@ -549,7 +549,7 @@ module _
       iA  = fst ∘ interpV A  .fst
       iA' = fst ∘ interpV A' .fst
 
-      rel : PBRel 𝔸 𝔸' ℓ≤A'
+      rel : PRel 𝔸 𝔸' ℓ≤A'
       rel = (functionalRel isom.fun Id rA')
 
       RHS₁ = PredomIso→EndoHom (PredomIso-Inv isom)
@@ -560,7 +560,7 @@ module _
                ∘hom interpV A
                ∘hom M'→M
 
-    Iso→PredomRel : PBRel 𝔸 𝔸' ℓ≤A'
+    Iso→PredomRel : PRel 𝔸 𝔸' ℓ≤A'
     Iso→PredomRel = rel
 
     module _
@@ -574,19 +574,19 @@ module _
       eq₂' pA' = cong fst (funExt⁻ (cong fst eq₂) pA')
 
       pushSq : ∀ pA → VRelPtbSq A A' rel pA (M→M' .fst pA)
-      pushSq pA = subst (λ z → PBSq rel rel z (Id ∘p (iA' pushed ∘p Id))) (sym (eq₁' pA)) comp123 
+      pushSq pA = subst (λ z → PSq rel rel z (Id ∘p (iA' pushed ∘p Id))) (sym (eq₁' pA)) comp123 
         where
           pushed = (M→M' .fst pA)
 
-          sq-lem : PBSq rA' rel isom.inv Id
-          sq-lem x y xRy = subst (λ z → rA' .PBRel.R z y) (sym (isom.invRight x)) xRy
+          sq-lem : PSq rA' rel isom.inv Id
+          sq-lem x y xRy = subst (λ z → rA' .PRel.R z y) (sym (isom.invRight x)) xRy
           
-          comp12 : PBSq rel rA' (iA' pushed ∘p isom.fun) (iA' pushed ∘p Id)
+          comp12 : PSq rel rA' (iA' pushed ∘p isom.fun) (iA' pushed ∘p Id)
           comp12 = CompSqV {c₁ = rel} {c₂ = rA'} {c₃ = rA'}
                            {f₁ = isom.fun} {g₁ = Id} {f₂ = iA' pushed} {g₂ = iA' pushed}
                            (SqV-functionalRel isom.fun Id rA') (Predom-IdSqH (iA' pushed))
 
-          comp123 : PBSq rel rel (isom.inv ∘p (iA' pushed ∘p isom.fun)) (Id ∘p (iA' pushed ∘p Id))
+          comp123 : PSq rel rel (isom.inv ∘p (iA' pushed ∘p isom.fun)) (Id ∘p (iA' pushed ∘p Id))
           comp123 = CompSqV {c₁ = rel} {c₂ = rA'} {c₃ = rel}
                             {f₁ = iA' pushed ∘p isom.fun} {g₁ = iA' pushed ∘p Id}
                             {f₂ = isom.inv} {g₂ = Id}
@@ -594,15 +594,15 @@ module _
 
 
       pullSq : ∀ pA' → VRelPtbSq A A' rel (M'→M .fst pA') pA'
-      pullSq pA' = subst (λ z → PBSq rel rel (Id ∘p (iA pulled ∘p Id)) z) (sym (eq₂' pA')) comp123
+      pullSq pA' = subst (λ z → PSq rel rel (Id ∘p (iA pulled ∘p Id)) z) (sym (eq₂' pA')) comp123
         where
           pulled = M'→M .fst pA'
 
-          sq-lem1 : PBSq rel rA Id (isom .PredomIso.inv)
+          sq-lem1 : PSq rel rA Id (isom .PredomIso.inv)
           sq-lem1 x y xRy = subst
-              (λ z → rA .PBRel.R z (isom.inv .PBMor.f y))
+              (λ z → rA .PRel.R z (isom.inv .PMor.f y))
               (isom.invLeft x)
-              (isom.inv .PBMor.isMon xRy)
+              (isom.inv .PMor.isMon xRy)
           -- Given: (isom.fun x) ⊑A' y
           -- NTS: x ⊑A (isom.inv y)
           -- But x = isom.inv (isom.fun x) so sufficies to show
@@ -610,15 +610,15 @@ module _
           -- Then by monotonicity of isom.inv, sufficies to show
           --   (isom.fun x) ⊑A' y
 
-          sq-lem2 : PBSq rA rel Id (isom .PredomIso.fun)
-          sq-lem2 x y xRy = isom.fun .PBMor.isMon xRy
+          sq-lem2 : PSq rA rel Id (isom .PredomIso.fun)
+          sq-lem2 x y xRy = isom.fun .PMor.isMon xRy
 
-          comp12 : PBSq rel rA (iA pulled ∘p Id) (iA pulled ∘p isom.inv)
+          comp12 : PSq rel rA (iA pulled ∘p Id) (iA pulled ∘p isom.inv)
           comp12 = CompSqV {c₁ = rel} {c₂ = rA} {c₃ = rA}
                            {f₁ = Id} {g₁ = isom.inv} {f₂ = iA pulled} {g₂ = iA pulled}
                            sq-lem1 (Predom-IdSqH (iA pulled))
 
-          comp123 : PBSq rel rel (Id ∘p (iA pulled ∘p Id)) (isom.fun ∘p (iA pulled ∘p isom.inv))
+          comp123 : PSq rel rel (Id ∘p (iA pulled ∘p Id)) (isom.fun ∘p (iA pulled ∘p isom.inv))
           comp123 = CompSqV
                     {c₁ = rel} {c₂ = rA} {c₃ = rel}
                     {f₁ = iA pulled ∘p Id} {g₁ = iA pulled ∘p isom.inv}
@@ -702,24 +702,24 @@ module _
        
 
       pushSq : ∀ pA  → VRelPtbSq A A' rel pA (M→M' .fst pA)
-      pushSq pA = subst (λ z → PBSq rel rel z (Id ∘p (iA' pushed ∘p Id))) (eq₁') comp123
+      pushSq pA = subst (λ z → PSq rel rel z (Id ∘p (iA' pushed ∘p Id))) (eq₁') comp123
         where
           pushed = (M→M' .fst pA)
 
           eq₁' : isom.inv ∘p (iA' pushed ∘p isom.fun) ≡ iA pA
-          eq₁' = eqPBMor _ _ (funExt (λ x → sym
+          eq₁' = eqPMor _ _ (funExt (λ x → sym
                 (sym (isom.invLeft _)
-              ∙ (cong (isom.inv .PBMor.f) (funExt⁻ (cong PBMor.f (eq₁ pA)) x)))))
+              ∙ (cong (isom.inv .PMor.f) (funExt⁻ (cong PMor.f (eq₁ pA)) x)))))
 
-          sq-lem : PBSq rA' rel isom.inv Id
-          sq-lem x y xRy = subst (λ z → rA' .PBRel.R z y) (sym (isom.invRight x)) xRy
+          sq-lem : PSq rA' rel isom.inv Id
+          sq-lem x y xRy = subst (λ z → rA' .PRel.R z y) (sym (isom.invRight x)) xRy
           
-          comp12 : PBSq rel rA' (iA' pushed ∘p isom.fun) (iA' pushed ∘p Id)
+          comp12 : PSq rel rA' (iA' pushed ∘p isom.fun) (iA' pushed ∘p Id)
           comp12 = CompSqV {c₁ = rel} {c₂ = rA'} {c₃ = rA'}
                            {f₁ = isom.fun} {g₁ = Id} {f₂ = iA' pushed} {g₂ = iA' pushed}
                            (SqV-functionalRel isom.fun Id rA') (Predom-IdSqH (iA' pushed))
 
-          comp123 : PBSq rel rel (isom.inv ∘p (iA' pushed ∘p isom.fun)) (Id ∘p (iA' pushed ∘p Id))
+          comp123 : PSq rel rel (isom.inv ∘p (iA' pushed ∘p isom.fun)) (Id ∘p (iA' pushed ∘p Id))
           comp123 = CompSqV {c₁ = rel} {c₂ = rA'} {c₃ = rel}
                             {f₁ = iA' pushed ∘p isom.fun} {g₁ = iA' pushed ∘p Id}
                             {f₂ = isom.inv} {g₂ = Id}
@@ -748,12 +748,12 @@ module _
 {-
 module _
   {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
-  {|A'| : PosetBisim ℓA' ℓ≤A' ℓ≈A'} {MA' : Monoid ℓMA'}
-  (inj-A : PBRel (ValType→Predomain A) |A'| ℓ)
+  {|A'| : Predomain ℓA' ℓ≤A' ℓ≈A'} {MA' : Monoid ℓMA'}
+  (inj-A : PRel (ValType→Predomain A) |A'| ℓ)
   (emb-MA : MonoidHom (PtbV (A .snd)) MA')
-  (emb-A : PBMor (ValType→Predomain A) |A'|)
+  (emb-A : PMor (ValType→Predomain A) |A'|)
   (dec-A : ∀ (x' : ⟨ |A'| ⟩) →
-    Dec (Σ[ x ∈ ⟨ A ⟩ ] emb-A .PBMor.f x ≡ x'))
+    Dec (Σ[ x ∈ ⟨ A ⟩ ] emb-A .PMor.f x ≡ x'))
   (dec-MA : ∀ (mA' : ⟨ MA' ⟩) →
     Dec (Σ[ mA ∈ ⟨ PtbV (A .snd) ⟩ ] emb-MA .fst mA ≡ mA'))
   where
@@ -774,17 +774,17 @@ module _
 
 module _
   {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
-  (inj-A : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓ)
+  (inj-A : PRel (ValType→Predomain A) (ValType→Predomain A') ℓ)
   (emb-MA : MonoidHom (PtbV (A .snd)) (PtbV (A' .snd)))
-  (emb-A : PBMor (ValType→Predomain A) (ValType→Predomain A'))
+  (emb-A : PMor (ValType→Predomain A) (ValType→Predomain A'))
   (agree : ∀ (mA : ⟨ PtbV (A .snd) ⟩) →
     emb-A ∘p (ι (A .snd) mA) ≡ (ι (A' .snd) (emb-MA .fst mA)) ∘p emb-A)
-  (dec : ∀ (y : ⟨ A' ⟩) → Dec (Σ[ x ∈ ⟨ A ⟩ ] emb-A .PBMor.f x ≡ y)) where
+  (dec : ∀ (y : ⟨ A' ⟩) → Dec (Σ[ x ∈ ⟨ A ⟩ ] emb-A .PMor.f x ≡ y)) where
 
   private
     iA = ι (A .snd)
     iA' = ι (A' .snd)
-  open PBMor
+  open PMor
 
   inj : VRelPP A A' ℓ
 
@@ -797,8 +797,8 @@ module _
     where
       aux : ∀ mA x y →
         Dec _ →
-        inj-A .PBRel.R x y →
-        inj-A .PBRel.R (iA mA .f x ) (iA' (emb-MA .fst mA) .f y)
+        inj-A .PRel.R x y →
+        inj-A .PRel.R (iA mA .f x ) (iA' (emb-MA .fst mA) .f y)
       aux mA x y (yes (x' , eq)) xRy = {!!}
       aux mA x y (no ¬p) xRy = {!!}
     -- NTS: Sq inj-A inj-A (iA mA x) (iA' (emb-MA mA) y)

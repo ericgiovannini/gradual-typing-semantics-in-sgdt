@@ -33,13 +33,13 @@ open import Cubical.Algebra.Monoid.FreeProduct.Indexed as IFP
 
 open import Common.Common
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Constructions
   renaming (ℕ to ∣ℕ∣; flat to flatDP)
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (U)
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
+open import Semantics.Concrete.Predomain.Combinators hiding (U)
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.ErrorDomain k
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
 
@@ -88,8 +88,8 @@ U B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
   M-UB = FM-1 FP.⊕ B .snd .snd .fst
 
   i-UB : MonoidHom _ _
-  -- i-UB = FP.rec (NatM→.h _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
-  i-UB = FP.rec (FM-1-rec _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
+  -- i-UB = FP.rec (NatM→.h _ (δB-as-SemPtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
+  i-UB = FP.rec (FM-1-rec _ (δB-as-SemPtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
 
 {-
 U' : CompType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
@@ -100,7 +100,7 @@ U' B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
 
   i-UB : MonoidHom _ _
   i-UB = FP.rec
-    (NatM→.h _ (δB-as-PrePtb _))
+    (NatM→.h _ (δB-as-SemPtb _))
     (FP.rec (CEndo-B→Endo-UB ∘hom iB) ({!!} ∘hom monoidhom▹ iB))
 
   |B| = CompType→ErrorDomain B
@@ -110,7 +110,7 @@ U' B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
   test .fst m~ .fst .PBMor.isMon = {!!}
   test .fst m~ .fst .PBMor.pres≈ = {!!}
   test .fst m~ .snd = {!!}
-  test .snd .IsMonoidHom.presε = PrePtb≡ _ _ (funExt (λ x → {!refl!}))
+  test .snd .IsMonoidHom.presε = SemPtb≡ _ _ (funExt (λ x → {!refl!}))
   test .snd .IsMonoidHom.pres· = {!!}
 -}
 
@@ -122,15 +122,15 @@ _×_ : ValType ℓ ℓ≤ ℓ≈ ℓM
     → ValType _ _ _ _
 A × A' = mkValType (ValType→Predomain A ×dp ValType→Predomain A') M-× i-× where
   M-× = PtbV A FP.⊕ PtbV A'
-  i-× = FP.rec (×A-PrePtb ∘hom interpV A) (A×-PrePtb ∘hom interpV A')
+  i-× = FP.rec (×A-SemPtb ∘hom interpV A) (A×-SemPtb ∘hom interpV A')
 
 F : ValType ℓ ℓ≤ ℓ≈ ℓM → CompType ℓ (ℓ-max ℓ ℓ≤) (ℓ-max ℓ ℓ≈) ℓM
 F A = mkCompType (F-ob (ValType→Predomain A)) M-FA iFA where
   open F-ob
   -- M-FA = NatM FP.⊕ PtbV A
-  -- iFA = FP.rec (NatM→.h _ (δ*FA-as-PrePtb _)) (Endo-A→CEndo-FA ∘hom interpV A)
+  -- iFA = FP.rec (NatM→.h _ (δ*FA-as-SemPtb _)) (Endo-A→CEndo-FA ∘hom interpV A)
   M-FA = FM-1 FP.⊕ PtbV A
-  iFA = FP.rec (FM-1-rec _ ((δ*FA-as-PrePtb _))) ((Endo-A→CEndo-FA ∘hom interpV A))
+  iFA = FP.rec (FM-1-rec _ ((δ*FA-as-SemPtb _))) ((Endo-A→CEndo-FA ∘hom interpV A))
 
 _⟶_ : ValType ℓ ℓ≤ ℓ≈ ℓM
       → CompType ℓ' ℓ≤' ℓ≈' ℓM'
@@ -144,8 +144,8 @@ A ⟶ B =
   where
   M-Arrow = (PtbV A ^op) FP.⊕ B .snd .snd .fst
   i-Arrow = FP.rec
-    (A⟶-PrePtb ∘hom (interpV A ^opHom))
-    (⟶B-PrePtb ∘hom interpC B)
+    (A⟶-SemPtb ∘hom (interpV A ^opHom))
+    (⟶B-SemPtb ∘hom interpC B)
 
 _⊎_ : ValType ℓ ℓ≤ ℓ≈ ℓM
     → ValType ℓ' ℓ≤' ℓ≈' ℓM'
@@ -154,8 +154,8 @@ A ⊎ A' = mkValType ((ValType→Predomain A) ⊎p (ValType→Predomain A')) M-S
   where
   M-Sum = (PtbV A) FP.⊕ (PtbV A')
   i-Sum = FP.rec
-    (⊎A-PrePtb ∘hom interpV A)
-    (A⊎-PrePtb ∘hom interpV A')
+    (⊎A-SemPtb ∘hom interpV A)
+    (A⊎-SemPtb ∘hom interpV A')
 
 
 -- Sigma and Pi
@@ -181,7 +181,7 @@ module _
     IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
     where
       int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Σ)
-      int x = (Σ-PrePtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
+      int x = (Σ-SemPtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
 
   ΣV : 
     ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
@@ -202,10 +202,10 @@ module _
   i-Π = IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
     where
       -- int' : X → ⟨ Endo (ΠP X (λ x → ValType→Predomain (B x))) ⟩
-      -- int' x = Π-PrePtb X dec x .fst {!!} -- interpV (B x)
+      -- int' x = Π-SemPtb X dec x .fst {!!} -- interpV (B x)
 
       int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Π)
-      int x = (Π-PrePtb ⟨ X ⟩ (X .snd) x) ∘hom (interpV (B x))
+      int x = (Π-SemPtb ⟨ X ⟩ (X .snd) x) ∘hom (interpV (B x))
 
   ΠV : 
     ValType (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈) (ℓ-max ℓX ℓM)
@@ -220,13 +220,13 @@ module _ where
   open IsMonoidHom
 
   V▹ : ValType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
-  V▹ A = mkValType (PB▹ (ValType→Predomain A)) MA h
+  V▹ A = mkValType (P▹ (ValType→Predomain A)) MA h
     where
       MA = PtbV A
       iA = interpV A
 
-      h : MonoidHom MA (Endo (PB▹ ValType→Predomain A))
-      h = PrePtb▹ ∘hom iA
+      h : MonoidHom MA (Endo (P▹ ValType→Predomain A))
+      h = SemPtb▹ ∘hom iA
 
 
 
@@ -237,7 +237,7 @@ module _ where
 
   V▸ : ▹ k , (ValType ℓ ℓ≤ ℓ≈ ℓM) → ValType ℓ ℓ≤ ℓ≈ ℓM
   V▸ A~ = mkValType
-    (PB▸ (λ t → ValType→Predomain (A~ t)))
+    (P▸ (λ t → ValType→Predomain (A~ t)))
     (Monoid▸ (λ t → PtbV (A~ t)))
     (Endo▸ ∘hom (monoidhom▸ (λ t → interpV (A~ t))))
 

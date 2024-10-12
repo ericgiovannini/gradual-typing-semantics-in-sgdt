@@ -5,7 +5,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.DoublePoset.MonadRelationalResults (k : Clock) where
+module Semantics.Concrete.Predomain.MonadRelationalResults (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -24,9 +24,9 @@ open import Semantics.Concrete.GuardedLiftError k
 
 open import Semantics.Concrete.LockStepErrorOrdering k
 open import Semantics.Concrete.WeakBisimilarity k
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Error
-open import Semantics.Concrete.DoublePoset.Monad k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Error
+open import Semantics.Concrete.Predomain.Monad k
 
 
 

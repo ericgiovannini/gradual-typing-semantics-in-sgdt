@@ -23,17 +23,17 @@ open import Cubical.Foundations.Structure
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Data.Sigma
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DPMorRelation
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Relation
 open import Semantics.Concrete.Perturbation.Semantic k
 --open import Semantics.Concrete.Perturbation.Relation k as Relation
 open import Semantics.Concrete.Perturbation.Relation.Alt k as Relation
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Types k as Types hiding (_×_)
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 ---------------------------------------------------------------
 -- Value Type Relations
 ---------------------------------------------------------------
@@ -113,7 +113,7 @@ module _ {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ ℓMAᵢ} {Aᵢ'  : Va
          (f' : ValTypeMor Aᵢ' Aₒ')
          where
   ValSq : Type _
-  ValSq = PBSq (cᵢ .fst .fst) (cₒ .fst .fst) f f'
+  ValSq = PSq (cᵢ .fst .fst) (cₒ .fst .fst) f f'
 
 module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
          {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
@@ -121,7 +121,7 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' �
          (d : CompRel B B' ℓd)
          where
   ObliqueSq : ∀ (M : ObliqueMor A B) (M' : ObliqueMor A' B') → Type _
-  ObliqueSq M M' = PBSq (c .fst .fst) (U-rel (d .fst .fst)) M M'
+  ObliqueSq M M' = PSq (c .fst .fst) (U-rel (d .fst .fst)) M M'
 
   ObliqueExtSq : ∀ (M : ObliqueMor A B) (M' : ObliqueMor A' B') → Type _
   ObliqueExtSq M M' =

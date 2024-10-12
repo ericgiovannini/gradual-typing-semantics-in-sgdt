@@ -30,15 +30,15 @@ open import Cubical.Algebra.Monoid.Displayed
 open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.KleisliFunctors k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Combinators
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Kleisli k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
@@ -85,7 +85,7 @@ open IsSemigroup
 open IsMonoid
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM')
-         (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+         (c : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
   private
     MA = PtbV A
@@ -94,10 +94,10 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
     iA' = interpV A'
 
   VRelPtbSq : ⟨ MA ⟩ → ⟨ MA' ⟩ → Type _
-  VRelPtbSq pA pA' = PBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
+  VRelPtbSq pA pA' = PSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
 
   isPropVRelPtbSq : ∀ pA pA' → isProp (VRelPtbSq pA pA')
-  isPropVRelPtbSq pA pA' = isPropPBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
+  isPropVRelPtbSq pA pA' = isPropPSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
 
 
   opaque
@@ -105,13 +105,13 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
     VRelPtb = submonoid→Monoidᴰ (record
       { eltᴰ = λ (pA , pA') → VRelPtbSq pA pA'
       ; εᴰ = subst2
-        (PBSq c c)
+        (PSq c c)
         (cong fst (sym (iA .snd .presε)))
         (cong fst (sym (iA' .snd .presε)))
         (Predom-IdSqV c)
       ; _·ᴰ_ = λ {(pA , pA')}{(qA , qA')} pSq qSq →
         subst2
-        (PBSq c c)
+        (PSq c c)
         (cong fst (sym (iA .snd .pres· pA qA)))
         (cong fst (sym (iA' .snd .pres· pA' qA')))
         (CompSqV {c₁ = c}{c₂ = c}{c₃ = c}
@@ -128,7 +128,7 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   PullV = Section (Σr VRelPtb)
 
 module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈' ℓM'}
-         {c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc} where
+         {c : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc} where
 
   opaque
     unfolding VRelPtb
@@ -139,11 +139,11 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
   VRelPP : ∀ (ℓc : Level) → Type _
-  VRelPP ℓc = Σ[ c ∈ PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
+  VRelPP ℓc = Σ[ c ∈ PRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
     PushV A A' c Data.× PullV A A' c
 
   mkVRelPP :
-    (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc) →
+    (c : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc) →
     PushV A A' c →
     PullV A A' c →
     VRelPP ℓc
@@ -159,7 +159,7 @@ module _ {A : ValType ℓ ℓ≤ ℓ≈ ℓM} {A' : ValType ℓ' ℓ≤' ℓ≈'
     MA' = PtbV A'
     iA' = interpV A'
 
-  VRelPP→PredomainRel : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc
+  VRelPP→PredomainRel : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc
   VRelPP→PredomainRel = fst c
 
   pushV : MonoidHom MA MA'

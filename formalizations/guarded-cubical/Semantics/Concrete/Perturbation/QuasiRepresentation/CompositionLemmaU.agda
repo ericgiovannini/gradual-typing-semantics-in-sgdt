@@ -14,11 +14,11 @@ open import Cubical.Algebra.Monoid.Base
 
 open import Common.Common
 
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Relation as PRel
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Types k as Types
 open import Semantics.Concrete.Perturbation.Relation.Alt k
@@ -124,7 +124,7 @@ module _
     repUdUd'→repUdd' = mkLeftRepV (Types.U B₁) (Types.U B₃) (U-rel |dd'|)
       eUdd' δlUdd' UpRUdd' δrUdd' UpLUdd'
       where
-      Udd' : PBRel _ _ _
+      Udd' : PRel _ _ _
       Udd' = U-rel |dd'|
 
       -- Data corresponding to Ud
@@ -144,7 +144,7 @@ module _
 
 
       -- Data corresponding to UdUd'
-      UdUd' : PBRel _ _ _
+      UdUd' : PRel _ _ _
       UdUd' =  U-rel |d| PRel.⊙ U-rel |d'|
 
       ρcomp-left : LeftRepV (Types.U B₁) (Types.U B₃) UdUd'
@@ -169,20 +169,20 @@ module _
 
       -- Data corresponding to U(dd')
 
-      eUdd' : PBMor (U-ob 𝔹₁) (U-ob 𝔹₃)
+      eUdd' : PMor (U-ob 𝔹₁) (U-ob 𝔹₃)
       eUdd' = iUB₃ equiv.δ₂' ∘p ecomp ∘p iUB₁ equiv.δ₁
 
       δlUdd' : ⟨ MUB₁ ⟩
       δlUdd' = equiv.δ₂ MUB₁.· δlcomp MUB₁.· equiv.δ₁
 
-      UpRUdd' : PBSq rUB₁ Udd' (iUB₁ δlUdd') eUdd'
+      UpRUdd' : PSq rUB₁ Udd' (iUB₁ δlUdd') eUdd'
       UpRUdd' = CompSqV
         {c₁ = rUB₁} {c₂ = UdUd'} {c₃ = Udd'}
         {f₁ = (iUB₁ δlcomp ∘p iUB₁ equiv.δ₁)} {g₁ = (ecomp ∘p iUB₁ equiv.δ₁)}
         {f₂ = iUB₁ equiv.δ₂} {g₂ = iUB₃ equiv.δ₂'}
         comp12 sq-UdUd'-Udd'
         where
-          comp12 : PBSq rUB₁ UdUd' (iUB₁ δlcomp ∘p iUB₁ equiv.δ₁) (ecomp ∘p iUB₁ equiv.δ₁)
+          comp12 : PSq rUB₁ UdUd' (iUB₁ δlcomp ∘p iUB₁ equiv.δ₁) (ecomp ∘p iUB₁ equiv.δ₁)
           comp12 = CompSqV
             {c₁ = rUB₁} {c₂ = rUB₁} {c₃ = UdUd'}
             (Predom-IdSqH (iUB₁ equiv.δ₁)) UpRcomp
@@ -190,14 +190,14 @@ module _
       δrUdd' : ⟨ MUB₃ ⟩
       δrUdd' = equiv.δ₂' MUB₃.· δrcomp MUB₃.· equiv.δ₁'
 
-      UpLUdd' : PBSq Udd' rUB₃ eUdd' (iUB₃ δrUdd')
+      UpLUdd' : PSq Udd' rUB₃ eUdd' (iUB₃ δrUdd')
       UpLUdd' = CompSqV
         {c₁ = Udd'} {c₂ = rUB₃} {c₃ = rUB₃}
         {f₁ = (ecomp ∘p iUB₁ equiv.δ₁)} {g₁ = (iUB₃ δrcomp ∘p iUB₃ equiv.δ₁')}
         {f₂ = iUB₃ equiv.δ₂'} {g₂ = iUB₃ equiv.δ₂'}
         comp12 (Predom-IdSqH (iUB₃ equiv.δ₂'))
         where
-          comp12 : PBSq Udd' rUB₃ (ecomp ∘p iUB₁ equiv.δ₁) (iUB₃ δrcomp ∘p iUB₃ equiv.δ₁')
+          comp12 : PSq Udd' rUB₃ (ecomp ∘p iUB₁ equiv.δ₁) (iUB₃ δrcomp ∘p iUB₃ equiv.δ₁')
           comp12 = CompSqV
             {c₁ = Udd'} {c₂ = UdUd'} {c₃ = rUB₃}           
             sq-Udd'-UdUd' UpLcomp          

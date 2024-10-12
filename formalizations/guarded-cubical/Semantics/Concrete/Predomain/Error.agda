@@ -3,7 +3,7 @@
 open import Common.Later
 
 
-module Semantics.Concrete.DoublePoset.Error where
+module Semantics.Concrete.Predomain.Error where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -17,7 +17,7 @@ open import Cubical.Data.Sum
 open import Cubical.Relation.Binary
 
 -- open import Semantics.Concrete.GuardedLiftError k
-open import Semantics.Concrete.DoublePoset.Base
+open import Semantics.Concrete.Predomain.Base
 
 open import Common.ClockProperties
 

@@ -26,15 +26,15 @@ open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.Monoid.More
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.KleisliFunctors k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Combinators
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Kleisli k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
@@ -81,7 +81,7 @@ open IsSemigroup
 open IsMonoid
 
 module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ≤A'  ℓ≈A' ℓMA')
-         (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+         (c : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
   private
     MA = PtbV A
@@ -94,15 +94,15 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
   LeftRepV : Type _
   LeftRepV =
     Σ[ e ∈ ValTypeMor A A' ]
-    (Σ[ δl ∈ ⟨ MA ⟩ ] PBSq rA c (iA δl .fst) e)
-    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PBSq c rA' e (iA' δr .fst))
+    (Σ[ δl ∈ ⟨ MA ⟩ ] PSq rA c (iA δl .fst) e)
+    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PSq c rA' e (iA' δr .fst))
 
   mkLeftRepV :
     (e : ValTypeMor A A') →
     (δl : ⟨ MA ⟩) →
-    PBSq rA c (iA δl .fst) e →
+    PSq rA c (iA δl .fst) e →
     (δr : ⟨ MA' ⟩) →
-    PBSq c rA' e (iA' δr .fst) →
+    PSq c rA' e (iA' δr .fst) →
     LeftRepV
   mkLeftRepV e δl UpR δr UpL = e , (δl , UpR) , (δr , UpL)
 
@@ -114,28 +114,28 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
     δleV : ⟨ MA ⟩
     δleV = r .snd .fst .fst
 
-    UpRV : PBSq rA c (iA δleV .fst) embV
+    UpRV : PSq rA c (iA δleV .fst) embV
     UpRV = r .snd .fst .snd
 
     δreV : ⟨ MA' ⟩
     δreV = r .snd .snd .fst
 
-    UpLV : PBSq c rA' embV (iA' δreV .fst)
+    UpLV : PSq c rA' embV (iA' δreV .fst)
     UpLV = r .snd .snd .snd
 
 
   RightRepV : Type _
   RightRepV =
     Σ[ p ∈ ValTypeMor A' A ]
-    (Σ[ δl ∈ ⟨ MA ⟩ ] PBSq c rA (iA δl .fst) p)
-    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PBSq rA' c p (iA' δr .fst))
+    (Σ[ δl ∈ ⟨ MA ⟩ ] PSq c rA (iA δl .fst) p)
+    × (Σ[ δr ∈ ⟨ MA' ⟩ ] PSq rA' c p (iA' δr .fst))
 
   mkRightRepV :
     (p : ValTypeMor A' A) →
     (δl : ⟨ MA ⟩) →
-    PBSq c rA (iA δl .fst) p →
+    PSq c rA (iA δl .fst) p →
     (δr : ⟨ MA' ⟩) →
-    PBSq rA' c p (iA' δr .fst) →
+    PSq rA' c p (iA' δr .fst) →
     RightRepV
   mkRightRepV p δl DnR δr DnL = p , (δl , DnR) , (δr , DnL)
 
@@ -148,13 +148,13 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
     δlpV : ⟨ MA ⟩
     δlpV = r .snd .fst. fst
 
-    DnRV : PBSq c rA (iA δlpV .fst) projV
+    DnRV : PSq c rA (iA δlpV .fst) projV
     DnRV = r .snd .fst .snd
 
     δrpV : ⟨ MA' ⟩
     δrpV = r .snd .snd .fst
 
-    DnLV : PBSq rA' c projV (iA' δrpV .fst)
+    DnLV : PSq rA' c projV (iA' δrpV .fst)
     DnLV = r .snd .snd .snd
     
 

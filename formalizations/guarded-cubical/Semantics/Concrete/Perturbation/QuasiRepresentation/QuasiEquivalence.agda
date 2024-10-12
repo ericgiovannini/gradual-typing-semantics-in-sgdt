@@ -16,11 +16,11 @@ open import Common.Common
 
 open import Cubical.Data.Sigma
 
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Relation as PRel
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Types k as Types
 open import Semantics.Concrete.Perturbation.Relation.Alt k
@@ -62,8 +62,8 @@ private
 
 module _
   (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) (A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA')
-  (c  : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
-  (c' : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
+  (c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+  (c' : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
 
   where
 
@@ -85,11 +85,11 @@ module _
     field
       δ₁  : ⟨ MA ⟩
       δ₁' : ⟨ MA' ⟩
-      sq-c-c' : PBSq c c' (iA δ₁) (iA' δ₁') 
+      sq-c-c' : PSq c c' (iA δ₁) (iA' δ₁') 
 
       δ₂  : ⟨ MA ⟩
       δ₂' : ⟨ MA' ⟩
-      sq-c'-c : PBSq c' c (iA δ₂) (iA' δ₂')
+      sq-c'-c : PSq c' c (iA δ₂) (iA' δ₂')
 
 
 -- Quasi-order equivalence of computation relations
@@ -273,8 +273,8 @@ module _
 
 module _
   {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
-  (c  : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
-  (c' : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
+  (c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+  (c' : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
   (ρc  : RightRepV A A' c)
   (ρc' : RightRepV A A' c')
   (eq : projV _ _ _ ρc ≡ projV _ _ _ ρc') where
@@ -313,29 +313,29 @@ module _
   --           ⊑A                   c'
 
   quasi-order-rel-V : Σ[ δ-left ∈ ⟨ MA ⟩ ] Σ[ δ-right ∈ ⟨ MA' ⟩ ]
-    (PBSq c c' (iA δ-left) (iA' δ-right))
+    (PSq c c' (iA δ-left) (iA' δ-right))
   quasi-order-rel-V .fst = δlc
   quasi-order-rel-V .snd .fst = δrc'
   quasi-order-rel-V .snd .snd  = composed123
     where
-      α1 : PBSq c (c ⊙ rA') Id Id
+      α1 : PSq c (c ⊙ rA') Id Id
       α1 = sq-c-c⊙A' c
 
-      α2 : PBSq (c ⊙ rA') (rA ⊙ c') (iA δlc) (iA' δrc')
+      α2 : PSq (c ⊙ rA') (rA ⊙ c') (iA δlc) (iA' δrc')
       α2 = CompSqH {f = iA _} {g = projV _ _ _ _} {h = iA' _}
         (DnRV _ _ _ ρc)
-        (subst (λ z → PBSq rA' c' z (iA' δrc')) (sym eq) (DnLV _ _ _ ρc'))
+        (subst (λ z → PSq rA' c' z (iA' δrc')) (sym eq) (DnLV _ _ _ ρc'))
 
-      α3 : PBSq (rA ⊙ c') c' Id Id
+      α3 : PSq (rA ⊙ c') c' Id Id
       α3 = sq-idA⊙c-c c'
 
-      composed12 : PBSq c (rA ⊙ c') ((iA δlc) ∘p Id) ((iA' δrc') ∘p Id)
+      composed12 : PSq c (rA ⊙ c') ((iA δlc) ∘p Id) ((iA' δrc') ∘p Id)
       composed12 = CompSqV
         {c₁ = c} {c₂ = (c ⊙ rA')} {c₃ = (rA ⊙ c')}
         {f₁ = Id} {g₁ = Id} {f₂ = (iA δlc)} {g₂ = (iA' δrc')}
         α1 α2
 
-      composed123 : PBSq c c' (Id ∘p (iA δlc) ∘p Id) (Id ∘p (iA' δrc') ∘p Id)
+      composed123 : PSq c c' (Id ∘p (iA δlc) ∘p Id) (Id ∘p (iA' δrc') ∘p Id)
       composed123 = CompSqV
         {c₁ = c} {c₂ = (rA ⊙ c')} {c₃ = c'}
         {f₁ = (iA δlc)} {g₁ = (iA' δrc')} {f₂ = Id} {g₂ = Id}
@@ -345,8 +345,8 @@ module _
 
 module _
   {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
-  (c  : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
-  (c' : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
+  (c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+  (c' : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
   (ρc  : RightRepV A A' c)
   (ρc' : RightRepV A A' c')
   (eq : projV _ _ _ ρc ≡ projV _ _ _ ρc') where

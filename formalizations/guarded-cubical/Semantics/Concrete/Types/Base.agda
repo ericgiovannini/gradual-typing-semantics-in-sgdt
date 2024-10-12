@@ -25,10 +25,10 @@ open import Cubical.Data.Sigma
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Combinators
+open import Semantics.Concrete.Predomain.ErrorDomain k
 open import Semantics.Concrete.Perturbation.Semantic k
 
 private
@@ -58,7 +58,7 @@ private
 
     ℓX ℓY ℓR : Level
 
-open PBMor
+open PMor
 
 
 ---------------------------------------------------------------
@@ -81,10 +81,10 @@ open PBMor
 --   constructor valtypestr
 
 --   field
---     is-poset-with-bisim : PosetBisimStr ℓ≤ ℓ≈ A
+--     is-poset-with-bisim : PredomainStr ℓ≤ ℓ≈ A
 
---   open PosetBisimStr is-poset-with-bisim public
---   predomain : PosetBisim ℓ ℓ≤ ℓ≈
+--   open PredomainStr is-poset-with-bisim public
+--   predomain : Predomain ℓ ℓ≤ ℓ≈
 --   predomain = A , is-poset-with-bisim
 
 --   field
@@ -92,7 +92,7 @@ open PBMor
 --     interpV : MonoidHom PtbV (Endo predomain)
 
 
---   ι : ⟨ PtbV ⟩ → PBMor predomain predomain
+--   ι : ⟨ PtbV ⟩ → PMor predomain predomain
 --   ι p = interpV .fst p .fst
 
 -- ValType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
@@ -100,14 +100,14 @@ open PBMor
 
 ValTypeStr : ∀ {ℓ} ℓ≤ ℓ≈ ℓM → (A : Type ℓ) → Type _
 ValTypeStr ℓ≤ ℓ≈ ℓM A =
-  Σ[ A-predom ∈ PosetBisimStr ℓ≤ ℓ≈ A ]
+  Σ[ A-predom ∈ PredomainStr ℓ≤ ℓ≈ A ]
   Σ[ PtbV ∈ Monoid ℓM ]
   MonoidHom PtbV (Endo (A , A-predom))
 
 ValType : ∀ ℓ ℓ≤ ℓ≈ ℓM → Type (ℓ-suc (ℓ-max (ℓ-max ℓ ℓ≤) (ℓ-max ℓ≈ ℓM)))
 ValType ℓ ℓ≤ ℓ≈ ℓM = TypeWithStr ℓ (ValTypeStr ℓ≤ ℓ≈ ℓM)
 
-ValType→Predomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} → ValType ℓ ℓ≤ ℓ≈ ℓM → PosetBisim ℓ ℓ≤ ℓ≈
+ValType→Predomain : {ℓ ℓ≤ ℓ≈ ℓM : Level} → ValType ℓ ℓ≤ ℓ≈ ℓM → Predomain ℓ ℓ≤ ℓ≈
 ValType→Predomain A = ⟨ A ⟩ , (A .snd .fst)
 
 PtbV : ValType ℓ ℓ≤ ℓ≈ ℓM → Monoid ℓM
@@ -118,7 +118,7 @@ interpV : (A : ValType ℓ ℓ≤ ℓ≈ ℓM) →
 interpV A = A .snd .snd .snd
 
 mkValType :
-  (A : PosetBisim ℓ ℓ≤ ℓ≈)
+  (A : Predomain ℓ ℓ≤ ℓ≈)
   → (PtbV : Monoid ℓM)
   → MonoidHom PtbV (Endo A)
   → ValType ℓ ℓ≤ ℓ≈ ℓM
@@ -134,14 +134,14 @@ ValTypeMor :
   (Aᵢ : ValType ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓMAᵢ)
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) →
   Type ((ℓ-max (ℓ-max ℓAᵢ (ℓ-max ℓ≤Aᵢ ℓ≈Aᵢ)) (ℓ-max ℓAₒ (ℓ-max ℓ≤Aₒ ℓ≈Aₒ))))
-ValTypeMor Aᵢ Aₒ = PBMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
+ValTypeMor Aᵢ Aₒ = PMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
 
 -- Isomorphism of value types
 module _
   (Aᵢ : ValType ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓMAᵢ)
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) where
 
-  open PBMor
+  open PMor
   open Iso
   𝔸ᵢ = ValType→Predomain Aᵢ
   𝔸ₒ = ValType→Predomain Aₒ
@@ -224,6 +224,6 @@ ObliqueMor :
   (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
   (B : CompType ℓB ℓ≤B ℓ≈B ℓMB)
   → Type _
-ObliqueMor A B = PBMor (ValType→Predomain A) (U-ob (CompType→ErrorDomain B))
+ObliqueMor A B = PMor (ValType→Predomain A) (U-ob (CompType→ErrorDomain B))
 
 

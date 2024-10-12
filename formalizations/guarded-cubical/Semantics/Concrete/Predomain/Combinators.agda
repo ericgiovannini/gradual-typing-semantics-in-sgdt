@@ -6,7 +6,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.DoublePoset.DblPosetCombinators where
+module Semantics.Concrete.Predomain.Combinators where
 
 open import Cubical.Relation.Binary
 open import Cubical.Foundations.Prelude
@@ -14,10 +14,10 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Function hiding (_$_)
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Constructions
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Convenience
+open import Semantics.Concrete.Predomain.Constructions
 
 
 open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_^_)
@@ -35,14 +35,14 @@ private
     ℓB ℓ'B ℓ''B ℓB' ℓ'B' ℓ''B' : Level
     ℓC ℓ'C ℓ''C ℓC' ℓ'C' ℓ''C' ℓΓ ℓ'Γ ℓ''Γ : Level
     ℓD ℓ'D ℓ''D : Level
-    Γ :  PosetBisim ℓΓ ℓ'Γ ℓ''Γ
-    A :  PosetBisim ℓA ℓ'A ℓ''A
-    A' : PosetBisim ℓA' ℓ'A' ℓ''A'
-    B :  PosetBisim ℓB ℓ'B ℓ''B
-    B' : PosetBisim ℓB' ℓ'B' ℓ''B'
-    C :  PosetBisim ℓC ℓ'C ℓ''C
-    C' : PosetBisim ℓC' ℓ'C' ℓ''C'
-    D : PosetBisim ℓD ℓ'D ℓ''D
+    Γ :  Predomain ℓΓ ℓ'Γ ℓ''Γ
+    A :  Predomain ℓA ℓ'A ℓ''A
+    A' : Predomain ℓA' ℓ'A' ℓ''A'
+    B :  Predomain ℓB ℓ'B ℓ''B
+    B' : Predomain ℓB' ℓ'B' ℓ''B'
+    C :  Predomain ℓC ℓ'C ℓ''C
+    C' : Predomain ℓC' ℓ'C' ℓ''C'
+    D : Predomain ℓD ℓ'D ℓ''D
     ℓX : Level
     ℓ≤A ℓ≈A : Level
     ℓA₁  ℓ≤A₁  ℓ≈A₁  : Level
@@ -52,39 +52,39 @@ private
     ℓA₃  ℓ≤A₃  ℓ≈A₃  : Level
 
     
-open PBMor
-open import Semantics.Concrete.DoublePoset.DPMorProofs
+open PMor
+open import Semantics.Concrete.Predomain.Proofs
 
 
-mTransport : {A B : PosetBisim ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
+mTransport : {A B : Predomain ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ A ==> B ⟩
 mTransport {A} {B} eq = record {
   f = λ b → transport (λ i -> ⟨ eq i ⟩) b ;
   isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ eq b1≤b2 ;
   pres≈ = λ {b1} {b2} b1≈b2 → rel-transport-≈ eq b1≈b2 }
 
-mTransportSym : {A B : PosetBisim ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
+mTransportSym : {A B : Predomain ℓ ℓ' ℓ''} -> (eq : A ≡ B) -> ⟨ B ==> A ⟩
 mTransportSym {A} {B} eq = record {
   f = λ b → transport (λ i -> ⟨ sym eq i ⟩) b ;
   isMon = λ {b1} {b2} b1≤b2 → rel-transport-≤ (sym eq) b1≤b2 ;
   pres≈ = λ {b1} {b2} b1≤b2 → rel-transport-≈ (sym eq) b1≤b2 }
 
-mTransportDomain : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
+mTransportDomain : {A B C : Predomain ℓ ℓ' ℓ''} ->
   (eq : A ≡ B) ->
-  PBMor A C ->
-  PBMor B C
+  PMor A C ->
+  PMor B C
 mTransportDomain {A} {B} {C} eq f = record {
   f = g eq f ;
   isMon = mon-transport-domain-≤ eq f ;
   pres≈ = mon-transport-domain-≈ eq f  }
   where
-    g : {A B C : PosetBisim ℓ ℓ' ℓ''} ->
+    g : {A B C : Predomain ℓ ℓ' ℓ''} ->
       (eq : A ≡ B) ->
-      PBMor A C ->
+      PMor A C ->
       ⟨ B ⟩ -> ⟨ C ⟩
-    g eq f b = PBMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
+    g eq f b = PMor.f f (transport (λ i → ⟨ sym eq i ⟩ ) b)
 
         
-mCompU : PBMor B C -> PBMor A B -> PBMor A C
+mCompU : PMor B C -> PMor A B -> PMor A C
 mCompU f1 f2 = record {
   f = λ a -> f1 .f (f2 .f a) ;
   isMon = λ x≤y -> f1 .isMon (f2 .isMon x≤y) ;
@@ -98,7 +98,7 @@ mComp = record {
     f = λ fAB → mCompU fBC fAB ;
     isMon = λ {f1} {f2} f1≤f2 -> λ a → isMon fBC (f1≤f2 a) ;
     pres≈ = λ {f1} {f2} f1≈f2 → λ a1 a2 a1≈a2 → pres≈ fBC (f1≈f2 a1 a2 a1≈a2) } ;
-  isMon = λ {f1} {f2} f1≤f2 → λ f' a → f1≤f2 (PBMor.f f' a) ;
+  isMon = λ {f1} {f2} f1≤f2 → λ f' a → f1≤f2 (PMor.f f' a) ;
   pres≈ = λ {fBC} {fBC'} fBC≈fBC' fAB fAB' fAB≈fAB' a a' a≈a' →
     fBC≈fBC' _ _ (fAB≈fAB' a a' a≈a') }
 
@@ -114,7 +114,7 @@ Pair {A = A} {B = B} = record {
 
 PairFun : (f : ⟨ A ==> B ⟩) -> (g : ⟨ A ==> C ⟩ ) -> ⟨ A ==> B ×dp C ⟩
 PairFun f g = record {
-  f = λ a -> (PBMor.f f a) , (PBMor.f g a) ;
+  f = λ a -> (PMor.f f a) , (PMor.f g a) ;
   isMon = λ {a1} {a2} a1≤a2 → isMon f a1≤a2 , isMon g a1≤a2 ;
   pres≈ = λ {a1} {a2} a1≈a2 → (pres≈ f a1≈a2) , (pres≈ g a1≈a2) }
 
@@ -123,7 +123,7 @@ _×mor_ f g = PairFun (f ∘p π1) (g ∘p π2)
 
 Case' : ⟨ A ==> C ⟩ -> ⟨ B ==> C ⟩ -> ⟨ (A ⊎p B) ==> C ⟩
 Case' f g = record {
-  f = λ { (inl a) → PBMor.f f a ; (inr b) → PBMor.f g b} ;
+  f = λ { (inl a) → PMor.f f a ; (inr b) → PMor.f g b} ;
   isMon = λ { {inl a1} {inl a2} a1≤a2 → isMon f (lower a1≤a2) ;
               {inr b1} {inr b2} b1≤b2 → isMon g (lower b1≤b2) }  ;
   pres≈ = λ { {inl a1} {inl a2} a1≤a2 → pres≈ f (lower a1≤a2) ;
@@ -157,28 +157,28 @@ mSuc = record {
     pres≈ = λ {n1} {n2} n1≈n2 → λ i → suc (n1≈n2 i) }
 
 U : ⟨ A ==> B ⟩ -> ⟨ A ⟩ -> ⟨ B ⟩
-U f = PBMor.f f
+U f = PMor.f f
 
 
-S : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) ->
+S : (Γ : Predomain ℓΓ ℓ'Γ ℓ''Γ) ->
     ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
 S Γ f g = record {
-  f = λ γ → PBMor.f f (γ , (U g γ)) ;
+  f = λ γ → PMor.f f (γ , (U g γ)) ;
   isMon = λ {γ1} {γ2} γ1≤γ2 ->
         isMon f (γ1≤γ2 , (isMon g γ1≤γ2)) ;
   pres≈ = λ {γ1} {γ2} γ1≈γ2 -> pres≈ f (γ1≈γ2 , pres≈ g γ1≈γ2) }
 
 _!_<*>_ :
-    (Γ : PosetBisim ℓ ℓ' ℓ'') -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
+    (Γ : Predomain ℓ ℓ' ℓ'') -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> B ⟩
 Γ ! f <*> g = S Γ f g
 
-K : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) -> {A : PosetBisim ℓA ℓ'A ℓ''A} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
+K : (Γ : Predomain ℓΓ ℓ'Γ ℓ''Γ) -> {A : Predomain ℓA ℓ'A ℓ''A} -> ⟨ A ⟩ -> ⟨ Γ ==> A ⟩
 K _ {A} = λ a → record {
     f = λ γ → a ;
     isMon = λ {a1} {a2} a1≤a2 → reflexive-≤ A a ;
     pres≈ = λ {a1} {a2} a1≈a2 → reflexive-≈ A a }
 
--- Id : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> A ⟩
+-- Id : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ A ==> A ⟩
 -- Id = record {
 --   f = id ;
 --   isMon = λ x≤y → x≤y ;
@@ -209,10 +209,10 @@ Lambda {Γ = Γ} {A = A} = record {
 
 Uncurry : ⟨ Γ ==> A ==> B ⟩ -> ⟨ (Γ ×dp A) ==> B ⟩
 Uncurry f = record {
-  f = λ (γ , a) → PBMor.f (PBMor.f f γ) a ;
+  f = λ (γ , a) → PMor.f (PMor.f f γ) a ;
   isMon = λ {(γ1 , a1)} {(γ2 , a2)} (γ1≤γ2 , a1≤a2) ->
       let fγ1≤fγ2 = isMon f γ1≤γ2 in 
-        ≤mon→≤mon-het (PBMor.f f γ1) (PBMor.f f γ2) fγ1≤fγ2 a1 a2 a1≤a2 ;
+        ≤mon→≤mon-het (PMor.f f γ1) (PMor.f f γ2) fγ1≤fγ2 a1 a2 a1≤a2 ;
   pres≈ = λ {(γ1 , a1)} {(γ2 , a2)} (γ1≈γ2 , a1≈a2) ->
       let fγ1≈fγ2 = pres≈ f γ1≈γ2 in
         fγ1≈fγ2 a1 a2 a1≈a2 }
@@ -227,10 +227,10 @@ Uncurry' = record {
   pres≈ = λ { {f} {g} f≈g (γ , a) (γ' , a') (γ≈γ' , a≈a') → f≈g γ γ' γ≈γ' a a' a≈a' }}
 
 {-
-Swap : (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B : PosetBisim ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
+Swap : (Γ : Predomain ℓ ℓ' ℓ'') -> {A B : Predomain ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ==> B ⟩ -> ⟨ A ==> Γ ==> B ⟩
 Swap Γ {A = A} f = record {
   f = λ a → record {
-    f = λ γ → PBMor.f (PBMor.f f γ) a ;
+    f = λ γ → PMor.f (PMor.f f γ) a ;
     isMon =  λ {γ1} {γ2} γ1≤γ2 ->
       let fγ1≤fγ2 = isMon f γ1≤γ2 in
         ≤mon→≤mon-het _ _ fγ1≤fγ2 a a (reflexive-≤ A a) ;
@@ -260,7 +260,7 @@ IntroArg' :
     ⟨ Γ ==> B ⟩ -> ⟨ B ==> B' ⟩ -> ⟨ Γ ==> B' ⟩
 IntroArg' {Γ = Γ} {B = B} {B' = B'} fΓB fBB' = S Γ (With2nd {A = B} {Γ = Γ} fBB') fΓB
 
-IntroArg : {Γ B B' : PosetBisim ℓ ℓ' ℓ''} ->
+IntroArg : {Γ B B' : Predomain ℓ ℓ' ℓ''} ->
   ⟨ B ==> B' ⟩ -> ⟨ (Γ ==> B) ==> (Γ ==> B') ⟩
 IntroArg {Γ = Γ} {B = B} {B' = B'} f = (Curry {Γ = Γ ==> B} {A = Γ}) (mCompU f (App {A = Γ} {B = B}))
 
@@ -296,10 +296,10 @@ TransformDomain :
 TransformDomain {Γ = Γ} {A = A} fΓ×A->B f =
   Uncurry (IntroArg' (Curry {Γ = Γ} {A = A} fΓ×A->B) f)
 
-mComp' : (Γ : PosetBisim ℓΓ ℓ'Γ ℓ''Γ) ->
+mComp' : (Γ : Predomain ℓΓ ℓ'Γ ℓ''Γ) ->
     ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 mComp' {B = B} {C = C} {A = A} Γ f g = record {
-  f = λ { (γ , a) → PBMor.f f (γ , (PBMor.f g (γ , a))) } ;
+  f = λ { (γ , a) → PMor.f f (γ , (PMor.f g (γ , a))) } ;
   isMon = λ { {γ1 , a1} {γ2 , a2} (γ1≤γ2 , a1≤a2) →
     isMon f (γ1≤γ2 , (isMon g (γ1≤γ2 , a1≤a2))) } ;
   pres≈ = λ { {γ1 , a1} {γ2 , a2} (γ1≈γ2 , a1≈a2) →
@@ -312,17 +312,17 @@ _∘m_ {Γ = Γ} {B = B} {C = C} {A = A} = mComp' {B = B} {C = C} {A = A} Γ
 _∘p'_ = _∘m_
 infixl 20 _∘p'_
 
-_$_∘m_ :  (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B C : PosetBisim ℓ ℓ' ℓ''} ->
+_$_∘m_ :  (Γ : Predomain ℓ ℓ' ℓ'') -> {A B C : Predomain ℓ ℓ' ℓ''} ->
     ⟨ (Γ ×dp B ==> C) ⟩ -> ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp A ==> C) ⟩
 _$_∘m_ Γ {A = A} {B = B} {C = C} f g = mComp' {B = B} {C = C} {A = A} Γ f g
 infixl 20 _∘m_
 
--- Comp : (Γ : PosetBisim ℓ ℓ' ℓ'') -> {A B C : PosetBisim ℓ ℓ' ℓ''} ->
+-- Comp : (Γ : Predomain ℓ ℓ' ℓ'') -> {A B C : Predomain ℓ ℓ' ℓ''} ->
 --     ⟨ Γ ×dp B ==> C ⟩ -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ×dp A ==> C ⟩
 -- Comp Γ f g = {!!}
 
-_~->_ : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B}
-        {C : PosetBisim ℓC ℓ'C ℓ''C} {D : PosetBisim ℓD ℓ'D ℓ''D} ->
+_~->_ : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B}
+        {C : Predomain ℓC ℓ'C ℓ''C} {D : Predomain ℓD ℓ'D ℓ''D} ->
     ⟨ A ==> B ⟩ -> ⟨ C ==> D ⟩ -> ⟨ (B ==> C) ==> (A ==> D) ⟩
 _~->_ {A = A} {B = B} {C = C} {D = D} pre post =
   Curry {Γ = B ==> C} {A = A} {B = D} ((mCompU post App) ∘m (With2nd pre))
@@ -334,7 +334,7 @@ g ^m n = record {
   pres≈ = pres n }
   where
     fun : Nat -> _
-    fun m = (PBMor.f g) ^ m
+    fun m = (PMor.f g) ^ m
 
     mon : (m : Nat) -> monotone (fun m)
     mon zero {x} {y} x≤y = x≤y
@@ -354,73 +354,73 @@ module ClockedCombinators (k : Clock) where
   -- open ClockedConstructions k
   -- open import Semantics.Concrete.MonotonicityProofs
   -- open import Semantics.LockStepErrorOrdering k
-  -- open import Semantics.Concrete.DoublePoset.LockStepErrorBisim k
+  -- open import Semantics.Concrete.Predomain.LockStepErrorBisim k
   -- open import Semantics.WeakBisimilarity k
 
 
-  -- open LiftPosetBisim
+  -- open LiftPredomain
   open ClockedProofs k
   open Clocked k
 
   Map▹ :
-    ⟨ A ==> B ⟩ -> ⟨ (PB▹ A) ==> (PB▹ B) ⟩
+    ⟨ A ==> B ⟩ -> ⟨ (P▹ A) ==> (P▹ B) ⟩
   Map▹ {A} {B} f = record {
-    f = map▹ (PBMor.f f) ;
+    f = map▹ (PMor.f f) ;
     isMon = λ {a1} {a2} a1≤a2 t → isMon f (a1≤a2 t) ;
     pres≈ = λ {a1} {a2} a1≈a2 t → pres≈ f (a1≈a2 t) }
 
 
   Ap▹ :
-    ⟨ (PB▹ (A ==> B)) ==> ((PB▹ A) ==> (PB▹ B)) ⟩
+    ⟨ (P▹ (A ==> B)) ==> ((P▹ A) ==> (P▹ B)) ⟩
   Ap▹ {A = A} {B = B} = record {
     f = UAp▹ ;
     isMon = UAp▹-mon ;
     pres≈ = UAp▹-pres≈}
     where
       UAp▹ :
-        ⟨ (PB▹ (A ==> B)) ⟩ -> ⟨ (PB▹ A) ==> (PB▹ B) ⟩
+        ⟨ (P▹ (A ==> B)) ⟩ -> ⟨ (P▹ A) ==> (P▹ B) ⟩
       UAp▹ f~ = record {
-        f = _⊛_ (λ t → PBMor.f (f~ t)) ;
+        f = _⊛_ (λ t → PMor.f (f~ t)) ;
         isMon = λ {a1} {a2} a1≤a2 t → isMon (f~ t) (a1≤a2 t) ;
         pres≈ = λ {a1} {a2} a1≈a2 t → pres≈ (f~ t) (a1≈a2 t) }
 
       UAp▹-mon : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≤ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≤ ((PB▹ A) ==> (PB▹ B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≤ ((P▹ A) ==> (P▹ B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-mon {f1~} {f2~} f1~≤f2~ a~ t = f1~≤f2~ t (a~ t)
 
       UAp▹-pres≈ : {f1~ f2~ : ▹ ⟨ A ==> B ⟩} ->
         ▸ (λ t -> rel-≈ (A ==> B) (f1~ t) (f2~ t)) ->
-        rel-≈ ((PB▹ A) ==> (PB▹ B)) (UAp▹ f1~) (UAp▹ f2~)
+        rel-≈ ((P▹ A) ==> (P▹ B)) (UAp▹ f1~) (UAp▹ f2~)
       UAp▹-pres≈ {f1~} {f2~} f1~≈f2~ a1~ a2~ a1~≈a2~ t =
         f1~≈f2~ t (a1~ t) (a2~ t) (a1~≈a2~ t)
 
-  Next : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> PB▹ A ⟩
+  Next : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ A ==> P▹ A ⟩
   Next = record {
     f = next ;
     isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 ;
     pres≈ = λ {a1} {a2} a1≈a2 t → a1≈a2 }
 
 {-
-  mθ : {A : PosetBisim ℓ ℓ' ℓ''} ->
-    ⟨ (PB▹ (𝕃 A)) ==> 𝕃 A ⟩
+  mθ : {A : Predomain ℓ ℓ' ℓ''} ->
+    ⟨ (P▹ (𝕃 A)) ==> 𝕃 A ⟩
   mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone A ; pres≈ = λ x → {!!} }
 
   -- 𝕃's return as a monotone function
-  mRet : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
+  mRet : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
   mRet {A = A} = record { f = ret ; isMon = ord-η-monotone A ; pres≈ = λ x → {!!} }
     where
-      open Bisim ⟨ A ⊎p UnitPB ⟩ (rel-≈ (A ⊎p UnitPB))
+      open Bisim ⟨ A ⊎p UnitP ⟩ (rel-≈ (A ⊎p UnitP))
 
-  Δ : {A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
+  Δ : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
   Δ {A = A} = record {
       f = δ ;
       isMon = λ x≤y → ord-δ-monotone A x≤y ;
       pres≈ = {!!} }
 
-  mExtU : PBMor A (𝕃 B) -> PBMor (𝕃 A) (𝕃 B)
+  mExtU : PMor A (𝕃 B) -> PMor (𝕃 A) (𝕃 B)
   mExtU f = record {
-      f = λ la -> bind la (PBMor.f f) ;
+      f = λ la -> bind la (PMor.f f) ;
       isMon = monotone-bind-mon-≤ f ;
       pres≈ = monotone-bind-mon-≈ f }
 
@@ -428,22 +428,22 @@ module ClockedCombinators (k : Clock) where
   mExt {A = A} = record {
       f = mExtU ;
       isMon = λ {f1} {f2} f1≤f2 la →
-        ext-monotone-≤ (PBMor.f f1) (PBMor.f f2)
+        ext-monotone-≤ (PMor.f f1) (PMor.f f2)
           (≤mon→≤mon-het f1 f2 f1≤f2) la la (reflexive-≤ (𝕃 A) la) ;
       pres≈ = λ {f1} {f2} f1≈f2 la la' la≈la' →
-        ext-monotone-≈ (PBMor.f f1) (PBMor.f f2) f1≈f2 la la' la≈la' }
+        ext-monotone-≈ (PMor.f f1) (PMor.f f2) f1≈f2 la la' la≈la' }
 
-  mExt' : (Γ : PosetBisim ℓ ℓ' ℓ'') ->
+  mExt' : (Γ : Predomain ℓ ℓ' ℓ'') ->
       ⟨ (Γ ×dp A ==> 𝕃 B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
   mExt' Γ f = TransformDomain f mExt
 
-  mRet' : (Γ : PosetBisim ℓ ℓ' ℓ'') -> { A : PosetBisim ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
+  mRet' : (Γ : Predomain ℓ ℓ' ℓ'') -> { A : Predomain ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
   mRet' Γ f = record {
-    f = λ γ -> ret (PBMor.f f γ) ;
-    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (PBMor.f f γ1) (PBMor.f f γ2) (isMon f γ1≤γ2);
-    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (PBMor.f f γ1) (PBMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
+    f = λ γ -> ret (PMor.f f γ) ;
+    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (PMor.f f γ1) (PMor.f f γ2) (isMon f γ1≤γ2);
+    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (PMor.f f γ1) (PMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
 
-  Bind : (Γ : PosetBisim ℓ ℓ' ℓ'') ->
+  Bind : (Γ : Predomain ℓ ℓ' ℓ'') ->
       ⟨ Γ ==> 𝕃 A ⟩ -> ⟨ Γ ×dp A ==> 𝕃 B ⟩ -> ⟨ Γ ==> 𝕃 B ⟩
   Bind Γ la f = S Γ (mExt' Γ f) la
 
@@ -454,7 +454,7 @@ module ClockedCombinators (k : Clock) where
   mMap' :
       ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
   mMap' f = record {
-    f = λ { (γ , la) -> mapL (λ a -> PBMor.f f (γ , a)) la} ;
+    f = λ { (γ , la) -> mapL (λ a -> PMor.f f (γ , a)) la} ;
     isMon = λ { {γ , la} {γ' , la'} (γ≤γ' , la≤la') → {!!} } ;
     pres≈ = {!!} }
 
@@ -464,7 +464,7 @@ module ClockedCombinators (k : Clock) where
 
 
     -- Embedding of function spaces is monotone
-  mFunEmb : (A A' B B' : PosetBisim ℓ ℓ' ℓ'') ->
+  mFunEmb : (A A' B B' : Predomain ℓ ℓ' ℓ'') ->
       ⟨ A' ==> 𝕃 A ⟩ ->
       ⟨ B ==> B' ⟩ ->
       ⟨ (A ==> 𝕃 B) ==> (A' ==> 𝕃 B') ⟩
@@ -475,7 +475,7 @@ module ClockedCombinators (k : Clock) where
     --  _ $ (mExt' _ (_ $ (mMap' (K _ fBB')) ∘m Id)) ∘m (K _ fA'LA)
     -- mComp' (mExt' (mComp' (mMap' (K fBB')) Id)) (K fA'LA)
 
-  mFunProj : (A A' B B' : PosetBisim ℓ ℓ' ℓ'') ->
+  mFunProj : (A A' B B' : Predomain ℓ ℓ' ℓ'') ->
      ⟨ A ==> A' ⟩ ->
      ⟨ B' ==> 𝕃 B ⟩ ->
      ⟨ (A' ==> 𝕃 B') ==> 𝕃 (A ==> 𝕃 B) ⟩
@@ -487,28 +487,28 @@ module ClockedCombinators (k : Clock) where
 module _
   (X : hSet ℓX) where
   
-  isoSigmaUnit : PredomIso (ΣP X (λ _ → UnitPB)) (flat X)
+  isoSigmaUnit : PredomIso (ΣP X (λ _ → UnitP)) (flat X)
   isoSigmaUnit .PredomIso.fun = Σ-elim (λ x → K _ x)
   isoSigmaUnit .PredomIso.inv = flatRec X _ (λ x → x , tt)
   isoSigmaUnit .PredomIso.invRight x = refl
   isoSigmaUnit .PredomIso.invLeft (x , tt) = refl
 
 -- module _ {ℓ ℓ≤ ℓ≈ : Level} where
---   isoPiBot : PredomIso {ℓA = ℓ} (ΠP ⊥ {ℓ = ℓ} {ℓ≤ = ℓ≤} {ℓ≈ = ℓ≈} ⊥.rec) UnitPB
---   isoPiBot .PredomIso.fun = UnitPB!
---   isoPiBot .PredomIso.inv = recUnitPB (λ x → ⊥.rec x)
+--   isoPiBot : PredomIso {ℓA = ℓ} (ΠP ⊥ {ℓ = ℓ} {ℓ≤ = ℓ≤} {ℓ≈ = ℓ≈} ⊥.rec) UnitP
+--   isoPiBot .PredomIso.fun = UnitP!
+--   isoPiBot .PredomIso.inv = recUnitP (λ x → ⊥.rec x)
 --   isoPiBot .PredomIso.invRight tt = refl
 --   isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
 
-module _ {ℓ ℓ≤ ℓ≈ : Level} {A : PosetBisim ℓA ℓ≤A ℓ≈A} where
-  isoPiBot : PredomIso (ΠP ⊥ (λ _ → A)) UnitPB
-  isoPiBot .PredomIso.fun = UnitPB!
-  isoPiBot .PredomIso.inv = recUnitPB (λ x → ⊥.rec x)
+module _ {ℓ ℓ≤ ℓ≈ : Level} {A : Predomain ℓA ℓ≤A ℓ≈A} where
+  isoPiBot : PredomIso (ΠP ⊥ (λ _ → A)) UnitP
+  isoPiBot .PredomIso.fun = UnitP!
+  isoPiBot .PredomIso.inv = recUnitP (λ x → ⊥.rec x)
   isoPiBot .PredomIso.invRight tt = refl
   isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
 
 
-idPredomIso : {A : PosetBisim ℓA ℓ≤A ℓ≈A} → PredomIso A A
+idPredomIso : {A : Predomain ℓA ℓ≤A ℓ≈A} → PredomIso A A
 idPredomIso .PredomIso.fun = Id
 idPredomIso .PredomIso.inv = Id
 idPredomIso .PredomIso.invRight _ = refl
@@ -516,8 +516,8 @@ idPredomIso .PredomIso.invLeft _ = refl
 
 
 module _
-  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
-  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+  {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : Predomain ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'}
   (iso₁ : PredomIso A₁ A₁') (iso₂ : PredomIso A₂ A₂')
   where
 
@@ -530,8 +530,8 @@ module _
 
 module _
   (X : hSet ℓX)
-  (A₁ : ⟨ X ⟩ → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
-  (A₂ : ⟨ X ⟩ → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
+  (A₁ : ⟨ X ⟩ → Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁)
+  (A₂ : ⟨ X ⟩ → Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂)
   (isom : ((x : ⟨ X ⟩) → PredomIso (A₁ x) (A₂ x)))
   where
 
@@ -543,8 +543,8 @@ module _
 
 module _
   (X : Type ℓ)
-  (A₁ : X → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁)
-  (A₂ : X → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂)
+  (A₁ : X → Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁)
+  (A₂ : X → Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂)
   (isom : ((x : X) → PredomIso (A₁ x) (A₂ x)))
   where
 
@@ -555,9 +555,9 @@ module _
   ΠP-iso .PredomIso.invLeft as = funExt (λ x → PredomIso.invLeft (isom x) (as x))
 
 module _
-  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
-  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
-  {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+  {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  {A₃ : Predomain ℓA₃ ℓ≤A₃ ℓ≈A₃}
   (f : PredomIso A₁ A₂)
   (g : PredomIso A₂ A₃)
   where
@@ -566,6 +566,6 @@ module _
   compPredomIso .PredomIso.fun = PredomIso.fun g ∘p PredomIso.fun f
   compPredomIso .PredomIso.inv = PredomIso.inv f ∘p PredomIso.inv g
   compPredomIso .PredomIso.invRight x =
-    cong (PBMor.f (PredomIso.fun g)) (PredomIso.invRight f _) ∙ PredomIso.invRight g x
+    cong (PMor.f (PredomIso.fun g)) (PredomIso.invRight f _) ∙ PredomIso.invRight g x
   compPredomIso .PredomIso.invLeft x =
-    cong (PBMor.f (PredomIso.inv f)) (PredomIso.invLeft g _) ∙ PredomIso.invLeft f x
+    cong (PMor.f (PredomIso.inv f)) (PredomIso.invLeft g _) ∙ PredomIso.invLeft f x

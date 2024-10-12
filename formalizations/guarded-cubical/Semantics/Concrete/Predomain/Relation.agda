@@ -4,7 +4,7 @@
 -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Semantics.Concrete.DoublePoset.DPMorRelation where
+module Semantics.Concrete.Predomain.Relation where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -24,12 +24,12 @@ open import Cubical.HITs.PropositionalTruncation renaming (rec to PTrec)
 
 open import Common.Common
 open import Common.LaterProperties
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.Constructions as Predomain
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DPMorProofs
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Convenience
+open import Semantics.Concrete.Predomain.Constructions as Predomain
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Proofs
+open import Semantics.Concrete.Predomain.Combinators
 
 open import Common.Later
 
@@ -57,15 +57,15 @@ private
     ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level
     ℓc₁ ℓc₂ : Level
 
-    X : PosetBisim ℓX ℓ'X ℓ''X
-    Y : PosetBisim ℓY ℓ'Y ℓ''Y
+    X : Predomain ℓX ℓ'X ℓ''X
+    Y : Predomain ℓY ℓ'Y ℓ''Y
 
 
 -- Horizontal morphisms
-record PBRel (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ''Y) (ℓR : Level) :
+record PRel (X : Predomain ℓX ℓ'X ℓ''X) (Y : Predomain ℓY ℓ'Y ℓ''Y) (ℓR : Level) :
   Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) (ℓ-max ℓY ℓ'Y)) (ℓ-suc ℓR)) where
-  module X = PosetBisimStr (X .snd)
-  module Y = PosetBisimStr (Y .snd)
+  module X = PredomainStr (X .snd)
+  module Y = PredomainStr (Y .snd)
   _≤X_ = X._≤_
   _≤Y_ = Y._≤_
   field
@@ -77,51 +77,51 @@ record PBRel (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ''
   _rel_ : ⟨ X ⟩ → ⟨ Y ⟩ → Type ℓR
   _rel_ = R
 
-
+{-
 opaque
-  PRel : (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' ℓ≈A') (ℓc : Level)
+  PRel : (A : Predomain ℓA ℓ≤A ℓ≈A) (A' : Predomain ℓA' ℓ≤A' ℓ≈A') (ℓc : Level)
     → Type (ℓ-max (ℓ-max (ℓ-max ℓA ℓ≤A) (ℓ-max ℓA' ℓ≤A')) (ℓ-suc ℓc))
-  PRel = PBRel
+  PRel = PRel
 
-module _ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'}
+module _ {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'}
   (c : PRel A A' ℓc)
   where
 
   private
     |A| = ⟨ A ⟩
     |A'| = ⟨ A' ⟩
-    _≤A_ = A .snd .PosetBisimStr._≤_
-    _≤A'_ = A' .snd .PosetBisimStr._≤_
+    _≤A_ = A .snd .PredomainStr._≤_
+    _≤A'_ = A' .snd .PredomainStr._≤_
 
   opaque
     unfolding PRel
 
-    PRel→Record : PBRel A A' ℓc
+    PRel→Record : PRel A A' ℓc
     PRel→Record = c
 
     |PRel| : |A| → |A'| → Type ℓc
-    |PRel| = c .PBRel.R
+    |PRel| = c .PRel.R
 
     PRelIsPropValued : ∀ x y → isProp (|PRel| x y)
-    PRelIsPropValued = c .PBRel.is-prop-valued
+    PRelIsPropValued = c .PRel.is-prop-valued
 
     PRelIsAntitone : ∀ {x' x y} -> x' ≤A x -> |PRel| x y -> |PRel| x' y
-    PRelIsAntitone = c .PBRel.is-antitone
+    PRelIsAntitone = c .PRel.is-antitone
 
     PRelIsMonotone : ∀ {x y y'} -> |PRel| x y -> y ≤A' y' -> |PRel| x y'
-    PRelIsMonotone = c .PBRel.is-monotone
+    PRelIsMonotone = c .PRel.is-monotone
 
-⟨_⟩PRel : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} →
+⟨_⟩PRel : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} →
   (c : PRel A A' ℓc) → _
 ⟨ c ⟩PRel = |PRel| c
+-}
 
+open PRel hiding (module X ; module Y ; _≤X_ ; _≤Y_)
 
-open PBRel hiding (module X ; module Y ; _≤X_ ; _≤Y_)
-
-record PBRel' (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ''Y) (ℓR : Level) :
+record PRel' (X : Predomain ℓX ℓ'X ℓ''X) (Y : Predomain ℓY ℓ'Y ℓ''Y) (ℓR : Level) :
   Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓ'X) (ℓ-max ℓY ℓ'Y)) (ℓ-suc ℓR)) where
-  module X = PosetBisimStr (X .snd)
-  module Y = PosetBisimStr (Y .snd)
+  module X = PredomainStr (X .snd)
+  module Y = PredomainStr (Y .snd)
   _≤X_ = X._≤_
   _≤Y_ = Y._≤_
   field
@@ -130,69 +130,69 @@ record PBRel' (X : PosetBisim ℓX ℓ'X ℓ''X) (Y : PosetBisim ℓY ℓ'Y ℓ'
     is-monotone : ∀ x y y' -> ⟨ R x y ⟩ -> y ≤Y y' -> ⟨ R x y' ⟩
 
 
--- Iso between PBRel and PBRel'
-PBRelIsoPBRel' : ∀ {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} →
-  Iso (PBRel A A' ℓc) (PBRel' A A' ℓc)
-PBRelIsoPBRel' = iso
+-- Iso between PRel and PRel'
+PRelIsoPRel' : ∀ {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} →
+  Iso (PRel A A' ℓc) (PRel' A A' ℓc)
+PRelIsoPRel' = iso
   (λ S -> record {
-    R = λ x y -> S .PBRel.R x y , S .PBRel.is-prop-valued x y ;
-    is-antitone = λ x' x y x'≤x xSy → S .PBRel.is-antitone x'≤x xSy ;
-    is-monotone = λ x y y' xSy y≤y' → S .PBRel.is-monotone xSy y≤y' })
+    R = λ x y -> S .PRel.R x y , S .PRel.is-prop-valued x y ;
+    is-antitone = λ x' x y x'≤x xSy → S .PRel.is-antitone x'≤x xSy ;
+    is-monotone = λ x y y' xSy y≤y' → S .PRel.is-monotone xSy y≤y' })
 
   (λ S → record {
-    R = λ x y -> fst (S .PBRel'.R x y) ;
-    is-prop-valued = λ x y -> snd (S .PBRel'.R x y) ;
+    R = λ x y -> fst (S .PRel'.R x y) ;
+    is-prop-valued = λ x y -> snd (S .PRel'.R x y) ;
     is-antitone = λ {x'} {x} {y} x'≤x xSy →
-      S .PBRel'.is-antitone x' x y x'≤x xSy ;
+      S .PRel'.is-antitone x' x y x'≤x xSy ;
     is-monotone = λ {x} {y} {y'} xSy y≤y' ->
-      S .PBRel'.is-monotone x y y' xSy y≤y' })
+      S .PRel'.is-monotone x y y' xSy y≤y' })
 
   (λ b → refl)
 
   (λ a → refl)
 
 
-  -- Equivalence between PBRel' record and a sigma type   
-unquoteDecl PBRel'IsoΣ = declareRecordIsoΣ PBRel'IsoΣ (quote (PBRel'))
+  -- Equivalence between PRel' record and a sigma type   
+unquoteDecl PRel'IsoΣ = declareRecordIsoΣ PRel'IsoΣ (quote (PRel'))
 
 
--- PBRel' is a Set
-isSetPBRel' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} → isSet (PBRel' A A' ℓc)
-isSetPBRel' = isSetRetract
-  (Iso.fun PBRel'IsoΣ) (Iso.inv PBRel'IsoΣ)
-  (Iso.leftInv PBRel'IsoΣ)
+-- PRel' is a Set
+isSetPRel' : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} → isSet (PRel' A A' ℓc)
+isSetPRel' = isSetRetract
+  (Iso.fun PRel'IsoΣ) (Iso.inv PRel'IsoΣ)
+  (Iso.leftInv PRel'IsoΣ)
     (isSetΣSndProp
       (isSetΠ2 (λ _ _ -> isSetHProp))
       (λ R -> isProp× (isPropΠ5 (λ _ _ _ _ _ -> snd (R _ _)))
                       (isPropΠ5 (λ _ _ _ _ _ -> snd (R _ _)))))
 
 
--- PBRel is a Set
-isSetPBRel : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} → isSet (PBRel X Y ℓR)
-isSetPBRel = isSetRetract
-  (Iso.fun PBRelIsoPBRel') (Iso.inv PBRelIsoPBRel')
-  (Iso.leftInv PBRelIsoPBRel') isSetPBRel'
+-- PRel is a Set
+isSetPRel : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} → isSet (PRel X Y ℓR)
+isSetPRel = isSetRetract
+  (Iso.fun PRelIsoPRel') (Iso.inv PRelIsoPRel')
+  (Iso.leftInv PRelIsoPRel') isSetPRel'
 
 -- Equality of horizontal morphisms follows from equality of the underlying relations.
 
-eqPBRel : {A : PosetBisim ℓA ℓ≤A ℓ≈A} {A' : PosetBisim ℓA' ℓ≤A' ℓ≈A'} -> (c c' : PBRel A A' ℓc) ->
-  PBRel.R c ≡ PBRel.R c' -> c ≡ c'
-eqPBRel {A = A} {A' = A'} c c' eq =
-  isoFunInjective PBRelIsoPBRel' c c' (eqPBRel' _ _  eq1)
+eqPRel : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} -> (c c' : PRel A A' ℓc) ->
+  PRel.R c ≡ PRel.R c' -> c ≡ c'
+eqPRel {A = A} {A' = A'} c c' eq =
+  isoFunInjective PRelIsoPRel' c c' (eqPRel' _ _  eq1)
   where
     eq1 : (λ x y → c .R x y , c .is-prop-valued x y) ≡ (λ x y → c' .R x y , c' .is-prop-valued x y)
     eq1 = funExt (λ x → funExt (λ y → Σ≡Prop (λ _ → isPropIsProp) ((funExt⁻ (funExt⁻ eq x) y))))
 
-    eqPBRel' : (c c' : PBRel' A A' ℓc) -> PBRel'.R c ≡ PBRel'.R c' -> c ≡ c'
-    eqPBRel' c c' eq =
-      isoFunInjective PBRel'IsoΣ c c'
+    eqPRel' : (c c' : PRel' A A' ℓc) -> PRel'.R c ≡ PRel'.R c' -> c ≡ c'
+    eqPRel' c c' eq =
+      isoFunInjective PRel'IsoΣ c c'
         (Σ≡Prop (λ R → isProp× (isPropΠ5 (λ _ _ _ _ _ → snd (R _ _)))
                                (isPropΠ5 (λ _ _ _ _ _ → snd (R _ _))))
                  eq)
 
 
 -- Identity relation
-posetbisim-monrel : {ℓo : Level} -> (X : PosetBisim ℓ ℓ' ℓ'') -> PBRel X X (ℓ-max ℓ' ℓo)
+posetbisim-monrel : {ℓo : Level} -> (X : Predomain ℓ ℓ' ℓ'') -> PRel X X (ℓ-max ℓ' ℓo)
 posetbisim-monrel {ℓ' = ℓ'} {ℓo = ℓo} X = record {
   R = λ x x' -> Lift {i = ℓ'} {j = ℓo} (rel-≤ X x x') ;
   is-prop-valued = λ x x' -> isOfHLevelLift 1 (prop-valued-≤ X x x') ;
@@ -200,7 +200,7 @@ posetbisim-monrel {ℓ' = ℓ'} {ℓo = ℓo} X = record {
   is-monotone = λ {x}  {y} {y'} x≤y y≤y' -> lift (transitive-≤ X x y y' (lower x≤y) y≤y') }
 
 
-idPRel : (X : PosetBisim ℓ ℓ' ℓ'') -> PBRel X X ℓ'
+idPRel : (X : Predomain ℓ ℓ' ℓ'') -> PRel X X ℓ'
 idPRel {ℓ' = ℓ'}  X = record {
   R = λ x x' -> (rel-≤ X x x') ;
   is-prop-valued = λ x x' -> (prop-valued-≤ X x x') ;
@@ -208,7 +208,7 @@ idPRel {ℓ' = ℓ'}  X = record {
   is-monotone = λ {x}  {y} {y'} x≤y y≤y' -> (transitive-≤ X x y y' x≤y y≤y') }
 
 
--- idRel : (ℓo : Level) -> (X : PosetBisim ℓ ℓ' ℓ'') -> PBRel X X (ℓ-max ℓ' ℓo)
+-- idRel : (ℓo : Level) -> (X : Predomain ℓ ℓ' ℓ'') -> PRel X X (ℓ-max ℓ' ℓo)
 -- idRel ℓo = posetbisim-monrel {ℓo = ℓo}
 
 
@@ -220,34 +220,34 @@ idPRel {ℓ' = ℓ'}  X = record {
 -- the universe level of the resulting relation involves an
 -- ℓ-max with ℓA₂ (i.e. the level of the elements in A₂)
 _⊙_ : 
-  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃} ->
-  PBRel A₁ A₂ ℓc₁ ->
-  PBRel A₂ A₃ ℓc₂ ->
-  PBRel A₁ A₃ (ℓ-max ℓA₂ (ℓ-max ℓc₁ ℓc₂))
+  {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₃ : Predomain ℓA₃ ℓ≤A₃ ℓ≈A₃} ->
+  PRel A₁ A₂ ℓc₁ ->
+  PRel A₂ A₃ ℓc₂ ->
+  PRel A₁ A₃ (ℓ-max ℓA₂ (ℓ-max ℓc₁ ℓc₂))
 _⊙_ {A₁ = A₁} {A₂ = A₂} {A₃ = A₃} c₁ c₂ = record {
-  R = λ x z -> ∥ compRel (PBRel.R c₁) (PBRel.R c₂) x z ∥₁ ;
+  R = λ x z -> ∥ compRel (PRel.R c₁) (PRel.R c₂) x z ∥₁ ;
   is-prop-valued = λ x z -> isPropPropTrunc ;
   is-antitone = λ x'≤x H -> elim (λ _ -> isPropPropTrunc) (λ p -> ∣ comp-antitone x'≤x p ∣₁) H ;
   is-monotone = λ H y≤y' -> PTrec isPropPropTrunc (λ p → ∣ comp-monotone p y≤y' ∣₁) H }
     where
 
-      module A₁ = PosetBisimStr (A₁ .snd)
-      module A₃ = PosetBisimStr (A₃ .snd)
+      module A₁ = PredomainStr (A₁ .snd)
+      module A₃ = PredomainStr (A₃ .snd)
       
-      module c₁ = PBRel c₁
-      module c₂ = PBRel c₂
+      module c₁ = PRel c₁
+      module c₂ = PRel c₂
 
       comp-antitone : {x' x : ⟨ A₁ ⟩} {z : ⟨ A₃ ⟩} ->
          x' A₁.≤ x ->
-        compRel (PBRel.R c₁) (PBRel.R c₂) x z ->
-        compRel (PBRel.R c₁) (PBRel.R c₂) x' z 
-      comp-antitone x'≤x (y , xc₁y , yc₂z) = y , (PBRel.is-antitone c₁ x'≤x xc₁y) , yc₂z
+        compRel (PRel.R c₁) (PRel.R c₂) x z ->
+        compRel (PRel.R c₁) (PRel.R c₂) x' z 
+      comp-antitone x'≤x (y , xc₁y , yc₂z) = y , (PRel.is-antitone c₁ x'≤x xc₁y) , yc₂z
 
       comp-monotone : {x : ⟨ A₁ ⟩} {z z' : ⟨ A₃ ⟩} ->
-        compRel (PBRel.R c₁) (PBRel.R c₂) x z ->
+        compRel (PRel.R c₁) (PRel.R c₂) x z ->
         z A₃.≤ z' ->
-        compRel (PBRel.R c₁) (PBRel.R c₂) x z'
-      comp-monotone (y , xc₁y , yc₂z) z≤z' = y , xc₁y , (PBRel.is-monotone c₂ yc₂z z≤z')
+        compRel (PRel.R c₁) (PRel.R c₂) x z'
+      comp-monotone (y , xc₁y , yc₂z) z≤z' = y , xc₁y , (PRel.is-monotone c₂ yc₂z z≤z')
 
 
 
@@ -256,25 +256,25 @@ _⊙_ {A₁ = A₁} {A₂ = A₂} {A₃ = A₃} c₁ c₂ = record {
 -- Exponential of relations
 
 _==>pbmonrel_ :
-  {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
-  {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} ->
-  PBRel Aᵢ Aᵢ' ℓcᵢ ->
-  PBRel Aₒ Aₒ' ℓcₒ ->
-  PBRel (Aᵢ ==> Aₒ) (Aᵢ' ==> Aₒ') (ℓ-max (ℓ-max ℓAᵢ ℓAᵢ') (ℓ-max ℓcᵢ ℓcₒ))
+  {Aᵢ : Predomain ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aᵢ' : Predomain ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
+  {Aₒ : Predomain ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} {Aₒ' : Predomain ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} ->
+  PRel Aᵢ Aᵢ' ℓcᵢ ->
+  PRel Aₒ Aₒ' ℓcₒ ->
+  PRel (Aᵢ ==> Aₒ) (Aᵢ' ==> Aₒ') (ℓ-max (ℓ-max ℓAᵢ ℓAᵢ') (ℓ-max ℓcᵢ ℓcₒ))
 cᵢ ==>pbmonrel cₒ = record {
   R = λ f g ->
-    TwoCell (PBRel.R cᵢ) (PBRel.R cₒ) (PBMor.f f) (PBMor.f g)  ;
-  is-prop-valued = λ f g -> isPropTwoCell (cₒ .PBRel.is-prop-valued) ;
+    TwoCell (PRel.R cᵢ) (PRel.R cₒ) (PMor.f f) (PMor.f g)  ;
+  is-prop-valued = λ f g -> isPropTwoCell (cₒ .PRel.is-prop-valued) ;
   is-antitone = λ {f1} {f2} {g} f1≤f2 f1≤g  a b aRb →
-    cₒ .PBRel.is-antitone (f1≤f2 a) (f1≤g a b aRb) ;
+    cₒ .PRel.is-antitone (f1≤f2 a) (f1≤g a b aRb) ;
   is-monotone = λ {f} {g1} {g2} f≤g1 g1≤g2 a b aRb →
-    cₒ .PBRel.is-monotone (f≤g1 a b aRb) (g1≤g2 b) }
+    cₒ .PRel.is-monotone (f≤g1 a b aRb) (g1≤g2 b) }
 
-_×pbmonrel_ :   {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
-  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'} ->
-  PBRel A₁ A₁' ℓc₁ ->
-  PBRel A₂ A₂' ℓc₂ ->
-  PBRel (A₁ ×dp A₂) (A₁' ×dp A₂') _
+_×pbmonrel_ :   {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : Predomain ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'} ->
+  PRel A₁ A₁' ℓc₁ ->
+  PRel A₂ A₂' ℓc₂ ->
+  PRel (A₁ ×dp A₂) (A₁' ×dp A₂') _
 c₁ ×pbmonrel c₂ = record
   { R = λ p q → c₁ .R (p .fst) (q .fst) × c₂ .R (p .snd) (q .snd)
   ; is-prop-valued = λ _ _ → isProp× (c₁ .is-prop-valued _ _) (c₂ .is-prop-valued _ _)
@@ -283,19 +283,19 @@ c₁ ×pbmonrel c₂ = record
 
 
 _⊎-rel_ :
-  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : PosetBisim ℓA₁' ℓ≤A₁' ℓ≈A₁'}
-  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : PosetBisim ℓA₂' ℓ≤A₂' ℓ≈A₂'} →
-  PBRel A₁ A₁' ℓc₁ →
-  PBRel A₂ A₂' ℓc₂ →
-  PBRel (A₁ ⊎p A₂) (A₁' ⊎p A₂') (ℓ-max ℓc₁ ℓc₂)
+  {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : Predomain ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'} →
+  PRel A₁ A₁' ℓc₁ →
+  PRel A₂ A₂' ℓc₂ →
+  PRel (A₁ ⊎p A₂) (A₁' ⊎p A₂') (ℓ-max ℓc₁ ℓc₂)
 _⊎-rel_ {ℓc₁ = ℓc₁} {ℓc₂ = ℓc₂} {A₁ = A₁} {A₁' = A₁'} {A₂ = A₂} {A₂' = A₂'} c₁ c₂ = record
   { R = rel
   ; is-prop-valued = prop-valued
   ; is-antitone = anti
   ; is-monotone = mon }
   where
-    module A₁⊎A₂ = PosetBisimStr ((A₁ ⊎p A₂) .snd)
-    module A₁'⊎A₂' = PosetBisimStr ((A₁' ⊎p A₂') .snd)
+    module A₁⊎A₂ = PredomainStr ((A₁ ⊎p A₂) .snd)
+    module A₁'⊎A₂' = PredomainStr ((A₁' ⊎p A₂') .snd)
     
     rel : ⟨ (A₁ ⊎p A₂) ⟩ → ⟨ (A₁' ⊎p A₂') ⟩ → Type (ℓ-max ℓc₁ ℓc₂)
     rel (inl x₁) (inl x₁') = Lift {j = ℓc₂} (c₁ .R x₁ x₁')
@@ -321,36 +321,36 @@ _⊎-rel_ {ℓc₁ = ℓc₁} {ℓc₂ = ℓc₂} {A₁ = A₁} {A₁' = A₁'} 
 -- Composing with vertical morphisms on either side
 
 functionalRel :
-  {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
-  {Aᵢ' : PosetBisim ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'} {Aₒ' : PosetBisim ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} 
-  (f : PBMor Aᵢ  Aₒ) →
-  (g : PBMor Aᵢ' Aₒ') →
-  (c : PBRel Aₒ Aₒ' ℓc) →
-  PBRel Aᵢ Aᵢ' ℓc
+  {Aᵢ : Predomain ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : Predomain ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
+  {Aᵢ' : Predomain ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'} {Aₒ' : Predomain ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'} 
+  (f : PMor Aᵢ  Aₒ) →
+  (g : PMor Aᵢ' Aₒ') →
+  (c : PRel Aₒ Aₒ' ℓc) →
+  PRel Aᵢ Aᵢ' ℓc
 functionalRel f g c = record {
-  R = λ x' y' -> PBRel.R c (PBMor.f f x') (PBMor.f g y') ;
-  is-prop-valued = λ x' y' -> PBRel.is-prop-valued c (PBMor.f f x') (PBMor.f g y') ;
-  is-antitone = λ {x'1} {x'2} {y}   x'1≤x'2 H → PBRel.is-antitone c (PBMor.isMon f x'1≤x'2) H ;
-  is-monotone = λ {x'}  {y'1} {y'2} H y'1≤y'2 → PBRel.is-monotone c H (PBMor.isMon g y'1≤y'2) }
+  R = λ x' y' -> PRel.R c (PMor.f f x') (PMor.f g y') ;
+  is-prop-valued = λ x' y' -> PRel.is-prop-valued c (PMor.f f x') (PMor.f g y') ;
+  is-antitone = λ {x'1} {x'2} {y}   x'1≤x'2 H → PRel.is-antitone c (PMor.isMon f x'1≤x'2) H ;
+  is-monotone = λ {x'}  {y'1} {y'2} H y'1≤y'2 → PRel.is-monotone c H (PMor.isMon g y'1≤y'2) }
 
--- Lifting a PB relation to a higher universe level
-LiftPBRel : {ℓc ℓc' : Level} {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} (R : PBRel A₁ A₂ ℓc) ->
-  PBRel A₁ A₂ (ℓ-max ℓc ℓc')
-LiftPBRel {ℓc' = ℓc'} R = record {
-  R = λ x y → Lift {j = ℓc'} (R .PBRel.R x y) ;
-  is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PBRel.is-prop-valued x y) ;
-  is-antitone = λ x'≤x xRy -> lift (R .PBRel.is-antitone x'≤x (lower xRy)) ;
-  is-monotone = λ xRy y≤y' -> lift (R .PBRel.is-monotone (lower xRy) y≤y') }
-
-
+-- Lifting a P relation to a higher universe level
+LiftPRel : {ℓc ℓc' : Level} {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} (R : PRel A₁ A₂ ℓc) ->
+  PRel A₁ A₂ (ℓ-max ℓc ℓc')
+LiftPRel {ℓc' = ℓc'} R = record {
+  R = λ x y → Lift {j = ℓc'} (R .PRel.R x y) ;
+  is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PRel.is-prop-valued x y) ;
+  is-antitone = λ x'≤x xRy -> lift (R .PRel.is-antitone x'≤x (lower xRy)) ;
+  is-monotone = λ xRy y≤y' -> lift (R .PRel.is-monotone (lower xRy) y≤y') }
 
 
-predomrel-transport : {A₁ A₁' : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ A₂' : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
-  {c : PBRel A₁ A₂ ℓc} →
-  {c' : PBRel A₁' A₂' ℓc} →
+
+
+predomrel-transport : {A₁ A₁' : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ A₂' : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  {c : PRel A₁ A₂ ℓc} →
+  {c' : PRel A₁' A₂' ℓc} →
   (eq₁ : A₁ ≡ A₁') →
   (eq₂ : A₂ ≡ A₂') →
-  (PathP (λ i → PBRel (eq₁ i) (eq₂ i) ℓc) c c') →
+  (PathP (λ i → PRel (eq₁ i) (eq₂ i) ℓc) c c') →
   ∀ x y →
   c  .R x y →
   c' .R (transport (cong fst eq₁) x) (transport (cong fst eq₂) y)
@@ -365,41 +365,42 @@ predomrel-transport eq₁ eq₂ path x y xRy =
 
 -- Action of transport on predomain relations
 relTransport :
-  {A₁ A₁' : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
-  {A₂ A₂' : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  {A₁ A₁' : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  {A₂ A₂' : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} →
   (eq₁ : A₁ ≡ A₁') →
   (eq₂ : A₂ ≡ A₂') →
-  (c : PBRel A₁ A₂ ℓc) →
-  PBRel A₁' A₂' ℓc
+  (c : PRel A₁ A₂ ℓc) →
+  PRel A₁' A₂' ℓc
 relTransport eq₁ eq₂ c =
   functionalRel (mTransport (sym eq₁)) (mTransport (sym eq₂)) c
 
+{-
 -- Isomorphism induces a relation
-module _ (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' ℓ≈A')
+module _ (A : Predomain ℓA ℓ≤A ℓ≈A) (A' : Predomain ℓA' ℓ≤A' ℓ≈A')
          (isom : Iso ⟨ A ⟩ ⟨ A' ⟩)
   where
 
   open Iso
   private
     module isom = Iso isom
-    module A' = PosetBisimStr (A' .snd)
+    module A' = PredomainStr (A' .snd)
 
-  Iso→Rel : PBRel A A' {!!}
+  Iso→Rel : PRel A A' {!!}
   Iso→Rel = functionalRel {!!} {!!} {!!}
 
-  -- Iso→Rel : PBRel A A' {!!}
+  -- Iso→Rel : PRel A A' {!!}
   -- Iso→Rel .R x y = (isom.fun x) A'.≤ y
   -- Iso→Rel .is-prop-valued x y = {!A'.is!}
   -- Iso→Rel .is-antitone = {!!}
   -- Iso→Rel .is-monotone = {!!}
-
+-}
 
 -- Action of Σ on predomain relations
 ΣR : (X : hSet ℓX) → {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓc : Level} →
-  (A₁ : ⟨ X ⟩ → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) →
-  (A₂ : ⟨ X ⟩ → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
-  (rs : (x : ⟨ X ⟩) → PBRel (A₁ x) (A₂ x) ℓc) →
-  PBRel (ΣP X A₁) (ΣP X A₂) (ℓ-max ℓX ℓc)
+  (A₁ : ⟨ X ⟩ → Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) →
+  (A₂ : ⟨ X ⟩ → Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  (rs : (x : ⟨ X ⟩) → PRel (A₁ x) (A₂ x) ℓc) →
+  PRel (ΣP X A₁) (ΣP X A₂) (ℓ-max ℓX ℓc)
   
 ΣR X A₁ A₂ rs .R (x₁ , a₁) (x₂ , a₂) =
   Σ[ eq ∈ (x₁ ≡ x₂) ] (rs x₂ .R (subst (λ x → ⟨ A₁ x ⟩) eq a₁) a₂)
@@ -420,7 +421,7 @@ module _ (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' �
     T₂ : ⟨ X ⟩ → Type _
     T₂ x = ⟨ A₂ x ⟩
 
-    _⊑Ax₂_ = A₁ x₂ .snd .PosetBisimStr._≤_
+    _⊑Ax₂_ = A₁ x₂ .snd .PredomainStr._≤_
 
     lem : (subst T₁ (eq ∙ eq') a₁') ⊑Ax₂ (subst T₁ eq' a₁)
     lem = subst
@@ -452,10 +453,10 @@ module _ (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' �
 
 -- Action of Π on predomain relations
 ΠR : (X : Type ℓX) {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓc : Level} →
-  (A₁ : X → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) →
-  (A₂ : X → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
-  (rs : (x : X) → PBRel (A₁ x) (A₂ x) ℓc) →
-  PBRel (ΠP X A₁) (ΠP X A₂) (ℓ-max ℓX ℓc)
+  (A₁ : X → Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) →
+  (A₂ : X → Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  (rs : (x : X) → PRel (A₁ x) (A₂ x) ℓc) →
+  PRel (ΠP X A₁) (ΠP X A₂) (ℓ-max ℓX ℓc)
 ΠR X A₁ A₂ rs .R as bs =
   ∀ x → rs x .R (as x) (bs x)
 ΠR X A₁ A₂ rs .is-prop-valued as bs =
@@ -468,19 +469,19 @@ module _ (A : PosetBisim ℓA ℓ≤A ℓ≈A) (A' : PosetBisim ℓA' ℓ≤A' �
 
 -- Relations induced by inl and inr
 ⊎-inl :
-  (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) 
-  (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
-  PBRel A₁ (A₁ ⊎p A₂) (ℓ-max ℓ≤A₁ ℓ≤A₂)
+  (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) 
+  (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  PRel A₁ (A₁ ⊎p A₂) (ℓ-max ℓ≤A₁ ℓ≤A₂)
 ⊎-inl A₁ A₂ = functionalRel (σ1 {B = A₂}) Id (idPRel (A₁ ⊎p A₂))
 
 ⊎-inr :
-  (A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁) 
-  (A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂) →
-  PBRel A₂ (A₁ ⊎p A₂) (ℓ-max ℓ≤A₁ ℓ≤A₂)
+  (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) 
+  (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
+  PRel A₂ (A₁ ⊎p A₂) (ℓ-max ℓ≤A₁ ℓ≤A₂)
 ⊎-inr A₁ A₂ = functionalRel (σ2 {A = A₁}) Id (idPRel (A₁ ⊎p A₂))
 
 
-module _ {k : Clock} (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
+module _ {k : Clock} (A : Predomain ℓA ℓ≤A ℓ≈A) where
 
   open Clocked k
   open ClockedCombinators k
@@ -488,5 +489,5 @@ module _ {k : Clock} (A : PosetBisim ℓA ℓ≤A ℓ≈A) where
   -- Relation between A and ▹ A defined by
   -- x  (relNext A)  y~  iff  (next x)  r(▹A)  y~
   -- i.e. ▸ₜ[ x  r(A)  (y~ t) ]
-  relNext : PBRel A (PB▹ A) ℓ≤A
-  relNext = functionalRel Next Id (idPRel (PB▹ A))
+  relNext : PRel A (P▹ A) ℓ≤A
+  relNext = functionalRel Next Id (idPRel (P▹ A))

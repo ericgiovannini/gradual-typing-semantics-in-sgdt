@@ -1,4 +1,4 @@
-module Semantics.Concrete.DoublePoset.Base where
+module Semantics.Concrete.Predomain.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
@@ -48,9 +48,9 @@ record IsBisim {A : Type ℓ} (_≈_ : A -> A -> Type ℓ') : Type (ℓ-max ℓ 
 
 unquoteDecl IsBisimIsoΣ = declareRecordIsoΣ IsBisimIsoΣ (quote IsBisim)
 
-record PosetBisimStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ''))) where
+record PredomainStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ''))) where
 
-  constructor posetbisimstr
+  constructor predomainstr
 
   field
     is-set : isSet A
@@ -66,17 +66,17 @@ record PosetBisimStr (ℓ' ℓ'' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (�
   open IsOrderingRelation isOrderingRelation public
 
 
-unquoteDecl PosetBisimIsoΣ = declareRecordIsoΣ PosetBisimIsoΣ (quote PosetBisimStr)
+unquoteDecl PredomainIsoΣ = declareRecordIsoΣ PredomainIsoΣ (quote PredomainStr)
 
 
-PosetBisim : ∀ ℓ ℓ' ℓ'' → Type (ℓ-max (ℓ-suc ℓ) (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ'')))
-PosetBisim ℓ ℓ' ℓ'' = TypeWithStr ℓ (PosetBisimStr ℓ' ℓ'')
+Predomain : ∀ ℓ ℓ' ℓ'' → Type (ℓ-max (ℓ-suc ℓ) (ℓ-max (ℓ-suc ℓ') (ℓ-suc ℓ'')))
+Predomain ℓ ℓ' ℓ'' = TypeWithStr ℓ (PredomainStr ℓ' ℓ'')
 
-open PosetBisimStr
+open PredomainStr
 
 
-PosetBisim→Poset : PosetBisim ℓ ℓ' ℓ'' -> Poset ℓ ℓ'
-PosetBisim→Poset X = ⟨ X ⟩ ,
+Predomain→Poset : Predomain ℓ ℓ' ℓ'' -> Poset ℓ ℓ'
+Predomain→Poset X = ⟨ X ⟩ ,
   (posetstr (X .snd ._≤_)
     (isposet (X .snd .is-set)
              (X .snd .is-prop-valued)
@@ -91,19 +91,19 @@ PosetBisim→Poset X = ⟨ X ⟩ ,
 
 _≈fun_ :
   {ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓAₒ ℓ≤Aₒ ℓ≈Aₒ : Level}
-  {Aᵢ : PosetBisim ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : PosetBisim ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
+  {Aᵢ : Predomain ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aₒ : Predomain ℓAₒ ℓ≤Aₒ ℓ≈Aₒ}
   (f g : ⟨ Aᵢ ⟩ → ⟨ Aₒ ⟩) → Type (ℓ-max (ℓ-max ℓAᵢ ℓ≈Aᵢ) ℓ≈Aₒ)
 _≈fun_ {Aᵢ = Aᵢ} {Aₒ = Aₒ} f g = ∀ x x' -> x Aᵢ.≈ x' -> f x Aₒ.≈ g x'
   where
-    module Aᵢ = PosetBisimStr (Aᵢ .snd)
-    module Aₒ = PosetBisimStr (Aₒ .snd)
+    module Aᵢ = PredomainStr (Aᵢ .snd)
+    module Aₒ = PredomainStr (Aₒ .snd)
 
 -- Closure under composition of bisimilarity
 module _
   {ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓA₃ ℓ≤A₃ ℓ≈A₃ : Level}
-  {A₁ : PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁}
-  {A₂ : PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂}
-  {A₃ : PosetBisim ℓA₃ ℓ≤A₃ ℓ≈A₃}
+  {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁}
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂}
+  {A₃ : Predomain ℓA₃ ℓ≤A₃ ℓ≈A₃}
   (f₁ g₁ : ⟨ A₁ ⟩ → ⟨ A₂ ⟩)
   (f₂ g₂ : ⟨ A₂ ⟩ → ⟨ A₃ ⟩) where
 

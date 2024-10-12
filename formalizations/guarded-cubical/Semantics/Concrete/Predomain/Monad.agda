@@ -5,7 +5,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.DoublePoset.Monad (k : Clock) where
+module Semantics.Concrete.Predomain.Monad (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function

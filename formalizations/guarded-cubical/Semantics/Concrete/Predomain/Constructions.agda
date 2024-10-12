@@ -3,7 +3,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 
-module Semantics.Concrete.DoublePoset.Constructions where
+module Semantics.Concrete.Predomain.Constructions where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function hiding (_$_)
@@ -24,10 +24,10 @@ open import Cubical.Data.Empty.Base
 
 open import Cubical.Relation.Binary.Base
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Convenience
-open import Semantics.Concrete.DoublePoset.DPMorProofs
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Convenience
+open import Semantics.Concrete.Predomain.Proofs
 
 open import Common.Later
 open import Common.LaterProperties
@@ -53,9 +53,9 @@ private
     ℓX₁ ℓX₂ : Level
     ℓX' : Level
 
-    X : PosetBisim ℓX ℓ'X ℓ''X
-    Y : PosetBisim ℓY ℓ'Y ℓ''Y
-    Z : PosetBisim ℓZ ℓ'Z ℓ''Z
+    X : Predomain ℓX ℓ'X ℓ''X
+    Y : Predomain ℓY ℓ'Y ℓ''Y
+    Z : Predomain ℓZ ℓ'Z ℓ''Z
 
 
 -- Constructions not involving later
@@ -63,8 +63,8 @@ private
 
 -- Turning a Set into a predomain with ordering and bisimilarity given by equality.
 
-flat : hSet ℓ -> PosetBisim ℓ ℓ ℓ
-flat h = ⟨ h ⟩ , (posetbisimstr
+flat : hSet ℓ -> Predomain ℓ ℓ ℓ
+flat h = ⟨ h ⟩ , (predomainstr
                    (str h) _≡_
                    (isorderingrelation (str h) (λ _ → refl)
                      (λ a b c a≡b b≡c → a ≡⟨ a≡b ⟩ b ≡⟨ b≡c ⟩ c ∎)
@@ -72,19 +72,19 @@ flat h = ⟨ h ⟩ , (posetbisimstr
                    _≡_ (isbisim (λ _ → refl) (λ a b x → sym x) (str h)))
 
 
-𝔹 : PosetBisim ℓ-zero ℓ-zero ℓ-zero
+𝔹 : Predomain ℓ-zero ℓ-zero ℓ-zero
 𝔹 = flat (Bool , isSetBool)
 
-ℕ : PosetBisim ℓ-zero ℓ-zero ℓ-zero
+ℕ : Predomain ℓ-zero ℓ-zero ℓ-zero
 ℕ = flat (Nat , isSetℕ)
 
-flatRec : (X : hSet ℓ) (A : PosetBisim ℓA ℓ≤A ℓ≈A) → (⟨ X ⟩ → ⟨ A ⟩) →
-  PBMor (flat X) A
-flatRec X A f .PBMor.f = f
-flatRec X A f .PBMor.isMon {x = x} {y = y} x≡y =
-  subst (λ z → A .snd .PosetBisimStr._≤_ (f x) z) (cong f x≡y) (A .snd .PosetBisimStr.is-refl (f x))
-flatRec X A f .PBMor.pres≈ {x = x} {y = y} x≡y =
-  subst (λ z → A .snd .PosetBisimStr._≈_ (f x) z) (cong f x≡y) (A .snd .PosetBisimStr.is-refl-Bisim (f x))
+flatRec : (X : hSet ℓ) (A : Predomain ℓA ℓ≤A ℓ≈A) → (⟨ X ⟩ → ⟨ A ⟩) →
+  PMor (flat X) A
+flatRec X A f .PMor.f = f
+flatRec X A f .PMor.isMon {x = x} {y = y} x≡y =
+  subst (λ z → A .snd .PredomainStr._≤_ (f x) z) (cong f x≡y) (A .snd .PredomainStr.is-refl (f x))
+flatRec X A f .PMor.pres≈ {x = x} {y = y} x≡y =
+  subst (λ z → A .snd .PredomainStr._≈_ (f x) z) (cong f x≡y) (A .snd .PredomainStr.is-refl-Bisim (f x))
 
 -- Any function defined on Nat as a flat dbposet is monotone
 flatNatFun-monotone : (f : Nat -> Nat) -> monotone {X = ℕ} {Y = ℕ} f
@@ -97,35 +97,35 @@ flatNatFun-preserve≈ f {n} {m} n≈m = cong f n≈m
 
 
 -- Constant functions induce morphisms of predomains
-Const : (Y : PosetBisim ℓY ℓ'Y ℓ''Y) → (y : ⟨ Y ⟩) → {X : PosetBisim ℓX ℓ'X ℓ''X} → PBMor X Y
-Const Y y .PBMor.f = λ _ → y
-Const Y y .PBMor.isMon = λ x1≤x2 → (Y .snd .PosetBisimStr.is-refl) y
-Const Y y .PBMor.pres≈ = λ x1≈x2 → (Y .snd .PosetBisimStr.is-refl-Bisim) y
+Const : (Y : Predomain ℓY ℓ'Y ℓ''Y) → (y : ⟨ Y ⟩) → {X : Predomain ℓX ℓ'X ℓ''X} → PMor X Y
+Const Y y .PMor.f = λ _ → y
+Const Y y .PMor.isMon = λ x1≤x2 → (Y .snd .PredomainStr.is-refl) y
+Const Y y .PMor.pres≈ = λ x1≈x2 → (Y .snd .PredomainStr.is-refl-Bisim) y
 
 
 -- The terminal object in the category of predomains
 
-UnitPB : PosetBisim ℓ-zero ℓ-zero ℓ-zero
-UnitPB = flat (Unit , isSetUnit)
+UnitP : Predomain ℓ-zero ℓ-zero ℓ-zero
+UnitP = flat (Unit , isSetUnit)
 
 
 -- unique morphism into UnitP
-UnitPB! : {A : PosetBisim ℓ ℓ' ℓ''} -> PBMor A UnitPB
-UnitPB! = record { f = λ _ → tt ; isMon = λ _ → refl ; pres≈ = λ _ → refl }
+UnitP! : {A : Predomain ℓ ℓ' ℓ''} -> PMor A UnitP
+UnitP! = record { f = λ _ → tt ; isMon = λ _ → refl ; pres≈ = λ _ → refl }
 
-recUnitPB : {A : PosetBisim ℓ ℓ' ℓ''} → ⟨ A ⟩ → PBMor UnitPB A
-recUnitPB {A = A} x =
+recUnitP : {A : Predomain ℓ ℓ' ℓ''} → ⟨ A ⟩ → PMor UnitP A
+recUnitP {A = A} x =
   record {
     f = λ _ → x
-  ; isMon = λ _ → A .snd .PosetBisimStr.is-refl x
-  ; pres≈ = λ _ → A .snd .PosetBisimStr.is-refl-Bisim x}
+  ; isMon = λ _ → A .snd .PredomainStr.is-refl x
+  ; pres≈ = λ _ → A .snd .PredomainStr.is-refl-Bisim x}
 
 
-LiftPosetBisim : {ℓ1 ℓ'1 ℓ''1 : Level} (X : PosetBisim ℓ1 ℓ'1 ℓ''1) ->
-  (ℓ2 ℓ'2 ℓ''2 : Level) -> PosetBisim (ℓ-max ℓ1 ℓ2) (ℓ-max ℓ'1 ℓ'2) (ℓ-max ℓ''1 ℓ''2)
-LiftPosetBisim {ℓ1 = ℓ1} {ℓ'1 = ℓ'1} {ℓ''1 = ℓ''1} X ℓ2 ℓ'2 ℓ''2 =
+LiftPredomain : {ℓ1 ℓ'1 ℓ''1 : Level} (X : Predomain ℓ1 ℓ'1 ℓ''1) ->
+  (ℓ2 ℓ'2 ℓ''2 : Level) -> Predomain (ℓ-max ℓ1 ℓ2) (ℓ-max ℓ'1 ℓ'2) (ℓ-max ℓ''1 ℓ''2)
+LiftPredomain {ℓ1 = ℓ1} {ℓ'1 = ℓ'1} {ℓ''1 = ℓ''1} X ℓ2 ℓ'2 ℓ''2 =
   (Lift {i = ℓ1} {j = ℓ2} ⟨ X ⟩) ,
-  posetbisimstr
+  predomainstr
     (isOfHLevelLift 2 X.is-set )
     (λ {(lift x) (lift y) → Lift {i = ℓ'1} {j = ℓ'2} (x X.≤ y)})
     (isorderingrelation
@@ -142,7 +142,7 @@ LiftPosetBisim {ℓ1 = ℓ1} {ℓ'1 = ℓ'1} {ℓ''1 = ℓ''1} X ℓ2 ℓ'2 ℓ'
       λ {(lift x) (lift y) (lift p) (lift q) →
         cong lift (X.is-prop-valued-Bisim x y p q)})
   where
-    module X = PosetBisimStr (X .snd)
+    module X = PredomainStr (X .snd)
 
 
 -- Product of predomains
@@ -161,18 +161,18 @@ proj₂ : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → A × B → B
 proj₂ (_ , x) = x
 
 infixl 21 _×dp_
-_×dp_ : PosetBisim ℓA ℓ'A ℓ''A  -> PosetBisim ℓB ℓ'B ℓ''B -> PosetBisim (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
+_×dp_ : Predomain ℓA ℓ'A ℓ''A  -> Predomain ℓB ℓ'B ℓ''B -> Predomain (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
 _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  =
   ⟨ A ⟩ × ⟨ B ⟩ ,
-  posetbisimstr
+  predomainstr
     (isSet× A.is-set B.is-set)
     order
     (isorderingrelation order-prop-valued order-refl order-trans order-antisym)
     bisim
     (isbisim bisim-refl bisim-sym bisim-prop-valued)
   where
-    module A = PosetBisimStr (A .snd)
-    module B = PosetBisimStr (B .snd)
+    module A = PredomainStr (A .snd)
+    module B = PredomainStr (B .snd)
 
     order : ⟨ A ⟩ × ⟨ B ⟩ -> ⟨ A ⟩ × ⟨ B ⟩ -> Type (ℓ-max ℓ'A ℓ'B)
     order (a1 , b1) (a2 , b2) = (a1 A.≤ a2) × (b1 B.≤ b2)
@@ -209,7 +209,7 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
     bisim-prop-valued (a1 , b1) (a2 , b2) = isProp×
       (prop-valued-≈ A a1 a2) (prop-valued-≈ B b1 b2)
 
-π1 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> PBMor (A ×dp B) A
+π1 : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B} -> PMor (A ×dp B) A
 π1 {A = A} {B = B} = record {
   f = g ;
   isMon = g-mon ;
@@ -224,7 +224,7 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
     g-bisim : {p1 p2 : ⟨ A ×dp B ⟩} → rel-≈ (A ×dp B) p1 p2 → rel-≈ A (g p1) (g p2)
     g-bisim {γ1 , a1} {γ2 , a2} (a1≈a2 , b1≈b2) = a1≈a2
 
-π2 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> PBMor (A ×dp B) B
+π2 : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B} -> PMor (A ×dp B) B
 π2 {A = A} {B = B} = record {
   f = g ;
   isMon = g-mon ;
@@ -239,28 +239,28 @@ _×dp_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B} {ℓ''B = ℓ''B} A B  
     g-bisim : {p1 p2 : ⟨ A ×dp B ⟩} → rel-≈ (A ×dp B) p1 p2 → rel-≈ B (g p1) (g p2)
     g-bisim {γ1 , a1} {γ2 , a2} (a1≈a2 , b1≈b2) = b1≈b2
 
-×-intro : PBMor X Y → PBMor X Z → PBMor X (Y ×dp Z)
+×-intro : PMor X Y → PMor X Z → PMor X (Y ×dp Z)
 ×-intro g h = record {
   f = λ x → g.f x , h.f x
   ; isMon = λ x≤y → (g.isMon x≤y) , (h.isMon x≤y)
   ; pres≈ = λ x≈y → (g.pres≈ x≈y) , (h.pres≈ x≈y)
   } where
-  module g = PBMor g
-  module h = PBMor h
+  module g = PMor g
+  module h = PMor h
 
-PBMorCurry' : {X Y Z : PosetBisim ℓ ℓ' ℓ''} ->
-  PBMor (Z ×dp X) Y -> ⟨ Z ⟩ -> PBMor X Y
-PBMorCurry' {Z = Z} g z = record {
+PMorCurry' : {X Y Z : Predomain ℓ ℓ' ℓ''} ->
+  PMor (Z ×dp X) Y -> ⟨ Z ⟩ -> PMor X Y
+PMorCurry' {Z = Z} g z = record {
   f = λ x → g $ (z , x) ;
-  isMon = λ {x1} {x2} x1≤x2 → PBMor.isMon g (reflexive-≤ Z z , x1≤x2) ;
-  pres≈ = λ {x1} {x2} x1≈x2 → PBMor.pres≈ g (reflexive-≈ Z z , x1≈x2)  }
+  isMon = λ {x1} {x2} x1≤x2 → PMor.isMon g (reflexive-≤ Z z , x1≤x2) ;
+  pres≈ = λ {x1} {x2} x1≈x2 → PMor.pres≈ g (reflexive-≈ Z z , x1≈x2)  }
 
-PBMorCurry : {X Y Z : PosetBisim ℓ ℓ' ℓ''} ->
-  PBMor (Z ×dp X) Y -> PBMor Z (IntHom X Y)
-PBMorCurry {X = X} {Y = Y} {Z = Z} g = record {
-  f = λ z → PBMorCurry' {X = X} {Y = Y} {Z = Z} g z ;
-  isMon = λ {z} {z'} z≤z' → λ x → PBMor.isMon g (z≤z' , reflexive-≤ X x) ;
-  pres≈ = λ {z} {z'} z≈z' x x' x≈x' → PBMor.pres≈ g (z≈z' , x≈x') }
+PMorCurry : {X Y Z : Predomain ℓ ℓ' ℓ''} ->
+  PMor (Z ×dp X) Y -> PMor Z (IntHom X Y)
+PMorCurry {X = X} {Y = Y} {Z = Z} g = record {
+  f = λ z → PMorCurry' {X = X} {Y = Y} {Z = Z} g z ;
+  isMon = λ {z} {z'} z≤z' → λ x → PMor.isMon g (z≤z' , reflexive-≤ X x) ;
+  pres≈ = λ {z} {z'} z≈z' x x' x≈x' → PMor.pres≈ g (z≈z' , x≈x') }
 
 
 -- Coproduct of predomains
@@ -315,10 +315,10 @@ module _ {A : Type ℓA} {B : Type ℓB} where
     ⊎-bisim-prop-valued HA HB (inl a1) (inl a2) = isOfHLevelLift 1 (HA a1 a2)
     ⊎-bisim-prop-valued HA HB (inr b1) (inr b2) = isOfHLevelLift 1 (HB b1 b2)
 
-_⊎p_ : (A : PosetBisim ℓA ℓ'A ℓ''A) (B : PosetBisim ℓB ℓ'B ℓ''B) →
-    PosetBisim (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
+_⊎p_ : (A : Predomain ℓA ℓ'A ℓ''A) (B : Predomain ℓB ℓ'B ℓ''B) →
+    Predomain (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
 _⊎p_ A B = (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
-  posetbisimstr (isSet⊎ A.is-set B.is-set)
+  predomainstr (isSet⊎ A.is-set B.is-set)
   (⊎-ord A._≤_ B._≤_)
   (isorderingrelation
     (⊎-ord-prop-valued _ _ A.is-prop-valued B.is-prop-valued)
@@ -331,29 +331,29 @@ _⊎p_ A B = (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
     (⊎-bisim-sym _ _ A.is-sym B.is-sym)
     (⊎-bisim-prop-valued _ _ A.is-prop-valued-Bisim B.is-prop-valued-Bisim))
   where
-    module A = PosetBisimStr (A .snd)
-    module B = PosetBisimStr (B .snd)
+    module A = PredomainStr (A .snd)
+    module B = PredomainStr (B .snd)
 
-{- posetbisimstr
+{- predomainstr
     (isSet⊎ (A.is-set) (B.is-set))
     ⊎-ord (isorderingrelation ⊎-ord-prop-valued ⊎-ord-refl ⊎-ord-trans ⊎-ord-antisym)
     ⊎-bisim (isbisim ⊎-bisim-refl ⊎-bisim-sym ⊎-bisim-prop-valued)
     where
-      module A = PosetBisimStr (A .snd)
-      module B = PosetBisimStr (B .snd)
+      module A = PredomainStr (A .snd)
+      module B = PredomainStr (B .snd)
   -}
 
 {-
-_⊎p_ : PosetBisim ℓA ℓ'A ℓ''A  -> PosetBisim ℓB ℓ'B ℓ''B -> PosetBisim (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
+_⊎p_ : Predomain ℓA ℓ'A ℓ''A  -> Predomain ℓB ℓ'B ℓ''B -> Predomain (ℓ-max ℓA ℓB) (ℓ-max ℓ'A ℓ'B) (ℓ-max ℓ''A ℓ''B)
 _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B =
   (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
-  posetbisimstr
+  predomainstr
     (isSet⊎ (A.is-set) (B.is-set))
     order (isorderingrelation order-prop-valued order-refl order-trans order-antisym)
     bisim (isbisim bisim-refl bisim-sym bisim-prop-valued)
   where
-    module A = PosetBisimStr (A .snd)
-    module B = PosetBisimStr (B .snd)
+    module A = PredomainStr (A .snd)
+    module B = PredomainStr (B .snd)
 
     order : ⟨ A ⟩ ⊎ ⟨ B ⟩ -> ⟨ A ⟩ ⊎ ⟨ B ⟩ -> Type (ℓ-max ℓ'A ℓ'B)
     order (inl a1) (inl a2) = Lift {j = ℓ'B} (a1 A.≤ a2)
@@ -400,30 +400,30 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
     bisim-prop-valued (inr b1) (inr b2) = isOfHLevelLift 1 (prop-valued-≈ B b1 b2)
 -}
 
-σ1 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> ⟨ A ==> (A ⊎p B) ⟩
+σ1 : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B} -> ⟨ A ==> (A ⊎p B) ⟩
 σ1 = record {
   f = λ a → inl a ;
   isMon = λ {x} {y} x≤y → lift x≤y ;
   pres≈ = λ {x} {y} x≈y → lift x≈y }
 
-σ2 : {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} -> ⟨ B ==> (A ⊎p B) ⟩
+σ2 : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B} -> ⟨ B ==> (A ⊎p B) ⟩
 σ2 = record {
   f = λ a → inr a ;
   isMon = λ {x} {y} x≤y → lift x≤y ;
   pres≈ = λ {x} {y} x≈y → lift x≈y }
 
 ⊎p-rec :
-  {A : PosetBisim ℓA ℓ'A ℓ''A} {B : PosetBisim ℓB ℓ'B ℓ''B} {C : PosetBisim ℓC ℓ'C ℓ''C} →
+  {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B} {C : Predomain ℓC ℓ'C ℓ''C} →
   ⟨ A ==> C ⟩ -> ⟨ B ==> C ⟩ -> ⟨ (A ⊎p B) ==> C ⟩
 ⊎p-rec f g = record {
-  f = λ { (inl a) → PBMor.f f a ; (inr b) → PBMor.f g b} ;
-  isMon = λ { {inl a1} {inl a2} a1≤a2 → PBMor.isMon f (lower a1≤a2) ;
-              {inr b1} {inr b2} b1≤b2 → PBMor.isMon g (lower b1≤b2) }  ;
-  pres≈ = λ { {inl a1} {inl a2} a1≤a2 → PBMor.pres≈ f (lower a1≤a2) ;
-              {inr b1} {inr b2} b1≤b2 → PBMor.pres≈ g (lower b1≤b2) } }
+  f = λ { (inl a) → PMor.f f a ; (inr b) → PMor.f g b} ;
+  isMon = λ { {inl a1} {inl a2} a1≤a2 → PMor.isMon f (lower a1≤a2) ;
+              {inr b1} {inr b2} b1≤b2 → PMor.isMon g (lower b1≤b2) }  ;
+  pres≈ = λ { {inl a1} {inl a2} a1≤a2 → PMor.pres≈ f (lower a1≤a2) ;
+              {inr b1} {inr b2} b1≤b2 → PMor.pres≈ g (lower b1≤b2) } }
 
 
-open PosetBisimStr
+open PredomainStr
 
 module _ (X : Type ℓX) (B : X → Type ℓ)
  
@@ -482,14 +482,14 @@ module _ (X : Type ℓX) (B : X → Type ℓ)
 
 
 -- Indexed product of predomains (must be at the same universe levels)
-ΠP : (X : Type ℓX){ℓ ℓ≤ ℓ≈ : Level} → (A : X → PosetBisim ℓ ℓ≤ ℓ≈) →
-  PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
+ΠP : (X : Type ℓX){ℓ ℓ≤ ℓ≈ : Level} → (A : X → Predomain ℓ ℓ≤ ℓ≈) →
+  Predomain (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
 ΠP X A = (∀ (x : X) → ⟨ A x ⟩) ,
-  posetbisimstr (isSetΠ λ x → A x .snd .is-set) ord isOrdering bisim isBisimilarity
+  predomainstr (isSetΠ λ x → A x .snd .is-set) ord isOrdering bisim isBisimilarity
 
   where
     ord : _ → _ → Type _
-    ord as bs = ∀ x → A x .snd  .PosetBisimStr._≤_ (as x) (bs x)
+    ord as bs = ∀ x → A x .snd  .PredomainStr._≤_ (as x) (bs x)
 
     ord-prop-valued : isPropValued ord
     ord-prop-valued as bs p q =
@@ -509,7 +509,7 @@ module _ (X : Type ℓX) (B : X → Type ℓ)
     isOrdering = isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym
 
     bisim : _ → _ → Type _
-    bisim as bs = ∀ x → A x .snd .PosetBisimStr._≈_ (as x) (bs x)
+    bisim as bs = ∀ x → A x .snd .PredomainStr._≈_ (as x) (bs x)
 
     bisim-prop-valued : isPropValued bisim
     bisim-prop-valued as bs p q =
@@ -525,27 +525,27 @@ module _ (X : Type ℓX) (B : X → Type ℓ)
 
 
 -- Intro and elim for Π
-module _ {X : Type ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : X → PosetBisim ℓ ℓ≤ ℓ≈} where
+module _ {X : Type ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : X → Predomain ℓ ℓ≤ ℓ≈} where
 
-  Π-intro : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
-    ((x : X) → PBMor A (B x)) →
-    PBMor A (ΠP X B)
-  Π-intro fs .PBMor.f a x = PBMor.f (fs x) a
-  Π-intro fs .PBMor.isMon a₁≤a₂ x = PBMor.isMon (fs x) a₁≤a₂
-  Π-intro fs .PBMor.pres≈ a₁≈a₂ x = PBMor.pres≈ (fs x) a₁≈a₂
+  Π-intro : {A : Predomain ℓA ℓ≤A ℓ≈A} →
+    ((x : X) → PMor A (B x)) →
+    PMor A (ΠP X B)
+  Π-intro fs .PMor.f a x = PMor.f (fs x) a
+  Π-intro fs .PMor.isMon a₁≤a₂ x = PMor.isMon (fs x) a₁≤a₂
+  Π-intro fs .PMor.pres≈ a₁≈a₂ x = PMor.pres≈ (fs x) a₁≈a₂
 
-  Π-elim : (x : X) → PBMor (ΠP X B) (B x)
-  Π-elim x .PBMor.f bs = bs x
-  Π-elim x .PBMor.isMon {x = as} {y = bs} as≤bs = as≤bs x
-  Π-elim x .PBMor.pres≈ {x = as} {y = bs} as≈bs = as≈bs x
+  Π-elim : (x : X) → PMor (ΠP X B) (B x)
+  Π-elim x .PMor.f bs = bs x
+  Π-elim x .PMor.isMon {x = as} {y = bs} as≤bs = as≤bs x
+  Π-elim x .PMor.pres≈ {x = as} {y = bs} as≈bs = as≈bs x
 
 -- Action of Π on a family of morphisms
 Π-mor :
   (X : Type ℓX) →
-  (A : X → PosetBisim ℓA ℓ≤A ℓ≈A) →
-  (B : X → PosetBisim ℓB ℓ≤B ℓ≈B) →
-  ((x : X) → PBMor (A x) (B x)) →
-  PBMor (ΠP X A) (ΠP X B)
+  (A : X → Predomain ℓA ℓ≤A ℓ≈A) →
+  (B : X → Predomain ℓB ℓ≤B ℓ≈B) →
+  ((x : X) → PMor (A x) (B x)) →
+  PMor (ΠP X A) (ΠP X B)
 Π-mor X A B fs = Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
   
 
@@ -658,10 +658,10 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
 
 -- Σ for predomains (i.e. a Type-indexed coproduct of predomains)
 ΣP : (X : hSet ℓX) → {ℓ ℓ≤ ℓ≈ : Level} →
-  (B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈) →
-  PosetBisim (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
+  (B : ⟨ X ⟩ → Predomain ℓ ℓ≤ ℓ≈) →
+  Predomain (ℓ-max ℓX ℓ) (ℓ-max ℓX ℓ≤) (ℓ-max ℓX ℓ≈)
 ΣP X B = (Σ[ x ∈ ⟨ X ⟩ ] ⟨ B x ⟩) ,
-  (posetbisimstr (isSetΣ (X .snd) (λ x → B x .snd .is-set))
+  (predomainstr (isSetΣ (X .snd) (λ x → B x .snd .is-set))
     ord (isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym)
     bisim (isbisim bisim-refl bisim-sym bisim-prop-valued))
 
@@ -760,27 +760,27 @@ module _ (X : hSet ℓX) (B : ⟨ X ⟩ → Type ℓ) where
 
 
 -- Intro and elim for Σ
-module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBisim ℓ ℓ≤ ℓ≈} where
+module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → Predomain ℓ ℓ≤ ℓ≈} where
 
-  Σ-intro : (x : ⟨ X ⟩) → PBMor (B x) (ΣP X B)
-  Σ-intro x .PBMor.f b = x , b
-  Σ-intro x .PBMor.isMon {x = b₁} {y = b₂} b₁≤b₂ =
+  Σ-intro : (x : ⟨ X ⟩) → PMor (B x) (ΣP X B)
+  Σ-intro x .PMor.f b = x , b
+  Σ-intro x .PMor.isMon {x = b₁} {y = b₂} b₁≤b₂ =
     refl , subst (λ b → rel-≤ (B x) b b₂) (sym (transportRefl b₁)) b₁≤b₂
-  Σ-intro x .PBMor.pres≈ {x = b₁} {y = b₂} b₁≈b₂ =
+  Σ-intro x .PMor.pres≈ {x = b₁} {y = b₂} b₁≈b₂ =
     refl , subst (λ b → rel-≈ (B x) b b₂) (sym (transportRefl b₁)) b₁≈b₂
 
-  -- Σ-intro' : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
-  --   (g : ⟨ A ⟩ → ⟨ X ⟩) → ((a : ⟨ A ⟩) → PBMor A (B (g a))) → PBMor A (ΣP X B)
-  -- Σ-intro' g h .PBMor.f a = (g a) , h a .PBMor.f a
-  -- Σ-intro' g h .PBMor.isMon {x = a₁} {y = a₂} a₁≤a₂ = {!!} , {!!}
-  -- Σ-intro' g h .PBMor.pres≈ = {!!}
+  -- Σ-intro' : {A : Predomain ℓA ℓ≤A ℓ≈A} →
+  --   (g : ⟨ A ⟩ → ⟨ X ⟩) → ((a : ⟨ A ⟩) → PMor A (B (g a))) → PMor A (ΣP X B)
+  -- Σ-intro' g h .PMor.f a = (g a) , h a .PMor.f a
+  -- Σ-intro' g h .PMor.isMon {x = a₁} {y = a₂} a₁≤a₂ = {!!} , {!!}
+  -- Σ-intro' g h .PMor.pres≈ = {!!}
     -- record {
     -- f = λ x → g.f x , h.f x
     -- ; isMon = λ x≤y → (g.isMon x≤y) , (h.isMon x≤y)
     -- ; pres≈ = λ x≈y → (g.pres≈ x≈y) , (h.pres≈ x≈y)
     -- } where
-    -- module g = PBMor g
-    -- module h = PBMor h
+    -- module g = PMor g
+    -- module h = PMor h
 
   Σ-elim₁ : ⟨ (ΣP X B) ⟩ → ⟨ X ⟩
   Σ-elim₁ = fst
@@ -788,25 +788,25 @@ module _ {X : hSet ℓX} {ℓ ℓ≤ ℓ≈ : Level} {B : ⟨ X ⟩ → PosetBis
   Σ-elim₂ : (p : ⟨ ΣP X B ⟩) → ⟨ B (Σ-elim₁ p) ⟩
   Σ-elim₂ = snd
 
-  Σ-elim : {A : PosetBisim ℓA ℓ≤A ℓ≈A} →
-    ((x : ⟨ X ⟩) → PBMor (B x) A) →
-    PBMor (ΣP X B) A
-  Σ-elim fs .PBMor.f (x , b) = fs x .PBMor.f b
-  Σ-elim {A = A} fs .PBMor.isMon {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≤b₂) =
+  Σ-elim : {A : Predomain ℓA ℓ≤A ℓ≈A} →
+    ((x : ⟨ X ⟩) → PMor (B x) A) →
+    PMor (ΣP X B) A
+  Σ-elim fs .PMor.f (x , b) = fs x .PMor.f b
+  Σ-elim {A = A} fs .PMor.isMon {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≤b₂) =
     transport
       (λ i → rel-≤ A
-        (fs (sym x₁≡x₂ i) .PBMor.f (path i))
-        (fs x₂ .PBMor.f b₂))
-      (fs x₂ .PBMor.isMon b₁≤b₂)
+        (fs (sym x₁≡x₂ i) .PMor.f (path i))
+        (fs x₂ .PMor.f b₂))
+      (fs x₂ .PMor.isMon b₁≤b₂)
       where
         path : PathP (λ i → ⟨ B (x₁≡x₂ (~ i)) ⟩) (subst (λ x → ⟨ B x ⟩) x₁≡x₂ b₁) b₁
         path = symP (subst-filler (λ x → ⟨ B x ⟩) x₁≡x₂ b₁)
-  Σ-elim {A = A} fs .PBMor.pres≈ {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≈b₂) =
+  Σ-elim {A = A} fs .PMor.pres≈ {x = (x₁ , b₁)} {y = (x₂ , b₂)} (x₁≡x₂ , b₁≈b₂) =
      transport
       (λ i → rel-≈ A
-        (fs (sym x₁≡x₂ i) .PBMor.f (path i))
-        (fs x₂ .PBMor.f b₂))
-      (fs x₂ .PBMor.pres≈ b₁≈b₂)
+        (fs (sym x₁≡x₂ i) .PMor.f (path i))
+        (fs x₂ .PMor.f b₂))
+      (fs x₂ .PMor.pres≈ b₁≈b₂)
       where
         path : PathP (λ i → ⟨ B (x₁≡x₂ (~ i)) ⟩) (subst (λ x → ⟨ B x ⟩) x₁≡x₂ b₁) b₁
         path = symP (subst-filler (λ x → ⟨ B x ⟩) x₁≡x₂ b₁)
@@ -816,35 +816,35 @@ module _
   (X : hSet ℓX)
   (X' : hSet ℓX')
   (f : ⟨ X ⟩ → ⟨ X' ⟩)
-  (A : ⟨ X ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
-  (A' : ⟨ X' ⟩ → PosetBisim ℓA' ℓ≤A' ℓ≈A')
-  (g : (x : ⟨ X ⟩) → PBMor (A x) (A' (f x)))
+  (A : ⟨ X ⟩ → Predomain ℓA ℓ≤A ℓ≈A)
+  (A' : ⟨ X' ⟩ → Predomain ℓA' ℓ≤A' ℓ≈A')
+  (g : (x : ⟨ X ⟩) → PMor (A x) (A' (f x)))
   where
 
-  Σ-mor' : PBMor (ΣP X A) (ΣP X' A')
+  Σ-mor' : PMor (ΣP X A) (ΣP X' A')
   Σ-mor' = Σ-elim {B = A} {A = (ΣP X' A')} (λ x → (Σ-intro {B = A'} (f x)) ∘p (g x))
-  -- Σ-mor' .PBMor.f (x , a) = (f x) , g x .PBMor.f a
-  -- Σ-mor' .PBMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≤a₂) =
+  -- Σ-mor' .PMor.f (x , a) = (f x) , g x .PMor.f a
+  -- Σ-mor' .PMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≤a₂) =
   --   (cong f x₁≡x₂) , {!!}
-  -- Σ-mor' .PBMor.pres≈ {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≈a₂) =
+  -- Σ-mor' .PMor.pres≈ {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁≈a₂) =
   --   {!!}
 
 -- Action of Σ on a family of morphisms
 Σ-mor :
   (X : hSet ℓX) →
-  (A : ⟨ X ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A) →
-  (B : ⟨ X ⟩ → PosetBisim ℓB ℓ≤B ℓ≈B) →
-  ((x : ⟨ X ⟩) → PBMor (A x) (B x)) →
-  PBMor (ΣP X A) (ΣP X B)
+  (A : ⟨ X ⟩ → Predomain ℓA ℓ≤A ℓ≈A) →
+  (B : ⟨ X ⟩ → Predomain ℓB ℓ≤B ℓ≈B) →
+  ((x : ⟨ X ⟩) → PMor (A x) (B x)) →
+  PMor (ΣP X A) (ΣP X B)
 -- Σ-mor X A B fs = {!!}
 Σ-mor X A B fs = Σ-mor' X X (λ x → x) A B fs
 
 {-
-Σ-mor X A B fs .PBMor.f (x , a) = (x , fs x .PBMor.f a)
+Σ-mor X A B fs .PMor.f (x , a) = (x , fs x .PMor.f a)
 
-Σ-mor X A B fs .PBMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁₂≤a₂) = x₁≡x₂ , aux
+Σ-mor X A B fs .PMor.isMon {x = (x₁ , a₁)} {y = (x₂ , a₂)} (x₁≡x₂ , a₁₂≤a₂) = x₁≡x₂ , aux
   where
-    open PBMor 
+    open PMor 
     TA : ⟨ X ⟩ → Type _
     TA = λ x → ⟨ A x ⟩
 
@@ -875,7 +875,7 @@ module _
     aux = subst (λ z → rel-≤ (B x₂) z (fs x₂ .f a₂)) (sym lem3) lem1
 
   
-Σ-mor X A B fs .PBMor.pres≈ = {!!}
+Σ-mor X A B fs .PMor.pres≈ = {!!}
 -- Π-intro (λ y → (fs y) ∘p (Π-elim {B = A} y))
 -}
 
@@ -883,15 +883,15 @@ module _
 module _
   (X₁ : hSet ℓX₁)
   (X₂ : hSet ℓX₂)
-  (A₁ : ⟨ X₁ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
-  (A₂ : ⟨ X₂ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A₁ : ⟨ X₁ ⟩ → Predomain ℓA ℓ≤A ℓ≈A)
+  (A₂ : ⟨ X₂ ⟩ → Predomain ℓA ℓ≤A ℓ≈A)
   where
 
   private
     X₁⊎X₂ : hSet (ℓ-max ℓX₁ ℓX₂)
     X₁⊎X₂ = (⟨ X₁ ⟩ ⊎ ⟨ X₂ ⟩) , isSet⊎ (X₁ .snd) (X₂ .snd)
 
-    A₁⊎A₂ : ⟨ X₁⊎X₂ ⟩ → PosetBisim ℓA ℓ≤A ℓ≈A
+    A₁⊎A₂ : ⟨ X₁⊎X₂ ⟩ → Predomain ℓA ℓ≤A ℓ≈A
     A₁⊎A₂ = Sum.rec A₁ A₂
   
   Iso-⊎Σ-Σ⊎ : PredomIso
@@ -916,8 +916,8 @@ module _ {ℓY : Level}
   (X₂ : hSet ℓX₂)
   (Y₁ : ⟨ X₁ ⟩ → Type ℓY)
   (Y₂ : ⟨ X₂ ⟩ → Type ℓY)
-  (A₁ : (x₁ : ⟨ X₁ ⟩) → Y₁ x₁ → PosetBisim ℓA ℓ≤A ℓ≈A)
-  (A₂ : (x₂ : ⟨ X₂ ⟩) → Y₂ x₂ → PosetBisim ℓA ℓ≤A ℓ≈A)
+  (A₁ : (x₁ : ⟨ X₁ ⟩) → Y₁ x₁ → Predomain ℓA ℓ≤A ℓ≈A)
+  (A₂ : (x₂ : ⟨ X₂ ⟩) → Y₂ x₂ → Predomain ℓA ℓ≤A ℓ≈A)
 
   where
 
@@ -925,12 +925,12 @@ module _ {ℓY : Level}
     X₁⊎X₂ : hSet (ℓ-max ℓX₁ ℓX₂)
     X₁⊎X₂ = (⟨ X₁ ⟩ ⊎ ⟨ X₂ ⟩) , isSet⊎ (X₁ .snd) (X₂ .snd)
 
-    A₁⊎A₂ : (s : ⟨ X₁⊎X₂ ⟩) (z : Sum.rec Y₁ Y₂ s) → PosetBisim ℓA ℓ≤A ℓ≈A
-    A₁⊎A₂ = Sum.elim {C = λ s → Sum.rec Y₁ Y₂ s → PosetBisim ℓA ℓ≤A ℓ≈A} A₁ A₂
+    A₁⊎A₂ : (s : ⟨ X₁⊎X₂ ⟩) (z : Sum.rec Y₁ Y₂ s) → Predomain ℓA ℓ≤A ℓ≈A
+    A₁⊎A₂ = Sum.elim {C = λ s → Sum.rec Y₁ Y₂ s → Predomain ℓA ℓ≤A ℓ≈A} A₁ A₂
 
-    Π-s : ∀ (s : ⟨ X₁⊎X₂ ⟩) → PosetBisim (ℓ-max ℓA ℓY) (ℓ-max ℓY ℓ≤A) (ℓ-max ℓY ℓ≈A)
+    Π-s : ∀ (s : ⟨ X₁⊎X₂ ⟩) → Predomain (ℓ-max ℓA ℓY) (ℓ-max ℓY ℓ≤A) (ℓ-max ℓY ℓ≈A)
     Π-s s = ΠP (Sum.rec Y₁ Y₂ s)
-      (Sum.elim {C = λ s' → Sum.rec Y₁ Y₂ s' → PosetBisim ℓA ℓ≤A ℓ≈A} A₁ A₂ s)
+      (Sum.elim {C = λ s' → Sum.rec Y₁ Y₂ s' → Predomain ℓA ℓ≤A ℓ≈A} A₁ A₂ s)
 
     LHS = (ΣP X₁⊎X₂ Π-s)
                 
@@ -964,8 +964,8 @@ module _ {ℓY₁ ℓY₂ : Level}
   (X₂ : Type ℓX₂)
   (Y₁ : X₁ → Type ℓY₁)
   (Y₂ : X₂ → Type ℓY₂)
-  (A₁ : (x₁ : X₁) → Y₁ x₁ → PosetBisim ℓA ℓ≤A ℓ≈A)
-  (A₂ : (x₂ : X₂) → Y₂ x₂ → PosetBisim ℓA ℓ≤A ℓ≈A) 
+  (A₁ : (x₁ : X₁) → Y₁ x₁ → Predomain ℓA ℓ≤A ℓ≈A)
+  (A₂ : (x₂ : X₂) → Y₂ x₂ → Predomain ℓA ℓ≤A ℓ≈A) 
   where
 
   test : (s : X₁ ⊎ X₂) → PredomIso
@@ -975,7 +975,7 @@ module _ {ℓY₁ ℓY₂ : Level}
       
     (ΠP (Sum.rec ((Lift {j = ℓY₂}) ∘ Y₁) ((Lift {j = ℓY₁}) ∘ Y₂) s)
       (Sum.elim
-        {C = λ s' → Sum.rec (Lift ∘ Y₁) (Lift ∘ Y₂) s' → PosetBisim ℓA ℓ≤A ℓ≈A}
+        {C = λ s' → Sum.rec (Lift ∘ Y₁) (Lift ∘ Y₂) s' → Predomain ℓA ℓ≤A ℓ≈A}
         (λ x₁ y₁ → A₁ x₁ (lower y₁) ) (λ x₂ y₂ → A₂ x₂ (lower y₂)) s))
   test (inl x) = {!!}
   test (inr x) = {!!}
@@ -991,17 +991,17 @@ module _
   (f : A → A')
   (g : A' → A)
   (retr : retract f g)
-  (isPredomA' : PosetBisimStr ℓ≤A' ℓ≈A' A') where
+  (isPredomA' : PredomainStr ℓ≤A' ℓ≈A' A') where
 
   private
-    module A' = PosetBisimStr isPredomA'
+    module A' = PredomainStr isPredomA'
 
   isInjectivef : ∀ x₁ x₂ → f x₁ ≡ f x₂ → x₁ ≡ x₂
   isInjectivef x₁ x₂ eq = sym (retr x₁) ∙ cong g eq ∙ retr x₂
 
-  predomRetractStr : PosetBisimStr ℓ≤A' ℓ≈A' A
+  predomRetractStr : PredomainStr ℓ≤A' ℓ≈A' A
   predomRetractStr .is-set = isSetRetract f g retr A'.is-set
-  predomRetractStr .PosetBisimStr._≤_ x₁ x₂ = f x₁ A'.≤ f x₂
+  predomRetractStr .PredomainStr._≤_ x₁ x₂ = f x₁ A'.≤ f x₂
   predomRetractStr .isOrderingRelation =
     isorderingrelation
       (λ x₁ x₂ → A'.is-prop-valued (f x₁) (f x₂))
@@ -1015,21 +1015,21 @@ module _
       (λ x₁ x₂ fx₁≈fx₂ → A'.is-sym (f x₁) (f x₂) fx₁≈fx₂)
       (λ x₁ x₂ → A'.is-prop-valued-Bisim (f x₁) (f x₂))
 
-  predomRetract : PosetBisim ℓA ℓ≤A' ℓ≈A'
+  predomRetract : Predomain ℓA ℓ≤A' ℓ≈A'
   predomRetract = A , predomRetractStr
 
-  retractMorphism : PBMor predomRetract (A' , isPredomA')
-  retractMorphism .PBMor.f = f
-  retractMorphism .PBMor.isMon fx₁≤fx₂ = fx₁≤fx₂
-  retractMorphism .PBMor.pres≈ fx₁≈fx₂ = fx₁≈fx₂
+  retractMorphism : PMor predomRetract (A' , isPredomA')
+  retractMorphism .PMor.f = f
+  retractMorphism .PMor.isMon fx₁≤fx₂ = fx₁≤fx₂
+  retractMorphism .PMor.pres≈ fx₁≈fx₂ = fx₁≈fx₂
 
 
 
-𝔽 : (Clock -> PosetBisim ℓ ℓ' ℓ'') -> PosetBisim ℓ ℓ' ℓ''
+𝔽 : (Clock -> Predomain ℓ ℓ' ℓ'') -> Predomain ℓ ℓ' ℓ''
 𝔽 {ℓ' = ℓ'} {ℓ'' = ℓ''} A = (∀ k -> ⟨ A k ⟩) ,
-  (posetbisimstr
+  (predomainstr
     (λ f g pf1 pf2 i1 i2 k →
-      is-set-PosetBisim (A k) (f k) (g k) (λ i' → pf1 i' k) (λ i' -> pf2 i' k) i1 i2)
+      is-set-Predomain (A k) (f k) (g k) (λ i' → pf1 i' k) (λ i' -> pf2 i' k) i1 i2)
     order (isorderingrelation
       (λ f g pf1 pf2 i k → prop-valued-≤ (A k) (f k) (g k) (pf1 k) (pf2 k) i )
       (λ f k → reflexive-≤ (A k) (f k))
@@ -1055,10 +1055,10 @@ module Clocked (k : Clock) where
     ▹_ : Type ℓ -> Type ℓ
     ▹ A = ▹_,_ k A
 
-    -- Theta for double posets
-  PB▸ : ▹ PosetBisim ℓ ℓ' ℓ'' → PosetBisim ℓ ℓ' ℓ''
-  PB▸ X = (▸ (λ t → ⟨ X t ⟩)) ,
-            (posetbisimstr
+    -- Theta for predomains
+  P▸ : ▹ Predomain ℓ ℓ' ℓ'' → Predomain ℓ ℓ' ℓ''
+  P▸ X = (▸ (λ t → ⟨ X t ⟩)) ,
+            (predomainstr
               is-set-later ord
               (isorderingrelation ord-prop-valued ord-refl ord-trans ord-antisym)
               bisim
@@ -1066,11 +1066,11 @@ module Clocked (k : Clock) where
 
         where
           ord : ▸ (λ t → ⟨ X t ⟩) → ▸ (λ t → ⟨ X t ⟩) → Type _
-          ord x1~ x2~ =  ▸ (λ t → (PosetBisimStr._≤_ (str (X t)) (x1~ t)) (x2~ t))
+          ord x1~ x2~ =  ▸ (λ t → (PredomainStr._≤_ (str (X t)) (x1~ t)) (x2~ t))
 
           is-set-later : isSet (▸ (λ t → ⟨ X t ⟩))
           is-set-later = λ x y p1 p2 i j t →
-            is-set-PosetBisim (X t) (x t) (y t) (λ i' → p1 i' t) (λ i' → p2 i' t) i j
+            is-set-Predomain (X t) (x t) (y t) (λ i' → p1 i' t) (λ i' → p2 i' t) i j
 
           ord-prop-valued : isPropValued ord
           ord-prop-valued = λ a b p q →
@@ -1088,7 +1088,7 @@ module Clocked (k : Clock) where
             antisym-≤ (X t) (a t) (b t) (a≤b t) (b≤a t) i
 
           bisim : ▸ (λ t → ⟨ X t ⟩) → ▸ (λ t → ⟨ X t ⟩) → Type _
-          bisim x1~ x2~ = ▸ (λ t → (PosetBisimStr._≈_ (str (X t)) (x1~ t)) (x2~ t))
+          bisim x1~ x2~ = ▸ (λ t → (PredomainStr._≈_ (str (X t)) (x1~ t)) (x2~ t))
 
           bisim-refl : (a : ▸ (λ t → ⟨ X t ⟩)) -> bisim a a
           bisim-refl a = λ t → reflexive-≈ (X t) (a t)
@@ -1100,36 +1100,36 @@ module Clocked (k : Clock) where
           bisim-prop-valued = λ a b pf1 pf2 →
             isProp▸ (λ t → prop-valued-≈ (X t) (a t) (b t)) pf1 pf2
 
-  PB▸'_ : PosetBisim ℓ ℓ' ℓ'' → PosetBisim ℓ ℓ' ℓ''
-  PB▸' X = PB▸ (next X)
+  P▸'_ : Predomain ℓ ℓ' ℓ'' → Predomain ℓ ℓ' ℓ''
+  P▸' X = P▸ (next X)
 
-  PB▹_ : PosetBisim ℓ ℓ' ℓ'' → PosetBisim ℓ ℓ' ℓ''
-  PB▹ X = PB▸ (next X)
+  P▹_ : Predomain ℓ ℓ' ℓ'' → Predomain ℓ ℓ' ℓ''
+  P▹ X = P▸ (next X)
 
-  -- PB▸-next : (X : PosetBisim ℓ ℓ' ℓ'') -> PB▸ (next X) ≡ PB▹ X
-  -- PB▸-next = {!refl!}
+  -- P▸-next : (X : Predomain ℓ ℓ' ℓ'') -> P▸ (next X) ≡ P▹ X
+  -- P▸-next = {!refl!}
 
 
   -- We can turn a "later" morphism f : ▸_t ((X~ t) → (Y~ t))
-  -- into a morphism ▸f : (PB▸ X~) → (PB▸ Y~).
-  PBMor▸ : {X~ : ▹ PosetBisim ℓX ℓ'X ℓ''X} {Y~ : ▹ PosetBisim ℓY ℓ'Y ℓ''Y} ->
-    (▸ (λ t -> PBMor (X~ t) (Y~ t))) →
-    (PBMor (PB▸ X~) (PB▸ Y~))
-  PBMor▸ {X~ = X~} f~ .PBMor.f x~ =
-    λ t -> PBMor.f (f~ t) (x~ t) -- or : map▹ MonFun.f f~ ⊛ x~
-  PBMor▸ {X~ = X~} f~ .PBMor.isMon {x~} {y~} x~≤y~ =
-    λ t -> PBMor.isMon (f~ t) (x~≤y~ t)
-  PBMor▸ {X~ = X~} f~ .PBMor.pres≈ {x~} {y~} x~≤y~ =
-    λ t -> PBMor.pres≈ (f~ t) (x~≤y~ t)
+  -- into a morphism ▸f : (P▸ X~) → (P▸ Y~).
+  PMor▸ : {X~ : ▹ Predomain ℓX ℓ'X ℓ''X} {Y~ : ▹ Predomain ℓY ℓ'Y ℓ''Y} ->
+    (▸ (λ t -> PMor (X~ t) (Y~ t))) →
+    (PMor (P▸ X~) (P▸ Y~))
+  PMor▸ {X~ = X~} f~ .PMor.f x~ =
+    λ t -> PMor.f (f~ t) (x~ t) -- or : map▹ MonFun.f f~ ⊛ x~
+  PMor▸ {X~ = X~} f~ .PMor.isMon {x~} {y~} x~≤y~ =
+    λ t -> PMor.isMon (f~ t) (x~≤y~ t)
+  PMor▸ {X~ = X~} f~ .PMor.pres≈ {x~} {y~} x~≤y~ =
+    λ t -> PMor.pres≈ (f~ t) (x~≤y~ t)
 
 
-Zero : PBMor UnitPB ℕ
+Zero : PMor UnitP ℕ
 Zero = record {
   f = λ _ → zero ;
   isMon = λ _ → refl ;
   pres≈ = λ _ → refl }
 
-Suc : PBMor (UnitPB ×dp ℕ) ℕ
+Suc : PMor (UnitP ×dp ℕ) ℕ
 Suc = record {
   f = λ (_ , n) → suc n ;
   isMon = λ { {_ , n} {_ , m} (_ , n≡m) → cong suc n≡m} ;

@@ -23,7 +23,7 @@ open import Cubical.Data.Sigma
 open import Common.Common
 open import Common.LaterProperties
 
-open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 
 open import Semantics.Concrete.GuardedLift k renaming (η to ηL) public
 

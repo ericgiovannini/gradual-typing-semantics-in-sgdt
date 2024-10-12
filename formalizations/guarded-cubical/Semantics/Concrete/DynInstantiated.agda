@@ -30,12 +30,12 @@ open import Cubical.Data.Sigma as Prod
 
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism hiding (_$_)
-open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (S)
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism hiding (_$_)
+open import Semantics.Concrete.Predomain.Constructions renaming (ℕ to NatP)
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Combinators hiding (S)
 open import Semantics.Concrete.Perturbation.Semantic k
 
 open import Semantics.Concrete.ParameterizedDyn k as ParamDyn

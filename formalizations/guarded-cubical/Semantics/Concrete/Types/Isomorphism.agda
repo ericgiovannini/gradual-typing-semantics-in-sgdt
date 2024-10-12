@@ -24,11 +24,11 @@ open import Cubical.Algebra.Monoid.FreeMonoid as Free
 open import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Algebra.Monoid.FreeProduct.Indexed as IFP
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions
+open import Semantics.Concrete.Predomain.Combinators
+open import Semantics.Concrete.Predomain.ErrorDomain k
 open import Semantics.Concrete.Perturbation.Semantic k
 
 open import Semantics.Concrete.Types.Base k as Types
@@ -63,7 +63,7 @@ private
     ℓX ℓY ℓR : Level
     ℓX₁ ℓX₂ : Level
 
-open PBMor
+open PMor
 
 
 
@@ -149,7 +149,7 @@ module _
 
   idStrongIsoV : StrongIsoV A A
   idStrongIsoV = mkStrongIsoV idPredomIso idMonoidIso
-    (eqMonoidHom _ _ (funExt (λ m → PrePtb≡ _ _ refl)))
+    (eqMonoidHom _ _ (funExt (λ m → SemPtb≡ _ _ refl)))
 
 module _
   {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
@@ -278,17 +278,17 @@ module _
 
       eq : interpV (A₁' × A₂') ∘hom isoM .MonoidIso.fun ≡ (PredomIso→EndoHom _) ∘hom interpV (A₁ × A₂)
       eq = FP.ind
-        (eqMonoidHom _ _ (funExt (λ pA₁ → PrePtb≡ _ _ (funExt (λ {(a₁' , a₂') →
-          ≡-× (funExt⁻ (cong (PBMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₁)) pA₁)) a₁')
+        (eqMonoidHom _ _ (funExt (λ pA₁ → SemPtb≡ _ _ (funExt (λ {(a₁' , a₂') →
+          ≡-× (funExt⁻ (cong (PMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₁)) pA₁)) a₁')
               (sym (StrongIsoV→PredomIso iso₂ .PredomIso.invRight a₂'))})))))
 
-        (eqMonoidHom _ _ (funExt (λ pA₂ → PrePtb≡ _ _ (funExt (λ {(a₁' , a₂') →
+        (eqMonoidHom _ _ (funExt (λ pA₂ → SemPtb≡ _ _ (funExt (λ {(a₁' , a₂') →
           ≡-× (sym (StrongIsoV→PredomIso iso₁ .PredomIso.invRight a₁'))
-              (funExt⁻ (cong (PBMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₂)) pA₂)) a₂')})))))
+              (funExt⁻ (cong (PMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₂)) pA₂)) a₂')})))))
 
-        -- (eqMonoidHom _ _ (funExt (λ pA₂ → ×-PrePtb-Ind _ _
-        --   (eqPBMor _ _ (funExt (λ x → sym (StrongIsoV→PredomIso iso₁ .PredomIso.invRight (x .fst)))))
-        --   (eqPBMor _ _ (funExt (λ x → funExt⁻ (cong (PBMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₂)) pA₂)) (x .snd)))))))
+        -- (eqMonoidHom _ _ (funExt (λ pA₂ → ×-SemPtb-Ind _ _
+        --   (eqPMor _ _ (funExt (λ x → sym (StrongIsoV→PredomIso iso₁ .PredomIso.invRight (x .fst)))))
+        --   (eqPMor _ _ (funExt (λ x → funExt⁻ (cong (PMor.f ∘ fst) (funExt⁻ (cong fst (StrongIsoV→coherence iso₂)) pA₂)) (x .snd)))))))
 
 
 
@@ -332,29 +332,29 @@ module _
 
         eq : (interpV (ΣV X A₂) ∘hom isoM .MonoidIso.fun) ≡ (PredomIso→EndoHom isoP ∘hom interpV (ΣV X A₁))
         eq = IFP.ind _ _ (λ x → eqMonoidHom _ _
-          (funExt (λ p → PrePtb≡ _ _ (funExt (λ {(x' , a') → ΣPathP (refl , aux₁ x p x' a' (X .snd x x'))})))))
+          (funExt (λ p → SemPtb≡ _ _ (funExt (λ {(x' , a') → ΣPathP (refl , aux₁ x p x' a' (X .snd x x'))})))))
             where
               aux₁ : ∀ (x : ⟨ X ⟩) (p : ⟨ PtbV (A₁ x) ⟩) (x' : ⟨ X ⟩) (a' : ⟨ A₂ x' ⟩) (x≡x'? : Dec (x ≡ x'))
-                → PBMor.f {Y = ValType→Predomain (A₂ x')} (PtbIfEqual x (interpV (A₂ x) .fst
+                → PMor.f {Y = ValType→Predomain (A₂ x')} (PtbIfEqual x (interpV (A₂ x) .fst
                   (StrongIsoV→MonoidIso (isom x) .MonoidIso.fun .fst p)) x' x≡x'? .fst) a'
-                ≡ PredomIso.fun (StrongIsoV→PredomIso (isom x')) .PBMor.f
-                  (PBMor.f {Y = ValType→Predomain (A₁ x')} (PtbIfEqual x (interpV (A₁ x) .fst p) x' x≡x'? .fst)
-                    (StrongIsoV→PredomIso (isom x') .PredomIso.inv .PBMor.f a'))
+                ≡ PredomIso.fun (StrongIsoV→PredomIso (isom x')) .PMor.f
+                  (PMor.f {Y = ValType→Predomain (A₁ x')} (PtbIfEqual x (interpV (A₁ x) .fst p) x' x≡x'? .fst)
+                    (StrongIsoV→PredomIso (isom x') .PredomIso.inv .PMor.f a'))
               aux₁ x p x' a' (yes x≡x') =
-                let LHS  = PBMor.f ((subst (λ z → ⟨ Endo (ValType→Predomain (A₂ z)) ⟩) x≡x' (interpV (A₂ x) .fst (isoMx x .MonoidIso.fun .fst p))) .fst) a' in
-                let LHS' = PBMor.f ((subst (λ z → ⟨ Endo (ValType→Predomain (A₂ z)) ⟩) x≡x' ((PredomIso→EndoHom (isoPx x) .fst (interpV (A₁ x) .fst p)))) .fst) a' in
-                let RHS  = (isoPx x') .PredomIso.fun .PBMor.f
+                let LHS  = PMor.f ((subst (λ z → ⟨ Endo (ValType→Predomain (A₂ z)) ⟩) x≡x' (interpV (A₂ x) .fst (isoMx x .MonoidIso.fun .fst p))) .fst) a' in
+                let LHS' = PMor.f ((subst (λ z → ⟨ Endo (ValType→Predomain (A₂ z)) ⟩) x≡x' ((PredomIso→EndoHom (isoPx x) .fst (interpV (A₁ x) .fst p)))) .fst) a' in
+                let RHS  = (isoPx x') .PredomIso.fun .PMor.f
                       (subst (λ x → ⟨ A₁ x ⟩) x≡x'
-                        (interpV (A₁ x) .fst p .fst .PBMor.f
-                          (subst (λ x → ⟨ A₁ x ⟩) (sym x≡x') (isoPx x' .PredomIso.inv .PBMor.f a')))) in
+                        (interpV (A₁ x) .fst p .fst .PMor.f
+                          (subst (λ x → ⟨ A₁ x ⟩) (sym x≡x') (isoPx x' .PredomIso.inv .PMor.f a')))) in
                 let equals : LHS ≡ RHS
                     equals = fromPathP
-                      ((funExt⁻ (cong (PBMor.f ∘ fst) (funExt⁻ (cong fst (coherence-x x)) p)) _) -- apply the hypothesis relating A₁ x and A₂ x
-                       ◁ congP₂ (λ _ → PBMor.f ∘ PredomIso.fun ∘ isoPx)
+                      ((funExt⁻ (cong (PMor.f ∘ fst) (funExt⁻ (cong fst (coherence-x x)) p)) _) -- apply the hypothesis relating A₁ x and A₂ x
+                       ◁ congP₂ (λ _ → PMor.f ∘ PredomIso.fun ∘ isoPx)
                          x≡x'
                          (toPathP (cong
-                           (subst (λ x → ⟨ A₁ x ⟩) x≡x') (cong (interpV (A₁ x) .fst p .fst .PBMor.f)
-                           (sym (fromPathP (congP₂ (λ _ → PBMor.f ∘ PredomIso.inv ∘ isoPx) (sym x≡x') (toPathP refl)))))))) in
+                           (subst (λ x → ⟨ A₁ x ⟩) x≡x') (cong (interpV (A₁ x) .fst p .fst .PMor.f)
+                           (sym (fromPathP (congP₂ (λ _ → PMor.f ∘ PredomIso.inv ∘ isoPx) (sym x≡x') (toPathP refl)))))))) in
                 equals
               aux₁ x p x' a' (no x≢x') =
                 sym (StrongIsoV→PredomIso (isom x') .PredomIso.invRight a')
@@ -366,13 +366,13 @@ module _
 {-
 
 
-PBMor.f (fst (A₁ x .snd .snd .snd) p .fst)
-(PBMor.f (PredomIso.inv (fst (isom x)))
+PMor.f (fst (A₁ x .snd .snd .snd) p .fst)
+(PMor.f (PredomIso.inv (fst (isom x)))
  (transp (λ j → fst (A₂ (x≡x' (~ j)))) i0 a'))
 
 (subst (λ x → ⟨ A₁ x ⟩) x≡x'
-    (interpV (A₁ x) .fst p .fst .PBMor.f
-    (subst (λ x → ⟨ A₁ x ⟩) (sym x≡x') (isoPx x' .PredomIso.inv .PBMor.f a'))))
+    (interpV (A₁ x) .fst p .fst .PMor.f
+    (subst (λ x → ⟨ A₁ x ⟩) (sym x≡x') (isoPx x' .PredomIso.inv .PMor.f a'))))
 
 -}
 
@@ -443,17 +443,17 @@ module _
              PredomIso→EndoHom isoP ∘hom interpV Sum
         eq = FP.ind
               (IFP.ind _ _ (λ x₁ → eqMonoidHom _ _
-                (funExt (λ pA₁ → PrePtb≡ _ _ (funExt (λ
+                (funExt (λ pA₁ → SemPtb≡ _ _ (funExt (λ
                   { (Sum.inl x₁' , a) → ΣPathP (refl ,
-                    --let foo = Σ-PrePtb-ind X₁Set (X₁ .snd) x₁ (((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ (X₁ .fst) (λ x → PtbV (A₁ x)) x₁)) .fst pA₁) {!!} {!!} in
-                    --let bar = funExt⁻ ((cong (PBMor.f ∘ fst)) foo) (x₁ , ({!!} , {!!})) in
+                    --let foo = Σ-SemPtb-ind X₁Set (X₁ .snd) x₁ (((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ (X₁ .fst) (λ x → PtbV (A₁ x)) x₁)) .fst pA₁) {!!} {!!} in
+                    --let bar = funExt⁻ ((cong (PMor.f ∘ fst)) foo) (x₁ , ({!!} , {!!})) in
                     {!!})
                   ; (Sum.inr x₂  , a) → refl}))))))
               (IFP.ind _ _ (λ x₂ → eqMonoidHom _ _
-                (funExt (λ pA₂ → PrePtb≡ _ _ (funExt (λ
+                (funExt (λ pA₂ → SemPtb≡ _ _ (funExt (λ
                   { (Sum.inl x₁  , a) → refl
                   ; (Sum.inr x₂' , a) → ΣPathP (refl , {!!})}))))))
-                  -- Σ-PrePtb-ind _ (X₁⊎X₂ .snd) (Sum.inr x₂) _ {!!} λ x' b' neq → {!!}))))
+                  -- Σ-SemPtb-ind _ (X₁⊎X₂ .snd) (Sum.inr x₂) _ {!!} λ x' b' neq → {!!}))))
 
 
 
@@ -461,46 +461,46 @@ module _
           where
             LHS2A LHS2B LHS2C LHS2D LHS2E LHS2F LHS2G RHS2A RHS2B RHS2C RHS2D :
               ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) → ⟨ A₂ x₂' ⟩
-            LHS2A x₂ x₂' pA₂ a = snd (fst (((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₂) ∘hom IFP.σ (X₂ .fst) (λ x → PtbV (A₂ x)) x₂) pA₂ .fst .PBMor.f (Sum.inr x₂' , a))
-            LHS2B x₂ x₂' pA₂ a = interpV Sigma .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PBMor.f (Sum.inr x₂' , a) .snd
-            LHS2C x₂ x₂' pA₂ a = interpV Sigma .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            LHS2A x₂ x₂' pA₂ a = snd (fst (((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₂) ∘hom IFP.σ (X₂ .fst) (λ x → PtbV (A₂ x)) x₂) pA₂ .fst .PMor.f (Sum.inr x₂' , a))
+            LHS2B x₂ x₂' pA₂ a = interpV Sigma .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
+            LHS2C x₂ x₂' pA₂ a = interpV Sigma .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
 
             LHS2D x₂ x₂' pA₂ a = {!IFP.rec _ _ _ (λ s → idMon _) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂)!} 
-            -- IFP.rec _ _ _ (λ s → Σ-PrePtb {!!} (X₁⊎X₂ .snd) s ∘hom interpV (A₂ x₂)) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            -- IFP.rec _ _ _ (λ s → Σ-SemPtb {!!} (X₁⊎X₂ .snd) s ∘hom interpV (A₂ x₂)) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
             
-            -- IFP.rec _ _ _ (λ s → Σ-PrePtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
-            --  .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            -- IFP.rec _ _ _ (λ s → Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
+            --  .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
             --
-            -- IFP.rec _ _ _ (λ s → Σ-PrePtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
+            -- IFP.rec _ _ _ (λ s → Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
             -- .fst (IFP.σ _ _ (inr x₂) .fst pA₂)
-            -- .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            -- .fst .PMor.f (Sum.inr x₂' , a) .snd
             --
             --
-            --  Σ-PrePtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) (inr x₂) .fst (interpV (A₂ x₂) .fst pA₂)        
-            -- .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            --  Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) (inr x₂) .fst (interpV (A₂ x₂) .fst pA₂)        
+            -- .fst .PMor.f (Sum.inr x₂' , a) .snd
             
-            LHS2E x₂ x₂' pA₂ a = (Σ-PrePtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂))
-              .fst (interpV (A₂ x₂) .fst pA₂) .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            LHS2E x₂ x₂' pA₂ a = (Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂))
+              .fst (interpV (A₂ x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
 
             LHS2F x₂ x₂' pA₂ a = liftΣ
               ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd)
               (λ y → PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) y (X₁⊎X₂ .snd (Sum.inr x₂) y))
-              .fst .PBMor.f (Sum.inr x₂' , a) .snd
+              .fst .PMor.f (Sum.inr x₂' , a) .snd
 
             LHS2G x₂ x₂' pA₂ a = PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) (Sum.inr x₂') (X₁⊎X₂ .snd (Sum.inr x₂) (Sum.inr x₂'))
-              .fst .PBMor.f a
+              .fst .PMor.f a
 
             equal : ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) →
               LHS2A x₂ x₂' pA₂ a ≡ LHS2G x₂ x₂' pA₂ a
             equal x₂ x₂' pA₂ a = refl
             
-            RHS2A x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst (interpV Sum .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PBMor.f (Sum.inr x₂' , a) .snd
-            RHS2B x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst ((A⊎-PrePtb ∘hom interpV Sigma₂) .fst (IFP.σ _ _ _ .fst pA₂)) .fst .PBMor.f (Sum.inr x₂' , a) .snd
+            RHS2A x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst (interpV Sum .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
+            RHS2B x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst ((A⊎-SemPtb ∘hom interpV Sigma₂) .fst (IFP.σ _ _ _ .fst pA₂)) .fst .PMor.f (Sum.inr x₂' , a) .snd
             RHS2C x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst
-              (PrePtbId ⊎PrePtb
+              (SemPtbId ⊎SemPtb
                 (liftΣ (⟨ X₂ ⟩ , (Discrete→isSet (X₂ .snd))) (X₂ .snd)
                   (λ y → PtbIfEqual x₂ (interpV (A₂ x₂) .fst pA₂) y (X₂ .snd x₂ y))))
-              .fst .PBMor.f (Sum.inr x₂' , a) .snd
+              .fst .PMor.f (Sum.inr x₂' , a) .snd
             RHS2D x₂ x₂' pA₂ a = {!!}
             
 
@@ -519,7 +519,7 @@ module _
 IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
     where
       int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Σ)
-      int x = (Σ-PrePtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
+      int x = (Σ-SemPtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
 -}          
 
 module _ {ℓX₁ ℓX₂ : Level}
@@ -596,8 +596,8 @@ module _
         eq : interpV PiBoolA ∘hom isoM .MonoidIso.fun
            ≡ PredomIso→EndoHom isoP ∘hom interpV (A × A)
         eq = FP.ind
-               (eqMonoidHom _ _ (funExt (λ pA → PrePtb≡ _ _ (funExt (λ as → funExt (λ { false → refl ; true → refl}))))))
-               (eqMonoidHom _ _ (funExt (λ pA → PrePtb≡ _ _ (funExt (λ as → funExt (λ { false → refl ; true → refl}))))))
+               (eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _ (funExt (λ as → funExt (λ { false → refl ; true → refl}))))))
+               (eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _ (funExt (λ as → funExt (λ { false → refl ; true → refl}))))))
 
 module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
   where
@@ -628,7 +628,7 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
 
         eq : interpV SigmaA ∘hom isoM .MonoidIso.fun
            ≡ PredomIso→EndoHom isoP ∘hom interpV A
-        eq = eqMonoidHom _ _ (funExt (λ pA → PrePtb≡ _ _ refl))
+        eq = eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _ refl))
  
 
 
@@ -684,19 +684,19 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
            PredomIso→EndoHom isoP ∘hom interpV Sum
       eq = FP.ind
         (IFP.ind _ _ (λ x₁ → IFP.ind _ _ (λ y₁ →
-          eqMonoidHom _ _ (funExt (λ pA → PrePtb≡ _ _
+          eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _
             (funExt (λ { (Sum.inl x₁' , as) → ΣPathP (refl , funExt (λ y₁' → {!!})) -- foo pA as x₁ x₁' y₁ y₁' (X₁ .snd x₁ x₁') (Y₁ .snd y₁ y₁')))
                        ; (Sum.inr _ , _) → refl})))))))
 
         (IFP.ind _ _ λ x₂ → IFP.ind _ _ (λ b →
-          eqMonoidHom _ _ (funExt (λ pA → PrePtb≡ _ _
+          eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _
             (funExt (λ { (Sum.inl _ , _) → refl
                        ; (Sum.inr x₂' , as) → ΣPathP (refl , funExt λ y₂' → {!!})}))))))
         where
           -- foo : ∀ (pA : ⟨ PtbV A ⟩) (as : ⟨ Y₁ ⟩ → ⟨ A ⟩)  (x₁ x₁' : ⟨ X₁ ⟩) (y₁ y₁' : ⟨ Y₁ ⟩)
           --   → Dec (x₁ ≡ x₁') → Dec (y₁ ≡ y₁')
-          --   → (fst ((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ _ _ x₁) ∘hom IFP.σ _ _ y₁) pA .fst .PBMor.f (Sum.inl x₁' , as)) .snd y₁'
-          --   ≡ interpV Sigma₁ .fst ((IFP.σ _ _ x₁ ∘hom IFP.σ _ _ y₁) .fst pA) .fst .PBMor.f (x₁' , as) .snd y₁' 
+          --   → (fst ((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ _ _ x₁) ∘hom IFP.σ _ _ y₁) pA .fst .PMor.f (Sum.inl x₁' , as)) .snd y₁'
+          --   ≡ interpV Sigma₁ .fst ((IFP.σ _ _ x₁ ∘hom IFP.σ _ _ y₁) .fst pA) .fst .PMor.f (x₁' , as) .snd y₁' 
           -- foo pA as x₁ x₁' y₁ y₁' (yes p) (yes p₁) = {!!}
           -- foo pA as x₁ x₁' y₁ y₁' (yes p) (no ¬p) = {!!}
           -- foo pA as x₁ x₁' y₁ y₁' (no ¬p) q = {!!}

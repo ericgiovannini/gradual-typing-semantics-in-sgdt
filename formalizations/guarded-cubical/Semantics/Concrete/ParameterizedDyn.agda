@@ -42,14 +42,14 @@ open import Cubical.Algebra.Monoid.Displayed.Instances.Reindex
 
 open import Common.Common
 open import Semantics.Concrete.GuardedLiftError k
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Constructions renaming (ℕ to NatP)
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (U)
-open import Semantics.Concrete.DoublePoset.Morphism hiding (_$_)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Constructions renaming (ℕ to NatP)
+open import Semantics.Concrete.Predomain.Combinators hiding (U)
+open import Semantics.Concrete.Predomain.Morphism hiding (_$_)
+open import Semantics.Concrete.Predomain.Relation
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 
 open import Semantics.Concrete.Perturbation.Semantic k
@@ -147,11 +147,11 @@ module _ {ℓ : Level}
   isSetDynTy : ∀ X → isSet X → isSet (DynTy X)
   isSetDynTy = {!!}
 
-  module _ (X : PosetBisim ℓ ℓ ℓ) where
+  module _ (X : Predomain ℓ ℓ ℓ) where
 
    private
      |D| = DynTy ⟨ X ⟩
-     module X = PosetBisimStr (X .snd)
+     module X = PredomainStr (X .snd)
 
      -- Sum = ((Σ[ s ∈ |S| ] (|P| s → |D|)) ⊎ ⟨ X ⟩)
 
@@ -281,33 +281,33 @@ module _ {ℓ : Level}
    --------------------------------
    -- Defining the predomain:
    --------------------------------
-   DynPredom : PosetBisim ℓ ℓ ℓ
+   DynPredom : Predomain ℓ ℓ ℓ
    DynPredom .fst = |D|
-   DynPredom .snd = posetbisimstr (isSetDynTy ⟨ X ⟩ X.is-set)
+   DynPredom .snd = predomainstr (isSetDynTy ⟨ X ⟩ X.is-set)
       _⊑d_ (isorderingrelation ⊑d-prop-valued ⊑d-refl ⊑d-trans ⊑d-antisym)
       _≈d_ (isbisim ≈d-refl ≈d-sym ≈d-prop-valued)
 
-   rDyn : PBRel DynPredom DynPredom ℓ
+   rDyn : PRel DynPredom DynPredom ℓ
    rDyn = idPRel DynPredom
 
-   SigmaPredom : PosetBisim ℓ ℓ ℓ
+   SigmaPredom : Predomain ℓ ℓ ℓ
    SigmaPredom = ΣP S-set (λ s → ΠP (|P| s) (λ _ → DynPredom))
 
-   SumPredom : PosetBisim ℓ ℓ ℓ
+   SumPredom : Predomain ℓ ℓ ℓ
    SumPredom = SigmaPredom ⊎p X
 
    -- Morphisms between DynP and SumP
-   DynP→SumP : PBMor DynPredom SumPredom
-   DynP→SumP .PBMor.f = DynTy→Sum ⟨ X ⟩
-   DynP→SumP .PBMor.isMon d⊑d' = d⊑d'
-   DynP→SumP .PBMor.pres≈ d≈d' = d≈d'
+   DynP→SumP : PMor DynPredom SumPredom
+   DynP→SumP .PMor.f = DynTy→Sum ⟨ X ⟩
+   DynP→SumP .PMor.isMon d⊑d' = d⊑d'
+   DynP→SumP .PMor.pres≈ d≈d' = d≈d'
 
-   SumP→DynP : PBMor SumPredom DynPredom
-   SumP→DynP .PBMor.f = Sum→DynTy ⟨ X ⟩
-   SumP→DynP .PBMor.isMon {x = sum₁} {y = sum₂} sum₁≤sum₂ =
-     transport (λ i → SumPredom .snd .PosetBisimStr._≤_ (sym (sec sum₁) i) (sym (sec sum₂) i)) sum₁≤sum₂
-   SumP→DynP .PBMor.pres≈ {x = sum₁} {y = sum₂} sum₁≈sum₂ =
-     transport (λ i → SumPredom .snd .PosetBisimStr._≈_ (sym (sec sum₁) i) (sym (sec sum₂) i)) sum₁≈sum₂
+   SumP→DynP : PMor SumPredom DynPredom
+   SumP→DynP .PMor.f = Sum→DynTy ⟨ X ⟩
+   SumP→DynP .PMor.isMon {x = sum₁} {y = sum₂} sum₁≤sum₂ =
+     transport (λ i → SumPredom .snd .PredomainStr._≤_ (sym (sec sum₁) i) (sym (sec sum₂) i)) sum₁≤sum₂
+   SumP→DynP .PMor.pres≈ {x = sum₁} {y = sum₂} sum₁≈sum₂ =
+     transport (λ i → SumPredom .snd .PredomainStr._≈_ (sym (sec sum₁) i) (sym (sec sum₂) i)) sum₁≈sum₂
 
    -- Predomain isomorphism between DynP and SumP
    Iso-DynP-SumP : PredomIso DynPredom SumPredom
@@ -320,17 +320,17 @@ module _ {ℓ : Level}
    Iso-SumP-DynP = PredomIso-Inv Iso-DynP-SumP
 
    -- Embeddings
-   emb-Sigma : PBMor SigmaPredom DynPredom
+   emb-Sigma : PMor SigmaPredom DynPredom
    emb-Sigma = SumP→DynP ∘p σ1
 
-   emb-X : PBMor X DynPredom
+   emb-X : PMor X DynPredom
    emb-X = SumP→DynP ∘p σ2
 
    -- Predomain relations
-   inj-SigmaP : PBRel SigmaPredom DynPredom ℓ
+   inj-SigmaP : PRel SigmaPredom DynPredom ℓ
    inj-SigmaP = functionalRel emb-Sigma Id rDyn
 
-   inj-XP : PBRel X DynPredom ℓ
+   inj-XP : PRel X DynPredom ℓ
    inj-XP = functionalRel emb-X Id rDyn
 
    -- Projections
@@ -340,35 +340,35 @@ module _ {ℓ : Level}
    proj-XP : ErrorDomMor (F-ob DynPredom) (F-ob X)
    proj-XP = Ext ((Case' (K _ ℧) η-mor) ∘p DynP→SumP)
 
-  module _ (C : ▹ (PosetBisim ℓ ℓ ℓ) → PosetBisim ℓ ℓ ℓ) where
+  module _ (C : ▹ (Predomain ℓ ℓ ℓ) → Predomain ℓ ℓ ℓ) where
 
-    DP : PosetBisim ℓ ℓ ℓ
+    DP : Predomain ℓ ℓ ℓ
     DP = fix (λ D~ → DynPredom (C D~))
 
-    DP' : PosetBisim ℓ ℓ ℓ
+    DP' : Predomain ℓ ℓ ℓ
     DP' = DynPredom (C (next DP))
 
     -- Unfolding
     unfold-DP : DP ≡ DP'
     unfold-DP = fix-eq (λ D~ → DynPredom (C D~))
 
-    DP→DP' : PBMor DP DP'
+    DP→DP' : PMor DP DP'
     DP→DP' = mTransport unfold-DP
 
-    DP'→DP : PBMor DP' DP
+    DP'→DP : PMor DP' DP
     DP'→DP = mTransport (sym unfold-DP)
 
     unfold-fold :  DP'→DP ∘p DP→DP' ≡ Id
-    unfold-fold = eqPBMor _ _ (funExt (λ d → transport⁻Transport (λ i → ⟨ unfold-DP i ⟩) d ))
+    unfold-fold = eqPMor _ _ (funExt (λ d → transport⁻Transport (λ i → ⟨ unfold-DP i ⟩) d ))
 
     fold-unfold :  DP→DP' ∘p DP'→DP ≡ Id
-    fold-unfold = eqPBMor _ _ (funExt λ d → transportTransport⁻ (λ i → ⟨ unfold-DP i ⟩) d)
+    fold-unfold = eqPMor _ _ (funExt λ d → transportTransport⁻ (λ i → ⟨ unfold-DP i ⟩) d)
 
     DP'≅DP : PredomIso DP' DP
     DP'≅DP .PredomIso.fun = DP'→DP
     DP'≅DP .PredomIso.inv = DP→DP'
-    DP'≅DP .PredomIso.invRight = funExt⁻ (cong PBMor.f unfold-fold)
-    DP'≅DP .PredomIso.invLeft = funExt⁻ (cong PBMor.f fold-unfold)
+    DP'≅DP .PredomIso.invRight = funExt⁻ (cong PMor.f unfold-fold)
+    DP'≅DP .PredomIso.invLeft = funExt⁻ (cong PMor.f fold-unfold)
 
     EndoDP→EndoDP' : MonoidHom (Endo DP) (Endo DP')
     EndoDP→EndoDP' = PredomIso→EndoHom (PredomIso-Inv DP'≅DP)
@@ -377,10 +377,10 @@ module _ {ℓ : Level}
     EndoDP'→EndoDP = PredomIso→EndoHom DP'≅DP
 
     -- Identity relation on Dyn
-    rD' : PBRel DP' DP' ℓ
+    rD' : PRel DP' DP' ℓ
     rD' = idPRel DP'
 
-    _⊑D'_ = rD' .PBRel.R
+    _⊑D'_ = rD' .PRel.R
     _≈D'_ = _≈d_ (C (next DP))
 
 
@@ -527,17 +527,17 @@ module _ {ℓ : Level}
                      (Indexed.rec _ _ (Endo (C (next DP))) (λ s-op → (iop s-op) ∘hom (iDyn ^opHom))))
 
         iSigma = Indexed.rec _ _ (Endo SigmaP)
-          (λ s → (Σ-PrePtb S-set dec-eq-S s) ∘hom
+          (λ s → (Σ-SemPtb S-set dec-eq-S s) ∘hom
             (Indexed.rec _ _ (Endo (ΠP (|P| s) (λ _ → DP')))
-              (λ p → (Π-PrePtb (|P| s) (dec-eq-P s) p) ∘hom iDyn')))
+              (λ p → (Π-SemPtb (|P| s) (dec-eq-P s) p) ∘hom iDyn')))
 
         iDyn' = (PredomIso→EndoHom Iso-SumP-DP')
                  ∘hom iSum
                  ∘hom PtbD→PtbSum
 
         iSum = (FP.rec
-                 (⊎A-PrePtb ∘hom iSigma)
-                 (A⊎-PrePtb ∘hom iX))
+                 (⊎A-SemPtb ∘hom iSigma)
+                 (A⊎-SemPtb ∘hom iX))
 
         iDyn = EndoDP'→EndoDP ∘hom iDyn'
 
@@ -618,7 +618,7 @@ module _ {ℓ : Level}
 
 {-
   module DynStep1
-    (C : ▹ (PosetBisim ℓ ℓ ℓ) → PosetBisim ℓ ℓ ℓ)
+    (C : ▹ (Predomain ℓ ℓ ℓ) → Predomain ℓ ℓ ℓ)
    
     where
     -- e.g. C D~ = ▸ₜ((D~ t) => 𝕃 (D~ t))

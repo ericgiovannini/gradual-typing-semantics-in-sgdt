@@ -27,15 +27,15 @@ open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Algebra.Monoid.More
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.KleisliFunctors k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Combinators
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Kleisli k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k 
@@ -84,7 +84,7 @@ open IsMonoid
 
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM')
-         (c : PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+         (c : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
   where
   private
     MA = PtbV A
@@ -93,10 +93,10 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
     iA' = interpV A'
 
   VRelPtbSq : ⟨ MA ⟩ → ⟨ MA' ⟩ → Type _
-  VRelPtbSq pA pA' = PBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
+  VRelPtbSq pA pA' = PSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
 
   isPropVRelPtbSq : ∀ pA pA' → isProp (VRelPtbSq pA pA')
-  isPropVRelPtbSq pA pA' = isPropPBSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
+  isPropVRelPtbSq pA pA' = isPropPSq c c (iA .fst pA .fst) (iA' .fst pA' .fst)
 
   |VRelPtb| : Type _
   |VRelPtb| = Σ[ pA ∈ ⟨ MA ⟩ ] Σ[ pA' ∈ ⟨ MA' ⟩ ] VRelPtbSq pA pA'
@@ -110,7 +110,7 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
   VRelPtb .snd .ε .fst      = MA .snd .ε
   VRelPtb .snd .ε .snd .fst = MA' .snd .ε
   VRelPtb .snd .ε .snd .snd = subst2
-    (PBSq c c)
+    (PSq c c)
     (cong fst (sym (iA .snd .presε)))
     (cong fst (sym (iA' .snd .presε)))
     (Predom-IdSqV c)
@@ -120,7 +120,7 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
     MA' .snd ._·_ pA' qA'
   VRelPtb .snd ._·_ (pA , pA' , pSq) (qA , qA' , qSq) .snd .snd =
     subst2
-      (PBSq c c)
+      (PSq c c)
       (cong fst (sym (iA .snd .pres· pA qA)))
       (cong fst (sym (iA' .snd .pres· pA' qA')))
       (CompSqV {c₁ = c}{c₂ = c}{c₃ = c}
@@ -153,35 +153,35 @@ module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈'
 
   module _ {M : Monoid ℓ''} where
     corecV : ∀ (ϕ : MonoidHom M MA) (ϕ' : MonoidHom M MA')
-          → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+          → (∀ m → PSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
           → MonoidHom M VRelPtb
     corecV ϕ ϕ' ϕSq .fst m = (ϕ .fst m) , (ϕ' .fst m , ϕSq m)
     corecV ϕ ϕ' ϕSq .snd .presε = VRelPtb≡ (ϕ .snd .presε) (ϕ' .snd .presε)
     corecV ϕ ϕ' ϕSq .snd .pres· p q = VRelPtb≡ (ϕ .snd .pres· p q) (ϕ' .snd .pres· p q)
 
     corecVFact1 : {ϕ : MonoidHom M MA} (ϕ' : MonoidHom M MA')
-        → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+        → (∀ m → PSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
         → factorization π1V ϕ
     corecVFact1 {ϕ} ϕ' ϕSq = (corecV ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
     corecVFact2 : (ϕ : MonoidHom M MA) {ϕ' : MonoidHom M MA'}
-        → (∀ m → PBSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
+        → (∀ m → PSq c c (iA .fst (ϕ .fst m) .fst) (iA' .fst (ϕ' .fst m) .fst))
         → factorization π2V ϕ'
     corecVFact2 ϕ {ϕ'} ϕSq = (corecV ϕ ϕ' ϕSq) , eqMonoidHom _ _ refl
 
   corecPushV : (ϕ' : MonoidHom MA MA')
-        → (∀ m → PBSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
+        → (∀ m → PSq c c (iA .fst m .fst) (iA' .fst (ϕ' .fst m) .fst))
         → sectionHom π1V
   corecPushV ϕ' ϕSq = corecVFact1 ϕ' ϕSq
 
   corecPullV : (ϕ : MonoidHom MA' MA)
-        → (∀ m' → PBSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
+        → (∀ m' → PSq c c (iA .fst (ϕ .fst m') .fst) (iA' .fst m' .fst))
         → sectionHom π2V
   corecPullV ϕ ϕSq = corecVFact2 ϕ ϕSq
 
 module _ (A : ValType ℓ ℓ≤ ℓ≈ ℓM) (A' : ValType ℓ' ℓ≤' ℓ≈' ℓM') where
   VRelPP : ∀ (ℓc : Level) → Type _
-  VRelPP ℓc = Σ[ c ∈ PBRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
+  VRelPP ℓc = Σ[ c ∈ PRel (ValType→Predomain A) (ValType→Predomain A') ℓc ]
     PushV A A' c
     × PullV A A' c
 

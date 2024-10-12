@@ -26,15 +26,15 @@ open import Cubical.Algebra.Monoid.FreeProduct
 open import Cubical.Algebra.Monoid.FreeMonoid as Free
 open import Cubical.Data.Sigma
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Constructions
-open import Semantics.Concrete.DoublePoset.Morphism as Mor hiding (Id)
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel hiding (⊎-inl ; ⊎-inr)
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (U)
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.DoublePoset.MonadCombinators k
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Constructions
+open import Semantics.Concrete.Predomain.Morphism as Mor hiding (Id)
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Relation as PRel hiding (⊎-inl ; ⊎-inr)
+open import Semantics.Concrete.Predomain.Combinators hiding (U)
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.MonadCombinators k
 open import Semantics.Concrete.LockStepErrorOrdering k
 
 open import Semantics.Concrete.Perturbation.Semantic k
@@ -223,22 +223,22 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) where
   -- UpR
   repL .snd .fst .fst = MA.ε
   repL .snd .fst .snd = subst
-    (λ δ → PBSq rA (RelPP.Next .fst) δ C.Next)
+    (λ δ → PSq rA (RelPP.Next .fst) δ C.Next)
     (sym (cong fst iA.presε))
     sq
     where
-      sq : PBSq rA (RelPP.Next .fst) Mor.Id C.Next
+      sq : PSq rA (RelPP.Next .fst) Mor.Id C.Next
       sq x y xRy t = xRy
 
   -- UpL
   repL .snd .snd .fst = MA.ε
   repL .snd .snd .snd =
     subst
-          (λ δ → PBSq (RelPP.Next .fst) r▹A C.Next δ)
+          (λ δ → PSq (RelPP.Next .fst) r▹A C.Next δ)
           (sym (cong fst i▹A.presε))
           sq
     where
-      sq : PBSq (RelPP.Next .fst) r▹A C.Next Mor.Id
+      sq : PSq (RelPP.Next .fst) r▹A C.Next Mor.Id
       sq = SqV-functionalRel C.Next Mor.Id r▹A
   
   Next : ValRel A ▹A ℓ≤A
@@ -251,14 +251,14 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) where
       -- Right quasi-representation for F next
       ------------------------------------------
 
-      p : PBMor (PB▹ 𝔸) (𝕃 𝔸)
+      p : PMor (P▹ 𝔸) (𝕃 𝔸)
       p = (θ-mor ∘p (C.Map▹ η-mor))
 
       -- delay on the left and right
-      dl : PBMor 𝔸 (𝕃 𝔸)
+      dl : PMor 𝔸 (𝕃 𝔸)
       dl = δ-mor ∘p η-mor
 
-      dr : PBMor (PB▹ 𝔸) (𝕃 (PB▹ 𝔸))
+      dr : PMor (P▹ 𝔸) (𝕃 (P▹ 𝔸))
       dr = δ-mor ∘p η-mor
       
       rLA = idPRel (𝕃 𝔸)
@@ -273,7 +273,7 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) where
       repR .snd .fst .fst = i₁ .fst Free.FM-1-gen -- insert one delay on the right
       repR .snd .fst .snd = sq2
         where
-          sq : PBSq rel-next-A rLA dl p
+          sq : PSq rel-next-A rLA dl p
           sq x y~ x≤y~ = ⊑θθ _ _ (λ t → ⊑ηη x (y~ t) (x≤y~ t))
 
           sq2 : ErrorDomSq (F-rel (rel-next-A)) (F-rel rA) (Ext dl) (Ext p)
@@ -283,13 +283,13 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) where
       repR .snd .snd .fst = i₁ .fst Free.FM-1-gen -- insert one delay on the left
       repR .snd .snd .snd = sq2
         where
-          sq : PBSq r▹A (U-rel (F-rel rel-next-A)) p dr
+          sq : PSq r▹A (U-rel (F-rel rel-next-A)) p dr
           sq x~ y~ x~≤y~ = ⊑θθ _ _ (λ t → ⊑ηη (x~ t) y~ (lem t))
             where
-            lem : (@tick t : Tick k) → rel-next-A .PBRel.R (x~ t) y~
+            lem : (@tick t : Tick k) → rel-next-A .PRel.R (x~ t) y~
             lem t t' =
               let tirr = tick-irrelevance x~ t t'
-              in subst (λ z → rA .PBRel.R z (y~ t')) (sym tirr) (x~≤y~ t')
+              in subst (λ z → rA .PRel.R z (y~ t')) (sym tirr) (x~≤y~ t')
               
           sq2 : ErrorDomSq (F-rel r▹A) (F-rel rel-next-A) (Ext p) (Ext dr)
           sq2 = Ext-sq r▹A (F-rel rel-next-A) p dr sq

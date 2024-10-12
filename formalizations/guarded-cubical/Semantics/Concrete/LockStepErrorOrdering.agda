@@ -17,7 +17,7 @@ open import Cubical.HITs.PropositionalTruncation
 
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 open import Semantics.Concrete.GuardedLiftError k
 open import Semantics.Concrete.GuardedLift k
   using () renaming (η to ηL)

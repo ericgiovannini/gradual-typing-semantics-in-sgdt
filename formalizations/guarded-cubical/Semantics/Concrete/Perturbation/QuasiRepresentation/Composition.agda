@@ -14,11 +14,11 @@ open import Cubical.Algebra.Monoid.Base
 
 open import Common.Common
 
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Relation as PRel
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Types k as Types
 open import Semantics.Concrete.Perturbation.Relation.Alt k
@@ -132,25 +132,25 @@ module _
     UpRc' = UpRV _ _ _ ρc'
 
     -- Data corresponding to c ⊙ c'
-    e-comp : PBMor 𝔸₁ 𝔸₃
+    e-comp : PMor 𝔸₁ 𝔸₃
     e-comp = ec' ∘p ec
 
     δl-comp : ⟨ MA₁ ⟩
     δl-comp = (pullV c .fst δlc') MA₁.· δlc
 
-    UpR-comp : PBSq rA₁ (|c| PRel.⊙ |c'|) (iA₁ δl-comp) e-comp
+    UpR-comp : PSq rA₁ (|c| PRel.⊙ |c'|) (iA₁ δl-comp) e-comp
     UpR-comp = subst
-      (λ z → PBSq rA₁ (|c| PRel.⊙ |c'|) z e-comp)
+      (λ z → PSq rA₁ (|c| PRel.⊙ |c'|) z e-comp)
       (sym (cong fst (interpV A₁ .snd .pres· (pullV c .fst δlc') δlc)))
       sq
       where
-        α : PBSq rA₁ (|c| PRel.⊙ rA₂) (Id ∘p (iA₁ δlc)) (Id ∘p ec)
+        α : PSq rA₁ (|c| PRel.⊙ rA₂) (Id ∘p (iA₁ δlc)) (Id ∘p ec)
         α = CompSqV {c₁ = rA₁} {c₂ = |c|} {c₃ = |c| PRel.⊙ rA₂} UpRc (sq-c-c⊙A' |c|)
 
-        β : PBSq (|c| PRel.⊙ rA₂) (|c| PRel.⊙ |c'|) (iA₁ (pullV c .fst δlc')) ec'
+        β : PSq (|c| PRel.⊙ rA₂) (|c| PRel.⊙ |c'|) (iA₁ (pullV c .fst δlc')) ec'
         β = CompSqH {f = iA₁ (pullV c .fst δlc')} {g = iA₂ δlc'} {h = ec'} (pullVSq c δlc') UpRc'
 
-        sq : PBSq rA₁ (|c| PRel.⊙ |c'|) (iA₁ (pullV c .fst δlc') ∘p (iA₁ δlc)) e-comp
+        sq : PSq rA₁ (|c| PRel.⊙ |c'|) (iA₁ (pullV c .fst δlc') ∘p (iA₁ δlc)) e-comp
         sq = CompSqV
           {c₁ = rA₁} {c₂ = |c| PRel.⊙ rA₂} {c₃ = |c| PRel.⊙ |c'|}
           {f₁ = Id ∘p (iA₁ δlc)} {g₁ = Id ∘p ec} {f₂ = iA₁ (pullV c .fst δlc')} {g₂ = ec'}
@@ -159,13 +159,13 @@ module _
     δr-comp : ⟨ MA₃ ⟩
     δr-comp = δrc' MA₃.· (pushV c' .fst δrc)
 
-    UpL-comp : PBSq (|c| PRel.⊙ |c'|) rA₃ e-comp (iA₃ δr-comp)
+    UpL-comp : PSq (|c| PRel.⊙ |c'|) rA₃ e-comp (iA₃ δr-comp)
     UpL-comp = subst
-      (λ z → PBSq (|c| PRel.⊙ |c'|) rA₃ e-comp z)
+      (λ z → PSq (|c| PRel.⊙ |c'|) rA₃ e-comp z)
       (sym (cong fst (interpV A₃ .snd .pres· _ _)))
       sq
       where
-        α : PBSq (|c| PRel.⊙ |c'|) (rA₂ PRel.⊙ |c'|) ec (iA₃ (pushV c' .fst δrc))
+        α : PSq (|c| PRel.⊙ |c'|) (rA₂ PRel.⊙ |c'|) ec (iA₃ (pushV c' .fst δrc))
         α = CompSqH
           {f = ec} {g = iA₂ δrc} {h = iA₃ (pushV c' .fst δrc)}
           UpLc (pushVSq c' δrc)
@@ -175,7 +175,7 @@ module _
               {c₁ = rA₂ PRel.⊙ |c'|} {c₂ = |c'|} {c₃ = rA₃}
               (sq-idA⊙c-c |c'|) UpLc' 
 
-        sq : PBSq (|c| PRel.⊙ |c'|) rA₃ e-comp ((iA₃ δrc') ∘p (iA₃ (pushV c' .fst δrc))) 
+        sq : PSq (|c| PRel.⊙ |c'|) rA₃ e-comp ((iA₃ δrc') ∘p (iA₃ (pushV c' .fst δrc))) 
         sq = CompSqV
           {c₁ = |c| PRel.⊙ |c'|} {c₂ = rA₂ PRel.⊙ |c'|} {c₃ = rA₃}
           {f₁ = ec}        {g₁ = iA₃ (pushV c' .fst δrc)}
@@ -207,25 +207,25 @@ module _
     DnLc' = DnLV  _ _ _ ρc'
 
     -- Data corresponding to c ⊙ c'
-    p-comp : PBMor 𝔸₃ 𝔸₁
+    p-comp : PMor 𝔸₃ 𝔸₁
     p-comp = pc ∘p pc'
 
     δl-comp : ⟨ MA₁ ⟩
     δl-comp = δlc MA₁.· (pullV c .fst δlc')
 
-    DnR-comp : PBSq (|c| PRel.⊙ |c'|) rA₁ (iA₁ δl-comp) p-comp
+    DnR-comp : PSq (|c| PRel.⊙ |c'|) rA₁ (iA₁ δl-comp) p-comp
     DnR-comp = subst
-      (λ z → PBSq (|c| PRel.⊙ |c'|) rA₁ z p-comp)
+      (λ z → PSq (|c| PRel.⊙ |c'|) rA₁ z p-comp)
       (sym (cong fst (interpV A₁ .snd .pres· _ _)))
       sq
       where
-        α : PBSq (|c| PRel.⊙ |c'|) (|c| PRel.⊙ rA₂) (iA₁ (pullV c .fst δlc')) pc'
+        α : PSq (|c| PRel.⊙ |c'|) (|c| PRel.⊙ rA₂) (iA₁ (pullV c .fst δlc')) pc'
         α = CompSqH {f = iA₁ _} {g = iA₂ δlc'} {h = pc'} (pullVSq c δlc') DnRc'
 
         β : _
         β = CompSqV {c₁ = |c| PRel.⊙ rA₂} {c₂ = |c|} {c₃ = rA₁} (sq-c⊙A'-c |c|) DnRc
 
-        sq : PBSq (|c| PRel.⊙ |c'|) rA₁ ((iA₁ δlc) ∘p iA₁ (pullV c .fst δlc')) (pc ∘p pc')
+        sq : PSq (|c| PRel.⊙ |c'|) rA₁ ((iA₁ δlc) ∘p iA₁ (pullV c .fst δlc')) (pc ∘p pc')
         sq = CompSqV {c₁ = |c| PRel.⊙ |c'|} {c₂ = |c| PRel.⊙ rA₂} {c₃ = rA₁}
                      {f₁ = iA₁ (pullV c .fst δlc')} {g₁ = pc'}
                      {f₂ = iA₁ δlc ∘p Id} {g₂ = pc ∘p Id}
@@ -235,19 +235,19 @@ module _
     δr-comp : ⟨ MA₃ ⟩
     δr-comp = (pushV c' .fst δrc) MA₃.· δrc'
 
-    DnL-comp : PBSq rA₃ (|c| PRel.⊙ |c'|) p-comp (iA₃ δr-comp)
+    DnL-comp : PSq rA₃ (|c| PRel.⊙ |c'|) p-comp (iA₃ δr-comp)
     DnL-comp = subst
-      (λ z → PBSq rA₃ (|c| PRel.⊙ |c'|) p-comp z)
+      (λ z → PSq rA₃ (|c| PRel.⊙ |c'|) p-comp z)
       (sym (cong fst (interpV A₃ .snd .pres· _ _)))
       sq 
       where
-        α : PBSq rA₃ (rA₂ PRel.⊙ |c'|) (Id ∘p pc') (Id ∘p iA₃ δrc')
+        α : PSq rA₃ (rA₂ PRel.⊙ |c'|) (Id ∘p pc') (Id ∘p iA₃ δrc')
         α = CompSqV {c₁ = rA₃} {c₂ = |c'|} {c₃ = rA₂ PRel.⊙ |c'|} DnLc' (sq-c-idA⊙c |c'|)
 
         β : _
         β = CompSqH {f = pc} {g = iA₂ δrc} {h = iA₃ (pushV c' .fst δrc)} DnLc (pushVSq c' δrc)
 
-        sq : PBSq rA₃ ((|c| PRel.⊙ |c'|)) p-comp (iA₃ (pushV c' .fst δrc) ∘p (iA₃ δrc'))
+        sq : PSq rA₃ ((|c| PRel.⊙ |c'|)) p-comp (iA₃ (pushV c' .fst δrc) ∘p (iA₃ δrc'))
         sq = CompSqV {c₁ = rA₃} {c₂ = rA₂ PRel.⊙ |c'|} {c₃ = |c| PRel.⊙ |c'|}
                      {f₁ = Id ∘p pc'} {g₁ = Id ∘p iA₃ δrc'}
                      {f₂ = pc} {g₂ = iA₃ (pushV c' .fst δrc)}
