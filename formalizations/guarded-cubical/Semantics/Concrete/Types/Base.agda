@@ -23,11 +23,13 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Sigma
 
 open import Cubical.Algebra.Monoid.Base
+open import Cubical.Algebra.Monoid.More
 
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
+open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 
 private
   variable
@@ -36,6 +38,11 @@ private
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
     ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
     ℓc ℓd : Level
+
+    ℓA₁  ℓ≤A₁  ℓ≈A₁  ℓMA₁  : Level
+    ℓA₂  ℓ≤A₂  ℓ≈A₂  ℓMA₂  : Level
+    ℓA₃  ℓ≤A₃  ℓ≈A₃  ℓMA₃  : Level
+
 
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ' : Level
@@ -135,10 +142,18 @@ module _
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) where
 
   open PBMor
+  open Iso
+  𝔸ᵢ = ValType→Predomain Aᵢ
+  𝔸ₒ = ValType→Predomain Aₒ
   
   ValTypeIso : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓAᵢ ℓ≤Aᵢ) ℓ≈Aᵢ) ℓAₒ) ℓ≤Aₒ) ℓ≈Aₒ)
   ValTypeIso = Σ[ fun ∈ ValTypeMor Aᵢ Aₒ ] Σ[ inv ∈ ValTypeMor Aₒ Aᵢ ]
     (section (fun .f) (inv .f)) × (retract (fun .f) (inv .f))
+
+  ValTypeIso' : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓAᵢ ℓ≤Aᵢ) ℓ≈Aᵢ) ℓAₒ) ℓ≤Aₒ) ℓ≈Aₒ)
+  ValTypeIso' = Σ[ iso ∈ Iso ⟨ Aᵢ ⟩ ⟨ Aₒ ⟩ ]
+    (monotone {X = 𝔸ᵢ} {Y = 𝔸ₒ} (iso .fun) ×
+     preserve≈ {X = 𝔸ᵢ} {Y = 𝔸ₒ} (iso .fun))
   
 
 ---------------------------------------------------------------
@@ -210,3 +225,5 @@ ObliqueMor :
   (B : CompType ℓB ℓ≤B ℓ≈B ℓMB)
   → Type _
 ObliqueMor A B = PBMor (ValType→Predomain A) (U-ob (CompType→ErrorDomain B))
+
+

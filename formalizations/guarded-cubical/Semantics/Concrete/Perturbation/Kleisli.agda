@@ -13,6 +13,7 @@ open import Cubical.Data.Nat renaming (ℕ to Nat) hiding (_·_)
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct as FP
+open import Cubical.Algebra.Monoid.FreeMonoid as Free
 
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
@@ -22,7 +23,7 @@ open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.Monad k
 open import Semantics.Concrete.DoublePoset.MonadCombinators k
 import Semantics.Concrete.DoublePoset.KleisliFunctors k as Kl
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types -- hiding (U; F; _⟶_)
 
 
@@ -59,6 +60,8 @@ nat^op→nat .fst n = n
 nat^op→nat .snd .presε = refl
 nat^op→nat .snd .pres· n m = +-comm m n
 
+FM^op→FM : MonoidHom (Free.FM-1 ^op) Free.FM-1
+FM^op→FM = opRec (FM-1-rec (FM-1 ^op) FM-1-gen)
 
 module _
   {M : Monoid ℓ} {N : Monoid ℓ'}
@@ -72,7 +75,7 @@ module _
 Kl-Arrow-Ptb-L : (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) (B : CompType ℓB ℓ≤B ℓ≈B ℓMB) →
   MonoidHom ((PtbC (Types.F A)) ^op) (PtbV (Types.U (A ⟶ B)))
 Kl-Arrow-Ptb-L A B = (FP.rec
-                        (i₁ ∘hom nat^op→nat) -- nat^op case
+                        (i₁ ∘hom FM^op→FM) -- nat^op case
                         (i₂ ∘hom i₁))        -- MA^op case
           ∘hom ⊕op -- map out of op
 
@@ -114,7 +117,7 @@ module _
   ⟶Kᴸ-lemma = op-ind _ _
     (FP.ind
       -- nat case
-      (NatM-ind _ _ (PrePtb≡ {ℓ = level} _ _ (funExt (λ g → eqPBMor _ _ (funExt (λ x → sym
+      (Free.FM-1-ind _ _ (PrePtb≡ {ℓ = level} _ _ (funExt (λ g → eqPBMor _ _ (funExt (λ x → sym
         ((ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PBMor.f) (δ* .ErrorDomMor.fun (η-mor .PBMor.f x)))
         ≡⟨ {!!} ⟩
         (ext ⟨ A ⟩ ⟨ B ⟩ |B|.℧ |B|.θ.f (g .PBMor.f) (δ-mor {A = |A|} .PBMor.f (η-mor .PBMor.f x)))

@@ -40,7 +40,7 @@ open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.KleisliFunctors k
 
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
 
 private

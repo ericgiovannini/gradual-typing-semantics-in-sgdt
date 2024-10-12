@@ -14,19 +14,20 @@ open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.More
 open import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Data.Nat
+open import Cubical.Data.Sum
 
 open import Common.Common
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2 ; 𝔹)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
+open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel hiding (⊎-inl ; ⊎-inr)
 open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.DblPosetCombinators
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.KleisliFunctors k
 
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Perturbation.Kleisli k as KPtb
@@ -64,6 +65,265 @@ open F-ob
 open F-mor
 open F-rel
 open F-sq
+
+open ExtAsEDMorphism
+
+
+-- The relations induced by inl and inr are quasi-left-representable,
+-- and their liftings by F are quasi-right-representable.
+
+module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
+          {A₂ : ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂}
+  where
+  private
+    -- Predomains
+    |A₁| = ValType→Predomain A₁
+    |A₂| = ValType→Predomain A₂
+
+    module |A₁| = PosetBisimStr (|A₁| .snd)
+    module |A₂| = PosetBisimStr (|A₂| .snd)
+
+    -- Monoids and interpretation homomorphisms
+    module MA₁   = MonoidStr (PtbV A₁ .snd)
+    module MA₂   = MonoidStr (PtbV A₂ .snd)
+    module MSum  = MonoidStr (PtbV (A₁ Types.⊎ A₂) .snd)
+    module MFA₁  = MonoidStr (PtbC (Types.F A₁) .snd)
+    module MFA₂  = MonoidStr (PtbC (Types.F A₂) .snd)
+    module MFSum = MonoidStr (PtbC (Types.F (A₁ Types.⊎ A₂)) .snd)
+
+    iA₁ = fst ∘ interpV A₁ .fst
+    iA₂ = fst ∘ interpV A₂ .fst
+    iFA₁ = fst ∘ interpC (Types.F A₁) .fst
+    iFA₂ = fst ∘ interpC (Types.F A₂) .fst
+    iSum = fst ∘ interpV (A₁ Types.⊎ A₂) .fst
+    iFSum = fst ∘ interpC (Types.F (A₁ Types.⊎ A₂)) .fst
+
+    module iA₁ = IsMonoidHom (interpV A₁ .snd)
+    module iA₂ = IsMonoidHom (interpV A₂ .snd)
+
+    -- Relations
+    rA₁ = idPRel |A₁|
+    rA₂ = idPRel |A₂|
+    rFA₁ = idEDRel (F-ob |A₁|)
+    rFA₂ = idEDRel (F-ob |A₂|)
+    
+    inl-rel = PRel.⊎-inl |A₁| |A₂|
+    inr-rel = PRel.⊎-inr |A₁| |A₂|
+    
+    rSum = idPRel (|A₁| ⊎p |A₂|)
+    rFSum = idEDRel (F-ob (|A₁| ⊎p |A₂|))
+
+
+  -- First we show the relation induced by inl is quasi-left representable
+  ⊎-inl-LeftRep : LeftRepV A₁ (A₁ Types.⊎ A₂) inl-rel
+  ⊎-inl-LeftRep = mkLeftRepV A₁ (A₁ Types.⊎ A₂) inl-rel
+    σ1 MA₁.ε UpR MSum.ε UpL
+    where
+      UpR : PBSq rA₁ inl-rel (iA₁ MA₁.ε) σ1
+      UpR x y xRy = lift (subst
+        (λ z → rA₁ .PBRel.R z y)
+        (sym (funExt⁻ (cong (PBMor.f ∘ fst) (interpV A₁ .snd .IsMonoidHom.presε)) x))
+        xRy)
+
+      -- This follows from the fact that the relation PRel.⊎-inl is
+      -- defined as a restriction along a morphism.
+      -- 
+      -- Also, there is no need to transport along the fact that iSum
+      -- MSum.ε ≡ Id because this holds definitionally by definition
+      -- of the recursor for the coproduct of monoids.
+      UpL : PBSq inl-rel rSum σ1 (iSum MSum.ε)
+      UpL = SqV-functionalRel σ1 Id rSum
+
+  -- Now we show that F applied to the relation is quasi-right-representable
+  ⊎-inl-F-RightRep : RightRepC (Types.F A₁) (Types.F (A₁ Types.⊎ A₂)) (F-rel inl-rel)
+  ⊎-inl-F-RightRep = mkRightRepC (Types.F A₁) (Types.F (A₁ Types.⊎ A₂)) (F-rel inl-rel)
+    proj δl DnR δr DnL
+    where
+      proj : ErrorDomMor (F-ob (|A₁| ⊎p |A₂|)) (F-ob |A₁|)
+      proj = Ext (Case' η-mor ℧-mor)
+
+      δl : ⟨ PtbC (Types.F A₁) ⟩
+      δl = MFA₁.ε
+
+      DnR : ErrorDomSq (F-rel inl-rel) rFA₁ (iFA₁ δl) proj
+      DnR = subst (λ z → ErrorDomSq (F-rel inl-rel) rFA₁ z proj) eq α
+        where
+          eq : Ext η-mor ≡ iFA₁ δl
+          eq = Ext-unit-right
+        
+          α : ErrorDomSq (F-rel inl-rel) rFA₁ (Ext η-mor) proj
+          α = Ext-sq inl-rel rFA₁ η-mor (Case' η-mor ℧-mor)
+            (λ { x (inl y) xRy → η-sq rA₁ x y (lower xRy)})
+
+      δr : ⟨ PtbC (Types.F (A₁ Types.⊎ A₂)) ⟩
+      δr = MFSum.ε
+
+      DnL : ErrorDomSq rFSum (F-rel inl-rel) proj (iFSum δr)
+      DnL = subst (λ z → ErrorDomSq rFSum (F-rel inl-rel) proj z) eq α
+        where
+          eq : Ext η-mor ≡ iFSum δr
+          eq = Ext-unit-right
+
+          α : ErrorDomSq rFSum (F-rel inl-rel) proj (Ext η-mor)
+          α = Ext-sq rSum (F-rel inl-rel) (Case' η-mor ℧-mor) η-mor           
+            (λ { (inl x) (inl y) xRy → η-sq inl-rel x (inl y) xRy
+               ; (inr x) (inr y) xRy → F-rel inl-rel .ErrorDomRel.R℧ _})
+
+
+  -- Now we show the same for inr
+  ⊎-inr-LeftRep : LeftRepV A₂ (A₁ Types.⊎ A₂) inr-rel
+  ⊎-inr-LeftRep = mkLeftRepV _ _ _
+    σ2 MA₂.ε UpR MSum.ε UpL
+    where
+      UpR : PBSq rA₂ inr-rel (iA₂ MA₂.ε) σ2
+      UpR x y xRy = lift (subst
+        (λ z → rA₂ .PBRel.R z y)
+        (sym (funExt⁻ (cong (PBMor.f ∘ fst) (interpV A₂ .snd .IsMonoidHom.presε)) x))
+        xRy)
+
+      UpL : PBSq inr-rel rSum σ2 (iSum MSum.ε)
+      UpL = SqV-functionalRel σ2 Id rSum
+
+  ⊎-inr-F-RightRep : RightRepC (Types.F A₂) (Types.F (A₁ Types.⊎ A₂)) (F-rel inr-rel)
+  ⊎-inr-F-RightRep = mkRightRepC (Types.F A₂) (Types.F (A₁ Types.⊎ A₂)) (F-rel inr-rel)
+    proj δl DnR δr DnL
+    where
+      proj : ErrorDomMor (F-ob (|A₁| ⊎p |A₂|)) (F-ob |A₂|)
+      proj = Ext (Case' ℧-mor η-mor)
+
+      δl : ⟨ PtbC (Types.F A₂) ⟩
+      δl = MFA₂.ε
+
+      DnR : ErrorDomSq (F-rel inr-rel) rFA₂ (iFA₂ δl) proj
+      DnR = subst (λ z → ErrorDomSq (F-rel inr-rel) rFA₂ z proj) eq α
+        where
+          eq : Ext η-mor ≡ iFA₂ δl
+          eq = Ext-unit-right
+        
+          α : ErrorDomSq (F-rel inr-rel) rFA₂ (Ext η-mor) proj
+          α = Ext-sq inr-rel rFA₂ η-mor (Case' ℧-mor η-mor)
+            (λ { x (inr y) xRy → η-sq rA₂ x y (lower xRy)})
+
+      δr : ⟨ PtbC (Types.F (A₁ Types.⊎ A₂)) ⟩
+      δr = MFSum.ε
+
+      DnL : ErrorDomSq rFSum (F-rel inr-rel) proj (iFSum δr)
+      DnL = subst (λ z → ErrorDomSq rFSum (F-rel inr-rel) proj z) eq α
+        where
+          eq : Ext η-mor ≡ iFSum δr
+          eq = Ext-unit-right
+
+          α : ErrorDomSq rFSum (F-rel inr-rel) proj (Ext η-mor)
+          α = Ext-sq rSum (F-rel inr-rel) (Case' ℧-mor η-mor) η-mor           
+            (λ { (inl x) (inl y) xRy → F-rel inr-rel .ErrorDomRel.R℧ _
+               ; (inr x) (inr y) xRy → η-sq inr-rel x (inr y) xRy})
+      
+
+      
+-- If A is isomorphic to A' via f, then the relation induced by f is
+-- quasi-left-representable, and its lifting by F is
+-- quasi-right-representable.
+
+module _
+  {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
+  {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+  (isom : PredomIso (ValType→Predomain A) (ValType→Predomain A'))
+  where
+
+  private
+    module isom = PredomIso isom
+
+    |A| = ValType→Predomain A
+    |A'| = ValType→Predomain A'
+    
+    rA   = idPRel |A|
+    rA'  = idPRel |A'|
+    rFA  = idEDRel (F-ob |A|)
+    rFA' = idEDRel (F-ob |A'|)
+
+    module MA   = MonoidStr (PtbV A .snd)
+    module MA'  = MonoidStr (PtbV A' .snd)
+    module MFA  = MonoidStr (PtbC (Types.F A) .snd)
+    module MFA' = MonoidStr (PtbC (Types.F A') .snd)
+
+    iA  = fst ∘ interpV A .fst
+    iA' = fst ∘ interpV A' .fst
+    iFA = fst ∘ interpC (Types.F A) .fst
+    iFA' = fst ∘ interpC (Types.F A') .fst
+    
+    rel = functionalRel isom.fun Id rA'
+    
+  iso→LeftRepV : LeftRepV A A' rel
+  iso→LeftRepV = mkLeftRepV A A' rel
+    isom.fun MA.ε UpR MA'.ε UpL
+    where
+      UpR : PBSq rA rel (iA MA.ε) isom.fun
+      UpR = subst
+              (λ z → PBSq rA rel z isom.fun)
+              (sym (cong fst (interpV A .snd .IsMonoidHom.presε)))
+              α
+        where
+          α : PBSq rA rel Id isom.fun
+          α x y xRy = isom.fun .PBMor.isMon xRy
+          -- Given : x ⊑A y
+          -- NTS : (isom.fun x) ⊑A' (isom.fun y)
+
+      UpL : PBSq rel rA' isom.fun (iA' MA'.ε)
+      UpL = subst
+              (λ z → PBSq rel rA' isom.fun z)
+              (sym (cong fst (interpV A' .snd .IsMonoidHom.presε)))
+              α
+        where
+          α : PBSq rel rA' isom.fun Id
+          α = SqV-functionalRel isom.fun Id rA'
+
+
+  -- There is no need to transport along the fact that iFA MF.ε ≡
+  -- Id, because this holds definitionally by definition of the
+  -- recursor for the coproduct of monoids.
+  iso→RightRepC : RightRepC (Types.F A) (Types.F A') (F-rel rel)
+  iso→RightRepC = mkRightRepC (F A) (F A') (F-rel rel)
+    (F-mor isom.inv) MFA.ε DnR MFA'.ε DnL
+    where
+      DnR : ErrorDomSq (F-rel rel) rFA (iFA MFA.ε) (F-mor isom.inv)
+      DnR = subst
+        (λ z → ErrorDomSq (F-rel rel) rFA z (F-mor isom.inv))
+        F-mor-pres-id
+        α
+        where
+          α : ErrorDomSq (F-rel rel) rFA (F-mor Id) (F-mor isom.inv)
+          α = F-sq rel rA Id isom.inv
+            (λ x y xRy → subst
+              (λ z → rA .PBRel.R z (isom.inv .PBMor.f y))
+              (isom.invLeft x)
+              (isom.inv .PBMor.isMon xRy))
+            -- Given: x : A, y : A' such that (isom.fun x) ⊑A' y
+            -- Show: x ⊑A (isom.inv y)
+            -- But x = isom.inv (isom.fun x) so sufficies to show
+            --   (isom.inv (isom.fun x)) ⊑A (isom.inv y)
+            -- Then by monotonicity of isom.inv, sufficies to show
+            --   (isom.fun x) ⊑A' y
+
+          -- α = Ext-sq rel rFA η-mor (η-mor ∘p isom.inv)
+          --   λ x y xRy → η-sq rA x (isom.inv .PBMor.f y) {!!}
+
+      DnL : ErrorDomSq rFA' (F-rel rel) (F-mor isom.inv) (iFA' MFA'.ε)
+      DnL = subst
+        (λ z → ErrorDomSq rFA' (F-rel rel) (F-mor isom.inv) z)
+        F-mor-pres-id
+        α
+        where
+          α : ErrorDomSq rFA' (F-rel rel) (F-mor isom.inv) (F-mor Id)
+          α = F-sq rA' rel isom.inv Id
+            (λ x y xRy → subst
+              (λ z → rA' .PBRel.R z y)
+              (sym (isom.invRight x))
+              xRy)
+            -- Given : x ⊑A' y
+            -- Show: (isom.fun (isom.inv x)) ⊑A' y
+    
+
+
 
 
 -- The functor F preserves quasi-representability. Namely:
@@ -107,13 +367,13 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
       eFc : ErrorDomMor (F-ob 𝔸) (F-ob 𝔸')
       eFc = F-mor ec
 
-      δlFc : ⟨ NatM ⊕ MA ⟩
+      δlFc : ⟨ _ ⊕ MA ⟩
       δlFc = i₂ .fst δlc
 
       UpRFc : ErrorDomSq (F-rel (idPRel 𝔸)) (F-rel c) (F-mor (iA δlc .fst)) (F-mor ec)
       UpRFc = F-sq (idPRel 𝔸) c (iA δlc .fst) ec UpRc
 
-      δrFc : ⟨ NatM ⊕ MA' ⟩
+      δrFc : ⟨ _ ⊕ MA' ⟩
       δrFc = i₂ .fst δrc
 
       UpLFc : ErrorDomSq (F-rel c) (F-rel (idPRel 𝔸')) (F-mor ec) (F-mor (iA' δrc .fst))
@@ -136,13 +396,13 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
       pFc : ErrorDomMor (F-ob 𝔸') (F-ob 𝔸)
       pFc = F-mor pc
 
-      δlFc : ⟨ NatM ⊕ MA ⟩
+      δlFc : ⟨ _ ⊕ MA ⟩
       δlFc = i₂ .fst δlc
 
       DnRFc : ErrorDomSq (F-rel c) (F-rel rA) (F-mor (iA δlc .fst)) pFc
       DnRFc = F-sq c rA (iA δlc .fst) pc DnRc
 
-      δrFc : ⟨ NatM ⊕ MA' ⟩
+      δrFc : ⟨ _ ⊕ MA' ⟩
       δrFc = i₂ .fst δrc
 
       DnLFc : ErrorDomSq (F-rel rA') (F-rel c) pFc (F-mor (iA' δrc .fst))
@@ -188,13 +448,13 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
       eUd : PBMor (U-ob 𝔹) (U-ob 𝔹')
       eUd = U-mor ed
 
-      δlFc : ⟨ NatM ⊕ MB ⟩
+      δlFc : ⟨ _ ⊕ MB ⟩
       δlFc = i₂ .fst δld
 
       UpRFc : PBSq (U-rel (idEDRel 𝔹)) (U-rel d) (U-mor (iB δld .fst)) (U-mor ed)
       UpRFc = U-sq (idEDRel 𝔹) d (iB δld .fst) ed UpRd
 
-      δrFc : ⟨ NatM ⊕ MB' ⟩
+      δrFc : ⟨ _ ⊕ MB' ⟩
       δrFc = i₂ .fst δrd
 
       UpLFc : PBSq (U-rel d) (U-rel (idEDRel 𝔹')) (U-mor ed) (U-mor (iB' δrd .fst))
@@ -218,13 +478,13 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
       pUd : PBMor (U-ob 𝔹') (U-ob 𝔹)
       pUd = U-mor pd
 
-      δlUd : ⟨ NatM ⊕ MB ⟩
+      δlUd : ⟨ _ ⊕ MB ⟩
       δlUd = i₂ .fst δld
 
       DnRUd : PBSq (U-rel d) (U-rel rB) (U-mor (iB δld .fst)) pUd
       DnRUd = U-sq d rB (iB δld .fst) pd DnRd
 
-      δrUd : ⟨ NatM ⊕ MB' ⟩
+      δrUd : ⟨ _ ⊕ MB' ⟩
       δrUd = i₂ .fst δrd
 
       DnLUd : PBSq (U-rel rB') (U-rel d) pUd (U-mor (iB' δrd .fst))
@@ -315,6 +575,12 @@ module _
         {f₂ = Id ×mor ec₂} {g₂ = Id ×mor (iA₂' δrc₂ .fst)}
         (UpLc₁ ×-Sq (Predom-IdSqV c₂))
         ((Predom-IdSqV rA₁') ×-Sq UpLc₂)
+
+-----------------------------------------------------------------------------------
+
+-- The functor ⊎ preserves quasi-representability.
+
+
 
 -----------------------------------------------------------------------------------
 

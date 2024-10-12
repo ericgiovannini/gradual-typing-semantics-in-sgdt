@@ -28,8 +28,9 @@ open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
 open import Semantics.Concrete.DoublePoset.PBSquare
 open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.Predomains.PrePerturbations k
-open import Semantics.Concrete.Perturbation.Relation k as Relation
+open import Semantics.Concrete.Perturbation.Semantic k
+--open import Semantics.Concrete.Perturbation.Relation k as Relation
+open import Semantics.Concrete.Perturbation.Relation.Alt k as Relation
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Types k as Types hiding (_×_)
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k

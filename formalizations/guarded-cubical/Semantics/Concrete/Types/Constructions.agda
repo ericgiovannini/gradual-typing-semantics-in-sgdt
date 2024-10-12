@@ -15,29 +15,36 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Transport
 
 import Cubical.Data.Nat as Nat
 import Cubical.Data.Unit as Unit
+import Cubical.Data.Sum as Sum
+open import Cubical.Data.Bool
+open import Cubical.Data.Sigma using (≡-× ; ΣPathP)
 open import Cubical.Relation.Nullary
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.Instances.Trivial as Trivial
 open import Cubical.Algebra.Monoid.More
+open import Cubical.Algebra.Monoid.FreeMonoid as Free
 open import Cubical.Algebra.Monoid.FreeProduct as FP
 open import Cubical.Algebra.Monoid.FreeProduct.Indexed as IFP
+
+open import Common.Common
 
 open import Semantics.Concrete.DoublePoset.Base
 open import Semantics.Concrete.DoublePoset.Constructions
   renaming (ℕ to ∣ℕ∣; flat to flatDP)
+open import Semantics.Concrete.DoublePoset.DblPosetCombinators hiding (U)
 open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
 open import Semantics.Concrete.DoublePoset.Morphism
 open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types.Base k
 
 open import Semantics.Concrete.Dyn k
 open import Semantics.Concrete.DynPerturb k
-
 open import Semantics.Concrete.LaterMonoid k
 
 private
@@ -48,6 +55,11 @@ private
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
     ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
     ℓc ℓd : Level
+
+    ℓA₁  ℓ≤A₁  ℓ≈A₁  ℓMA₁  : Level
+    ℓA₁' ℓ≤A₁' ℓ≈A₁' ℓMA₁' : Level
+    ℓA₂  ℓ≤A₂  ℓ≈A₂  ℓMA₂  : Level
+    ℓA₂' ℓ≤A₂' ℓ≈A₂' ℓMA₂' : Level
 
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ' : Level
@@ -62,6 +74,7 @@ private
     ℓdᵢ ℓdₒ                : Level
 
     ℓX ℓY ℓR : Level
+    ℓX₁ ℓX₂ : Level
 
 -- open ValTypeStr
 
@@ -73,10 +86,12 @@ flat X = mkValType (flatDP X) TrivialMonoid Trivial.rec
 
 U : CompType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
 U B = mkValType (U-ob (CompType→ErrorDomain B)) M-UB i-UB where
-  M-UB = NatM FP.⊕ B .snd .snd .fst
+  -- M-UB = NatM FP.⊕ B .snd .snd .fst
+  M-UB = FM-1 FP.⊕ B .snd .snd .fst
 
   i-UB : MonoidHom _ _
-  i-UB = FP.rec (NatM→.h _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
+  -- i-UB = FP.rec (NatM→.h _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
+  i-UB = FP.rec (FM-1-rec _ (δB-as-PrePtb _)) (CEndo-B→Endo-UB ∘hom B .snd .snd .snd)
 
 {-
 U' : CompType ℓ ℓ≤ ℓ≈ ℓM → ValType ℓ ℓ≤ ℓ≈ ℓM
@@ -114,8 +129,10 @@ A × A' = mkValType (ValType→Predomain A ×dp ValType→Predomain A') M-× i-�
 F : ValType ℓ ℓ≤ ℓ≈ ℓM → CompType ℓ (ℓ-max ℓ ℓ≤) (ℓ-max ℓ ℓ≈) ℓM
 F A = mkCompType (F-ob (ValType→Predomain A)) M-FA iFA where
   open F-ob
-  M-FA = NatM FP.⊕ PtbV A
-  iFA = FP.rec (NatM→.h _ (δ*FA-as-PrePtb _)) (Endo-A→CEndo-FA ∘hom interpV A)
+  -- M-FA = NatM FP.⊕ PtbV A
+  -- iFA = FP.rec (NatM→.h _ (δ*FA-as-PrePtb _)) (Endo-A→CEndo-FA ∘hom interpV A)
+  M-FA = FM-1 FP.⊕ PtbV A
+  iFA = FP.rec (FM-1-rec _ ((δ*FA-as-PrePtb _))) ((Endo-A→CEndo-FA ∘hom interpV A))
 
 _⟶_ : ValType ℓ ℓ≤ ℓ≈ ℓM
       → CompType ℓ' ℓ≤' ℓ≈' ℓM'
@@ -234,6 +251,9 @@ module _ where
     (Endo▸ ∘hom (monoidhom▸ (λ t → interpV (A~ t))))
 
 ------------------------------
+
+
+
 
 {-
 module _ where
