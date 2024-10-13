@@ -137,3 +137,11 @@ IsBisimErrorX R isBisimR =
       prop : isPropValued (≈ErrorX R)
       prop (ok x) (ok y) p q = isBisimR .IsBisim.is-prop-valued x y p q
       prop error error p q = refl
+
+
+-- Extending a relation R between  X and Y to a "result" relation between (X + 1) and (Y + 1)
+Rel→ResultRel : {X : Type ℓ} {Y : Type ℓ'} (R : X → Y → Type ℓR) →
+  ((X ⊎ ⊤) → (Y ⊎ ⊤) → Type ℓR)
+Rel→ResultRel R (inl x) (inl y) = R x y
+Rel→ResultRel R (inr tt) _ = ⊤*
+Rel→ResultRel R (inl _) (inr _) = ⊥*

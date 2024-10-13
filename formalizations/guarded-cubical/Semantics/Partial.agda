@@ -1,3 +1,5 @@
+{-# OPTIONS --rewriting #-}
+
 module Semantics.Partial where
 
 open import Cubical.Foundations.Prelude
@@ -5,9 +7,13 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
+open import Cubical.Data.Empty
 open import Cubical.Data.Sum as Sum
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
+
+-- open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 
 
 private
@@ -26,11 +32,21 @@ module _ (X : Type ℓ) where
   injPart : {ℓ' : Level} → X → Part ℓ'
   injPart x = (⊤* , isPropUnit*) , (λ _ -> x)
 
+module _ {X : Type ℓ} where
+
+  defined : Part X ℓ'' → Type ℓ''
+  defined (P , P→X) = ⟨ P ⟩
+
+  isPropDefined : (x : Part X ℓ'') → isProp (defined x)
+  isPropDefined (P , P→X) p₁ p₂ = P .snd p₁ p₂
+
+  result : (x : Part X ℓ'') → defined x → X
+  result (P , P→X) p = P→X p
 
 module ErrorOrdPartial {X : Type ℓ} {Y : Type ℓ'}
-  (_R_ : (X ⊎ ⊤) → (Y ⊎ ⊤) → Type ℓR) where
+  (_R_ : (X → Y → Type ℓR)) where
 
-   ---------------------------------------
+---------------------------------------
    -- Error ordering on partial elements
    ---------------------------------------
 
@@ -39,19 +55,25 @@ module ErrorOrdPartial {X : Type ℓ} {Y : Type ℓ'}
    --
    -- 1. If the LHS is defined, as witnessed by a : ⟨ P ⟩, then either:
    --   i.  The LHS is an error
-   --   ii. The LHS is a result x? and the RHS is a result y?
-   --       and x? is related to y?.
-   -- 
-   --   (Note that these are not mutually exclusive, i.e. if the LHS
-   --   errors and the RHS is a result y? then either case i or ii
-   --   applies.)
+   --   ii. The LHS is a value x, and the RHS is a value y such that x is related to y
    --
    --   AND
    --
    -- 2. If the RHS is defined, i.e. a result y?, then the LHS is also
    -- a result x? such that x? is related to y?.
+
+  private
+    isleft : {A : Type ℓ} {B : Type ℓ'} → A ⊎ B → Type ℓ-zero
+    isleft = Sum.rec (λ _ → ⊤) (λ _ → ⊥)
+
+  _⊑result_ = Rel→ResultRel _R_
+
   _≤part_ : Part (X ⊎ ⊤) ℓ'' → Part (Y ⊎ ⊤) ℓ''' → Type _
-  _≤part_ (P , P→X⊎⊤) (Q , Q→X⊎⊤) =
-      (∀ (a : ⟨ P ⟩) → ((P→X⊎⊤ a) ≡ inr tt) ⊎
-                       (Σ[ b ∈ ⟨ Q ⟩ ] (P→X⊎⊤ a) R (Q→X⊎⊤ b)))
-    × (∀ (b : ⟨ Q ⟩) → Σ[ a ∈ ⟨ P ⟩ ] (P→X⊎⊤ a) R (Q→X⊎⊤ b))
+  _≤part_ px py =
+    ((a : defined px) →
+      Sum.rec
+        (λ x → Σ[ b ∈ defined py ] (inl x ⊑result (result py b)))
+        (λ _ → ⊤*)
+        (result px a))
+   ×  ((b : defined py) → Σ[ a ∈ defined px ] ((result px a) ⊑result (result py b)))
+      

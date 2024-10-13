@@ -82,17 +82,16 @@ module Result
   _≈X?_ = Sum≈ X _≈X_
   _≈Y?_ = Sum≈ Y _≈Y_
 
-  -- Error ordering on results:
+  -- (strict) error ordering on results:
   _⊑res_ : X? → Y? → Type ℓ⊑
   (inl x) ⊑res (inl y) = x ⊑XY y
   inr tt ⊑res y? = ⊤*
   _ ⊑res _  = ⊥*
 
 
-  -- The closure of the error ordering ⊑XY under ≈X on the left and ≈Y
-  -- on the right:
-  _X≈⊑≈Y_ : X? → Y? → Type _
-  x? X≈⊑≈Y y? = Σ[ x'? ∈ X? ] Σ[ y'? ∈ Y? ]
+  -- The closure of the error ordering on results under ≈X? on the left and ≈Y? on the right:
+  _X?≈⊑≈Y?_ : X? → Y? → Type _
+  x? X?≈⊑≈Y? y? = Σ[ x'? ∈ X? ] Σ[ y'? ∈ Y? ]
     (x? ≈X? x'?) × (x'? ⊑res y'?) × (y'? ≈Y? y?)
 
 
@@ -109,10 +108,10 @@ module Result
   _≾_ : Fun {X = X?} → Fun {X = Y?} → Type _
   f ≾ g =
       -- If f terminates with a value x, then g terminates with a related value y.
-      (∀ x → f ↓fun (inl x) → Σ[ y ∈ Y ] g ↓fun (inl y) × ((inl x) X≈⊑≈Y (inl y)))
+      (∀ x → f ↓fun (inl x) → Σ[ y ∈ Y ] g ↓fun (inl y) × ((inl x) X?≈⊑≈Y? (inl y)))
       
       -- If g terminates with a result y?, then f terminates with a related result x?.
-    × (∀ y? → g ↓fun y? → Σ[ x? ∈ X? ] f ↓fun x? × (x? X≈⊑≈Y y?))
+    × (∀ y? → g ↓fun y? → Σ[ x? ∈ X? ] f ↓fun x? × (x? X?≈⊑≈Y? y?))
 
 
   ------------------------------------------------------------------------------------
@@ -222,7 +221,49 @@ module Result
 
   ---------------------------------------------------------------------------------
 
-  open ErrorOrdPartial _X≈⊑≈Y_
+  -- Now we define the ordering relation on the partial elements returned by the
+  -- big-step semantics, i.e., a relation between Part (X + 1) and Part (Y + 1).
+  --
+  -- Because we want error on the left to be related to everything in this relation,
+  -- including undefined elements, the definition of this relation does not factor
+  -- through the relation on X? and Y? we defined above (_X?≈⊑≈Y?_).
+  --
+  -- Instead, the module ErrorOrdPartial takes in a relation between X and Y, and extends
+  -- that to a relation on Part (X + 1) and Part (Y + 1)
+  --
+  -- Below, we define that relation between X and Y: it is the closure of the error
+  -- ordering ⊑XY under ≈X on the left and ≈Y on the right:
+  _X≈⊑≈Y_ : X → Y → Type _
+  x X≈⊑≈Y y = Σ[ x' ∈ X ] Σ[ y' ∈ Y ] (x ≈X x') × (x' ⊑XY y') × (y' ≈Y y)
+
+  open ErrorOrdPartial _X≈⊑≈Y_  -- brings in ⊑result and ≤part
+
+  ≈cl-then-res→res-then-≈cl : isRefl _≈Y_ → ∀ x? y? → x? ⊑result y? → x? X?≈⊑≈Y? y?
+  ≈cl-then-res→res-then-≈cl H = go
+    where
+      go : _
+      go (inl x) (inl y) (x' , y' , x≈x' , x'⊑y' , y'≈y) =
+        inl x' , inl y' , x≈x' , x'⊑y' , y'≈y
+      go (inr tt) (inl y) (lift tt) =
+        inr tt , inl y , tt* , tt* , H y
+      go (inr tt) (inr tt) (lift tt) =
+        inr tt , inr tt , tt* , tt* , tt*
+
+  res-then-≈cl→≈cl-then-res : ∀ x? y? → x? X?≈⊑≈Y? y? → x? ⊑result y?
+  res-then-≈cl→≈cl-then-res = go
+    where
+      go : _
+      go (inl x) (inl y) (inl x' , inl y' , x≈x' , x'⊑y' , y'≈y) =
+         x' , y' , x≈x' , x'⊑y' , y'≈y
+
+      -- If x'? is a value inl x' and y? is inr tt, then there are two subcases:
+      -- 1. If y'? is a value inl y', then the assumption y'?≈y? is a contradiction.
+      go (inl x) (inr tt) (inl x' , inl y' , x≈x' , x'⊑y' , y'?≈y?) = ⊥.rec* y'?≈y?
+
+      -- 2. If y'? is inr tt, then the assumption x'?⊑y'? is a contradiction. 
+      go (inl x) (inr tt) (inl x' , inr tt , x?≈x'? , x'?⊑y'? , y'?≈y?) = ⊥.rec* x'?⊑y'?
+
+      go (inr tt) y? (x'? , y'? , x?≈x'? , x'?⊑y'? , y'?≈y?) = tt*
 
 
   -- Finally, we have a theorem establishing a relationship between
@@ -234,10 +275,9 @@ module Result
   -- Pt 1. Assume the LHS terminates.
   ≾fun→≤part f g (H1 , H2) .fst (n , term-n) with (extract' (f .fst) n term-n)
   
-  ... | (inl x , eq) =
-    inr ((m , term .fst) , subst (λ z? → inl x X≈⊑≈Y z?) (sym (term .snd)) x⊑y)
+  ... | (inl x , eq) = (m , (term .fst)) , subst (λ z? → inl x ⊑result z?) (sym (term .snd)) inl-x-≈⊑≈-result-inl-y
     where
-      lem : Σ[ y ∈ Y ] (((g .fst) ↓fun in1 y) × (inl x X≈⊑≈Y inl y))
+      lem : Σ[ y ∈ Y ] (((g .fst) ↓fun in1 y) × (inl x X?≈⊑≈Y? inl y))
       lem = H1 x (n , eq)
 
       y = lem .fst
@@ -246,24 +286,27 @@ module Result
       g↓m : (g .fst) ↓fun[ m ] (inl y)
       g↓m = lem .snd .fst .snd
 
-      x⊑y : inl x X≈⊑≈Y inl y
-      x⊑y = lem .snd .snd
+      inl-x-⊑-inl-y : inl x X?≈⊑≈Y? inl y
+      inl-x-⊑-inl-y = lem .snd .snd
+
+      inl-x-≈⊑≈-result-inl-y : inl x ⊑result inl y
+      inl-x-≈⊑≈-result-inl-y = res-then-≈cl→≈cl-then-res _ _ inl-x-⊑-inl-y
 
       term : Σ[ p ∈ terminates-in (g .fst) m ] (extract' (g .fst) m p .fst ≡ inl y)
       term = term-lemma-1 (g .fst) m (inl y) g↓m
 
-  ... | (inr tt , eq) = inl refl
+  ... | (inr tt , eq) = lift tt -- inl refl
 
   -- Pt 2. Assume the RHS terminates.
   ≾fun→≤part f g (H1 , H2) .snd (m , term-m) =
-    (n , term .fst) , subst (λ z? → z? X≈⊑≈Y y?) (sym (term .snd)) x?⊑y?
+    (n , term .fst) , subst (λ z? → z? ⊑result y?) (sym (term .snd)) x?-≈⊑≈-result-y?
     where
       y? = (extract' (g .fst) m term-m) .fst
 
       eq : g .fst m ≡ inl y?
       eq = (extract' (g .fst) m term-m) .snd
 
-      lem : Σ[ x? ∈ X? ] (((f .fst) ↓fun x?) × (x? X≈⊑≈Y y?))
+      lem : Σ[ x? ∈ X? ] (((f .fst) ↓fun x?) × (x? X?≈⊑≈Y? y?))
       lem = H2 y? (m , eq)
 
       x? = lem .fst
@@ -272,47 +315,16 @@ module Result
       f↓n : (f .fst) ↓fun[ n ] x?
       f↓n = lem .snd .fst. snd
 
-      x?⊑y? : x? X≈⊑≈Y y?
-      x?⊑y? = lem .snd .snd
+      x?≈⊑≈y? : x? X?≈⊑≈Y? y?
+      x?≈⊑≈y? = lem .snd .snd
+
+      x?-≈⊑≈-result-y? : x? ⊑result y?
+      x?-≈⊑≈-result-y? = res-then-≈cl→≈cl-then-res _ _ x?≈⊑≈y?
 
       term : Σ[ p ∈ terminates-in (f .fst) n ] (extract' (f .fst) n p .fst ≡ x?)
       term = term-lemma-1 (f .fst) n x? f↓n
       
-      
-
-{-
-  inr ((m , inl y , g↓m) , x⊑y)
-    where
-      x? = extract f f↓
-
-      aux : Σ[ y ∈ Y ] ((g ↓fun in1 y) × (inl x X≈⊑≈Y inl y))
-      aux = H1 x (n , f↓n)
-
-      y = aux .fst
-      m = aux .snd .fst. fst
-
-      g↓m : g ↓fun[ m ] (inl y)
-      g↓m = aux .snd .fst .snd
-
-      x⊑y : inl x X≈⊑≈Y inl y
-      x⊑y = aux .snd .snd
-
-  ≾fun→≤part f g (H1 , H2) .fst (n , inr tt , f↓n) = inl refl
-  
-  ≾fun→≤part f g (H1 , H2) .snd (n , y? , g↓n) = (m , x? , f↓m) , x?⊑y?
-    where
-      aux : Σ[ x? ∈ X? ] ((f ↓fun x?) × (x? X≈⊑≈Y y?))
-      aux = H2 y? (n , g↓n)
-
-      x? = aux .fst
-      m = aux .snd .fst .fst
-
-      f↓m : f ↓fun[ m ] x?
-      f↓m = aux .snd .fst .snd
-
-      x?⊑y? : x? X≈⊑≈Y y?
-      x?⊑y? = aux .snd .snd
-  -}  
+        
 
   ---------------------------------------------------------------------------------
 

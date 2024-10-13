@@ -29,6 +29,7 @@ open import Semantics.Concrete.WeakBisimilarity
 open import Semantics.BigStepFunction
 open import Semantics.CombinedAdequacy
 open import Semantics.AdequacyLiftNat
+open import Semantics.Partial
 
 open import Syntax.Types
 open import Syntax.FineGrained.Terms
@@ -50,28 +51,27 @@ private
    b b' c c' d d' : S ⊑ S'
    E E' E'' : EvCtx Γ S T
 
--- open PartialFunctions {X = ℕ ⊎ ⊤}
-open PartialFunctions
 open PMor
-
 
 -- The big-step term semantics, valued in elements of type *global* L℧ ℕ
 bigStepTm' : Comp [] nat → L℧^gl ℕ
 bigStepTm' M = λ k → ⟦_⟧C k M .f _
 
 -- Composing the above semantics with the function that maps global lift ℕ
--- to Partial elements of type (ℕ + 1)
-bigStepTm : Comp [] nat → Fun
-bigStepTm M = ⟦ (λ k → mapL k ErrorX→X⊎⊤ (bigStepTm' M k)) ⟧
+-- to partial elements of type (ℕ + 1)
+bigStepTm : Comp [] nat → Part (ℕ ⊎ ⊤) ℓ-zero
+bigStepTm M = ⟦ (λ k → mapL k ErrorX→X⊎⊤ (bigStepTm' M k)) ⟧partial
 
+-- The final graduality result: If two closed terms M and M' of type nat are related,
+-- then their big-step denotations as partial elements of type (ℕ + 1) are related
+-- in the ordering on partial elements.
 Graduality : ∀ {M M'} → Comp⊑ [] (refl-⊑ {nat}) M M'
-  → bigStepTm M ≾ bigStepTm M'
+  → bigStepTm M ≤part bigStepTm M'
 Graduality {M = M}{M' = M'} M⊑M' =
-  {!!}
-  -- nat-adequate (bigStepTm' M) N N' (bigStepTm' M')
-  --   (λ k → sq k .snd .fst tt tt refl )
-  --   (λ k → sq k .snd .snd .snd .snd tt tt refl)
-  --   λ k → sq k .snd .snd .snd .fst tt tt refl
+  nat-adequate (bigStepTm' M) N N' (bigStepTm' M')
+    (λ k → sq k .snd .fst tt tt refl )
+    (λ k → sq k .snd .snd .snd .snd tt tt refl)
+    λ k → sq k .snd .snd .snd .fst tt tt refl
   where
   sq = λ (k : Clock) → ⟦_⟧C⊑ k M⊑M'
   N : L℧^gl ℕ
