@@ -135,21 +135,21 @@ module _ {ℓ : Level} where
 
 
   -- The functor corresponding to the *guarded* case:
-  C : ▹ PosetBisim ℓ ℓ ℓ → PosetBisim ℓ ℓ ℓ
+  C : ▹ Predomain ℓ ℓ ℓ → Predomain ℓ ℓ ℓ
   -- C D~ = PB▸ (λ t → (D~ t) ==> 𝕃 (D~ t))
-  C D~ = PB▸ (λ t → U-ob ((D~ t) ⟶ob (F-ob (D~ t))))
+  C D~ = P▸ (λ t → U-ob ((D~ t) ⟶ob (F-ob (D~ t))))
 
   -- open DynStep1 S P C
   
   -- Dyn as a predomain
-  Dyn-Pre : PosetBisim ℓ ℓ ℓ
+  Dyn-Pre : Predomain ℓ ℓ ℓ
   Dyn-Pre = DP S P C
 
   -- C (next Dyn) as a predomain
-  C-nextD : PosetBisim ℓ ℓ ℓ
+  C-nextD : Predomain ℓ ℓ ℓ
   C-nextD = C (next Dyn-Pre)
   
-  _ : C-nextD ≡ (PB▹ (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre))))
+  _ : C-nextD ≡ (P▹ (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre))))
   _ = refl
 
   -- Presentation of the monoid of perturbations for C (next D):
@@ -162,31 +162,31 @@ module _ {ℓ : Level} where
   S'op : Type ℓ-zero
   S'op = Unit
 
-  U-D→FD : PosetBisim ℓ ℓ ℓ
+  U-D→FD : Predomain ℓ ℓ ℓ
   U-D→FD = (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre)))
 
   -- Defining the semantic perturbations for C (next D):
   i-gen : S'gen → ⟨ Endo C-nextD ⟩
   -- U case
   i-gen false = Endo▹ {A = U-D→FD}
-    (δB-as-PrePtb (Dyn-Pre ⟶ob F-ob Dyn-Pre))
+    (δB-as-SemPtb (Dyn-Pre ⟶ob F-ob Dyn-Pre))
 
   -- F case
   i-gen true = Endo▹ {A = U-D→FD}
-    (U-PrePtb (PrePtbId ⟶PrePtb (δ*FA-as-PrePtb Dyn-Pre)))
+    (U-SemPtb (SemPtbId ⟶SemPtb (δ*FA-as-SemPtb Dyn-Pre)))
 
   i-co : S'co → MonoidHom (Endo Dyn-Pre) (Endo C-nextD)
   i-co tt =
-    (PrePtb▹ {A = U-D→FD})
+    (SemPtb▹ {A = U-D→FD})
       ∘hom (CEndo-B→Endo-UB {B = Dyn-Pre ⟶ob F-ob Dyn-Pre})
-      ∘hom (⟶B-PrePtb {A = Dyn-Pre} {B = F-ob Dyn-Pre})
+      ∘hom (⟶B-SemPtb {A = Dyn-Pre} {B = F-ob Dyn-Pre})
       ∘hom Endo-A→CEndo-FA
 
   i-op : S'op → MonoidHom (Endo Dyn-Pre ^op) (Endo C-nextD)
   i-op tt =
-    (PrePtb▹ {A = U-D→FD})
+    (SemPtb▹ {A = U-D→FD})
       ∘hom (CEndo-B→Endo-UB {B = Dyn-Pre ⟶ob F-ob Dyn-Pre})
-      ∘hom (A⟶-PrePtb {A = Dyn-Pre} {B = F-ob Dyn-Pre})
+      ∘hom (A⟶-SemPtb {A = Dyn-Pre} {B = F-ob Dyn-Pre})
 
   -- Note: If we define DynV mutually with C-nextD-V, then we
   -- may be able to leverage that to make defining i-gen, i-co,
@@ -235,7 +235,7 @@ module _ {ℓ : Level} where
   C-nextD-V : ValType ℓ ℓ ℓ ℓ-zero
   C-nextD-V = V▹ (Types.U (DynV Types.⟶ (Types.F DynV)))
 
-  _ : ValType→Predomain C-nextD-V ≡ (PB▹ (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre))))
+  _ : ValType→Predomain C-nextD-V ≡ (P▹ (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre))))
   _ = refl
 
   -- _ : ValType→Predomain C-nextD-internal ≡ C (next Dyn-Pre)
@@ -301,13 +301,13 @@ module _ {ℓ : Level} where
         eq : interpV C-nextD-V ∘hom (isoM .MonoidIso.fun)
            ≡ (PredomIso→EndoHom isoP) ∘hom interpV C-nextD-internal
         eq = FP.ind (Indexed.ind S'gen _
-          λ {false → Free.cases-ind ⊤ ⊥ ⊥ (λ _ → PrePtb≡ _ _ (funExt (λ x → refl))) ⊥.elim ⊥.elim
-           ; true  → Free.cases-ind ⊤ ⊥ ⊥ (λ _ → PrePtb≡ _ _ (funExt (λ x → refl))) ⊥.elim ⊥.elim})
+          λ {false → Free.cases-ind ⊤ ⊥ ⊥ (λ _ → SemPtb≡ _ _ (funExt (λ x → refl))) ⊥.elim ⊥.elim
+           ; true  → Free.cases-ind ⊤ ⊥ ⊥ (λ _ → SemPtb≡ _ _ (funExt (λ x → refl))) ⊥.elim ⊥.elim})
 
             (FP.ind
-              (Indexed.ind S'co _ (λ s-co → eqMonoidHom _ _ (funExt (λ p → PrePtb≡ _ _ refl))))
+              (Indexed.ind S'co _ (λ s-co → eqMonoidHom _ _ (funExt (λ p → SemPtb≡ _ _ refl))))
                  
-              (Indexed.ind S'op _ (λ s-op → eqMonoidHom _ _ (funExt (λ p → PrePtb≡ _ _ refl)))))
+              (Indexed.ind S'op _ (λ s-op → eqMonoidHom _ _ (funExt (λ p → SemPtb≡ _ _ refl)))))
 
 
   -------------------------------------------------------------------------------
@@ -358,7 +358,7 @@ module _ {ℓ : Level} where
         let foo : PredomIso
                     (ΣP (ℕ Sum.⊎ Unit , {!!})
                       (λ s → ΠP (Sum.rec (λ _ → ⊥) (λ tt₁ → Bool) s)
-                        (Sum.elim {C = λ s' → Sum.rec _ _ s' → PosetBisim _ _ _}
+                        (Sum.elim {C = λ s' → Sum.rec _ _ s' → Predomain _ _ _}
                           (λ _ _ → ValType→Predomain DynV) (λ _ _ → ValType→Predomain DynV) s)))
                     {!!}
             foo = Predom-Iso-ΣΠ-⊎ NatSet UnitSet (λ _ → ⊥) (λ tt → Bool)
@@ -419,12 +419,12 @@ module _ {ℓ : Level} where
         eq = FP.ind
         
           (Indexed.ind _ _ (λ n → Indexed.ind _ _ (λ bot →
-            eqMonoidHom _ _ (funExt (λ pD → PrePtb≡ _ _
+            eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _
               (funExt (λ { (inl m , ds) → {!!}
                          ; (inr tt , ds) → refl})))))))
               
           (Indexed.ind _ _ λ tt → Indexed.ind _ _ (λ b →
-            eqMonoidHom _ _ (funExt (λ pD → PrePtb≡ _ _
+            eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _
               (funExt (λ { (inl n , ds) → refl
                          ; (inr tt , ds) → {!!}}))))))
 -}                             
@@ -438,7 +438,7 @@ module _ {ℓ : Level} where
         where
           isoP : PredomIso NatP (ValType→Predomain SigmaNatPi⊥Dyn)
           isoP = compPredomIso (PredomIso-Inv (isoSigmaUnit NatSet))
-            (ΣP-cong-iso-snd NatSet (λ _ → UnitPB) _ (λ n → PredomIso-Inv isoPiBot))
+            (ΣP-cong-iso-snd NatSet (λ _ → UnitP) _ (λ n → PredomIso-Inv isoPiBot))
 
           opaque
             unfolding Indexed.rec Indexed.elim
@@ -493,9 +493,9 @@ module _ {ℓ : Level} where
             eq : (interpV SigmaUnitPiBoolDyn ∘hom isoM .MonoidIso.fun
                ≡ PredomIso→EndoHom isoP ∘hom interpV (DynV' Types.× DynV'))
             eq = FP.ind
-                  (eqMonoidHom _ _ (funExt (λ pD → PrePtb≡ _ _ (funExt (λ { (tt , ds) →
+                  (eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _ (funExt (λ { (tt , ds) →
                     ΣPathP (refl , (funExt (λ { false → refl ; true → refl})))})))))
-                  (eqMonoidHom _ _ (funExt (λ pD → PrePtb≡ _ _ (funExt (λ { (tt , ds) →
+                  (eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _ (funExt (λ { (tt , ds) →
                     ΣPathP (refl , funExt (λ { false → refl ; true → refl})) })))))
             
        
