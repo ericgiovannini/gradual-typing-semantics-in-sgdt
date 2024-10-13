@@ -130,11 +130,11 @@ mkValType A P ι = ⟨ A ⟩ , ((A .snd) ,  P ,  ι)
 -- A vertical morphism of value types is simply a morphism of the
 -- underlying predomain structures.
 
-ValTypeMor :
+ValMor :
   (Aᵢ : ValType ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ ℓMAᵢ)
   (Aₒ : ValType ℓAₒ ℓ≤Aₒ ℓ≈Aₒ ℓMAₒ) →
   Type ((ℓ-max (ℓ-max ℓAᵢ (ℓ-max ℓ≤Aᵢ ℓ≈Aᵢ)) (ℓ-max ℓAₒ (ℓ-max ℓ≤Aₒ ℓ≈Aₒ))))
-ValTypeMor Aᵢ Aₒ = PMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
+ValMor Aᵢ Aₒ = PMor (ValType→Predomain Aᵢ) (ValType→Predomain Aₒ)
 
 -- Isomorphism of value types
 module _
@@ -147,7 +147,7 @@ module _
   𝔸ₒ = ValType→Predomain Aₒ
   
   ValTypeIso : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓAᵢ ℓ≤Aᵢ) ℓ≈Aᵢ) ℓAₒ) ℓ≤Aₒ) ℓ≈Aₒ)
-  ValTypeIso = Σ[ fun ∈ ValTypeMor Aᵢ Aₒ ] Σ[ inv ∈ ValTypeMor Aₒ Aᵢ ]
+  ValTypeIso = Σ[ fun ∈ ValMor Aᵢ Aₒ ] Σ[ inv ∈ ValMor Aₒ Aᵢ ]
     (section (fun .f) (inv .f)) × (retract (fun .f) (inv .f))
 
   ValTypeIso' : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓAᵢ ℓ≤Aᵢ) ℓ≈Aᵢ) ℓAₒ) ℓ≤Aₒ) ℓ≈Aₒ)
@@ -212,11 +212,11 @@ interpC B = B .snd .snd .snd
 -- A vertical morphism of computation types is simply a morphism of the
 -- underlying error domain structures.
 
-CompTypeMor :
+CompMor :
   (Bᵢ : CompType ℓBᵢ ℓ≤Bᵢ ℓ≈Bᵢ ℓMBᵢ)
   (Bₒ : CompType ℓBₒ ℓ≤Bₒ ℓ≈Bₒ ℓMBₒ) →
   Type ((ℓ-max (ℓ-max ℓBᵢ (ℓ-max ℓ≤Bᵢ ℓ≈Bᵢ)) (ℓ-max ℓBₒ (ℓ-max ℓ≤Bₒ ℓ≈Bₒ))))
-CompTypeMor Bᵢ Bₒ =
+CompMor Bᵢ Bₒ =
   ErrorDomMor (CompType→ErrorDomain Bᵢ) (CompType→ErrorDomain Bₒ)
 
 

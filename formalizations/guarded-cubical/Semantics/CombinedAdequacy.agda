@@ -23,7 +23,7 @@ open import Cubical.Foundations.Structure
 open import Common.Later
 open import Common.ClockProperties
 
-open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 
 open import Semantics.Partial
 open import Semantics.BigStepFunction
@@ -105,7 +105,7 @@ module Result
 
 
   -- (**) A more intuitive notion of step-insensitive error ordering
-  -- on functions:
+  -- on big-step semantics
   _≾_ : Fun {X = X?} → Fun {X = Y?} → Type _
   f ≾ g =
       -- If f terminates with a value x, then g terminates with a related value y.
@@ -330,7 +330,7 @@ module Result
     unique-Y l n m y? y'? p q =
           bigStep-unique' (⊎-clock-irrel Y-clk-irrel Unit-clock-irrel) l y? y'? n m p q
 
-    bisim-X-pt1 : (n : ℕ) → BX.bisimFun BX.⟦ lx ⟧ BX.⟦ lx' ⟧ n
+    bisim-X-pt1 : (n : ℕ) → BX.bisimFun ⟦ lx ⟧x ⟦ lx' ⟧x n
     bisim-X-pt1 = BX.adequacy-pt1 lx lx' lx≈lx'
 
     bisim-X-pt2 : (n : ℕ) → BX.bisimFun ⟦ lx ⟧x ⟦ lx' ⟧x n → ⟦ lx ⟧x ≈funX?[ n ] ⟦ lx' ⟧x
@@ -342,7 +342,7 @@ module Result
     lock-step-pt2 : (n : ℕ) → ⟦ lx' ⟧x ⊑fun1[ n ] ⟦ ly' ⟧y → ⟦ lx' ⟧x ⊑fun[ n ] ⟦ ly' ⟧y               
     lock-step-pt2 = LS.adequacy-pt2 ⟦ lx' ⟧x ⟦ ly' ⟧y (unique-X lx') (unique-Y ly')
 
-    bisim-Y-pt1 : (n : ℕ) → BY.bisimFun BY.⟦ ly' ⟧ BY.⟦ ly ⟧ n
+    bisim-Y-pt1 : (n : ℕ) → BY.bisimFun ⟦ ly' ⟧y ⟦ ly ⟧y n
     bisim-Y-pt1 = BY.adequacy-pt1 ly' ly ly'≈ly
 
     bisim-Y-pt2 : (n : ℕ) → BY.bisimFun ⟦ ly' ⟧y ⟦ ly ⟧y n → ⟦ ly' ⟧y ≈funY?[ n ] ⟦ ly ⟧y

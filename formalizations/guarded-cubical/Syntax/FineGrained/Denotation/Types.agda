@@ -10,12 +10,11 @@ open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 open import Syntax.Types
 open import Semantics.Concrete.Types k as SemTypes
-open import Semantics.Concrete.Dyn k
-open import Semantics.Concrete.DynPerturb k
+open import Semantics.Concrete.DynInstantiated k
 
 ⟦_⟧ty : Ty → ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 ⟦ nat ⟧ty = ℕ
-⟦ dyn ⟧ty = SemTypes.dyn
+⟦ dyn ⟧ty = DynV
 ⟦ A ⇀ B ⟧ty = U (⟦ A ⟧ty ⟶ F ⟦ B ⟧ty)
 
 ⟦_⟧ctx : Ctx → ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero

@@ -17,7 +17,7 @@ open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
 open import Common.Later
 open import Common.ClockProperties
 open import Semantics.GlobalLift
-open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 
 open import Semantics.Concrete.GuardedLift using (mapL ; unfold-mapL)
 open import Semantics.Concrete.GuardedLiftError hiding (mapL)

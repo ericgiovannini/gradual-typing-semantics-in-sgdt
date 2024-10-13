@@ -31,22 +31,24 @@ open import Cubical.Algebra.Monoid.FreeProduct
 open import Cubical.Data.Sigma
 
 
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (𝔹)
-open import Semantics.Concrete.DoublePoset.DPMorRelation
-open import Semantics.Concrete.DoublePoset.PBSquare
-open import Semantics.Concrete.DoublePoset.DblPosetCombinators
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (𝔹)
+open import Semantics.Concrete.Predomain.Relation
+open import Semantics.Concrete.Predomain.Square
+open import Semantics.Concrete.Predomain.Combinators
 
-open import Semantics.Concrete.DoublePoset.ErrorDomain k
-open import Semantics.Concrete.DoublePoset.FreeErrorDomain k
-open import Semantics.Concrete.Dyn k
+open import Semantics.Concrete.Predomain.ErrorDomain k
+open import Semantics.Concrete.Predomain.FreeErrorDomain k
+open import Semantics.Concrete.DynInstantiated k
 
-open import Semantics.Concrete.Predomains.PrePerturbations k
-open import Semantics.Concrete.Predomains.Perturbations k
-open import Semantics.Concrete.Predomains.QuasiRepresentation k
-
-open import Semantics.Concrete.ConcreteIntensionalModel k as Intensional
+open import Semantics.Concrete.Perturbation.Semantic k
+-- open import Semantics.Concrete.Predomains.Perturbations k
+-- open import Semantics.Concrete.Predomains.QuasiRepresentation k
+-- open import Semantics.Concrete.ConcreteIntensionalModel k as Intensional
+open import Semantics.Concrete.Types k as Types
+  using (ValType ; ValMor ; CompType ; CompMor)
+open import Semantics.Concrete.Relations k as Rel using (ValRel ; CompRel)
 
 private
   variable
@@ -70,37 +72,37 @@ private
 
     ℓX ℓY ℓR : Level
 
-open PBMor
+open PMor
 
 module _
   {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  ℓMAᵢ}
   {Aᵢ' : ValType ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' ℓMAᵢ'}
   {Aₒ  : ValType ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ  ℓMAₒ}
   {Aₒ' : ValType ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ' ℓMAₒ'}
-  (cᵢ  : ValTypeRel Aᵢ Aᵢ' ℓcᵢ)
-  (cₒ  : ValTypeRel Aₒ Aₒ' ℓcₒ)
-  (f   : ValTypeMor Aᵢ  Aₒ)
-  (g   : ValTypeMor Aᵢ' Aₒ')
+  (cᵢ  : ValRel Aᵢ Aᵢ' ℓcᵢ)
+  (cₒ  : ValRel Aₒ Aₒ' ℓcₒ)
+  (f   : ValMor Aᵢ  Aₒ)
+  (g   : ValMor Aᵢ' Aₒ')
   where
   ValTypeSq : Type _
   ValTypeSq =
-    Σ[ f' ∈ ValTypeMor Aᵢ Aₒ ] (f ≈mon f')
-    × (Σ[ g' ∈ ValTypeMor Aᵢ' Aₒ' ] (g ≈mon g')
-    × PBSq (cᵢ .fst) (cₒ .fst) f' g')
+    Σ[ f' ∈ ValMor Aᵢ Aₒ ] (f ≈mon f')
+    × (Σ[ g' ∈ ValMor Aᵢ' Aₒ' ] (g ≈mon g')
+    × PSq (cᵢ .fst .fst) (cₒ .fst .fst) f' g')
 
 module _
   {Bᵢ  : CompType ℓBᵢ  ℓ≤Bᵢ  ℓ≈Bᵢ  ℓMBᵢ}
   {Bᵢ' : CompType ℓBᵢ' ℓ≤Bᵢ' ℓ≈Bᵢ' ℓMBᵢ'}
   {Bₒ  : CompType ℓBₒ  ℓ≤Bₒ  ℓ≈Bₒ  ℓMBₒ}
   {Bₒ' : CompType ℓBₒ' ℓ≤Bₒ' ℓ≈Bₒ' ℓMBₒ'}
-  (dᵢ  : CompTypeRel Bᵢ Bᵢ' ℓcᵢ)
-  (dₒ  : CompTypeRel Bₒ Bₒ' ℓcₒ)
-  (ϕ   : CompTypeMor Bᵢ  Bₒ)
-  (ψ   : CompTypeMor Bᵢ' Bₒ')
+  (dᵢ  : CompRel Bᵢ Bᵢ' ℓcᵢ)
+  (dₒ  : CompRel Bₒ Bₒ' ℓcₒ)
+  (ϕ   : CompMor Bᵢ  Bₒ)
+  (ψ   : CompMor Bᵢ' Bₒ')
   where
   open ErrorDomMor
   CompTypeSq : Type _
   CompTypeSq =
-    Σ[ ϕ' ∈ CompTypeMor Bᵢ Bₒ ] (ϕ .f ≈mon ϕ' .f)
-    × (Σ[ ψ' ∈ CompTypeMor Bᵢ' Bₒ' ] (ψ .f ≈mon ψ' .f)
-    × ErrorDomSq (dᵢ .fst) (dₒ .fst) ϕ' ψ')
+    Σ[ ϕ' ∈ CompMor Bᵢ Bₒ ] (ϕ .f ≈mon ϕ' .f)
+    × (Σ[ ψ' ∈ CompMor Bᵢ' Bₒ' ] (ψ .f ≈mon ψ' .f)
+    × ErrorDomSq (dᵢ .fst .fst) (dₒ .fst .fst) ϕ' ψ')

@@ -93,12 +93,12 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
     rA' = idPRel (ValType→Predomain A')
   LeftRepV : Type _
   LeftRepV =
-    Σ[ e ∈ ValTypeMor A A' ]
+    Σ[ e ∈ ValMor A A' ]
     (Σ[ δl ∈ ⟨ MA ⟩ ] PSq rA c (iA δl .fst) e)
     × (Σ[ δr ∈ ⟨ MA' ⟩ ] PSq c rA' e (iA' δr .fst))
 
   mkLeftRepV :
-    (e : ValTypeMor A A') →
+    (e : ValMor A A') →
     (δl : ⟨ MA ⟩) →
     PSq rA c (iA δl .fst) e →
     (δr : ⟨ MA' ⟩) →
@@ -108,7 +108,7 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
 
   module _ (r : LeftRepV) where
 
-    embV : ValTypeMor A A'
+    embV : ValMor A A'
     embV = r .fst
 
     δleV : ⟨ MA ⟩
@@ -126,12 +126,12 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
 
   RightRepV : Type _
   RightRepV =
-    Σ[ p ∈ ValTypeMor A' A ]
+    Σ[ p ∈ ValMor A' A ]
     (Σ[ δl ∈ ⟨ MA ⟩ ] PSq c rA (iA δl .fst) p)
     × (Σ[ δr ∈ ⟨ MA' ⟩ ] PSq rA' c p (iA' δr .fst))
 
   mkRightRepV :
-    (p : ValTypeMor A' A) →
+    (p : ValMor A' A) →
     (δl : ⟨ MA ⟩) →
     PSq c rA (iA δl .fst) p →
     (δr : ⟨ MA' ⟩) →
@@ -142,7 +142,7 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
 
   module _ (r : RightRepV) where
 
-    projV : ValTypeMor A' A
+    projV : ValMor A' A
     projV = r .fst
 
     δlpV : ⟨ MA ⟩
@@ -172,12 +172,12 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
 
   LeftRepC : Type _
   LeftRepC =
-    Σ[ e ∈ CompTypeMor B B' ]
+    Σ[ e ∈ CompMor B B' ]
     ((Σ[ δl ∈ ⟨ MB ⟩ ] ErrorDomSq rB d (iB δl .fst) e)
     × (Σ[ δr ∈ ⟨ MB' ⟩ ] ErrorDomSq d rB' e (iB' δr .fst)))
 
   mkLeftRepC :
-    (e : CompTypeMor B B') →
+    (e : CompMor B B') →
     (δl : ⟨ MB ⟩) →
     ErrorDomSq rB d (iB δl .fst) e →
     (δr : ⟨ MB' ⟩) →
@@ -187,7 +187,7 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
 
   module _ (r : LeftRepC) where
 
-    embC : CompTypeMor B B'
+    embC : CompMor B B'
     embC = r .fst
 
     δleC : ⟨ MB ⟩
@@ -206,12 +206,12 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
 
   RightRepC : Type _
   RightRepC =
-    Σ[ p ∈ CompTypeMor B' B ]
+    Σ[ p ∈ CompMor B' B ]
     (Σ[ δl ∈ ⟨ MB ⟩ ] ErrorDomSq d rB (iB δl .fst) p)
     × (Σ[ δr ∈ ⟨ MB' ⟩ ] ErrorDomSq rB' d p (iB' δr .fst))
 
   mkRightRepC :
-    (p : CompTypeMor B' B) →
+    (p : CompMor B' B) →
     (δl : ⟨ MB ⟩) →
     ErrorDomSq d rB (iB δl .fst) p →
     (δr : ⟨ MB' ⟩) →
@@ -221,7 +221,7 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
 
   module _ (r : RightRepC) where
 
-    projC : CompTypeMor B' B
+    projC : CompMor B' B
     projC = r .fst
 
     δlpC : ⟨ MB ⟩

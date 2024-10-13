@@ -109,8 +109,8 @@ module _ {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ ℓMAᵢ} {Aᵢ'  : Va
          {Aₒ  : ValType ℓAₒ  ℓ≤Aₒ  ℓ≈Aₒ ℓMAₒ} {Aₒ'  : ValType ℓAₒ'  ℓ≤Aₒ'  ℓ≈Aₒ' ℓMAₒ'}
          (cᵢ : ValRel Aᵢ Aᵢ' ℓcᵢ)
          (cₒ : ValRel Aₒ Aₒ' ℓcₒ)
-         (f : ValTypeMor Aᵢ Aₒ)
-         (f' : ValTypeMor Aᵢ' Aₒ')
+         (f : ValMor Aᵢ Aₒ)
+         (f' : ValMor Aᵢ' Aₒ')
          where
   ValSq : Type _
   ValSq = PSq (cᵢ .fst .fst) (cₒ .fst .fst) f f'
@@ -133,8 +133,8 @@ module _ {Bᵢ  : CompType ℓBᵢ  ℓ≤Bᵢ  ℓ≈Bᵢ ℓMBᵢ} {Bᵢ'  : C
          {Bₒ  : CompType ℓBₒ  ℓ≤Bₒ  ℓ≈Bₒ ℓMBₒ} {Bₒ'  : CompType ℓBₒ'  ℓ≤Bₒ'  ℓ≈Bₒ' ℓMBₒ'}
          (dᵢ : CompRel Bᵢ Bᵢ' ℓdᵢ)
          (dₒ : CompRel Bₒ Bₒ' ℓdₒ)
-         (f : CompTypeMor Bᵢ Bₒ)
-         (f' : CompTypeMor Bᵢ' Bₒ')
+         (f : CompMor Bᵢ Bₒ)
+         (f' : CompMor Bᵢ' Bₒ')
          where
   CompSq : Type _
   CompSq = ErrorDomSq (dᵢ .fst .fst) (dₒ .fst .fst) f f'

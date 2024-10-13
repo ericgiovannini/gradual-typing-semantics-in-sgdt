@@ -19,7 +19,6 @@ open import Syntax.FineGrained.Denotation.TypePrecision k
 open import Syntax.FineGrained.Denotation.Terms k
 
 open import Semantics.Concrete.ExtensionalModel k
-open import Semantics.Concrete.ConcreteIntensionalModel k
 open import Semantics.Concrete.Types k as Type
 open import Semantics.Concrete.Relations k as Relation
 

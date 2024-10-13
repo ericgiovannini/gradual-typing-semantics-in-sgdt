@@ -98,8 +98,8 @@ private
     ℓMAᵢ ℓMAₒ ℓMBᵢ ℓMBₒ : Level
     ℓMAᵢ' ℓMAₒ' ℓMBᵢ' ℓMBₒ' : Level
 
-IdV : ∀ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) → ValRel A A _
-IdV A .fst = {!!} -- IdRelV
+IdV : ∀ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) → ValRel A A ℓ≤A
+IdV A .fst = IdRelV
 
 -- Left rep for Id
 IdV A .snd .fst .fst = {!!}

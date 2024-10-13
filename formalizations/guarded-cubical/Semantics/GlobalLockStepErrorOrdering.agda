@@ -30,12 +30,12 @@ open import Common.Common
 open import Common.Later
 open import Common.ClockProperties
 
-open import Semantics.Concrete.DoublePoset.Error
+open import Semantics.Concrete.Predomain.Error
 
 open import Semantics.Concrete.GuardedLift
 open import Semantics.Concrete.GuardedLiftError hiding (L ; η ; θ)
 open import Semantics.Concrete.LockStepErrorOrdering hiding (ret ; err)
-open import Semantics.Concrete.DoublePoset.Monad
+open import Semantics.Concrete.Predomain.Monad
 
 open import Semantics.BigStepFunction
 open import Semantics.GlobalLift

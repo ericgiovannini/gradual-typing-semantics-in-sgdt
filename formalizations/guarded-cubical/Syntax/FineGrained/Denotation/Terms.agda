@@ -9,8 +9,8 @@ open import Cubical.Foundations.Prelude renaming (comp to compose)
 open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 
-open import Semantics.Concrete.DoublePoset.Constructions
-open import Semantics.Concrete.DoublePoset.Morphism renaming (Comp to Compose)
+open import Semantics.Concrete.Predomain.Constructions
+open import Semantics.Concrete.Predomain.Morphism renaming (Comp to Compose)
 open import Semantics.Concrete.Types k
 
 open import Syntax.Types
