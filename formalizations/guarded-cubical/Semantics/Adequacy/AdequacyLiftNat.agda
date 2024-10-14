@@ -2,7 +2,7 @@
 
 {-# OPTIONS --lossy-unification #-}
 
-module Semantics.AdequacyLiftNat where
+module Semantics.Adequacy.AdequacyLiftNat where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
@@ -17,7 +17,7 @@ open import Cubical.Data.Sigma
 
 open import Common.Later
 open import Common.ClockProperties
-open import Semantics.GlobalLift
+open import Semantics.Adequacy.GlobalLift
 open import Semantics.Concrete.Predomain.Error
 
 open import Semantics.Concrete.GuardedLift using (mapL ; unfold-mapL)
@@ -25,9 +25,9 @@ open import Semantics.Concrete.GuardedLiftError hiding (mapL)
 open import Semantics.Concrete.LockStepErrorOrdering
 open import Semantics.Concrete.WeakBisimilarity
 
-open import Semantics.Partial
-open import Semantics.BigStepFunction
-open import Semantics.CombinedAdequacy
+open import Semantics.Adequacy.Partial
+open import Semantics.Adequacy.BigStepFunction
+open import Semantics.Adequacy.CombinedAdequacy
 
 
 private

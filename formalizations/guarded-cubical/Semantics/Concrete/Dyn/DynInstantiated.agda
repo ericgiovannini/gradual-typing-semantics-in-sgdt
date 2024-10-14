@@ -4,7 +4,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.DynInstantiated (k : Clock) where
+module Semantics.Concrete.Dyn.DynInstantiated (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
@@ -38,7 +38,7 @@ open import Semantics.Concrete.Predomain.FreeErrorDomain k
 open import Semantics.Concrete.Predomain.Combinators hiding (S)
 open import Semantics.Concrete.Perturbation.Semantic k
 
-open import Semantics.Concrete.ParameterizedDyn k as ParamDyn
+open import Semantics.Concrete.Dyn.ParameterizedDyn k as ParamDyn
 
 open import Semantics.Concrete.Types k as Types hiding (Unit ; _×_ ; ℕ)
 open import Semantics.Concrete.Perturbation.Relation.Constructions k
@@ -66,31 +66,6 @@ module _
   op-ind H = eqMonoidHom ϕ ψ (cong fst H)
 
 
--- inl-lemma-neq : ∀ {X : Type ℓ} {Y : Type ℓ'} (x x' : X) →
---   ¬ (x ≡ x') → ¬ (inl {B = Y} x ≡ inl x')
--- inl-lemma-neq x x' x≢x' H-eq = x≢x' (isEmbedding→Inj isEmbedding-inl x x' H-eq)
-
--- inr-lemma-neq : ∀ {X : Type ℓ} {Y : Type ℓ'} (y y' : Y) →
---   ¬ (y ≡ y') → ¬ (inr {A = X} y ≡ inr y')
--- inr-lemma-neq y y' y≢y' H-eq = y≢y' (isEmbedding→Inj isEmbedding-inr y y' H-eq)
-
-
--- ⊎disc : DiscreteTy ℓ → DiscreteTy ℓ' → DiscreteTy (ℓ-max ℓ ℓ')
--- ⊎disc X Y .fst = ⟨ X ⟩ Sum.⊎ ⟨ Y ⟩
--- ⊎disc X Y .snd (inl x) (inl x') =
---   decRec
---     (λ eq → yes (cong inl eq))
---     (λ neq → no (inl-lemma-neq x x' neq))
---     (X .snd x x')
--- ⊎disc X Y .snd (inl x) (inr y) = no (inl≠inr x y)
--- ⊎disc X Y .snd (inr x) (inl y) = no (λ H → inl≠inr y x (sym H))
--- ⊎disc X Y .snd (inr y) (inr y') =
---   decRec
---     (λ eq → yes (cong inr eq))
---     (λ neq → no (inr-lemma-neq y y' neq))
---     (Y .snd y y')
-
-
 UnitDisc : DiscreteTy ℓ-zero
 UnitDisc .fst = Unit
 UnitDisc .snd x y = yes refl
@@ -109,22 +84,15 @@ BoolDisc .snd true true = yes refl
 NatDisc : DiscreteTy ℓ-zero
 NatDisc .fst = ℕ
 NatDisc .snd = discreteℕ
-{-
-NatDisc .snd = lem
-  where
-    lem : ∀ n m → Dec (n ≡ m)
-    lem zero zero = yes refl
-    lem zero (suc m) = no znots
-    lem (suc n) zero = no snotz
-    lem (suc n) (suc m) = decRec
-      (λ n≡m → yes (cong suc n≡m))
-      (λ neq → {!!})
-      (lem n m)
--}
+
 
 open F-ob
 
 module _ {ℓ : Level} where
+
+  ----------------------------------------------
+  -- Defining the underlying predomain for Dyn:
+  ----------------------------------------------
 
   -- Shapes and positions for the *unguarded* cases of Dyn:
   S : DiscreteTy ℓ-zero
@@ -152,7 +120,13 @@ module _ {ℓ : Level} where
   _ : C-nextD ≡ (P▹ (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre))))
   _ = refl
 
-  -- Presentation of the monoid of perturbations for C (next D):
+
+  ------------------------------
+  -- Defining Dyn as a ValType:
+  ------------------------------
+
+  -- 1: Presentation of the monoid of perturbations for C (next D):
+ 
   S'gen : Type ℓ-zero
   S'gen = Bool
 
@@ -165,7 +139,8 @@ module _ {ℓ : Level} where
   U-D→FD : Predomain ℓ ℓ ℓ
   U-D→FD = (U-ob (Dyn-Pre ⟶ob (F-ob Dyn-Pre)))
 
-  -- Defining the semantic perturbations for C (next D):
+  -- 2: Defining the semantic perturbations for C (next D):
+  
   i-gen : S'gen → ⟨ Endo C-nextD ⟩
   -- U case
   i-gen false = Endo▹ {A = U-D→FD}
@@ -192,9 +167,10 @@ module _ {ℓ : Level} where
   -- may be able to leverage that to make defining i-gen, i-co,
   -- and i-op more "compositional".
   -- This will make the termination checker complain.
-  
+
  
-  -- Defining Dyn as a ValType
+  -- 3. Defining Dyn as a ValType
+  
   -- module Defs = DynStep2 S'gen S'co S'op i-gen i-co i-op
   module Defs = Definitions S P C S'gen S'co S'op i-gen i-co i-op
 
@@ -310,9 +286,13 @@ module _ {ℓ : Level} where
               (Indexed.ind S'op _ (λ s-op → eqMonoidHom _ _ (funExt (λ p → SemPtb≡ _ _ refl)))))
 
 
-  -------------------------------------------------------------------------------
+  ---------------------------------------------------------------
 
-  -- Now we establish the more familiar relations:
+  ---------------------
+  -- Relations for Dyn
+  ---------------------
+
+  -- We establish the following relations:
   --
   --            ℕ         --|-- Dyn
   --
@@ -344,90 +324,6 @@ module _ {ℓ : Level} where
 
   isoSum-Sigma : StrongIsoV (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn) SigmaV
   isoSum-Sigma = isoΣΠ⊎ΣΠ-ΣΠ NatDisc UnitDisc BotDisc BoolDisc DynV'
-  -- mkStrongIsoV isoP isoM eq
-
-{-
-      isoP' : PredomIso
-        (ΣP NatSet  (λ n →  ΠP ⊥    (λ _ → ValType→Predomain DynV)) ⊎p
-         ΣP UnitSet (λ tt → ΠP Bool (λ _ → ValType→Predomain DynV)))                         
-
-        (ΣP ((ℕ Sum.⊎ Unit) , {!!})
-          (λ s → ΠP (Sum.rec (λ n → ⊥) (λ tt → Bool) s) λ _ → ValType→Predomain DynV))
-
-      isoP' = PredomIso-Inv
-        let foo : PredomIso
-                    (ΣP (ℕ Sum.⊎ Unit , {!!})
-                      (λ s → ΠP (Sum.rec (λ _ → ⊥) (λ tt₁ → Bool) s)
-                        (Sum.elim {C = λ s' → Sum.rec _ _ s' → Predomain _ _ _}
-                          (λ _ _ → ValType→Predomain DynV) (λ _ _ → ValType→Predomain DynV) s)))
-                    {!!}
-            foo = Predom-Iso-ΣΠ-⊎ NatSet UnitSet (λ _ → ⊥) (λ tt → Bool)
-                  (λ _ _ → ValType→Predomain DynV) (λ _ _ → ValType→Predomain DynV)
-        in {!foo!}
-
-
-      isoP : PredomIso
-        (ValType→Predomain (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn))
-        (ValType→Predomain SigmaV)
-      isoP .PredomIso.fun = ⊎p-rec
-        (Σ-mor' NatSet (ℕ Sum.⊎ ⊤ , Discrete→isSet (S .snd)) inl
-          (λ n → ΠP ⊥ (λ _ → ValType→Predomain DynV'))
-          (λ z → ΠP ⟨ P z ⟩ λ _ → ValType→Predomain DynV')
-          (λ n → Id))
-        (Σ-mor' UnitSet (ℕ Sum.⊎ ⊤ , Discrete→isSet (S .snd)) inr _ _ (λ tt → Id))
-      isoP .PredomIso.inv = Σ-elim (Sum.elim (λ n → σ1 ∘p Σ-intro n) (λ tt → σ2 ∘p Σ-intro tt))
-      isoP .PredomIso.invRight (inl _ , _) = refl
-      isoP .PredomIso.invRight (inr _ , _) = refl
-      isoP .PredomIso.invLeft (inl _) = refl
-      isoP .PredomIso.invLeft (inr _) = refl
-
-      to : MonoidHom (PtbV (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn)) (PtbV SigmaV)
-      to = FP.rec
-        (Indexed.rec _ _ _ (λ n → Indexed.rec _ _ _
-          (λ bot → Indexed.σ _ _ (inl n) ∘hom Indexed.σ _ _ bot)))
-        (Indexed.rec _ _ _ (λ tt → Indexed.rec _ _ _ (λ b →
-               (Indexed.σ _ _ (inr tt))
-          ∘hom (Indexed.σ _ _ b))))
-
-      from : MonoidHom (PtbV SigmaV) (PtbV (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn))
-      from = Indexed.rec _ _ _
-        λ { (inl n) → Indexed.rec _ _ _ (λ bot → i₁
-               ∘hom Indexed.σ _ _ n
-               ∘hom Indexed.σ _ _ bot)
-          ; (inr _) → Indexed.rec _ _ _
-            (λ b → i₂
-              ∘hom (Indexed.σ ⊤ (λ _ → ⊕ᵢ Bool (λ _ → PtbV DynV)) tt)
-              ∘hom (Indexed.σ Bool (λ _ → PtbV DynV) b))}
-
-      opaque
-        unfolding Indexed.elim Indexed.rec
-        isoM : MonoidIso (PtbV (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn)) (PtbV SigmaV)
-        isoM = mkMonoidIso to from inv₁ inv₂
-          where
-            inv₁ : to ∘hom from ≡ idMon (PtbV SigmaV)
-            inv₁ = Indexed.ind _ _
-              (λ { (inl n)  → Indexed.ind _ _ (λ bot → eqMonoidHom _ _ refl)
-                 ; (inr tt) → Indexed.ind _ _ (λ b →   eqMonoidHom _ _ refl)})
-                 
-            inv₂ : from ∘hom to ≡ idMon (PtbV _)
-            inv₂ = FP.ind
-              (Indexed.ind _ _ (λ n →  Indexed.ind _ _ λ bot → eqMonoidHom _ _ refl))
-              (Indexed.ind _ _ (λ tt → Indexed.ind _ _ λ b   → eqMonoidHom _ _ refl))
-
-        eq : interpV SigmaV ∘hom isoM .MonoidIso.fun ≡
-             PredomIso→EndoHom isoP ∘hom interpV (SigmaNatPi⊥Dyn Types.⊎ SigmaUnitPiBoolDyn)
-        eq = FP.ind
-        
-          (Indexed.ind _ _ (λ n → Indexed.ind _ _ (λ bot →
-            eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _
-              (funExt (λ { (inl m , ds) → {!!}
-                         ; (inr tt , ds) → refl})))))))
-              
-          (Indexed.ind _ _ λ tt → Indexed.ind _ _ (λ b →
-            eqMonoidHom _ _ (funExt (λ pD → SemPtb≡ _ _
-              (funExt (λ { (inl n , ds) → refl
-                         ; (inr tt , ds) → {!!}}))))))
--}                             
  
 
   rel1 : ValRel Types.ℕ SigmaV ℓ

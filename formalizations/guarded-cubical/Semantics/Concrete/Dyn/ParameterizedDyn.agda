@@ -5,7 +5,7 @@
 
 open import Common.Later
 
-module Semantics.Concrete.ParameterizedDyn (k : Clock) where
+module Semantics.Concrete.Dyn.ParameterizedDyn (k : Clock) where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels

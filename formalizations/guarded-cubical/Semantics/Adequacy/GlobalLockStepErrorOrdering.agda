@@ -5,7 +5,7 @@
 
 {-# OPTIONS --lossy-unification #-}
 
-module Semantics.GlobalLockStepErrorOrdering where
+module Semantics.Adequacy.GlobalLockStepErrorOrdering where
 
 
 open import Cubical.Foundations.Prelude
@@ -37,8 +37,8 @@ open import Semantics.Concrete.GuardedLiftError hiding (L ; η ; θ)
 open import Semantics.Concrete.LockStepErrorOrdering hiding (ret ; err)
 open import Semantics.Concrete.Predomain.Monad
 
-open import Semantics.BigStepFunction
-open import Semantics.GlobalLift
+open import Semantics.Adequacy.BigStepFunction
+open import Semantics.Adequacy.GlobalLift
 
 
 private

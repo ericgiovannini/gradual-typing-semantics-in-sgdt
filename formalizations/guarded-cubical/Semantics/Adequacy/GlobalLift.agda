@@ -3,7 +3,7 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Semantics.GlobalLift where
+module Semantics.Adequacy.GlobalLift where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
@@ -35,8 +35,8 @@ open import Common.Later
 open import Common.Common
 open import Common.ClockProperties
 open import Semantics.Concrete.GuardedLift
-open import Semantics.Partial
-open import Semantics.BigStepFunction
+open import Semantics.Adequacy.Partial
+open import Semantics.Adequacy.BigStepFunction
 
 private
   variable

@@ -2,7 +2,7 @@
 
 {-# OPTIONS --lossy-unification #-}
 
-module Semantics.CombinedAdequacy where
+module Semantics.Adequacy.CombinedAdequacy where
 
 
 open import Cubical.Foundations.Prelude
@@ -25,13 +25,13 @@ open import Common.ClockProperties
 
 open import Semantics.Concrete.Predomain.Error
 
-open import Semantics.Partial
-open import Semantics.BigStepFunction
-open import Semantics.GlobalLift
+open import Semantics.Adequacy.Partial
+open import Semantics.Adequacy.BigStepFunction
+open import Semantics.Adequacy.GlobalLift
 
-open import Semantics.GlobalLockStepErrorOrdering
+open import Semantics.Adequacy.GlobalLockStepErrorOrdering
   renaming (module Adequacy to AdequacyLockStep)
-open import Semantics.GlobalWeakBisimilarity
+open import Semantics.Adequacy.GlobalWeakBisimilarity
   renaming (module Adequacy to AdequacyBisim)
 
 open BinaryRelation

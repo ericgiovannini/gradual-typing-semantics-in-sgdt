@@ -3,7 +3,7 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Semantics.GlobalWeakBisimilarity where
+module Semantics.Adequacy.GlobalWeakBisimilarity where
 
 
 open import Cubical.Foundations.Prelude
@@ -32,8 +32,8 @@ open import Common.ClockProperties
 
 open import Semantics.Concrete.WeakBisimilarity
 open import Semantics.Concrete.GuardedLift
-open import Semantics.BigStepFunction
-open import Semantics.GlobalLift
+open import Semantics.Adequacy.BigStepFunction
+open import Semantics.Adequacy.GlobalLift
 
 
 private

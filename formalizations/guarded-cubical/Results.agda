@@ -17,7 +17,7 @@ open import Cubical.Data.Unit renaming (Unit to ⊤ ; Unit* to ⊤*)
 
 open import Common.Later
 open import Common.ClockProperties
-open import Semantics.GlobalLift
+open import Semantics.Adequacy.GlobalLift
 open import Semantics.Concrete.Predomain.Error
 open import Semantics.Concrete.Predomain.Morphism hiding (Comp)
 
@@ -26,10 +26,10 @@ open import Semantics.Concrete.GuardedLiftError hiding (mapL)
 open import Semantics.Concrete.LockStepErrorOrdering
 open import Semantics.Concrete.WeakBisimilarity
 
-open import Semantics.BigStepFunction
-open import Semantics.CombinedAdequacy
-open import Semantics.AdequacyLiftNat
-open import Semantics.Partial
+open import Semantics.Adequacy.BigStepFunction
+open import Semantics.Adequacy.CombinedAdequacy
+open import Semantics.Adequacy.AdequacyLiftNat
+open import Semantics.Adequacy.Partial
 
 open import Syntax.Types
 open import Syntax.FineGrained.Terms
