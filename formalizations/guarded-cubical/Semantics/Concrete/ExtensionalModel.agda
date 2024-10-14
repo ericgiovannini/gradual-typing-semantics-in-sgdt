@@ -40,7 +40,7 @@ open import Semantics.Concrete.Predomain.Combinators
 
 open import Semantics.Concrete.Predomain.ErrorDomain k
 open import Semantics.Concrete.Predomain.FreeErrorDomain k
-open import Semantics.Concrete.DynInstantiated k
+open import Semantics.Concrete.Dyn.DynInstantiated k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 -- open import Semantics.Concrete.Predomains.Perturbations k

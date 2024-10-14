@@ -1,4 +1,4 @@
-module Semantics.Partial where
+module Semantics.Adequacy.Partial where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism

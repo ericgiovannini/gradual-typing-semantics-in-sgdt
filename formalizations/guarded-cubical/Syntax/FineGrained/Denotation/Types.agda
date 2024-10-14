@@ -10,7 +10,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Data.List
 open import Syntax.Types
 open import Semantics.Concrete.Types k as SemTypes
-open import Semantics.Concrete.DynInstantiated k
+open import Semantics.Concrete.Dyn.DynInstantiated k
 
 ⟦_⟧ty : Ty → ValType ℓ-zero ℓ-zero ℓ-zero ℓ-zero
 ⟦ nat ⟧ty = ℕ

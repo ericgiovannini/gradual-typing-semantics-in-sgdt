@@ -3,7 +3,7 @@
  -- to allow opening this module in other files while there are still holes
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Semantics.BigStepFunction where
+module Semantics.Adequacy.BigStepFunction where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
@@ -22,7 +22,7 @@ open import Cubical.Functions.Embedding
 
 open import Common.Common
 
-open import Semantics.Partial
+open import Semantics.Adequacy.Partial
 
 
 
