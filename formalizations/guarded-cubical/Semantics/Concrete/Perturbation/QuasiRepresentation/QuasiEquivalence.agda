@@ -20,13 +20,9 @@ open import Semantics.Concrete.Predomain.Morphism
 open import Semantics.Concrete.Predomain.Relation as PRel
 open import Semantics.Concrete.Predomain.Square
 open import Semantics.Concrete.Predomain.ErrorDomain k
-open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Types k as Types
-open import Semantics.Concrete.Perturbation.Relation.Alt k
-open import Semantics.Concrete.Perturbation.Relation.Constructions k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
-open import Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions k
 
 private
   variable

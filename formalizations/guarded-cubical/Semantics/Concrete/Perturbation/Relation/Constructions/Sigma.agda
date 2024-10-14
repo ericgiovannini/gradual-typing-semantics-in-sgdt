@@ -26,15 +26,15 @@ open import Cubical.Algebra.Monoid.Displayed.Instances.Sigma
 open import Cubical.Relation.Nullary
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel hiding (ΣR)
-open import Semantics.Concrete.DoublePoset.PBSquare
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation as PRel hiding (ΣR)
+open import Semantics.Concrete.Predomain.Square
 
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types hiding (U; F; _⟶_)
-open import Semantics.Concrete.Perturbation.Relation.Alt k
+open import Semantics.Concrete.Perturbation.Relation.Base k
 
 private
   variable
@@ -59,16 +59,16 @@ module _
     X-as-set : hSet _
     X-as-set = ⟨ X ⟩ , Discrete→isSet (X .snd)
 
-    |A₁| : ⟨ X ⟩ → PosetBisim ℓA₁ ℓ≤A₁ ℓ≈A₁
+    |A₁| : ⟨ X ⟩ → Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁
     |A₁| = ValType→Predomain ∘ A₁
    
-    |A₂| : ⟨ X ⟩ → PosetBisim ℓA₂ ℓ≤A₂ ℓ≈A₂
+    |A₂| : ⟨ X ⟩ → Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂
     |A₂| = ValType→Predomain ∘ A₂
 
     |R| : _
     |R| = VRelPP→PredomainRel ∘ R⟨_⟩
 
-    Σ-R : PBRel (ΣP X-as-set |A₁|) (ΣP X-as-set |A₂|) (ℓ-max ℓX ℓc)
+    Σ-R : PRel (ΣP X-as-set |A₁|) (ΣP X-as-set |A₂|) (ℓ-max ℓX ℓc)
     Σ-R = PRel.ΣR X-as-set |A₁| |A₂| |R|
   
 
@@ -84,7 +84,7 @@ module _
     ΣV-Sq x m₁ m₂ α = sq
       where
         dec→sq : ∀ y → (d : Dec (x ≡ y)) →
-               PBSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
+               PSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
                     (PtbIfEqual x (interpV (A₁ x) .fst m₁) y d .fst)
                     (PtbIfEqual x (interpV (A₂ x) .fst m₂) y d .fst)
         dec→sq y (yes eq) =
@@ -99,7 +99,7 @@ module _
                        a₁ a₂ a₁Ra₂))
         dec→sq y (no neq) = Predom-IdSqV (VRelPP→PredomainRel R⟨ y ⟩)
 
-        sq :  PBSq Σ-R Σ-R                   
+        sq :  PSq Σ-R Σ-R                   
                    (Σ-mor X-as-set _ _ (λ y → PtbIfEqual x (interpV (A₁ x) .fst m₁) y (X .snd x y) .fst))
                    (Σ-mor X-as-set _ _ (λ y → PtbIfEqual x (interpV (A₂ x) .fst m₂) y (X .snd x y) .fst))
         sq = Σ-Sq X-as-set _ _ _ _ |R| |R| _ _ (λ y → dec→sq y (X .snd x y)) 

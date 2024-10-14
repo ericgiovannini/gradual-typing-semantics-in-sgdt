@@ -26,15 +26,15 @@ open import Cubical.Algebra.Monoid.FreeProduct.Indexed as Indexed
 open import Cubical.Relation.Nullary
 
 open import Common.Common
-open import Semantics.Concrete.DoublePoset.Base
-open import Semantics.Concrete.DoublePoset.Morphism
-open import Semantics.Concrete.DoublePoset.Constructions hiding (π1; π2)
-open import Semantics.Concrete.DoublePoset.DPMorRelation as PRel hiding (ΣR ; ΠR)
-open import Semantics.Concrete.DoublePoset.PBSquare
+open import Semantics.Concrete.Predomain.Base
+open import Semantics.Concrete.Predomain.Morphism
+open import Semantics.Concrete.Predomain.Constructions hiding (π1; π2)
+open import Semantics.Concrete.Predomain.Relation as PRel hiding (ΣR ; ΠR)
+open import Semantics.Concrete.Predomain.Square
 
-open import Semantics.Concrete.Predomains.PrePerturbations k
+open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types hiding (U; F; _⟶_)
-open import Semantics.Concrete.Perturbation.Relation.Alt k
+open import Semantics.Concrete.Perturbation.Relation.Base k
 
 
 private
@@ -69,7 +69,7 @@ module _
     ΠV-Sq x m₁ m₂ α = sq
       where
         dec→sq : ∀ y → (d : Dec (x ≡ y)) →
-               PBSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
+               PSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
                     (PtbIfEqual x (interpV (A₁ x) .fst m₁) y d .fst)
                     (PtbIfEqual x (interpV (A₂ x) .fst m₂) y d .fst)
         dec→sq y (yes eq) =
@@ -84,7 +84,7 @@ module _
                        a₁ a₂ a₁Ra₂))
         dec→sq y (no neq) = Predom-IdSqV (VRelPP→PredomainRel R⟨ y ⟩)
 
-        sq :  PBSq (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
+        sq :  PSq (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
                    (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
                    (Π-mor ⟨ X ⟩ _ _ (λ y → PtbIfEqual x (interpV (A₁ x) .fst m₁) y (X .snd x y) .fst))
                    (Π-mor ⟨ X ⟩ _ _ (λ y → PtbIfEqual x (interpV (A₂ x) .fst m₂) y (X .snd x y) .fst))
@@ -111,7 +111,7 @@ module _
     ΠV-Sq α x = sq
       where
         dec→sq : ∀ y → (d : Dec (x ≡ y)) →
-               PBSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
+               PSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
                     (PtbIfEqual x (interpV (A₁ x) .fst (m₁ x)) y d .fst)
                     (PtbIfEqual x (interpV (A₂ x) .fst (m₂ x)) y d .fst)
         dec→sq y (yes eq) =
@@ -126,7 +126,7 @@ module _
                        a₁ a₂ a₁Ra₂))
         dec→sq y (no neq) = Predom-IdSqV (VRelPP→PredomainRel R⟨ y ⟩)
 
-        sq :  PBSq (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
+        sq :  PSq (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
                    (PRel.ΠR ⟨ X ⟩ (ValType→Predomain ∘ A₁) (ValType→Predomain ∘ A₂) (VRelPP→PredomainRel ∘ R⟨_⟩))
                    (Π-mor ⟨ X ⟩ _ _ (λ y → PtbIfEqual x (interpV (A₁ x) .fst (m₁ x)) y (X .snd x y) .fst))
                    (Π-mor ⟨ X ⟩ _ _ (λ y → PtbIfEqual x (interpV (A₂ x) .fst (m₂ x)) y (X .snd x y) .fst))
@@ -195,12 +195,12 @@ module _
            --   (λ y → dec→sq y (X .snd x y))
            where
              dec→sq : ∀ y → (d : Dec (x ≡ y)) →
-               PBSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
+               PSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
                     (PtbIfEqual x (interpV (A₁ x) .fst (pullV R⟨ x ⟩ .fst m')) y d .fst)
                     (PtbIfEqual x (interpV (A₂ x) .fst m') y d .fst)
              dec→sq y (yes eq) = sq
                where
-                 sq : PBSq (VRelPP→PredomainRel R⟨ y ⟩)
+                 sq : PSq (VRelPP→PredomainRel R⟨ y ⟩)
                            (VRelPP→PredomainRel R⟨ y ⟩)
                            (subst (λ z → ⟨ Endo _ ⟩) eq (interpV (A₁ x) .fst (pullV R⟨ x ⟩ .fst m')) .fst)
                            (subst (λ z → ⟨ Endo _ ⟩) eq (interpV (A₂ x) .fst m') .fst)
@@ -250,12 +250,12 @@ Indexed.elim _ _ _ pull-x
       (λ y → dec→sq y (X .snd x y))
       where
         dec→sq : ∀ y → (d : Dec (x ≡ y)) →
-          PBSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
+          PSq (VRelPP→PredomainRel R⟨ y ⟩) (VRelPP→PredomainRel R⟨ y ⟩)
                (PtbIfEqual x (interpV (A₁ x) .fst (pullV R⟨ x ⟩ .fst m')) y d .fst)
                (PtbIfEqual x (interpV (A₂ x) .fst m') y d .fst)
         dec→sq y (yes eq) = sq
           where
-            sq : PBSq (VRelPP→PredomainRel R⟨ y ⟩)
+            sq : PSq (VRelPP→PredomainRel R⟨ y ⟩)
                       (VRelPP→PredomainRel R⟨ y ⟩)
                       (subst (λ z → ⟨ Endo _ ⟩) eq (interpV (A₁ x) .fst (pullV R⟨ x ⟩ .fst m')) .fst)
                       (subst (λ z → ⟨ Endo _ ⟩) eq (interpV (A₂ x) .fst m') .fst)
@@ -279,7 +279,7 @@ Indexed.elim _ _ _ pull-x
       (corecVRelPtb {!!})
         where
           goal : ∀ (m : ⟨ PtbV (A₂ x)⟩) (as : (∀ y → ⟨ A₁ y ⟩)) (bs : (∀ y → ⟨ A₂ y ⟩))
-                   (as-R-bs : ∀ y → R⟨ y ⟩ .fst .PBRel.R (as y) (bs y))
+                   (as-R-bs : ∀ y → R⟨ y ⟩ .fst .PRel.R (as y) (bs y))
                    (y : ⟨ X ⟩) →
                    {!!}
           goal m as bs as-R-bs y = {!!}

@@ -29,8 +29,7 @@ open import Semantics.Concrete.Predomain.ErrorDomain k
 open import Semantics.Concrete.Predomain.Square
 open import Semantics.Concrete.Predomain.Relation
 open import Semantics.Concrete.Perturbation.Semantic k
---open import Semantics.Concrete.Perturbation.Relation k as Relation
-open import Semantics.Concrete.Perturbation.Relation.Alt k as Relation
+open import Semantics.Concrete.Perturbation.Relation k as Relation hiding (_×_)
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Types k as Types hiding (_×_)
 open import Semantics.Concrete.Predomain.FreeErrorDomain k

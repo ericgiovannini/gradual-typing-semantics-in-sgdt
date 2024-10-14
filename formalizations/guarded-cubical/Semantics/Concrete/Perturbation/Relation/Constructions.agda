@@ -44,8 +44,7 @@ open import Semantics.Concrete.Predomain.MonadCombinators k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Types hiding (U; F; _⟶_ ; _×_ ; _⊎_)
---open import Semantics.Concrete.Perturbation.Relation.Base k
-open import Semantics.Concrete.Perturbation.Relation.Alt k
+open import Semantics.Concrete.Perturbation.Relation.Base k
 
 
 private
@@ -426,7 +425,7 @@ module _  {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁}
 
 
 
-
+{-
 module _ {ℓX₁ ℓX₂ : Level}
   (X₁ : DiscreteTy ℓX₁)
   (X₂ : DiscreteTy ℓX₂)
@@ -503,15 +502,9 @@ module _ {ℓX₁ ℓX₂ : Level}
               PSq relation relation
                 (iSum (i₂ .fst (IFP.σ _ _ x₂ .fst pA₂))) (iSigma (IFP.σ _ _ (inr x₂) .fst pA₂))
             pull-sq₂ = {!!}
-              
+-}               
   
   
-  
-  
-
-
--- TODO: inj-arr , inj-× , inj-nat
-
 module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA}
   where
 

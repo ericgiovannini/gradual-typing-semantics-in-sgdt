@@ -39,16 +39,12 @@ open import Semantics.Concrete.LockStepErrorOrdering k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Perturbation.Relation k as RelPP hiding (⊎-inl ; ⊎-inr ; U ; F ; Next ; ⊙V ; ⊙C)
-open import Semantics.Concrete.Perturbation.Relation.Alt k
 
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.Composition k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaU k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaF k
-
-
-
 
 open import Semantics.Concrete.Types k as Types hiding (U ; F ; _×_)
 open import Semantics.Concrete.Relations.Base k
