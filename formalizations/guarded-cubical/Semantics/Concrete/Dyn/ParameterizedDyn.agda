@@ -54,8 +54,7 @@ open import Semantics.Concrete.Predomain.FreeErrorDomain k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Types k as Ty hiding (Unit ; _×_)
-open import Semantics.Concrete.Perturbation.Relation.Alt k
-open import Semantics.Concrete.Perturbation.Relation.Constructions k as RelPP
+open import Semantics.Concrete.Perturbation.Relation k as RelPP
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Relations k as Rel
 
