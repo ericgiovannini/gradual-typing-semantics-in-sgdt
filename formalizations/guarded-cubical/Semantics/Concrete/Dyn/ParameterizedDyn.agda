@@ -514,7 +514,6 @@ module _ {ℓ : Level}
       PtbSum→PtbD = FP.rec PtbSigma→PtbD PtbX→PtbD
 
 
-
       opaque
         unfolding Indexed.rec Indexed.elim
 
@@ -534,14 +533,6 @@ module _ {ℓ : Level}
           (FP.ind (Indexed.ind Sgen (λ _ → FreeMonOn1) (λ s-gen → Free.cases-ind ⊤ ⊥ ⊥ (λ _ → refl) (λ bot → ⊥.rec bot) (λ bot → ⊥.rec bot)))
             (FP.ind (Indexed.ind Sco (λ _ → PtbD)     (λ s-co → eqMonoidHom _ _ refl))
                     (Indexed.ind Sop (λ _ → PtbD ^op) (λ s-op → eqMonoidHom _ _ refl))))
-
-      -- PtbD→PtbSigma : MonoidHom PtbD PtbSigma
-      -- PtbD→PtbSigma = Free.cases _ _ _ _
-      --   (λ s-gen → PtbSigma .snd .MonoidStr.ε)
-      --   (λ { (inl (s , p)) →
-      --         (Indexed.σ |S| (λ s' → ⊕ᵢ (|P| s') (λ _ → PtbD)) s) ∘hom (Indexed.σ (|P| s) (λ _ → PtbD)x1 p) -- (*)
-      --      ; (inr s-co) → ε-hom})
-      --   (λ s-op → ε-hom)
 
 
       -- Interpretation of the perturbations as endomorphisms
@@ -601,9 +592,7 @@ module _ {ℓ : Level}
           SumV : ValType ℓ ℓ ℓ ℓ-zero
           SumV = mkValType SumP PtbSum iSum
           -- SumV = SigmaV Types.⊎ XV
-
-
-         
+   
 
           DynV'≅DynV : StrongIsoV DynV' DynV
           DynV'≅DynV = mkStrongIsoV DP'≅DP idMonoidIso eq
@@ -661,54 +650,3 @@ module _ {ℓ : Level}
           inj-XV = Rel.⊙V (Rel.⊙V Rel.⊎-inr VRel-SumV-DynV') VRel-DynV'-DynV
 
 
-
-
-{-
-  module DynStep1
-    (C : ▹ (Predomain ℓ ℓ ℓ) → Predomain ℓ ℓ ℓ)
-   
-    where
-    -- e.g. C D~ = ▸ₜ((D~ t) => 𝕃 (D~ t))
-    -- or C D~ = ((▸ D~) ==> 𝕃 (▸ D~))
-
-   
-
-    module DynStep2
-      (Sgen Sco Sop : Type ℓ-zero)
-      (igen : Sgen → ⟨ Endo (C (next DP)) ⟩)
-      (ico  : Sco →  MonoidHom  (Endo DP)      (Endo (C (next DP))))
-      (iop  : Sop →  MonoidHom ((Endo DP) ^op) (Endo (C (next DP))))
-      where
-
-      EndoDP→EndoDP' : MonoidHom (Endo DP) (Endo DP')
-      EndoDP→EndoDP' = PredomIso→EndoHom (PredomIso-Inv DP'≅DP)
-
-      EndoDP'→EndoDP : MonoidHom (Endo DP') (Endo DP)
-      EndoDP'→EndoDP = PredomIso→EndoHom DP'≅DP
-
-      ico' : Sco → MonoidHom (Endo DP') (Endo (C (next DP)))
-      ico' sco = (ico sco) ∘hom EndoDP'→EndoDP
-
-      iop' : Sop → MonoidHom ((Endo DP') ^op) (Endo (C (next DP)))
-      iop' sop = (iop sop) ∘hom (EndoDP'→EndoDP ^opHom)
-
-
-      open Definitions (C (next DP)) Sgen Sco Sop igen ico' iop'
-
-      -- Sigma
-      Sigma : ValType ℓ ℓ ℓ ℓ-zero
-      Sigma = SigmaV
-       
-      C-next-D : ValType ℓ ℓ ℓ ℓ-zero
-      C-next-D = XV
-
-      Dyn : ValType ℓ ℓ ℓ ℓ-zero
-      Dyn = DynV
-
-      injSigma : ValRel Sigma Dyn ℓ
-      injSigma = inj-SigmaV
-
-      injC : ValRel C-next-D Dyn ℓ
-      injC = inj-XV
-
--}

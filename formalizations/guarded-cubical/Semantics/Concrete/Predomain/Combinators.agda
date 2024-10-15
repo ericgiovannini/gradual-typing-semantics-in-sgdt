@@ -1,7 +1,7 @@
+{- Combinators for predomain morphisms -}
+
 {-# OPTIONS --guarded --rewriting #-}
-
 {-# OPTIONS --lossy-unification #-}
-
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Common.Later
@@ -178,12 +178,6 @@ K _ {A} = λ a → record {
     isMon = λ {a1} {a2} a1≤a2 → reflexive-≤ A a ;
     pres≈ = λ {a1} {a2} a1≈a2 → reflexive-≈ A a }
 
--- Id : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ A ==> A ⟩
--- Id = record {
---   f = id ;
---   isMon = λ x≤y → x≤y ;
---   pres≈ = λ x≈y → x≈y }
-
 
 Curry :  ⟨ (Γ ×dp A) ==> B ⟩ -> ⟨ Γ ==> A ==> B ⟩
 Curry {Γ = Γ} {A = A} g = record {
@@ -317,9 +311,6 @@ _$_∘m_ :  (Γ : Predomain ℓ ℓ' ℓ'') -> {A B C : Predomain ℓ ℓ' ℓ''
 _$_∘m_ Γ {A = A} {B = B} {C = C} f g = mComp' {B = B} {C = C} {A = A} Γ f g
 infixl 20 _∘m_
 
--- Comp : (Γ : Predomain ℓ ℓ' ℓ'') -> {A B C : Predomain ℓ ℓ' ℓ''} ->
---     ⟨ Γ ×dp B ==> C ⟩ -> ⟨ Γ ×dp A ==> B ⟩ -> ⟨ Γ ×dp A ==> C ⟩
--- Comp Γ f g = {!!}
 
 _~->_ : {A : Predomain ℓA ℓ'A ℓ''A} {B : Predomain ℓB ℓ'B ℓ''B}
         {C : Predomain ℓC ℓ'C ℓ''C} {D : Predomain ℓD ℓ'D ℓ''D} ->
@@ -350,15 +341,7 @@ module ClockedCombinators (k : Clock) where
     ▹_ : Type ℓ → Type ℓ
     ▹_ A = ▹_,_ k A
 
-  -- open import Semantics.Lift k
-  -- open ClockedConstructions k
-  -- open import Semantics.Concrete.MonotonicityProofs
-  -- open import Semantics.LockStepErrorOrdering k
-  -- open import Semantics.Concrete.Predomain.LockStepErrorBisim k
-  -- open import Semantics.WeakBisimilarity k
 
-
-  -- open LiftPredomain
   open ClockedProofs k
   open Clocked k
 
@@ -401,88 +384,6 @@ module ClockedCombinators (k : Clock) where
     isMon = λ {a1} {a2} a1≤a2 t → a1≤a2 ;
     pres≈ = λ {a1} {a2} a1≈a2 t → a1≈a2 }
 
-{-
-  mθ : {A : Predomain ℓ ℓ' ℓ''} ->
-    ⟨ (P▹ (𝕃 A)) ==> 𝕃 A ⟩
-  mθ {A = A} = record { f = θ ; isMon = ord-θ-monotone A ; pres≈ = λ x → {!!} }
-
-  -- 𝕃's return as a monotone function
-  mRet : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ A ==> 𝕃 A ⟩
-  mRet {A = A} = record { f = ret ; isMon = ord-η-monotone A ; pres≈ = λ x → {!!} }
-    where
-      open Bisim ⟨ A ⊎p UnitP ⟩ (rel-≈ (A ⊎p UnitP))
-
-  Δ : {A : Predomain ℓ ℓ' ℓ''} -> ⟨ 𝕃 A ==> 𝕃 A ⟩
-  Δ {A = A} = record {
-      f = δ ;
-      isMon = λ x≤y → ord-δ-monotone A x≤y ;
-      pres≈ = {!!} }
-
-  mExtU : PMor A (𝕃 B) -> PMor (𝕃 A) (𝕃 B)
-  mExtU f = record {
-      f = λ la -> bind la (PMor.f f) ;
-      isMon = monotone-bind-mon-≤ f ;
-      pres≈ = monotone-bind-mon-≈ f }
-
-  mExt : ⟨ (A ==> 𝕃 B) ==> (𝕃 A ==> 𝕃 B) ⟩
-  mExt {A = A} = record {
-      f = mExtU ;
-      isMon = λ {f1} {f2} f1≤f2 la →
-        ext-monotone-≤ (PMor.f f1) (PMor.f f2)
-          (≤mon→≤mon-het f1 f2 f1≤f2) la la (reflexive-≤ (𝕃 A) la) ;
-      pres≈ = λ {f1} {f2} f1≈f2 la la' la≈la' →
-        ext-monotone-≈ (PMor.f f1) (PMor.f f2) f1≈f2 la la' la≈la' }
-
-  mExt' : (Γ : Predomain ℓ ℓ' ℓ'') ->
-      ⟨ (Γ ×dp A ==> 𝕃 B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
-  mExt' Γ f = TransformDomain f mExt
-
-  mRet' : (Γ : Predomain ℓ ℓ' ℓ'') -> { A : Predomain ℓ ℓ' ℓ''} -> ⟨ Γ ==> A ⟩ -> ⟨ Γ ==> 𝕃 A ⟩
-  mRet' Γ f = record {
-    f = λ γ -> ret (PMor.f f γ) ;
-    isMon = λ {γ1} {γ2} γ1≤γ2 → ret-monotone-≤ (PMor.f f γ1) (PMor.f f γ2) (isMon f γ1≤γ2);
-    pres≈ = λ {γ1} {γ2} γ1≈γ2 → ret-monotone-≈ (PMor.f f γ1) (PMor.f f γ2) (pres≈ f γ1≈γ2)} -- _ ! K _ mRet <*> a
-
-  Bind : (Γ : Predomain ℓ ℓ' ℓ'') ->
-      ⟨ Γ ==> 𝕃 A ⟩ -> ⟨ Γ ×dp A ==> 𝕃 B ⟩ -> ⟨ Γ ==> 𝕃 B ⟩
-  Bind Γ la f = S Γ (mExt' Γ f) la
-
-  -- Mapping a monotone function
-  mMap : ⟨ (A ==> B) ==> (𝕃 A ==> 𝕃 B) ⟩
-  mMap {A = A} {B = B} = Curry (mExt' (A ==> B) ((With2nd mRet) ∘m App))
-
-  mMap' :
-      ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ×dp 𝕃 A ==> 𝕃 B) ⟩
-  mMap' f = record {
-    f = λ { (γ , la) -> mapL (λ a -> PMor.f f (γ , a)) la} ;
-    isMon = λ { {γ , la} {γ' , la'} (γ≤γ' , la≤la') → {!!} } ;
-    pres≈ = {!!} }
-
-  Map :
-      ⟨ (Γ ×dp A ==> B) ⟩ -> ⟨ (Γ ==> 𝕃 A) ⟩ -> ⟨ (Γ ==> 𝕃 B) ⟩
-  Map {Γ = Γ} f la = S Γ (mMap' f) la -- Γ ! mMap' f <*> la
-
-
-    -- Embedding of function spaces is monotone
-  mFunEmb : (A A' B B' : Predomain ℓ ℓ' ℓ'') ->
-      ⟨ A' ==> 𝕃 A ⟩ ->
-      ⟨ B ==> B' ⟩ ->
-      ⟨ (A ==> 𝕃 B) ==> (A' ==> 𝕃 B') ⟩
-  mFunEmb A A' B B' fA'LA fBB' =
-      Curry (Bind ((A ==> 𝕃 B) ×dp A')
-        (mCompU fA'LA π2)
-        (Map (mCompU fBB' π2) ({!!})))
-    --  _ $ (mExt' _ (_ $ (mMap' (K _ fBB')) ∘m Id)) ∘m (K _ fA'LA)
-    -- mComp' (mExt' (mComp' (mMap' (K fBB')) Id)) (K fA'LA)
-
-  mFunProj : (A A' B B' : Predomain ℓ ℓ' ℓ'') ->
-     ⟨ A ==> A' ⟩ ->
-     ⟨ B' ==> 𝕃 B ⟩ ->
-     ⟨ (A' ==> 𝕃 B') ==> 𝕃 (A ==> 𝕃 B) ⟩
-  mFunProj A A' B B' fAA' fB'LB = {!!}
-    -- mRet' (mExt' (K fB'LB) ∘m Id ∘m (K fAA'))
--}
-
 
 module _
   (X : hSet ℓX) where
@@ -493,12 +394,6 @@ module _
   isoSigmaUnit .PredomIso.invRight x = refl
   isoSigmaUnit .PredomIso.invLeft (x , tt) = refl
 
--- module _ {ℓ ℓ≤ ℓ≈ : Level} where
---   isoPiBot : PredomIso {ℓA = ℓ} (ΠP ⊥ {ℓ = ℓ} {ℓ≤ = ℓ≤} {ℓ≈ = ℓ≈} ⊥.rec) UnitP
---   isoPiBot .PredomIso.fun = UnitP!
---   isoPiBot .PredomIso.inv = recUnitP (λ x → ⊥.rec x)
---   isoPiBot .PredomIso.invRight tt = refl
---   isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
 
 module _ {A : Predomain ℓA ℓ≤A ℓ≈A} where
   isoPiBot : PredomIso (ΠP ⊥ (λ _ → A)) UnitP

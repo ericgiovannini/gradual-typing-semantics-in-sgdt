@@ -38,7 +38,8 @@ open import Semantics.Concrete.Predomain.MonadCombinators k
 open import Semantics.Concrete.LockStepErrorOrdering k
 
 open import Semantics.Concrete.Perturbation.Semantic k
-open import Semantics.Concrete.Perturbation.Relation k as RelPP hiding (⊎-inl ; ⊎-inr ; U ; F ; Next ; ⊙V ; ⊙C)
+open import Semantics.Concrete.Perturbation.Relation k as RelPP
+  hiding (⊎-inl ; ⊎-inr ; U ; F ; Next ; ⊙V ; ⊙C)
 
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions k
@@ -108,24 +109,6 @@ open F-rel
 module C = ClockedCombinators k
 open Clocked k
 
-
-{-
--- Isomorphism induces a relation
-
-module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) (A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA')
-         (isom : Iso ⟨ A ⟩ ⟨ A' ⟩)
-  where
-
-  relPP : VRelPP A A' {!!}
-  relPP .fst = {!!}
-  relPP .snd .fst = {!!}
-  relPP .snd .snd = {!!}
-
-  Iso→Rel : ValRel A A' {!!}
-
-  Iso→Rel .fst = {!!}
-  Iso→Rel .snd = {!!}
--}
 
 
 -- If value types A and A' are strongly isomorphic, we obtain a value relation

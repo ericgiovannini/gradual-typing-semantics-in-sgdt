@@ -446,15 +446,12 @@ module _
               (IFP.ind _ _ (λ x₁ → eqMonoidHom _ _
                 (funExt (λ pA₁ → SemPtb≡ _ _ (funExt (λ
                   { (Sum.inl x₁' , a) → ΣPathP (refl ,
-                    --let foo = Σ-SemPtb-ind X₁Set (X₁ .snd) x₁ (((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ (X₁ .fst) (λ x → PtbV (A₁ x)) x₁)) .fst pA₁) {!!} {!!} in
-                    --let bar = funExt⁻ ((cong (PMor.f ∘ fst)) foo) (x₁ , ({!!} , {!!})) in
                     lem1 x₁ x₁' pA₁ a (X₁ .snd x₁ x₁'))
                   ; (Sum.inr x₂  , a) → refl}))))))
               (IFP.ind _ _ (λ x₂ → eqMonoidHom _ _
                 (funExt (λ pA₂ → SemPtb≡ _ _ (funExt (λ
                   { (Sum.inl x₁  , a) → refl
                   ; (Sum.inr x₂' , a) → ΣPathP (refl , lem2 x₂ x₂' pA₂ a (X₂ .snd x₂ x₂'))}))))))
-                  -- Σ-SemPtb-ind _ (X₁⊎X₂ .snd) (Sum.inr x₂) _ {!!} λ x' b' neq → {!!}))))
 
           where
             LHS2A LHS2B LHS2C LHS2D LHS2E LHS2F RHS2A RHS2B RHS2C RHS2D RHS2E :
@@ -463,18 +460,6 @@ module _
             LHS2B x₂ x₂' pA₂ a = interpV Sigma .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
             LHS2C x₂ x₂' pA₂ a = interpV Sigma .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
     
-            -- IFP.rec _ _ _ (λ s → Σ-SemPtb {!!} (X₁⊎X₂ .snd) s ∘hom interpV (A₂ x₂)) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
-            
-            -- IFP.rec _ _ _ (λ s → Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
-            --  .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
-            --
-            -- IFP.rec _ _ _ (λ s → Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
-            -- .fst (IFP.σ _ _ (inr x₂) .fst pA₂)
-            -- .fst .PMor.f (Sum.inr x₂' , a) .snd
-            --
-            --
-            --  Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) (inr x₂) .fst (interpV (A₂ x₂) .fst pA₂)        
-            -- .fst .PMor.f (Sum.inr x₂' , a) .snd
             
             LHS2D x₂ x₂' pA₂ a = (Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂))
               .fst (interpV (A₂ x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
@@ -550,12 +535,7 @@ module _
 
 
 
-{-
-IFP.rec ⟨ X ⟩ (PtbV ∘ B) _ int
-    where
-      int : (x : ⟨ X ⟩) → MonoidHom (PtbV (B x)) (Endo P-Σ)
-      int x = (Σ-SemPtb (⟨ X ⟩ , isSetX) (X .snd) x) ∘hom (interpV (B x))
--}          
+      
 
 module _ {ℓX₁ ℓX₂ : Level}
   (X₁ : DiscreteTy ℓX₁)
@@ -664,77 +644,4 @@ module _ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA)
         eq : interpV SigmaA ∘hom isoM .MonoidIso.fun
            ≡ PredomIso→EndoHom isoP ∘hom interpV A
         eq = eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _ refl))
- 
 
-
-
-{-
-  mkStrongIsoV isoP isoM eq
-    where
-
-    isoP : PredomIso
-        (ValType→Predomain Sum)
-        (ValType→Predomain Sigma)
-    isoP .PredomIso.fun = ⊎p-rec
-      (Σ-mor' X₁Set ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) Sum.inl _ _ (λ x₁ → Id))
-      (Σ-mor' X₂Set ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) Sum.inr _ _ (λ x₂ → Id))
-    isoP .PredomIso.inv = Σ-elim (Sum.elim (λ x₁ → σ1 ∘p Σ-intro x₁) (λ x₂ → σ2 ∘p Σ-intro x₂))
-    isoP .PredomIso.invRight = {!!}
-    isoP .PredomIso.invLeft = {!!}
-
-    to : MonoidHom (PtbV Sum) (PtbV Sigma)
-    to = FP.rec
-        (IFP.rec _ _ _ (λ x₁ → IFP.rec _ _ _
-          (λ y₁ → IFP.σ _ _ (Sum.inl x₁) ∘hom IFP.σ _ _ y₁)))
-        (IFP.rec _ _ _ (λ x₂ → IFP.rec _ _ _ (λ y₂ →
-               (IFP.σ _ _ (Sum.inr x₂))
-          ∘hom (IFP.σ _ _ y₂))))
-
-    from : MonoidHom (PtbV Sigma) (PtbV Sum)
-    from = IFP.rec _ _ _
-        λ { (Sum.inl x₁) → IFP.rec _ _ _
-            (λ y₁ → i₁
-               ∘hom IFP.σ _ _ x₁
-               ∘hom IFP.σ _ _ y₁)
-          ; (Sum.inr x₂) → IFP.rec _ _ _
-            (λ y₂ → i₂
-              ∘hom (IFP.σ _ _ x₂)
-              ∘hom (IFP.σ _ _ y₂))}
-
-    opaque
-      unfolding IFP.elim IFP.rec
-      isoM : MonoidIso (PtbV Sum) (PtbV Sigma)
-      isoM = mkMonoidIso to from inv₁ inv₂
-        where
-          inv₁ : to ∘hom from ≡ idMon (PtbV Sigma)
-          inv₁ = IFP.ind _ _
-            (λ { (Sum.inl x₁) → IFP.ind _ _ (λ y₁ → eqMonoidHom _ _ refl)
-               ; (Sum.inr x₂) → IFP.ind _ _ (λ y₂ → eqMonoidHom _ _ refl)})
-          inv₂ : from ∘hom to ≡ idMon (PtbV _)
-          inv₂ = FP.ind
-            (IFP.ind _ _ (λ x₁ → IFP.ind _ _ λ y₁ → eqMonoidHom _ _ refl))
-            (IFP.ind _ _ (λ x₂ → IFP.ind _ _ λ y₂ → eqMonoidHom _ _ refl))
-
-      eq : interpV Sigma ∘hom isoM .MonoidIso.fun ≡
-           PredomIso→EndoHom isoP ∘hom interpV Sum
-      eq = FP.ind
-        (IFP.ind _ _ (λ x₁ → IFP.ind _ _ (λ y₁ →
-          eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _
-            (funExt (λ { (Sum.inl x₁' , as) → ΣPathP (refl , funExt (λ y₁' → {!!})) -- foo pA as x₁ x₁' y₁ y₁' (X₁ .snd x₁ x₁') (Y₁ .snd y₁ y₁')))
-                       ; (Sum.inr _ , _) → refl})))))))
-
-        (IFP.ind _ _ λ x₂ → IFP.ind _ _ (λ b →
-          eqMonoidHom _ _ (funExt (λ pA → SemPtb≡ _ _
-            (funExt (λ { (Sum.inl _ , _) → refl
-                       ; (Sum.inr x₂' , as) → ΣPathP (refl , funExt λ y₂' → {!!})}))))))
-        where
-          -- foo : ∀ (pA : ⟨ PtbV A ⟩) (as : ⟨ Y₁ ⟩ → ⟨ A ⟩)  (x₁ x₁' : ⟨ X₁ ⟩) (y₁ y₁' : ⟨ Y₁ ⟩)
-          --   → Dec (x₁ ≡ x₁') → Dec (y₁ ≡ y₁')
-          --   → (fst ((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ _ _ x₁) ∘hom IFP.σ _ _ y₁) pA .fst .PMor.f (Sum.inl x₁' , as)) .snd y₁'
-          --   ≡ interpV Sigma₁ .fst ((IFP.σ _ _ x₁ ∘hom IFP.σ _ _ y₁) .fst pA) .fst .PMor.f (x₁' , as) .snd y₁' 
-          -- foo pA as x₁ x₁' y₁ y₁' (yes p) (yes p₁) = {!!}
-          -- foo pA as x₁ x₁' y₁ y₁' (yes p) (no ¬p) = {!!}
-          -- foo pA as x₁ x₁' y₁ y₁' (no ¬p) q = {!!}
-
-
--}

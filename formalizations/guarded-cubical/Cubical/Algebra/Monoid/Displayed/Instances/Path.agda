@@ -45,33 +45,6 @@ module _ {M : Monoid ℓ} {N : Monoid ℓ'}
   Eq : Monoidᴰ M ℓ'
   Eq = Reindex (×M-intro f g) (MonPath N)
 
-{-
-module _ {M : Monoid ℓ} {N : Monoid ℓ'} {P : Monoid ℓ''}
-  {f : MonoidHom M N} {g : MonoidHom M N}
-  (ϕ : MonoidHom M M)
-  (eq : f ≡ g)
-  where
-
-
-  private
-    module N = MonoidStr (N .snd)
-    module f = IsMonoidHom (f .snd)
-    module g = IsMonoidHom (g .snd)
-    open Monoidᴰ
-
-    ls : LocalSection (×M-intro f g) (MonPath N)
-    ls .fst x = funExt⁻ (cong fst eq) x
-    ls .snd .fst = isProp→PathP (λ i → N.is-set _ _) _ _
-    ls .snd .snd _ _ = isProp→PathP (λ i → N.is-set _ _) _ _
-
-    ls' : LocalSection (×M-intro f g ∘hom ϕ) (MonPath N)
-    ls' = {!!}
-
-    corecEq : LocalSection ϕ (Eq f g)
-    corecEq = ls-reind ls'
--}
-
-
   module _ {P : Monoid ℓ''} {ϕ : MonoidHom P M}
     (eq : (f ∘hom ϕ) ≡ (g ∘hom ϕ))
     where
