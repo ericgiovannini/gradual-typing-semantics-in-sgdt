@@ -69,6 +69,34 @@ open F-sq
 open ExtAsEDMorphism
 
 
+-- The identity relation is quasi-left-representable, and its lifting by F
+-- is quasi-right-representable.
+
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} where
+
+  private
+    |A| = ValType→Predomain A
+    module MA = MonoidStr (PtbV A .snd)
+    iA = fst ∘ interpV A .fst
+    module iA = IsMonoidHom (interpV A .snd)
+    rA = idPRel |A|
+
+    UpR-DnR : PSq rA rA (iA MA.ε) Id
+    UpR-DnR = subst (λ z → PSq rA rA z Id) (sym (cong fst iA.presε)) (Predom-IdSqH Id)
+
+    UpL-DnL : PSq rA rA Id (iA MA.ε)
+    UpL-DnL = subst (λ z → PSq rA rA Id z) (sym (cong fst iA.presε)) (Predom-IdSqH Id)
+
+  LeftRepV-Id : LeftRepV A A rA
+  LeftRepV-Id = mkLeftRepV A A rA
+    Id MA.ε UpR-DnR MA.ε UpL-DnL
+     
+  RightRepV-Id : RightRepV A A rA
+  RightRepV-Id = mkRightRepV A A rA
+    Id MA.ε UpR-DnR MA.ε UpL-DnL
+      
+
+
 -- The relations induced by inl and inr are quasi-left-representable,
 -- and their liftings by F are quasi-right-representable.
 

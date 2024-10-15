@@ -95,15 +95,13 @@ private
     ℓMAᵢ' ℓMAₒ' ℓMBᵢ' ℓMBₒ' : Level
 
 IdV : ∀ (A : ValType ℓA ℓ≤A ℓ≈A ℓMA) → ValRel A A ℓ≤A
-IdV A .fst = IdRelV
+IdV A .fst = IdRelV -- identity relation + push-pull
 
 -- Left rep for Id
-IdV A .snd .fst .fst = {!!}
-IdV A .snd .fst .snd = {!!}
+IdV A .snd .fst = LeftRepV-Id
 
 -- Right rep for F Id
-IdV A .snd .snd .fst = {!!}
-IdV A .snd .snd .snd = {!!}
+IdV A .snd .snd = F-rightRep A A _ RightRepV-Id
 
 open F-rel
 
