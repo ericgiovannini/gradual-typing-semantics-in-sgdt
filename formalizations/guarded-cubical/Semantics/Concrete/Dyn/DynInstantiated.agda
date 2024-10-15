@@ -72,7 +72,7 @@ UnitDisc .snd x y = yes refl
 
 BotDisc : DiscreteTy ℓ-zero
 BotDisc .fst = ⊥
-BotDisc .snd = {!!}
+BotDisc .snd x y = yes (isProp⊥ x y)
 
 BoolDisc : DiscreteTy ℓ-zero
 BoolDisc .fst = Bool
@@ -179,6 +179,8 @@ module _ {ℓ : Level} where
 
   DynV' : ValType ℓ ℓ ℓ ℓ-zero
   DynV' = Defs.DynV'
+
+  DynV≅DynV' = StrongIsoV-Inv Defs.DynV'≅DynV
 
   -- There are two a priori different definitions of Sigma and two definitions of C(next D):
   --
@@ -326,8 +328,8 @@ module _ {ℓ : Level} where
   isoSum-Sigma = isoΣΠ⊎ΣΠ-ΣΠ NatDisc UnitDisc BotDisc BoolDisc DynV'
  
 
-  rel1 : ValRel Types.ℕ SigmaV ℓ
-  rel1 = Rel.⊙V (ValTyIso→ValRel iso1) (Rel.⊙V Rel.⊎-inl (ValTyIso→ValRel isoSum-Sigma))
+  rel-Nat-Sigma : ValRel Types.ℕ SigmaV ℓ
+  rel-Nat-Sigma = Rel.⊙V (ValTyIso→ValRel iso1) (Rel.⊙V Rel.⊎-inl (ValTyIso→ValRel isoSum-Sigma))
     where
       iso1 : StrongIsoV Types.ℕ SigmaNatPi⊥Dyn
       iso1 = mkStrongIsoV isoP isoM eq'
@@ -350,8 +352,8 @@ module _ {ℓ : Level} where
             eq' = Trivial.ind _ _  -- any two homomorphisms out of the trivial monoid are equal
 
 
-  rel2 : ValRel (DynV' Types.× DynV') SigmaV ℓ
-  rel2 = Rel.⊙V (ValTyIso→ValRel iso1)
+  rel-D×D-Sigma : ValRel (DynV' Types.× DynV') SigmaV ℓ
+  rel-D×D-Sigma = Rel.⊙V (ValTyIso→ValRel iso1)
                 (Rel.⊙V Rel.⊎-inr (ValTyIso→ValRel isoSum-Sigma))
     where
       test-iso : ∀ {X : Type ℓ} {Y : Type ℓ'}
@@ -396,11 +398,34 @@ module _ {ℓ : Level} where
             
        
 
-  injSigma : ValRel SigmaV-internal DynV ℓ
-  injSigma = Defs.inj-SigmaV
+  injSigma' : ValRel SigmaV-internal DynV ℓ
+  injSigma' = Defs.inj-SigmaV
 
   injArr' : ValRel C-nextD-internal DynV ℓ
   injArr' = Defs.inj-XV
 
+  SigmaV-internal≡SigmaV : SigmaV-internal ≡ SigmaV
+  SigmaV-internal≡SigmaV = refl -- WARNING: this takes A WHILE (40-50 seconds) to type-check
+
+  injSigma : ValRel SigmaV DynV ℓ
+  injSigma = subst (λ z → ValRel z DynV ℓ) SigmaV-internal≡SigmaV injSigma'
+
+  -- The definitions of the inj-relations:
+  injNat : ValRel (Types.ℕ) DynV ℓ
+  injNat = Rel.⊙V
+    rel-Nat-Sigma
+    injSigma
+
+  injTimes : ValRel (DynV Types.× DynV) DynV ℓ
+  injTimes = Rel.⊙V
+    (ValTyIso→ValRel (×-iso DynV≅DynV' DynV≅DynV'))
+    (Rel.⊙V
+      rel-D×D-Sigma
+      injSigma)
+
+  injArr : ValRel C-nextD-V DynV ℓ
+  injArr = Rel.⊙V
+    (ValTyIso→ValRel (StrongIsoV-Inv isoArr))
+    injArr'
   
   

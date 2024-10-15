@@ -336,7 +336,9 @@ module _
       sq
       where
         α : ErrorDomSq rB₁ (|d| ⊙ed rB₂) (IdE ∘ed (iB₁ δld)) (IdE ∘ed ed)
-        α = ED-CompSqV {d₁ = rB₁} {d₂ = |d|} {d₃ = |d| ⊙ed rB₂} UpRd (sq-d-d⊙idB' |d|)
+        α = ED-CompSqV {d₁ = rB₁} {d₂ = |d|} {d₃ = |d| ⊙ed rB₂}
+            {ϕ₁ = iB₁ δld} {ϕ₁' = ed} {ϕ₂ = IdE} {ϕ₂' = IdE}
+            UpRd (sq-d-d⊙idB' |d|)
 
         β : ErrorDomSq (|d| ⊙ed rB₂) (|d| ⊙ed |d'|) (iB₁ (pullC d .fst δld')) ed'
         β = ED-CompSqH {ϕ₁ = iB₁ (pullC d .fst δld')} {ϕ₂ = iB₂ δld'} {ϕ₃ = ed'} (pullCSq d δld') UpRd'
@@ -433,7 +435,9 @@ module _
       sq 
       where
         α : ErrorDomSq rB₃ (rB₂ ⊙ed |d'|) (IdE ∘ed pd') (IdE ∘ed iB₃ δrd')
-        α = ED-CompSqV {d₁ = rB₃} {d₂ = |d'|} {d₃ = rB₂ ⊙ed |d'|} DnLd' (sq-d-idB⊙d |d'|)
+        α = ED-CompSqV {d₁ = rB₃} {d₂ = |d'|} {d₃ = rB₂ ⊙ed |d'|}
+                       {ϕ₁ = pd'} {ϕ₁' = iB₃ δrd'} {ϕ₂ = IdE} {ϕ₂' = IdE}
+                        DnLd' (sq-d-idB⊙d |d'|)
 
         β : _
         β = ED-CompSqH {ϕ₁ = pd} {ϕ₂ = iB₂ δrd} {ϕ₃ = iB₃ (pushC d' .fst δrd)} DnLd (pushCSq d' δrd)

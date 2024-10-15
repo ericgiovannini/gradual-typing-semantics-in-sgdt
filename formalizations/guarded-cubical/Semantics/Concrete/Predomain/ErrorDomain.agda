@@ -767,18 +767,10 @@ module _ where
             x-dd'-z
 
 
- 
-  -- TODO fill these in
-  
+   
   sq-idB⊙d-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq (idEDRel B ⊙ed d) d IdE IdE
-  sq-idB⊙d-d {B = B} {B' = B'} d x y H = EHC-convenient (record
-                                                          { UR =
-                                                              record
-                                                              { R = {!!} ; is-prop-valued = {!!} ; is-antitone = {!!} ; is-monotone = {!!} }
-                                                          ; R℧ = {!!}
-                                                          ; Rθ = {!!}
-                                                          }) {!!} {!!} {!!} {!!} -- PTrec (c.is-prop-valued x y) (λ { (x' , x≤x' , x'Ry) → c.is-antitone x≤x' x'Ry }) H
+  sq-idB⊙d-d {B = B} {B' = B'} d = EHC-convenient d (λ { x y (z , xRz , zRy) → d .ErrorDomRel.is-antitone xRz zRy })
     where
       module d = ErrorDomRel d
       open HorizontalCompUMP (idEDRel B) d IdE IdE IdE
@@ -786,19 +778,22 @@ module _ where
 
   sq-d⊙idB'-d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq (d ⊙ed idEDRel B') d IdE IdE
-  sq-d⊙idB'-d {B = B} {B' = B'} d x y H = {!!} -- PTrec (c.is-prop-valued x y) (λ { (y' , xRy' , y'≤y) → c.is-monotone xRy' y'≤y }) H
+  sq-d⊙idB'-d {B = B} {B' = B'} d = EHC-convenient d (λ { x y (z , xRy , zRy) → d .ErrorDomRel.is-monotone xRy zRy })
     where
       module d = ErrorDomRel d
-      open HorizontalCompUMP
+      open HorizontalCompUMP d (idEDRel B') IdE IdE IdE
 
 
   sq-d-idB⊙d : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq d (idEDRel B ⊙ed d) IdE IdE
-  sq-d-idB⊙d = {!!}
+  sq-d-idB⊙d {B = B} d x y xRy = HorizontalComp.inj x x y (B.is-refl x) xRy
+   where module B = ErrorDomainStr (B .snd)
 
   sq-d-d⊙idB' : {B : ErrorDomain ℓB ℓ≤B ℓ≈B} {B' : ErrorDomain  ℓB' ℓ≤B' ℓ≈B'} (d : ErrorDomRel B B' ℓd) →
     ErrorDomSq d (d ⊙ed idEDRel B') IdE IdE
-  sq-d-d⊙idB' = {!!}
+  sq-d-d⊙idB' {B' = B'} d x y xRy = HorizontalComp.inj x y y xRy (B'.is-refl y)
+     where module B' = ErrorDomainStr (B' .snd)
+
 
 
 
@@ -1092,9 +1087,11 @@ module _ where
 
   -- Functoriality for the identity
   -- TODO universe level mismatch (need to restrict levels or use Lift)
+  {-
   arrowPresIdHoriz : ∀  {A : Predomain ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
     (idPRel A) ⟶rel (idEDRel B) ≡ {!idEDRel (A ⟶ob B)!}
   arrowPresIdHoriz = {!!}
+  -}
 
 
   -- Lax functoriality of ⟶ on relations, i.e., relationship between

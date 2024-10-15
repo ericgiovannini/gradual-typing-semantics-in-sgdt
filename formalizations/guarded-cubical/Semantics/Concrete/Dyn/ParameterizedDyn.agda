@@ -143,8 +143,50 @@ module _ {ℓ : Level}
   injective : ∀ {X} d d' → DynTy→Sum X d ≡ DynTy→Sum X d' → d ≡ d'
   injective d d' H = sym (retr d) ∙ (cong (Sum→DynTy _) H) ∙ retr d'
 
-  isSetDynTy : ∀ X → isSet X → isSet (DynTy X)
-  isSetDynTy = {!!}
+
+  -- isSet for DynTy
+  
+  module _ (X : Type ℓ) where
+
+    Shape : Type ℓ
+    Shape = X Sum.⊎ |S|
+      
+    Pos : Shape → Type ℓ-zero
+    Pos (inl _) = ⊥
+    Pos (inr s) = |P| s
+  
+    DynAsTree : Type ℓ
+    DynAsTree = IW {X = Unit} (λ _ → Shape) (λ _ → Pos) (λ _ _ _ → tt) tt
+
+    Dyn→Tree : DynTy X → DynAsTree
+    Dyn→Tree (guarded x) = node (inl x) ⊥.rec
+    Dyn→Tree (unguarded s ds) = node (inr s) subtrees
+      where
+        subtrees : |P| s → DynAsTree
+        subtrees p = Dyn→Tree (ds p)
+
+    Tree→Dyn : DynAsTree → DynTy X
+    Tree→Dyn (node (inl x) subtree) = guarded x
+    Tree→Dyn (node (inr s) subtree) = unguarded s aux
+      where
+        aux : |P| s → DynTy X
+        aux p = Tree→Dyn (subtree p)
+
+    tree-retr : retract Dyn→Tree Tree→Dyn
+    tree-retr (guarded x) = refl
+    tree-retr (unguarded s ds) =
+      cong₂ unguarded refl (funExt (λ p → tree-retr (ds p)))
+
+    isSetDynAsTree : isSet X → isSet DynAsTree
+    isSetDynAsTree isSetX = isOfHLevelSuc-IW 1 (λ _ → isSetShape) tt
+      where
+        isSetShape : isSet Shape
+        isSetShape = isSet⊎ isSetX isSetS
+
+    isSetDynTy : isSet X → isSet (DynTy X)
+    isSetDynTy isSetX =
+      isSetRetract Dyn→Tree Tree→Dyn tree-retr (isSetDynAsTree isSetX)
+
 
   module _ (X : Predomain ℓ ℓ ℓ) where
 
@@ -560,14 +602,20 @@ module _ {ℓ : Level}
           SumV = mkValType SumP PtbSum iSum
           -- SumV = SigmaV Types.⊎ XV
 
-          VRel-DynV'-DynV : ValRel DynV' DynV ℓ
-          VRel-DynV'-DynV = ValTyIso→ValRel isom
+
+         
+
+          DynV'≅DynV : StrongIsoV DynV' DynV
+          DynV'≅DynV = mkStrongIsoV DP'≅DP idMonoidIso eq
             where
               eq : iDyn ∘hom (idMon PtbD) ≡ PredomIso→EndoHom DP'≅DP ∘hom iDyn'
               eq = ∘hom-IdR iDyn
 
-              isom : StrongIsoV DynV' DynV
-              isom = mkStrongIsoV DP'≅DP idMonoidIso eq
+          VRel-DynV'-DynV : ValRel DynV' DynV ℓ
+          VRel-DynV'-DynV = ValTyIso→ValRel DynV'≅DynV             
+
+          VRel-DynV-DynV' : ValRel DynV DynV' ℓ
+          VRel-DynV-DynV' = ValTyIso→ValRel (StrongIsoV-Inv DynV'≅DynV)
 
 
           -- Now we construct the ValType relations corresponding to the injections

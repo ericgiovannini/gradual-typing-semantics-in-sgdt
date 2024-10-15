@@ -500,7 +500,7 @@ module _
 --   isoPiBot .PredomIso.invRight tt = refl
 --   isoPiBot .PredomIso.invLeft a = funExt (λ bot → ⊥.rec bot)
 
-module _ {ℓ ℓ≤ ℓ≈ : Level} {A : Predomain ℓA ℓ≤A ℓ≈A} where
+module _ {A : Predomain ℓA ℓ≤A ℓ≈A} where
   isoPiBot : PredomIso (ΠP ⊥ (λ _ → A)) UnitP
   isoPiBot .PredomIso.fun = UnitP!
   isoPiBot .PredomIso.inv = recUnitP (λ x → ⊥.rec x)

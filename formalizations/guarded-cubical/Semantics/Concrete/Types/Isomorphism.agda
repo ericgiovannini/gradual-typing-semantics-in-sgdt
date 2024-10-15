@@ -16,6 +16,7 @@ open import Cubical.Data.Bool
 import Cubical.Data.Sum as Sum
 import Cubical.Data.Unit as Unit
 open import Cubical.Relation.Nullary
+open import Cubical.Functions.Embedding
 
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.Instances.Trivial as Trivial
@@ -447,25 +448,21 @@ module _
                   { (Sum.inl x₁' , a) → ΣPathP (refl ,
                     --let foo = Σ-SemPtb-ind X₁Set (X₁ .snd) x₁ (((((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₁) ∘hom IFP.σ (X₁ .fst) (λ x → PtbV (A₁ x)) x₁)) .fst pA₁) {!!} {!!} in
                     --let bar = funExt⁻ ((cong (PMor.f ∘ fst)) foo) (x₁ , ({!!} , {!!})) in
-                    {!!})
+                    lem1 x₁ x₁' pA₁ a (X₁ .snd x₁ x₁'))
                   ; (Sum.inr x₂  , a) → refl}))))))
               (IFP.ind _ _ (λ x₂ → eqMonoidHom _ _
                 (funExt (λ pA₂ → SemPtb≡ _ _ (funExt (λ
                   { (Sum.inl x₁  , a) → refl
-                  ; (Sum.inr x₂' , a) → ΣPathP (refl , {!!})}))))))
+                  ; (Sum.inr x₂' , a) → ΣPathP (refl , lem2 x₂ x₂' pA₂ a (X₂ .snd x₂ x₂'))}))))))
                   -- Σ-SemPtb-ind _ (X₁⊎X₂ .snd) (Sum.inr x₂) _ {!!} λ x' b' neq → {!!}))))
 
-
-
-   
           where
-            LHS2A LHS2B LHS2C LHS2D LHS2E LHS2F LHS2G RHS2A RHS2B RHS2C RHS2D :
+            LHS2A LHS2B LHS2C LHS2D LHS2E LHS2F RHS2A RHS2B RHS2C RHS2D RHS2E :
               ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) → ⟨ A₂ x₂' ⟩
             LHS2A x₂ x₂' pA₂ a = snd (fst (((interpV Sigma ∘hom isoM .MonoidIso.fun) ∘hom i₂) ∘hom IFP.σ (X₂ .fst) (λ x → PtbV (A₂ x)) x₂) pA₂ .fst .PMor.f (Sum.inr x₂' , a))
             LHS2B x₂ x₂' pA₂ a = interpV Sigma .fst (isoM .MonoidIso.fun .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
             LHS2C x₂ x₂' pA₂ a = interpV Sigma .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
-
-            LHS2D x₂ x₂' pA₂ a = {!IFP.rec _ _ _ (λ s → idMon _) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂)!} 
+    
             -- IFP.rec _ _ _ (λ s → Σ-SemPtb {!!} (X₁⊎X₂ .snd) s ∘hom interpV (A₂ x₂)) .fst (IFP.σ _ _ (Sum.inr x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
             
             -- IFP.rec _ _ _ (λ s → Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) s ∘hom interpV (Sum.rec A₁ A₂ s))
@@ -479,19 +476,20 @@ module _
             --  Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) (inr x₂) .fst (interpV (A₂ x₂) .fst pA₂)        
             -- .fst .PMor.f (Sum.inr x₂' , a) .snd
             
-            LHS2E x₂ x₂' pA₂ a = (Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂))
+            LHS2D x₂ x₂' pA₂ a = (Σ-SemPtb ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd) {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂))
               .fst (interpV (A₂ x₂) .fst pA₂) .fst .PMor.f (Sum.inr x₂' , a) .snd
 
-            LHS2F x₂ x₂' pA₂ a = liftΣ
+            LHS2E x₂ x₂' pA₂ a = liftΣ
               ((⟨ X₁ ⟩ Sum.⊎ ⟨ X₂ ⟩) , Discrete→isSet (X₁⊎X₂ .snd)) (X₁⊎X₂ .snd)
               (λ y → PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) y (X₁⊎X₂ .snd (Sum.inr x₂) y))
               .fst .PMor.f (Sum.inr x₂' , a) .snd
 
-            LHS2G x₂ x₂' pA₂ a = PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)} (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) (Sum.inr x₂') (X₁⊎X₂ .snd (Sum.inr x₂) (Sum.inr x₂'))
+            LHS2F x₂ x₂' pA₂ a = (PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)}
+              (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) (Sum.inr x₂') (X₁⊎X₂ .snd (Sum.inr x₂) (Sum.inr x₂')))
               .fst .PMor.f a
 
             equal : ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) →
-              LHS2A x₂ x₂' pA₂ a ≡ LHS2G x₂ x₂' pA₂ a
+              LHS2A x₂ x₂' pA₂ a ≡ LHS2F x₂ x₂' pA₂ a
             equal x₂ x₂' pA₂ a = refl
             
             RHS2A x₂ x₂' pA₂ a = PredomIso→EndoHom isoP .fst (interpV Sum .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂))) .fst .PMor.f (Sum.inr x₂' , a) .snd
@@ -501,17 +499,54 @@ module _
                 (liftΣ (⟨ X₂ ⟩ , (Discrete→isSet (X₂ .snd))) (X₂ .snd)
                   (λ y → PtbIfEqual x₂ (interpV (A₂ x₂) .fst pA₂) y (X₂ .snd x₂ y))))
               .fst .PMor.f (Sum.inr x₂' , a) .snd
-            RHS2D x₂ x₂' pA₂ a = {!!}
-            
+            RHS2D x₂ x₂' pA₂ a = isoP .PredomIso.fun .PMor.f (interpV Sum .fst (i₂ .fst (IFP.σ _ _ _ .fst pA₂)) .fst .PMor.f (isoP .PredomIso.inv .PMor.f (Sum.inr x₂' , a))) .snd
+            RHS2E x₂ x₂' pA₂ a = isoP .PredomIso.fun .PMor.f (σ2 .PMor.f (x₂' , PtbIfEqual {B = ValType→Predomain ∘ A₂} x₂ (interpV (A₂ x₂) .fst pA₂) x₂' (X₂ .snd x₂ x₂') .fst .PMor.f a)) .snd          
 
             equal' : ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) →
-              RHS2A x₂ x₂' pA₂ a ≡ RHS2C x₂ x₂' pA₂ a
-            equal' x₂ x₂' pA₂ a = {!!}
+              RHS2A x₂ x₂' pA₂ a ≡ RHS2E x₂ x₂' pA₂ a
+            equal' x₂ x₂' pA₂ a = refl
+           
+            -- This is part of the defintion of Sum.discrete⊎, but we need to inline it
+            -- here so we can generalize over the proof of equality of x₁ and x₁'.
+            dec→dec-inl : ∀ (x₁ x₁' : ⟨ X₁ ⟩) → Dec (x₁ ≡ x₁') → Dec (Sum.inl {B = ⟨ X₂ ⟩} x₁ ≡ Sum.inl x₁')
+            dec→dec-inl x₁ x₁' x₁≡x₁'? = mapDec (cong Sum.inl) (λ p q → p (isEmbedding→Inj Sum.isEmbedding-inl x₁ x₁' q)) x₁≡x₁'?
             
+            dec→dec-inr : ∀ (x₂ x₂' : ⟨ X₂ ⟩) → Dec (x₂ ≡ x₂') → Dec (Sum.inr {A = ⟨ X₁ ⟩} x₂ ≡ Sum.inr x₂')
+            dec→dec-inr x₂ x₂' x₂≡x₂'? = mapDec (cong Sum.inr) (λ p q → p (isEmbedding→Inj Sum.isEmbedding-inr x₂ x₂' q)) x₂≡x₂'?
+
+            LHS₁' : ∀ (x₁ x₁' : ⟨ X₁ ⟩) (pA₁ : ⟨ PtbV (A₁ x₁) ⟩) (a : ⟨ A₁ x₁' ⟩) →
+              (Dec (Sum.inl {B = ⟨ X₂ ⟩} x₁ ≡ Sum.inl x₁')) → ⟨ A₁ x₁' ⟩
+            LHS₁' x₁ x₁' pA₁ a x₁≡x₁'? = (PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)}
+              (Sum.inl x₁) (interpV (A₁ x₁) .fst pA₁) (Sum.inl x₁') x₁≡x₁'?)
+              .fst .PMor.f a
+
+            RHS₁' : ∀ (x₁ x₁' : ⟨ X₁ ⟩) (pA₁ : ⟨ PtbV (A₁ x₁) ⟩) (a : ⟨ A₁ x₁' ⟩) →
+              (Dec (x₁ ≡ x₁')) → ⟨ A₁ x₁' ⟩
+            RHS₁' x₁ x₁' pA₁ a x₁≡x₁'? = isoP .PredomIso.fun .PMor.f
+              (σ1 .PMor.f (x₁' , PtbIfEqual {B = ValType→Predomain ∘ A₁} x₁ (interpV (A₁ x₁) .fst pA₁) x₁' x₁≡x₁'? .fst .PMor.f a)) .snd
+
+            LHS₂' : ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) →
+              (Dec (Sum.inr {A = ⟨ X₁ ⟩} x₂ ≡ Sum.inr x₂')) → ⟨ A₂ x₂' ⟩
+            LHS₂' x₂ x₂' pA₂ a x₂≡x₂'? = (PtbIfEqual {B = λ s → ValType→Predomain (Sum.rec A₁ A₂ s)}
+              (Sum.inr x₂) (interpV (A₂ x₂) .fst pA₂) (Sum.inr x₂') x₂≡x₂'?)
+              .fst .PMor.f a
+
+            RHS₂' : ∀ (x₂ x₂' : ⟨ X₂ ⟩) (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩) →
+              (Dec (x₂ ≡ x₂')) → ⟨ A₂ x₂' ⟩
+            RHS₂' x₂ x₂' pA₂ a x₂≡x₂'? = isoP .PredomIso.fun .PMor.f
+              (σ2 .PMor.f (x₂' , PtbIfEqual {B = ValType→Predomain ∘ A₂} x₂ (interpV (A₂ x₂) .fst pA₂) x₂' x₂≡x₂'? .fst .PMor.f a)) .snd
+
+            lem1 : ∀ x₁ x₁' (pA₁ : ⟨ PtbV (A₁ x₁) ⟩) (a : ⟨ A₁ x₁' ⟩)
+                   (x₁≡x₁'? : Dec (x₁ ≡ x₁')) →
+                    LHS₁' x₁ x₁' pA₁ a (dec→dec-inl _ _ x₁≡x₁'?) ≡ RHS₁' x₁ x₁' pA₁ a x₁≡x₁'?
+            lem1 x₁ x₁' pA₁ a (yes x₁≡x₁') = refl
+            lem1 x₁ x₁' pA₁ a (no x₁≢x₁') = refl
+
             lem2 : ∀ x₂ x₂' (pA₂ : ⟨ PtbV (A₂ x₂) ⟩) (a : ⟨ A₂ x₂' ⟩)
                    (x₂≡x₂'? : Dec (x₂ ≡ x₂')) →
-                   LHS2A x₂ x₂' pA₂ a ≡ RHS2A x₂ x₂' pA₂ a
-            lem2 = {!!}
+                    LHS₂' x₂ x₂' pA₂ a (dec→dec-inr _ _ x₂≡x₂'?) ≡ RHS₂' x₂ x₂' pA₂ a x₂≡x₂'?
+            lem2 x₂ x₂' pA₂ a (yes x₂≡x₂') = refl
+            lem2 x₂ x₂' pA₂ a (no x₂≢x₂') = refl
 
 
 
