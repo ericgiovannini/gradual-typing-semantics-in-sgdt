@@ -92,9 +92,9 @@ version of the virtual machine for M-series Macs uses a version of Ubuntu for
 the ARM architecture.
 
 Once you've installed VirtualBox and downloaded the appropriate VM image, open
-the VM in VirtualBox. **Warning** if you're running the M-series Mac VM, for
-some reason it seems to take a while to boot up (it can remain on the splash
-screen for upwards of 5 minutes). If it gets stuck here, try pressing `Ctrl+Alt+F2`
+the VM in VirtualBox by double-clicking the `.vbox` file. **Warning** if you're
+running the M-series Mac VM, for some reason it seems to take a while to boot up
+(it can remain on the splash screen for upwards of 5 minutes).
 
 Once you're at the login screen, use the following credentials:
 
