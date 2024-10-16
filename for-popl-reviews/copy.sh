@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-outputdir="review"
+outputdir="artifact"
 prefix="../formalizations/guarded-cubical/"
 ToRemove=("Experiments" "_build")
 
