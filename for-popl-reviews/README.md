@@ -17,7 +17,7 @@ incomplete parts we list at the bottom of this document.
 The top-level `artifact` directory consists of this README file as well as the
 `code` directory containing the Agda library.
 
-The organization of the library is as follows:
+The organization of the library in the `code` directory is as follows:
 
 * `Common/` - Code used throughout the development, including guarded type theory primitives and lemmas
 
@@ -112,7 +112,7 @@ Agda library, and our library. To check our results in a non-interactive
 fashion, simply open a terminal and navigate to the top-level directory of the
 development:
 
-    cd /home/reviewer/artifact/
+    cd /home/reviewer/artifact/code/
 
 Now run
 
