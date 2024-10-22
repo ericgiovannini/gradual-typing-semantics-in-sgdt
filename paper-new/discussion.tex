@@ -1,7 +1,5 @@
 \section{Discussion}\label{sec:discussion}
 
-% \eric{I moved this from the intro. We may need to revise it.}
-
 \subsection{Related Work}
 
 We give an overview of current approaches to proving graduality and discuss
@@ -15,99 +13,103 @@ from a statically-typed language a language that satisfies graduality by
 construction. The main downside to these approaches lies in their inflexibility:
 since the process in entirely mechanical, the language designer must adhere to
 the predefined framework.  Many gradually typed languages do not fit into either
-framework, e.g., Typed Racket \cite{tobin-hochstadt06, tobin-hochstadt08} and
+framework, e.g., Typed Racket \cite{tobin-hochstadt06, tobin-hochstadt08}, and
 the semantics produced is not always the desired one.
 %
 Furthermore, while these frameworks do prove graduality of the resulting
 languages, they do not show the correctness of the equational theory, which is
 equally important to sound gradual typing.
 
-%\subsubsection{Double-Categorical Semantics}
 
-% New and Licata \cite{new-licata18} developed an axiomatic account of
-% the graduality relation on a call-by-name cast calculus terms and
-% showed that the graduality proof could be modeled using semantics in
-% certain kinds of \emph{double categories}, categories internal to the
-% category of categories. A double category extends a category with a
-% second notion of morphism, often a notion of ``relation'' to be paired
-% with the notion of functional morphism, as well as a notion of
-% functional morphisms preserving relations. In gradual typing the
-% notion of relation models type precision and the squares model the
-% term precision relation. This approach was influenced by the semantics
-% of parametricity using reflexive graph categories
-% \cite{ma-reynolds,dunphythesis,reynoldsprogramme}: reflexive graph
-% categories are essentially double categories without a notion of
-% relational composition. In addition to capturing the notions of type
-% and term precision, the double categorical approach allows for a
-% \emph{universal property} for casts: upcasts are the \emph{universal}
-% way to turn a relation arrow into a function in a forward direction
-% and downcasts are the dual universal arrow.  
+% \subsubsection{Graduality via Embedding-Projection Pairs}
 
-New and Licata \cite{new-licata18} developed an axiomatic account of the
-graduality relation on a call-by-name cast calculus and showed that the
-graduality proof could be modeled using semantics in certain kinds of double
-categories.
-%
-Later, New, Licata and Ahmed \cite{new-licata-ahmed2019} extended this axiomatic
-treatment from call-by-name to call-by-value as well by giving an axiomatic
-theory of type and term precision in call-by-push-value. The double-categorical
-framework serves as a foundation on which we base our model construction in this
-paper. However, because of the lack of transitivity of the relation modeling
-term precision, our model is not a double category because we cannot compose
-squares horizontally.
-
-
-%% With this notion of abstract categorical model in hand, denotational
-%% semantics is then the work of constructing concrete models that
-%% exhibit the categorical construction. New and Licata
-%% \cite{new-licata18} present such a model using categories of
-%% $\omega$-CPOs, and this model was extended by Lennon-Bertrand,
-%% Maillard, Tabareau and Tanter to prove graduality of a gradual
-%% dependently typed calculus $\textrm{CastCIC}^{\mathcal G}$. This
-%% domain-theoretic approach meets our criteria of being a semantic
-%% framework for proving graduality, but suffers from the limitations of
-%% classical domain theory: the inability to model viciously
-%% self-referential structures such as higher-order extensible state and
-%% similar features such as runtime-extensible dynamic types. Since these
-%% features are quite common in dynamically typed languages, we seek a
-%% new denotational framework that can model these type system features.
-
-%\subsubsection{Embedding-Projection Pairs}
-
-A line of work by New, Licata and Ahmed proves graduality by
-interpreting type precision $c : A \ltdyn A'$ as an
-\emph{embedding-projection pair}, that is a pure function $e : A \to
-A'$ and a possibly erroring projection $p : \li A' \multimap \li A$
-such that $p \circ e = \id$ and $e \circ p \ltdyn \id$
-\cite{new-ahmed2018,new-licata18,new-licata-ahmed2019}. At first glance, our model
-of precision looks different: it is a \emph{relation}
-$\sem{c} : A \rel A'$ with a quasi-representability structure that
-gives us something like $e$ and $p$ in an embedding-projection
-pair. The relationship between these models is that \emph{if} the
-relation were \emph{truly} representable we would have that $e$ and $p$ form a \emph{Galois
-connection} $e \circ p \ltdyn \id$ and $\id \ltdyn p \circ
-e$. However, we have dropped the stronger property of retraction from
-our analysis in this work. With true representability, the relation
-$c$ is \emph{uniquely determined} by the embedding $e$, but since we
-only have quasi-representability, we need to keep the relation around
-explicitly. So the extra complexity of managing explicit relations is
-a cost of the intensional reasoning that guarded type theory
+A line of work by New, Licata and Ahmed
+\cite{new-ahmed2018,new-licata18,new-licata-ahmed2019} develops an axiomatic
+account of gradual typing and proves graduality by interpreting type precision
+$c : A \ltdyn A'$ as an \emph{embedding-projection pair}, that is, a pure
+embedding function $e : A \to A'$ and a possibly erroring projection $p : \li A'
+\multimap \li A$ such that $p \circ e = \id$ and $e \circ p \ltdyn \id$. At
+first glance, our model of precision looks different: it is a \emph{relation}
+$\sem{c} : A \rel A'$ with a quasi-representability structure that gives us
+something close to $e$ and $p$ in an embedding-projection pair. The relationship
+between these models is that \emph{if} the relation were \emph{truly}
+representable we would have that $e$ and $p$ form a \emph{Galois connection} $e
+\circ p \ltdyn \id$ and $\id \ltdyn p \circ e$. However, we have dropped the
+stronger property of retraction from our analysis in this work. With true
+representability, the relation $c$ is \emph{uniquely determined} by the
+embedding $e$, but since we only have quasi-representability, we need to keep
+the relation around explicitly. So the extra complexity of managing explicit
+relations is a cost of the intensional reasoning that guarded type theory
 introduces.
 
+% Later, New, Licata and Ahmed \cite{new-licata-ahmed2019} extended this axiomatic
+% treatment from call-by-name to call-by-value as well by giving an axiomatic
+% theory of type and term precision in call-by-push-value. 
+
+% \subsubsection{Denotational and Operational Approaches}
+
+The above axiomatic account of gradual typing is independent of the choice of
+operational versus denotational semantics; we give an overview of the two
+approaches below.
+
+%\subsubsection{Double-Categorical Semantics}
+
+On the denotational side, New and Licata \cite{new-licata18} showed that the
+graduality proof could be modeled using semantics in certain kinds of double
+categories, which are categories internal to the category of categories. A
+double category extends a category with a second notion of morphism, often a
+notion of ``relation'' to be paired with the notion of functional morphism, as
+well as a notion of functional morphisms preserving relations. In gradual
+typing, the notion of relation models type precision and the squares model the
+term precision relation.
+%
+% This approach was influenced by the semantics of parametricity using reflexive
+% graph categories \cite{ma-reynolds,dunphythesis,reynoldsprogramme}: reflexive
+% graph categories are essentially double categories without a notion of
+% relational composition. In addition to capturing the notions of type and term
+% precision, the double categorical approach allows for a \emph{universal
+% property} for casts: upcasts are the \emph{universal} way to turn a relation
+% arrow into a function in a forward direction and downcasts are the dual
+% universal arrow.
+%
+The double-categorical framework serves as a foundation on which we base our
+model construction in this paper. However, our model is not actually a double
+category: the lack of transitivity of bisimilarity means that we cannot compose
+extensional squares horizontally.
+
+With the notion of abstract categorical model for gradual typing in hand,
+denotational semantics is then the work of constructing concrete models that
+exhibit the categorical construction. New and Licata \cite{new-licata18} present
+such a model using categories of $\omega$-CPOs, and this model was extended by
+Lennon-Bertrand, Maillard, Tabareau and Tanter \cite{gradualizing-cic} to prove
+graduality of a gradual dependently typed calculus $\textrm{CastCIC}^{\mathcal
+G}$. This domain-theoretic approach meets our criterion of being a semantic
+framework for proving graduality, but suffers from the limitations of classical
+domain theory: the inability to model viciously self-referential structures such
+as higher-order extensible state and similar features such as runtime-extensible
+dynamic types.
+
+% Since these features are quite common in dynamically typed languages, we have
+% developed in this work a new denotational framework that can be extended to
+% model these type system features.
+
 %\subsubsection{Step-Indexed Logical Relations Models}
-The standard alternative to domain theory that scales to essentially
-arbitrary self-referential definitions is \emph{step-indexing} or its
-synthetic form of \emph{guarded recursion}. A series of works
+% The standard alternative to domain theory that scales to essentially
+% arbitrary self-referential definitions is \emph{step-indexing} or its
+% synthetic form of \emph{guarded recursion}. 
+
+On the operational side, a series of works
 \cite{new-ahmed2018, new-licata-ahmed2019, new-jamner-ahmed19}
-developed step-indexed logical relations models of gradually typed
-languages based on operational semantics. Unlike classical domain
-theory, such step-indexed techniques are capable of modeling
+developed step-indexed logical relations models of gradually typed languages.
+Unlike classical domain theory, such step-indexed techniques can scale to
+essentially arbitrary self-referential definitions, which means they can model
 higher-order store and runtime-extensible dynamic types
-\cite{appelmcallester01,ahmed06,neis09,new-jamner-ahmed19}. However,
-their proof developments are highly repetitive and technical, with
-each development formulating a logical relation from first-principles
-and proving many of the same tedious lemmas without reusable
-mathematical abstractions.
+\cite{appelmcallester01,ahmed06,neis09,new-jamner-ahmed19}. However, as is
+common with operational approaches, their proof developments are highly
+repetitive and technical, with each development formulating a logical relation
+from first-principles and proving many of the same tedious lemmas without
+reusable mathematical abstractions.
+%
 %
 % Additionally, the logical relations constructed to prove graduality in prior
 % work \cite{new-ahmed2018,new-licata-ahmed2019,new-giovannini-licata-2022} suffer
@@ -117,20 +119,27 @@ mathematical abstractions.
 % some but not all transitive reasoning of term precision to be recovered. In the
 % future we aim to explore if this approach is feasible in guarded semantics.
 %
-This is addressed somewhat by Siek and Chen
-\cite{siek-chen2021}, who give a proof in Agda of graduality for an
-operational semantics who use a \emph{guarded logic of propositions}
-shallowly embedded in Agda. The guarded logic simplifies the treatment
-of step-indexed logical relations, but the approach is still
-fundamentally operational, and so the main lemmas of the work are
-still tied to the particular operational syntactic calculus being
-modeled. A further advantage of the denotational approach is that it
-easily validates equational reasoning, not just graduality, and it is
-completely independent of any particular syntax of gradual typing.
+This is addressed somewhat by Siek and Chen \cite{siek-chen2021}, who give a
+proof in Agda of graduality for an operational semantics using a \emph{guarded
+logic of propositions} shallowly embedded in Agda. The guarded logic simplifies
+the treatment of step-indexed logical relations, but the approach is still
+fundamentally operational, and so the main lemmas of the work are still tied to
+the particular operational syntactic calculus being modeled.
+% A further advantage of the denotational approach is that it easily validates
+% equational reasoning, not just graduality, and it is completely independent of
+% any particular syntax of gradual typing.
 
+Our work combines the benefits of both the denotational and step-indexed
+approaches. We take as a starting point the denotational approach of New and
+Licata, but we work with guarded type theory (a synthetic form of step-indexing)
+rather than classical domain theory. In the guarded setting, the compositional
+theory of New-Licata breaks down: when accounting for steps, the casts are no
+longer embedding-projection pairs, and we cannot carry out compositional
+reasoning on terms when those terms differ by an arbitrary unknown number of
+steps. Our work provides a novel refinement to their theory that allows for some
+compositional reasoning to be recovered even in the guarded setting.
 
-%\subsubsection{Gradual Dependent Types}
-% Discuss Joey Eremondi's thesis on gradual dependent types
+% \subsubsection{Gradual Dependent Types}
 Eremondi \cite{Eremondi_2023} uses guarded type theory to
 define a syntactic model for a gradually-typed source
 language with dependent types. By working in guarded type theory, they are
@@ -142,9 +151,67 @@ Similarly to our approach, they define a guarded lift monad to model potentially
 nonterminating computations and use guarded recursion to model the dynamic type.
 However, they do not give a denotational semantics to term precision and it is unclear
 how to prove graduality in this setting.
-The work includes a formalization of the syntactic model in Guarded Cubical Agda.
+Their work includes a formalization of the syntactic model in Guarded Cubical Agda.
 
-% Discuss Jeremy Siek's work on graduality in Agda
+\subsection{Comparison of Denotational and Operational Approaches}
+\eric{Some of this could be folded into the previous section, but this was one of the
+big-picture questions from one of the reviewers.}
+
+Denotational methods have several benefits compared to operational approaches,
+and this carries over to the setting of gradual typing. First, denotational
+methods are compositional and reusable, and allow for the use of existing
+mathematical constructs and theorems, e.g., partial orderings, monads, etc,
+while operational methods tend to require a significant amount of boilerplate
+work to be done from scratch in each new development.
+%
+As a specific example of the compositional nature of our approach, the treatment
+of the cast rules in our work is more compositional than in previous work using
+operational semantics. Recall from Section \ref{sec:towards-relational-model}
+that the cast rules needed for the proof of graduality build in composition of
+type precision derivations. Rather than proving these from scratch in the model,
+we are able to take as primitive simpler versions of the cast rules whose
+validity in the model is easier to establish. Then from these simpler rules, we
+derive the original ones using compositional reasoning.
+
+A further advantage of the denotational approach is that it is completely
+independent of any particular syntax of gradual typing. This allows for reuse
+across multiple languages and makes it particularly straightforward to
+accommodate additions to a language: adding support for a new type amounts to
+defining a new object and extending the dynamic type accordingly. It also may be
+possible to model alternative cast semantics by changing the definition of the
+dynamic type and some type casts.
+%
+In contrast, operational methods are not as readily extensible, generally
+requiring adding cases to the logical relations and the inductive proofs. In a
+mechanized metatheory, this manifests as a ``copy-paste'' reusability rather than
+the true code reuse one obtains with a denotational semantics.
+%
+An additional benefit to the denotational approach is that it is trivial to
+establish the validity of the $\beta$ and $\eta$ principles, because they are
+equalities in the semantics, whereas they require tedious manual proof in the
+operational approach.
+
+Finally, while we advocate for a denotational approach, the overall structure of
+our semantics could be applied to an operational logical relations proof. For
+example, there could be a step-indexed logical relation for strong error
+ordering and one for weak bisimilarity, corresponding to the fact that objects
+in our denotational model have an error ordering and a bisimilarity relation.
+Then the precision rules for casts could be similarly validated using
+perturbations as we did in this work.
+
+\subsection{Implications for Gradual Typing Research}
+
+While we have focused on a single semantics in this work, we expect that our
+development can be adapted to prove graduality and (more limited) equational
+reasoning principles for other cast semantics.
+%
+In addition, while we have focused on proving extensional properties in this
+work, the intensional nature of our semantics can be viewed as a form of
+\emph{cost semantics}, where a runtime cost is incurred from inspecting the
+dynamic type. This could be used to verify that cast optimizations such as space
+efficient implementations \cite{herman-tomb-flanagan-2010} are not only
+extensionally correct, but also have lower quantitative cost. We leave this as
+future work.
 
 \subsection{Mechanization}\label{sec:mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
@@ -172,11 +239,11 @@ We constructed the predomain for the dynamic type via mixed induction and
 guarded recursion, and defined its monoid of perturbations. We also defined the
 relations $\inat$, $\itimes$, and $\iarr$, and proved that they are
 quasi-representable.
-%
-We have not yet formalized the constructions involving value and computation
-relations: showing that these relations compose, and defining the actions of the
-functors $\li$, $U$, $\times$, and $\arr$ on the relations. We have also not yet
-formalized the syntax-to-semantics translation.
+
+% We have not yet formalized the constructions involving value and computation
+% relations: showing that these relations compose, and defining the actions of the
+% functors $\li$, $U$, $\times$, and $\arr$ on the relations. We have also not yet
+% formalized the syntax-to-semantics translation.
 
 % \max{need to say what's not formalized}
 
@@ -204,6 +271,16 @@ lemmas involving clocks and clock-irrelevance; we are considering later
 refactoring these as part of a ``standard library'' for Guarded Cubical
 Agda.
 % \max{say these axioms are taken from prior work and cite that}
+
+The remaining formalization work is the following:
+\begin{enumerate}
+    \item Showing that the functors $\times$ and $\arr$ preserve
+    quasi-representability, which requires tedious reasoning about the Kleisli actions of
+    $\times$ and $\arr$. These results are proved in the Appendix.
+    \item Verifying the rules in the model corresponding to the equations for
+    type precision derivations (see the bottom of Figure \ref{fig:gtlc-syntax}).
+    \item Defining the syntax-to-semantics translation.
+\end{enumerate} 
 
 \begin{comment}
 % prove graduality in the syntax of 
@@ -305,7 +382,7 @@ some theorems on clock globalization.
 
 % \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
 In the future, we plan to apply our approach to give a denotational semantics
-for languages that feature higher-order state or runtime-extensible dynamic
+to gradually-typed languages that feature higher-order state or runtime-extensible dynamic
 typing \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
 disciplines such as gradual dependent types and effect systems. This will
 involve adapting prior operational models based on step-indexing (e.g.,

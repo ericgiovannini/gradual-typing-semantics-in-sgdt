@@ -43,6 +43,21 @@ We note the following two admissible principles: any two derivations
 $c,c' : A \ltdyn A'$ of the same fact are equivalent $c \equiv c'$ and
 for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\dyn$. That is, $\dyn$ is the ``most dynamic'' type.
 
+There is a more common set of rules for type precision where reflexivity and
+transitivity are admissible, and whenever $A \ltdyn A'$, there is a unique
+precision derivation witnessing this. These rules are shown in Section
+\ref{sec:appendix-gtlc-syntax} in the Appendix. The reason for choosing our
+system rather than that one is that in our semantics, equivalent type precision
+derivations do not denote \emph{equal} relations. Instead, they denote
+relations that are \emph{quasi-equivalent}, i.e., if two terms are related by
+one then they are related also by the other up to insertion of delays (see
+Definition \ref{def:quasi-equivalent} for the details).
+%
+However, because all type precision derivations in our system are equivalent, it
+is straightforward to define a translation from the more standard system of type
+and term precision into ours, so ultimately our graduality proofs can still be
+applied to the standard formulation.
+
 \begin{figure}
   \begin{mathpar}
     \begin{array}{rcl}

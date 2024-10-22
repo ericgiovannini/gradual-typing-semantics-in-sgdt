@@ -3,32 +3,31 @@
 % gradual typing, graduality
 \subsection{Gradual Typing and Graduality}
 In programming language design, there is a tension between \emph{static} typing
-and \emph{dynamic} typing disciplines.
-With static typing, the code is type-checked at compile time, while in dynamic typing,
-the type checking is deferred to run-time. Both approaches have benefits: with static 
-typing, the programmer is assured that if the program passes the type-checker, their
-program is free of type errors, and moreover, soundness of the equational theory implies
-that program optimizations are valid.
-Meanwhile, dynamic typing allows the programmer to rapidly prototype
-their application code without needing to commit to fixed type signatures for their
-functions. Most languages choose between static or dynamic typing and as a result, programmers that initially write their code in a dynamically typed language
-in order to benefit from faster prototyping and development time need to rewrite
-some or all of their codebase in a static language if they would like to receive the benefits of static
-typing once their codebase has matured.
+and \emph{dynamic} typing disciplines. With static typing, the code is
+type-checked at compile time, while in dynamic typing, the type checking is
+deferred to run-time. Both approaches have benefits and excel in different
+scenarios, with static typing offering compile-time assurance of a program's
+type safety and type-based reasoning principles that justify program
+optimizations, and dynamic typing allowing for rapid prototyping of a codebase
+without committing to fixed type signatures.
+%
+Most languages choose between static or dynamic typing and as a result,
+programmers that initially write their code in a dynamically typed language need
+to rewrite some or all of their codebase in a static language if they would like
+to receive the benefits of static typing once their codebase has matured.
 
-\emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to resolve this tension
-by allowing for both static and dynamic typing disciplines to be used in the same codebase,
-and by supporting smooth interoperability between statically-typed and dynamically-typed code.
-This flexibility allows programmers to begin their projects in a dynamic style and
-enjoy the benefits of dynamic typing related to rapid prototyping and easy modification
-while the codebase ``solidifies''. Over time, as parts of the code become more mature
-and the programmer is more certain of what the types should be, the code can be
-\emph{gradually} migrated to a statically typed style without needing to
-rewrite the project in a completely different language.
+\emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to
+resolve this tension by allowing for both static and dynamic typing disciplines
+to be used in the same codebase. These languages support smooth interoperability
+between statically-typed and dynamically-typed styles, allowing the programmer to
+begin with fully dynamically-typed code and \emph{gradually} migrate portions of the
+codebase to a statically typed style without needing to rewrite the project in a
+completely different language.
 
 %Gradually-typed languages should satisfy two intuitive properties.
 % The following two properties have been identified as useful for gradually typed languages.
 
+\eric{This paragraph could be deleted}
 In order for this to work as expected, gradually-typed languages should allow for
 different parts of the codebase to be in different places along the spectrum from
 dynamic to static, and allow for those different parts to interact with one another.
@@ -87,6 +86,7 @@ properties that ensure that functions are determined by their behavior
 under application and that pattern matching on data types
 is safe and exhaustive.
 
+\eric{One of the reviewers said this should be moved later in the intro, but I think it makes sense here.}
 More concretely, consider a gradually typed language whose only
 effects are gradual type errors and divergence. Then if we fix a
 result type of natural numbers, a whole program semantics is a partial
@@ -99,8 +99,8 @@ undefined, representing divergence.
 %
 A well-behaved semantics should then satisfy several properties. First, it
 should be \emph{adequate}: natural number constants should step to
-themselves. Second it should validate type based reasoning. To
-formalize type based reasoning we give a typed equational theory for
+themselves. Second, it should validate type based reasoning. To
+formalize type based reasoning, we give a typed equational theory for
 terms of the language $M \equiv N$ for when two terms should be
 considered equivalent. Then we want to verify that the big step
 semantics respects this equational theory: if closed programs $M \equiv
@@ -157,14 +157,16 @@ constructions that are monotone with respect to the error ordering.
 %
 This framework has the benefit of being compositional, and was
 expressive enough to be extended to model dependently typed gradual
-typing \cite{10.1145/3495528}.
+typing \cite{gradualizing-cic}.
 %
 However, an approach based on classical domain theory has fundamental
 limitations: domain theory is incapable of modeling certain perversely
 recursive features of programming languages such as dynamic type tag
 generation and higher-order references, which are commonplace in
-real-world gradually typed systems as well as gradual calculi. Our
-long-term goal is to develop a semantics that will scale up to these
+real-world gradually typed systems as well as gradual calculi.
+
+
+Our long-term goal is to develop a semantics that will scale up to these
 advanced features, and so we begin with this work by departing from
 classical domain theory.
 
@@ -213,10 +215,10 @@ that they take.
 % ERIC: This could be merged into the summary at the end of the section
 The reason for requiring these two separate notions is that in the setting of
 guarded domain theory, it is not possible to carry out transitive reasoning
-while being oblivious to the number of steps the elements take. We turn this
-statement into a formal theorem in \ref{sec:towards-relational-model}. To overcome
-this limitation, we develop further changes to the core concepts of our
-semantics as discussed in that section.
+while being oblivious to the number of steps the elements take. We make this
+statement precise in \ref{sec:towards-relational-model}. To overcome this
+limitation, we develop further changes to the core concepts of our semantics as
+discussed in that section.
 
 % Because bisimilarity, unlike equality, is not transitive in the guarded
 % setting, this necessitates further changes to the core
@@ -285,15 +287,17 @@ a point we will return to in Section \ref{sec:big-step-term-semantics}.
 % synthetic guarded domain theory.  
 
 
-\subsection{Contributions}
+\subsection{Contributions and Outline}
 
 The main contribution of this work is a compositional denotational
 semantics for gradually typed languages that validates $\beta\eta$
 equality and satisfies a graduality theorem. A great deal of the work
 has further been verified in Guarded Cubical Agda \cite{veltri-vezzosi2020}, 
 demonstrating that the semantics is readily mechanizable.
-We provide an overview of the mechanization effort in Section \ref{sec:mechanization}.
+We provide an overview of the mechanization effort, and what remains to be formalized,
+in Section \ref{sec:mechanization}.
 
+\begin{comment}
 \begin{enumerate}
 \item First, we give a simple concrete term semantics where we show
   how to model the dynamic type as a solution to a guarded domain equation.
@@ -311,17 +315,20 @@ We provide an overview of the mechanization effort in Section \ref{sec:mechaniza
   well-behaved semantics as defined above by proving \emph{adequacy},
   respect for an equational theory and the graduality property.
 \end{enumerate}
+\end{comment}
 
 The paper is laid out as follows:
 \begin{enumerate}
 \item In Section \ref{sec:GTLC} we fix our input language, a fairly
   typical gradually typed cast calculus.
-\item In Section \ref{sec:concrete-term-model} we develop a first
-  denotational semantics in synthetic guarded domain theory that
-  satisfies adequacy and respects the equational theory, but does not
-  validate graduality. We use this to introduce some of our main
-  technical tools: modeling recursive types in guarded type theory and
-  modeling effects using call-by-push-value.
+\item In Section \ref{sec:concrete-term-model} we develop a denotational
+  semantics in synthetic guarded domain theory for the \emph{terms} of the
+  gradual lambda calculus. The model validates the equational theory, but it
+  does not prove graduality as it does not model type or term precision. We use
+  this to introduce some of our main technical tools: modeling recursive types
+  in guarded type theory and modeling effects using call-by-push-value. After
+  defining the model, we use the technique of globalization to extract a
+  well-behaved big-step term semantics satisfying adequacy.
 \item In Section \ref{sec:towards-relational-model} we show where the
   New-Licata classical domain theoretic approach fails to adapt
   cleanly to the guarded setting and explore the difficulties of
@@ -333,17 +340,32 @@ The paper is laid out as follows:
   extensional \emph{and} compositional are not compatible with guarded domain
   theory (here, extensional means relating elements that differ only in the
   number of computational steps they take). We make this statement precise with
-  a no-go theorem (Theorem \ref{thm:no-go}). As a result, we split the
-  graduality ordering into two relations: a strong error ordering in which
-  elements must take the same number of steps, and a weak bisimilarity relation
-  where elements differing only in their stepping behavior are related.
+  a no-go theorem (Theorem \ref{thm:no-go}). In light of this result, to recover
+  some amount of compositional reasoning we model the graduality ordering using
+  a combination of two relations: a lock-step error ordering in which elements
+  must take the same number of steps, and a weak bisimilarity relation where
+  elements differing only in their stepping behavior are related.
+
+  % As a result, we split the
+  % graduality ordering into two relations: a strong error ordering in which
+  % elements must take the same number of steps, and a weak bisimilarity relation
+  % where elements differing only in their stepping behavior are related.
   
-\item In Section \ref{sec:concrete-relational-model} we describe the resulting
-  model in detail. We then prove that the resulting denotational model is
+\item In Section \ref{sec:concrete-relational-model} we describe the
+  construction of the model in detail. Key here is a notion of \emph{syntactic
+  perturbations}, which allow us to encode the steps taken by a term in a form
+  that we can manipulate. This allows us to recover enough extensional reasoning
+  to model the graduality property compositionally.
+  % Key here is a notion of \emph{syntactic
+  % perturbation}, which give us a type-directed way of imposing delays on terms.
+  The resulting model validates the axioms for type and term precision specified
+  in Section \ref{sec:GTLC}. The final step is to prove that the model is
   \emph{adequate} for the graduality property: a closed term precision $M \ltdyn
-  N : \nat$ has the expected semantics, i.e., that $M$ errors or $M$ and $N$ have the
-  same extensional behavior.
+  N : \nat$ has the expected semantics, i.e., that $M$ errors or $M$ and $N$
+  have the same extensional behavior. We do so by extending the globalization
+  techniques used in defining the big-step term model to account for the
+  interpretation of term precision.
 \item In Section \ref{sec:discussion} we discuss prior work on proving
-  graduality, our partial mechanization of these results and discuss
+  graduality, the partial mechanization of our results in Agda, and
   future directions for denotational semantics of gradual typing.
 \end{enumerate}

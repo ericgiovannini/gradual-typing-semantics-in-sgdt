@@ -50,9 +50,10 @@ There is a \emph{guarded fixpoint} operator
 \[ \fix : \forall T, (\later T \to T) \to T. \]
 That is, to construct a term of type $T$, it suffices to assume that we have
 access to such a term ``later'' and use that to help us build a term ``now''.
-This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$. In
-particular, this axiom applies to propositions $P : \texttt{Prop}$; proving a
-statement in this manner is known as $\lob$-induction.
+This operator satisfies the axiom that $\fix f = f (\nxt (\fix f))$.
+%
+In particular, $\fix$ applies when type $T$ is instantiated to a proposition 
+$P : \texttt{Prop}$; in that case, it corresponds to $\lob$-induction.
 
 % Clocked Cubical Type Theory
 \subsubsection{Ticked Cubical Type Theory}
@@ -85,7 +86,7 @@ type $\later_t A$.
 Conversely, if we have a term $M$ of type $\later A$, and we have available in
 the context a tick $t' : \tick$, then we can apply the tick to $M$ to get a
 term $M[t'] : A[t'/t]$. However, there is an important restriction on when we
-are allowed to apply ticks. In order to apply $M$ to tick $t$, $M$ must be
+are allowed to apply ticks: To apply $M$ to tick $t$, we require $M$ to be
 well-typed in the prefix of the context occurring before the tick $t$. That is,
 all variables mentioned in $M$ must be available before $t$. This ensures that
 we cannot, for example, define a term of type $\later \laterhs A \to\, \laterhs
@@ -489,7 +490,7 @@ actually only a function available later, and so we must insert a
 % \eric{Check this}
 
 We now define from the above term model a ``big-step'' semantics. More
-concretely, our goal is to define a function 
+concretely, our goal is to define a partial function 
 $-\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} + {\mho}$.
 
 To begin, we must first discuss another aspect of guarded type theory,
@@ -505,7 +506,7 @@ clock $k$. In particular, we have for each clock $k$ a type $\li^k X$. The
 notion of \emph{clock quantification} allows us to pass from the guarded setting
 to the usual set-theoretic world. Clock quantification enables us to encode
 coinductive types using guarded recursion. That is, given a type $A$ with a free
-variable $k : \Clock$, we can form the type $A^{gl} := \forall k. A$. Given a
+variable $k : \Clock$, we can form the type $A^{gl} := \forall k. A$ (here, $gl$ stands for ``global''). Given a
 functor $F$ that satisfies a technical condition, if $A$ is a guarded recursive
 type satisfying $A \cong F(\later^k A)$, then the type $A^{gl}$ has a final
 $F$-coalgebra structure (see Theorem 4.3 of
@@ -530,16 +531,28 @@ We have that $\delay (\mathbb{N} + {\mho})$ is a final coalgebra for the functor
 $F$ defined above. This means $\li^{gl} \mathbb{N}$ is isomorphic to
 $\delay(\mathbb{N} + {\mho})$.
 
-We can define a notion of termination in $i$ steps for the Delay monad $d \da^i
-n_?$ where $d : \delay(\mathbb{N} + {\mho})$ and $n_? : \mathbb{N} + {\mho}$. From
-this, can define a partial function $\delay (\mathbb{N} + {\mho})
-\rightharpoonup \mathbb{N} + {\mho}$ by existentially quantifying over $i$
-for which $d \da^i n_?$.
+Given $d : \delay(\mathbb{N} + {\mho})$, we define a notion of termination in
+$i$ steps, written $d \da^i$. We define $d \da^i$ inductively by the rules
+$(\tnow\, n_?) \da^0$ and $(\tlater\, d) \da^{i+1}$ if $d \da^i$ (here, $n_? :
+\mathbb{N} + {\mho}$). From this definition, it is clear that if there is an $i$
+such that $d \da^i$, then this $i$ is unique. Furthermore, from the proof that
+$d$ terminates in $i$ steps, we can extract the result with which $d$
+terminates. This is defined by a straightforward induction on the proof that $d \da^i$.
 
-Now consider the function $\{M \,|\, \cdot \vdash M : \nat \} \to \li^{gl}
-\mathbb{N}$ defined by $\lambda M. \lambda k .\sem{M}$. Composing this with the
-above partial function yields the desired partial function $-\Downarrow \colon \{M
-\,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} + {\mho}$. It is
-then straightforward to see that this big-step semantics respects the equational
-theory and that the denotations of the diverging term $\Omega$, the error term
-$\mho$, and a syntactic natural number value $n$ are all distinct.
+Using this definition of termination, we define a partial function 
+%
+$-\Downarrow_\delay \colon \delay (\mathbb{N} + {\mho}) \rightharpoonup \mathbb{N} + {\mho}$
+%
+by existentially quantifying over $i$ for which $d \da^i n_?$. That is, we define
+$d \Downarrow_\delay n_? := \exists i. d \da^i n_?$.
+
+Now consider the global version of the term semantics, $\sem{\cdot}^{gl} \colon
+\{M \,|\, \cdot \vdash M : \nat \} \to \li^{gl} \mathbb{N}$, defined by
+$\sem{M}^{gl} := \lambda (k : \Clock) .\sem{M}$. Composing this with the partial
+function $\Downarrow_\delay$ yields the desired partial function
+%
+$-\Downarrow \colon \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} + {\mho}$.
+%
+It is then straightforward to see that this big-step semantics respects the
+equational theory and that the denotations of the diverging term $\Omega$, the
+error term $\mho$, and a syntactic natural number value $n$ are all distinct.

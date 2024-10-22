@@ -57,12 +57,12 @@ predomains that preserves the error element and the $\theta$ map.
 For an error domain $B$, we define the predomain morphism $\delta_B := \theta_B
 \circ \nxt$.
 
-A \emph{predomain relation} $c : A \rel A'$ is a monotone relation as
-defined in the previous section (no condition is required for
-bisimilarity). The ``reflexive'' predomain relation is written $r(A)$
-and is given by the ordering $\ltdyn_A$. The relational composition of
-two predomains is also monotone, and $r(A)$ is the identity for this
-composition.
+A \emph{predomain relation} $c : A \rel A'$ is a relation between $A$ and $A'$
+that is upward closed in $A'$ and downward closed in $A$, as defined in the
+previous section (no condition is required for bisimilarity). The ``reflexive''
+predomain relation is written $r(A)$ and is given by the ordering $\ltdyn_A$.
+The relational composition of two predomain relations is also a predomain
+relation, and $r(A)$ is the identity for this composition.
 
 Error domain relations are given by predomain relations that are
 additionally a congruence with respect to the algebraic structures
@@ -179,21 +179,46 @@ a monoid $M_A$ of \emph{syntactic perturbations}, as well as a means
 of \emph{interpreting} these syntactic perturbations as
 \emph{semantic} perturbations on $A$, i.e., as endomorphisms that are
 bisimilar to the identity. We call such an object a \emph{value
-object} and this will serve as the final definition of a denotation of
-a type in our semantics. We define computation objects to similarly be
+object}, and this will serve as the final definition of a denotation of
+a type in our semantics. Similarly, we define computation objects to be
 error domains equipped with a notion of syntactic perturbation:
 \begin{definition}[value and computation objects + morphisms]
   A \textbf{value object} consists of a predomain $A$, a monoid $M_A$ and a
-  homomorphism of monoids $M_A \to \morbisimid{A} := \{ f : A \to A \mid f
+  homomorphism of monoids $i_A \colon M_A \to \morbisimid{A} := \{ f : A \to A \mid f
   \bisim \id_A \}$.
 
   Likewise, a \textbf{computation object} consists of an error domain $B$, a
-  monoid $M_B$ and a homomorphism of monoids $M_B \to \morbisimid{B}$.
+  monoid $M_B$ and a homomorphism of monoids $i_B \colon M_B \to \morbisimid{B}$.
 
-  We define a \textbf{value morphism} to be a morphism of the underlying
+  We define a \textbf{value morphism} to be simply a morphism of the underlying
   predomains, and a \textbf{computation morphism} to be a morphism of the
   underlying error domains.
 \end{definition}
+
+\begin{remark}
+  The reason the set of perturbations needs to carry a monoid structure is that
+  we will need to produce a syntactic perturbation corresponding to the identity
+  relations $r(A)$, as well as one for the composition of relations. The monoid
+  structure gives us what we need to produce these elements. Likewise, the
+  reason that the interpretations as semantic perturbations must be
+  \emph{homomorphisms} of monoids is that we need a syntactic perturbation that
+  is interpreted as the identity semantic perturbation, and likewise given two
+  syntactic perturbations $\delta_1$ and $\delta_2$ we need a syntactic
+  pertubration $\delta_{1,2}$ that is interpreted as the composition of the
+  semantic perturbations $i_A(\delta_1)$ and $i_A(\delta_2)$.
+\end{remark}
+
+\begin{remark}
+  It might seem strange that in defining the morphisms of value and computation
+  objects, there is no requirement involving the monoids. For example, one could
+  imagine defining a morphism between value objects $(A, M_A, i_A)$ and $(A',
+  M_{A'}, i_{A'})$ to be a predomain morphism $f \colon A \to A'$ along with a
+  monoid homomorphism $h \colon M_A \to M_{A'}$ such that $f$ and $h$ satisfied
+  a compatibility condition with respect to the interpretations $i_A$ and
+  $i_{A'}$. However, with this definition of morphism, the category of value
+  types is no longer Cartesian closed and is not a model of call-by-push-value.
+  This is unfortunate, as it would simplify some aspects of the model construction.
+\end{remark} 
 
 % every error domain $B$ with a monoid $M_B$ and interpretation homomorphism $i_B
 % : M_B \to \morbisimid{B}$. This grouping of data deserves its own definition: We
@@ -317,15 +342,15 @@ action of $U$ on relations.
 To model the term precision in a way that is oblivious to the stepping
 behavior of terms, we need to weaken the notion of square to allow for the
 morphisms on either side to be ``out of sync'' rather than in lock step.
+In the below, $f' \bisimsq{A_i}{A_o} f$ is the natural extension of
+bisimilarity to morphisms: given bisimilar inputs, the functions have
+bisimilar outputs.
 \begin{definition}
   Let $c_i : A_i \rel A_i'$, $c_o : A_o \rel A_o'$ $f : A_i \to A_o$
   and $g : A_i' \to A_o'$.  An extensional square $f
   \ltsqbisim{c_i}{c_o} g$ holds if there \emph{exist} $f'
   \bisimsq{A_i}{A_o} f$ and $g' \bisimsq{A_i'}{A_o'} g$ such that $f' \ltsq{c_i}{c_o} g'$.
 \end{definition}
-Here $f' \bisimsq{A_i}{A_o} f$ is the natural extension of
-bisimilarity to morphisms: given bisimilar inputs the functions have
-bisimilar outputs.
 
 \subsection{Constructing the denotational semantics}
 
@@ -360,9 +385,10 @@ the remaining components.
 % \max{this section needs prose}
 
 % \eric{May be able to move some of this to the appendix}
-For our value type semantics, we already have an interpretation as predomains,
-we describe how we enhance each of the constructions we use $U,\li,\to,\times,D$
-with a notion of syntactic perturbation.
+For our value type semantics, we already have an interpretation as predomains;
+we describe how we enhance each of the constructions we use ($U,\li,\to,\times,D$)
+with a monoid of syntactic perturbation and a means of interpreting them as semantic
+perturbations.
 
 First consider the free error domain $\li-$. Given a value object
 $(A, M_A, i_A)$ we define the syntactic perturbations $M_{\li A}$ to
@@ -377,21 +403,36 @@ $(\delta \circ \eta)^\dagger$. We accomplish this by taking the
 coproduct with $\mathbb{N}$.
 %
 The interpretation of the perturbations as endomorphisms is defined using the
-universal property of the coproduct of monoids (see appendix for details).
+universal property of the coproduct of monoids. Specifically, to define the
+homomorphism $i_{\li A}$, by the universal property of the coproduct of monoids
+it suffices to define two homomorphisms, one from $\mathbb{N} \to
+\morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$. The first
+homomorphism sends the generator $1 \in \mathbb{N}$ to the error domain
+endomorpism $(\delta \circ \eta)^\dagger$, and the second sends $m_A \in M_A$ to
+$\li(i_A(m_A))$. We observe in both cases that the resulting endomorphisms are
+bisimilar to the identity, since in the first case, $-^\dagger$ preserves
+bisimilarity, and in the second case, the action of $\li$ on morphisms preserves
+bisimilarity.
 
-Now we discuss the action of $U$ on objects. Given a computation object $(B,
-M_B, i_B)$, we define $M_{UB}$ to be $\mathbb{N} \oplus M_B$. The reason for
-requiring $\mathbb{N}$ is related to the Kleisli arrow functor: to establish
-quasi-representability of $U(c \arr d)$ given quasi-representability of $c$ and
-$d$, we will need to turn a perturbation on $\li A$ into a perturbation on $U(A
-\arr B)$. Since the perturbations for $\li A$ involve $\mathbb{N}$, so must the
-perturbations for $UB$. The interpretation $i_{UB}$ of the perturbations on $UB$
-works in the same manner as that of $\li A$.
+Now we define the action of $U$ on objects. Given a computation object $(B, M_B,
+i_B)$, we define $M_{UB}$ to be $\mathbb{N} \oplus M_B$. The reason for
+requiring $\mathbb{N}$ is related to the Kleisli action of the arrow functor: to
+establish quasi-representability of $U(c \arr d)$ given quasi-representability
+of $c$ and $d$, we will need to turn a perturbation on $\li A$ into a
+perturbation on $U(A \arr B)$. Since the perturbations for $\li A$ involve
+$\mathbb{N}$, so must the perturbations for $UB$. The interpretation $i_{UB}$ of
+the perturbations on $UB$ works in an analogous manner to that of $\li A$: we send
+the generator $1 \in \mathbb{N}$ to the delay morphism $\delta_B \colon UB \to
+UB$, and we send a perturbation $m_B \in M_B$ to $U(i_B(m_B))$.
 
 The action of $\times$ on objects is as follows. Given $(A_1, M_{A_1}, i_{A_1})$
 and $(A_2, M_{A_2}, i_{A_2})$, we define the monoid $M_{A_1 \times A_2} =
-M_{A_1} \oplus M_{A_2}$. The interpretation is defined using the universal property
-of the coproduct (see appendix for the details).
+M_{A_1} \oplus M_{A_2}$. The interpretation $i_{A_1 \times A_2}$ is defined
+using the universal property of the coproduct of monoids. That is, we define
+homomorphisms $M_{A_1} \to \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to
+\morbisimid{A_1 \times A_2}$. The former takes $m_1 \in M_{A_1}$ to the morphism
+$(i_{A_1}(m_1), \id)$, while the latter takes $m_2 \in M_{A_2}$ to the morphism
+$(\id, i_{A_2}(m_2))$.
 % Could state this using the functorial action of \times
 
 The action of $\arr$ on objects is as follows. Given $(A, M_A, iA)$ and $(B,
@@ -400,10 +441,7 @@ is defined analogously to that of $\times$.
 % Could state this using the functorial action of \arr
 
 Finally, the most interesting type is of course the dynamic type. 
-Now we define the perturbations for $D$. Recall that to each predomain $A$ we
-associate a monoid $M_A$ of syntactic perturbations and a homomorphism into the
-monoid of endomorphisms bisimilar to the identity, and likewise for error
-domains. It may seem as though we need to define the perturbations for $D$ by
+It may seem as though we need to define the perturbations for $D$ by
 guarded recursion, but in fact we define them via least-fixpoint in the category
 of monoids:
 %

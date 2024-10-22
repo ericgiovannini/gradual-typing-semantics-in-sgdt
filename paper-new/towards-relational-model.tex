@@ -52,13 +52,13 @@ Since the graduality property is \emph{extensional}, i.e., oblivious
 to the number of steps taken, it is sensible to say that if one side
 has terminated and the other side is thinking, that we must require
 the thinking side to eventually terminate with a related behavior,
-which is the content of the final $4$ cases of the definition.
+which is the content of the final three cases of the definition.
 \begin{figure*}
       \begin{align*}
         \mho \semltbad l &\text{ iff } \top \\
         %
         \eta\, x \semltbad \eta\, y &\text{ iff } 
-            x \semlt y \\
+            x \ltdyn y \\
         %		
         \theta\, \tilde{l} \semltbad \theta\, \tilde{l'} &\text{ iff } 
             \later_t (\tilde{l}_t \semltbad \tilde{l'}_t) \\
@@ -69,7 +69,7 @@ which is the content of the final $4$ cases of the definition.
             (\theta\, \tilde{l} = \delta^n(\eta\, x)) \\
         %	
         \eta\, x \semltbad \theta\, \tilde{l'} &\text { iff }
-            \exists n. \exists y \geq x. (\theta\, \tilde{l'} = \delta^n (\eta\, y))
+            \exists n. \exists y \gtdyn x. (\theta\, \tilde{l'} = \delta^n (\eta\, y))
     \end{align*}
     \caption{Step-insensitive error ordering}
     \label{fig:step-insensitive-error-ordering}
@@ -126,23 +126,37 @@ step-insensitive ordering on $\li A$.
 At this point we might try to weaken from our initial attempt at
 providing a poset semantics to a semantics where types are equipped
 with merely a reflexive relation, and continue using the
-step-insensitive ordering. However some level of transitivity is
+step-insensitive ordering. However, some level of transitivity is
 absolutely essential to providing compositional reasoning, and
 transitivity is used pervasively in the prior work by New and Licata.
 %
-The reason that it is essential has to do with the details of the
-graduality proof, so first we expand on how we prove graduality
-compositionally. First of all, we need to extend our compositional
-semantics of types and terms to also a compositional semantics of
-\emph{type precision derivations} and \emph{term precision}.
+The reason that it is essential becomes clear by examining the details of the
+graduality proof, so first we expand on how we prove graduality compositionally.
+First, we need to extend our compositional semantics of types and terms to a
+compositional semantics of \emph{type precision derivations} and \emph{term
+precision}.
 %
-Sticking to a poset-based semantics, if our value types are posets, we then want
-our precision derivations $c : A \ltdyn A'$ to be \emph{poset relations} on $A,
-A'$, that is relations between the underlying sets of $A, A'$ that are
-\emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$. We denote such
-a relation between $A$ and $A'$ by $c : A \rel A'$. The paradigmatic example of
-a poset relation is the poset ordering itself, $\ltdyn_A : A \rel A$, which is a
-poset relation because it is transitive.
+Sticking to a poset-based semantics, if our value types are interpreted as
+posets, then we want our precision derivations $c : A \ltdyn A'$ to be
+interpreted as a \emph{relation} between $A$ and $A'$. It is also natural to
+ask that the relation $c$ interact with the orderings on $A$ and $A'$. More
+specifically, if $x' \ltdyn_{A} x$ and $x \mathrel{c} y$, then $x' \mathrel{c}
+y$. Similarly, if $x \mathrel{c} y$ and $y \ltdyn_{A'} y'$, then $x \mathrel{c}
+y'$. We summarize this requirement by saying $c$ is \emph{downward-closed} in
+$A$ and $\emph{upward-closed}$ in $A'$. We will see below why this requirement
+is necessary for the graduality proof.
+
+% ...we then want our precision derivations $c : A \ltdyn A'$ to be \emph{poset relations} on $A,
+% A'$, that is, relations between the underlying sets of $A, A'$ that are
+% \emph{downward-closed} in $A$ and \emph{upward-closed} in $A'$.
+% The former means that if $x' \ltdyn_{A} x$ and $x \mathrel{c} y$, then $x' \mathrel{c} y$,
+% while the latter says that if $x \mathrel{c} y$ and $y \ltdyn_{A'} y'$, then $x \mathrel{c} y'$.
+
+We call such a relation between $A$ and $A'$ a \emph{poset relation}, and we
+write $c : A \rel A'$. The paradigmatic example of a poset relation is the poset
+ordering itself, $\ltdyn_A : A \rel A$, which is a poset relation because it is
+transitive.
+
 %
 Given two poset relations $c : A_1 \rel A_2$ and $c' : A_2 \rel A_3$, we can
 form their \emph{composition} in the usual manner, i.e., $x \binrel{c \comp c'} y$ if and
@@ -157,7 +171,7 @@ only if there is an element $z : A_2$ with $x \binrel{c} z$ and $z \binrel{c'} y
 
 These relations are then used to model term precision. For closed programs $M \ltdyn M' :
 c$ where $c : A \ltdyn A'$, the terms denote elements of the
-free error domain $\sem{M},\sem{M'} : U\li \sem{A}$ and we model the term precision semantically as the relation holding between those denoted elements $\sem{M} \binrel{(U\li\sem{c})} \sem{M'}$ where
+free error domain $\sem{M},\sem{M'} : U\li \sem{A}$, and we model the term precision semantically as the relation holding between those denoted elements $\sem{M} \binrel{(U\li\sem{c})} \sem{M'}$ where
 $U\li\sem{c}$ is a relational lifting of $U\circ\li$.
 %
 More generally, $M$ and $M'$ can be \emph{open} terms, in which case
@@ -266,25 +280,69 @@ relation between value types, as it is self-referential. This would
 seem to imply that we cannot give a compositional model for
 graduality. However, New and Licata observed that in the presence of
 transitivity, we can \emph{derive} the above squares from simpler ones
-that do not involve composition of relations. Below is the square
-corresponding to UpL:
-% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGxlX3tBXzJ9IiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXHVwY3tjfSIsMl0sWzIsMywiXFxpZCJdXQ==
-\[\begin{tikzcd}[ampersand replacement=\&]
-	{A_1} \& {A_2} \\
-	{A_2} \& {A_2}
-	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
-	\arrow["{\upc{c}}"', from=1-1, to=2-1]
-	\arrow["\id", from=1-2, to=2-2]
-	\arrow["{\le_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
-\end{tikzcd}\]
+that do not involve composition of relations. Below are the simpler squares
+corresponding to UpL, UpR, DnL, and DnR:
+\begin{center}
+  \begin{tabular}{ c | c | c | c} 
+    % UpL
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGx0ZHluX3tBXzJ9IiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXHVwY3tjfSIsMl0sWzIsMywiXFxpZCJdLFs2LDcsIlxcdGV4dHtVcEx9IiwzLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_2} \\
+      {A_2} \& {A_2}
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\upc{c}}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "\id", from=1-2, to=2-2]
+      \arrow["{\ltdyn_{A_2}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{UpL}}"{marking, allow upside down}, draw=none, from=0, to=1]
+  \end{tikzcd} &
+    %
+    % UpR
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzEiXSxbMSwxLCJBXzIiXSxbMCwyLCJcXGx0ZHluX3tBXzF9IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJjIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXGlkIiwyXSxbMiwzLCJcXHVwYyBjIl0sWzYsNywiXFx0ZXh0e1VwUn0iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_1} \\
+      {A_1} \& {A_2}
+      \arrow["{\ltdyn_{A_1}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "\id"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\upc c}", from=1-2, to=2-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{UpR}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd} &
+    %
+    %
+    %
+    % DnL
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzIiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJcXGx0ZHluX3tBXzJ9IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJjIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXGRuYyBjIiwyXSxbMiwzLCJcXGlkIl0sWzYsNywiXFx0ZXh0e0RuTH0iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_2} \& {A_2} \\
+      {A_1} \& {A_2}
+      \arrow["{\ltdyn_{A_2}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\dnc c}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "\id", from=1-2, to=2-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{DnL}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd} &
+    %
+    % DnR
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzEiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXGx0ZHluX3tBXzF9IiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJcXGlkIiwyXSxbMiwzLCJcXGRuYyBjIl0sWzYsNywiXFx0ZXh0e0RuUn0iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_2} \\
+      {A_1} \& {A_1}
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "\id"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\dnc c}", from=1-2, to=2-2]
+      \arrow["{\ltdyn_{A_1}}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{DnR}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
 %
-This square, with a dual one related to UpR, say that the relation $c$
-is \emph{representable} by the upcast morphism $\upc{c}$, essentially
-that the relation is a kind of \emph{graph} of the function in that $x
-\binrel{\sem c} y$ if and only if $\sem{\upc c}(x) \leq_{A_2} y$ \cite{shulman2007}.
+These squares say that the relation $c$ is \emph{representable} by the upcast
+morphism $\upc{c}$, essentially that the relation is a kind of \emph{graph} of
+the function in that $x \binrel{\sem c} y$ if and only if $\sem{\upc c}(x)
+\leq_{A_2} y$ \cite{shulman2007}.
 
-We can use this simpler square to derive the original UpL square as long as we can
-horizontally compose with the identity square for $c'$:
+We can use the simpler UpL square to derive the original UpL square by
+horizontally composing with the identity square for $c'$:
 %
 % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiXFxsdGR5bl97QV8yfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNCwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsIlxcdXBje2N9IiwyXSxbMiw0LCJcXGlkIl0sWzEsNSwiXFxpZCIsMl1d
 \[\begin{tikzcd}[ampersand replacement=\&]
@@ -301,28 +359,35 @@ horizontally compose with the identity square for $c'$:
 %
 Then to complete the proof, we observe that the composition of $\ltdyn_{A_2}$ with $c'$ is equal to
 $c'$, because $c'$ is \emph{downward-closed} under the relation on $A_2$.
+An analogous argument shows that we can derive the original UpR square from the simpler version of UpR,
+this time using the fact that poset relations are \emph{upward-closed}.
 % Thus, we
 % obtain the original UpL square by vertically composing the square shown above
 % with the square $\id \ltsq{\le_{A_2}\, c'}{c'} \id$ on the bottom.
 
-The actual place where transitivity of the relations on the value types is
-needed in this argument occurs when $A_3 = A_2$ and we take $c'$ to be
-$\ltdyn_{A_2}$ (recall that $c'$ is universally quantified, so it can be any
-relation). The fact that $\ltdyn_{A_2}$ is downward-closed is equivalent to it
-being transitive. In other words, the relations $\ltdyn_A$ on value types must be
-poset relations in order to carry out the above compositional construction.
+To recap, we have shown that in order to carry out the graduality proof
+compositionally, we need that the relations are closed under the ordering on
+each side. In particular, this implies that the ordering relations $\ltdyn_{A}$
+must be transitive. Thus, we cannot entirely drop posets from our semantics.
 
-So we see that in order to get a sensible condition that can give us a
-compositional definition of a well-behaved relation, some amount of
-transitive reasoning on squares is required, and so we cannot entirely
-drop posets from our semantics.
+% The actual place where transitivity of the relations on the value types is
+% needed in this argument occurs when $A_3 = A_2$ and we take $c'$ to be
+% $\ltdyn_{A_2}$ (recall that $c'$ is universally quantified, so it can be any
+% relation). The fact that $\ltdyn_{A_2}$ is downward-closed is equivalent to it
+% being transitive. In other words, the relations $\ltdyn_A$ on value types must be
+% poset relations in order to carry out the above compositional construction.
+
+% So we see that in order to get a sensible condition that can give us a
+% compositional definition of a well-behaved relation, some amount of
+% transitive reasoning on squares is required, and so we cannot entirely
+% drop posets from our semantics.
 
 \subsection{Resolution: Splitting Error Ordering and Bisimilarity}\label{sec:lock-step-and-weak-bisim}
 
 Given that some amount of transitive reasoning is essential for
 modeling type and term precision compositionally, we need to revisit
 our ordering relation on $\li A$ to get one that is
-transitive. Theorem\ref{thm:no-go} tells us, however, that any non-trivial such
+transitive. Theorem \ref{thm:no-go} tells us, however, that any non-trivial such
 relation must either not be a congruence with respect to $\theta$, or
 must not be left- and right-step-insensitive.
 \footnote{Technically, the theorem only implies that we need to drop
