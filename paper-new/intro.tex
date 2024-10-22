@@ -28,24 +28,24 @@ completely different language.
 % The following two properties have been identified as useful for gradually typed languages.
 
 \eric{This paragraph could be deleted}
-In order for this to work as expected, gradually-typed languages should allow for
-different parts of the codebase to be in different places along the spectrum from
-dynamic to static, and allow for those different parts to interact with one another.
-Moreover, gradually-typed languages should support the smooth migration from
-dynamic typing to static typing, in that the programmer can initially leave off the
-typing annotations and provide them later without altering the meaning of the program.
-% Sound gradual typing
-Furthermore, the parts of the program that are written in a dynamic
-style should soundly interoperate with the parts that are written in a
-static style.  That is, the interaction between the static and dynamic
-components of the codebase should preserve, to the extent possible,
-the guarantees made by the static types.  In particular, while
-statically-typed code can error at runtime in a gradually-typed
-language, such an error can always be traced back to a
-dynamically-typed term that violated the typing contract imposed by
-statically typed code. Further, static type assertions are sound in
-the static portion, and should enable type-based reasoning and
-optimization.
+%% In order for this to work as expected, gradually-typed languages should allow for
+%% different parts of the codebase to be in different places along the spectrum from
+%% dynamic to static, and allow for those different parts to interact with one another.
+%% Moreover, gradually-typed languages should support the smooth migration from
+%% dynamic typing to static typing, in that the programmer can initially leave off the
+%% typing annotations and provide them later without altering the meaning of the program.
+%% % Sound gradual typing
+%% Furthermore, the parts of the program that are written in a dynamic
+%% style should soundly interoperate with the parts that are written in a
+%% static style.  That is, the interaction between the static and dynamic
+%% components of the codebase should preserve, to the extent possible,
+%% the guarantees made by the static types.  In particular, while
+%% statically-typed code can error at runtime in a gradually-typed
+%% language, such an error can always be traced back to a
+%% dynamically-typed term that violated the typing contract imposed by
+%% statically typed code. Further, static type assertions are sound in
+%% the static portion, and should enable type-based reasoning and
+%% optimization.
 
 % Moreover, gradually-typed languages should allow for
 % different parts of the codebase to be in different places along the spectrum from
@@ -59,9 +59,10 @@ One of the fundamental theorems for gradually typed languages is
 originally defined by Siek, Vitousek, Cimini, and Boyland
 \cite{siek_et_al:LIPIcs:2015:5031, new-ahmed2018}.
 %
-Informally, graduality says that going from a dynamic to static style should
-only allow for the introduction of static or dynamic type errors, and not
-otherwise change the behavior of the program.
+Informally, graduality says that migrating code from dynamical to
+statical typing should only allow for the introduction of static or
+dynamic type errors, and not otherwise change the behavior of the
+program.
 %
 This is a way to capture programmer intuition that increasing type
 precision corresponds to a generalized form of runtime assertions in
@@ -99,7 +100,7 @@ undefined, representing divergence.
 %
 A well-behaved semantics should then satisfy several properties. First, it
 should be \emph{adequate}: natural number constants should step to
-themselves. Second, it should validate type based reasoning. To
+themselves $n \Downarrow n$. Second, it should validate type based reasoning. To
 formalize type based reasoning, we give a typed equational theory for
 terms of the language $M \equiv N$ for when two terms should be
 considered equivalent. Then we want to verify that the big step
@@ -124,7 +125,7 @@ classically equivalent but constructively weaker}.
 
 Our goal in this work is to provide an \emph{expressive},
 \emph{reusable}, \emph{compositional} semantic framework for defining
-such well-behaved semantics of programs.
+such well-behaved semantics of gradually typed programs.
 %
 Our approach to achieving this goal is to provide a compositional
 \emph{denotational semantics}, mapping types to a kind of semantic
@@ -135,16 +136,17 @@ Since the denotational constructions are all syntax-independent, the
 constructions we provide may be reused for similar languages. Since it
 is compositional, components can be mixed and matched depending on
 what source language features are present.
-%
-Providing this semantics for gradual typing is inherently complicated
-in that it involves: (1) recursion and recursive types through the
+
+Providing a semantics for gradual typing is inherently complicated in
+that it involves: (1) recursion and recursive types through the
 presence of dynamic types, (2) effects in the form of divergence and
 errors (3) relational models in capturing the graduality
 property. Recursion and recursive types must be handled using some
 flavor of domain theory. Effects can be modeled using monads in the
-style of Moggi, or adjunctions in the style of Levy. Relational
-properties and their verification lead naturally to the use of
-reflexive graph categories or double categories.
+style of Moggi, or adjunctions in the style of
+Levy\cite{moggi,levy}. Relational properties and their verification
+lead naturally to the use of reflexive graph categories or double
+categories\cite{reflgraphcats,doublecats}.
 
 The only prior denotational semantics for gradual typing was given by
 New and Licata and is based on a classical Scott-style \emph{domain
@@ -159,51 +161,52 @@ This framework has the benefit of being compositional, and was
 expressive enough to be extended to model dependently typed gradual
 typing \cite{gradualizing-cic}.
 %
+\max{we should make clear that we don't yet model these perverse recursive features}
 However, an approach based on classical domain theory has fundamental
 limitations: domain theory is incapable of modeling certain perversely
 recursive features of programming languages such as dynamic type tag
 generation and higher-order references, which are commonplace in
 real-world gradually typed systems as well as gradual calculi.
-
-
+%
 Our long-term goal is to develop a semantics that will scale up to these
 advanced features, and so we begin with this work by departing from
 classical domain theory.
 
 The main denotational alternative to classical domain theory that can
-successfully model these advanced features is \emph{guarded domain
-theory}, which we adopt in this work. While classical domain theory is
+successfully model these advanced features is \emph{guarded} domain
+theory, which we adopt in this work. While classical domain theory is
 based on modeling types as ordered sets with certain joins, guarded
 domain theory is based on an entirely different foundations, sometimes
 (ultra)metric spaces but more commonly as ``step-indexed sets'', i.e.,
-objects in the \emph{topos of trees} \cite{birkedal-mogelberg-schwinghammer-stovring2011}. 
-Such an object consists of a family $\{X_n\}_{n \in \mathbb{N}}$ of sets
-along with restriction functions $r_n : X_{n+1} \to X_n$ for all $n$.
-(These are simply presheaves on the poset of natural numbers, for the
-reader familiar with this terminology.)
-We think of such a $\mathbb{N}$-indexed set as modeling a kind of 
-``sequence of approximations'' to the true type being modeled.
+objects in the \emph{topos of trees}
+\cite{birkedal-mogelberg-schwinghammer-stovring2011}.  Such an object
+consists of a family $\{X_n\}_{n \in \mathbb{N}}$ of sets along with
+restriction functions $r_n : X_{n+1} \to X_n$ for all $n$.  (in
+category theoretic terminology, these are presheaves on the poset of
+natural numbers.)  We think a $\mathbb{N}$-indexed set as an infinite
+sequence of increasingly precise approximations to the true type being
+modeled.
 %
-Key to guarded domain theory is that there is a ``later'' operator
-$\triangleright$ on types. Thinking of types as a sequence of
-approximations, the later operator delays the approximation by one
-step. Then the crucial axiom of guarded domain theory is that any
-guarded equation $X \cong F(\triangleright X)$ has a unique
-solution. This allows guarded domain theory to model essentially
-\emph{any} recursive concept, with the caveat that it is guarded by a
-later.
-%
-This caveat is the main source of difficulty in adapting a semantic
-approach based on classical domain theory to guarded domain theory:
-classical domain theory has limitations in what it can model, but it
-provides \emph{exact} solutions to domain equations when it
-applies. When adapting the New-Licata approach to guarded domain
-theory, this means we must work with an \emph{intensional} semantics,
-one where unfolding the dynamic type requires an observable
-computational step: e.g., a function that pattern matches on an
-element of the dynamic type and then returns it unchanged is
-\emph{not} equal to the identity function, because it ``costs'' a step
-to perform the pattern match.
+Key to guarded domain theory is that there is an operator
+$\triangleright$ on step-indexed sets called ``later''. In terms of
+sequences of approximations, the later operator delays the
+approximation by one step. Then the crucial axiom of guarded domain
+theory is that any guarded domain equation $X \cong F(\triangleright
+X)$ has a unique solution. This allows guarded domain theory to model
+essentially \emph{any} recursive concept, with the caveat that the
+recursion is \emph{guarded} by a later.
+
+Since guarded domain theory only provides solutions to guarded domain
+equations, there is no systematic way to convert a classical
+domain-theoretic semantics to a guarded one.  Classical domain theory
+has limitations in what it can model, but it provides \emph{exact}
+solutions to domain equations when it applies. When adapting the
+New-Licata approach to guarded domain theory, the presence of later in
+the semantics makes it \emph{intensional}, unfolding the dynamic type
+requires an observable computational step. For example, a function
+that pattern matches on an element of the dynamic type and then
+returns it unchanged is \emph{not} equal to the identity function,
+because it ``costs'' a step to perform the pattern match.
 %
 This leads to the main departure of our semantics from the New-Licata
 approach: while the New-Licata semantics equips $\omega$-CPOs with an
@@ -229,22 +232,26 @@ discussed in that section.
 While guarded domain theory can be presented analytically using
 ultrametric spaces or the topos of trees, in practice it is
 considerably simpler to work \emph{synthetically} by working in a
-non-standard foundation such as guarded type theory where the later
-modality is taken as a primitive operation on types, and we take as an
-axiom that guarded domain equations have a (necessarily unique)
-solution. This has the added benefit that providing a denotational
-semantics of gradually typed terms is as simple as defining the semantics of an
-effectful language using a monad on the category of sets. Not only
-does this make on-paper reasoning about guarded domain theory easier,
-it also enables a simpler avenue to verification in a proof
-assistant. Whereas formalizing analytic guarded domain theory would
-require a significant theory of presheaves and making sure that all
-constructions are functors on categories of presheaves, formalizing
-synthetic guarded domain theory can be done by directly adding the
-later modality and the guarded fixed point property axiomatically.
+non-standard foundational system such as \emph{guarded type
+theory}. In guarded type theory later is taken as a primitive
+operation on types, and we take as an axiom that guarded domain
+equations have a (necessarily unique) solution. The benefit of this
+synthetic approach is that when working in the non-standard
+foundation, we don't need to model an object language type as a
+step-indexed set, but instead simply as a set, and object-language
+terms can be modeled in the Kleisli category of a simple monad defined
+using guarded recursion. Not only does this make on-paper reasoning
+about guarded domain theory easier, it also enables a simpler avenue
+to verification in a proof assistant. Whereas formalizing analytic
+guarded domain theory would require a significant theory of presheaves
+and making sure that all constructions are functors on categories of
+presheaves, formalizing synthetic guarded domain theory can be done by
+directly adding the later modality and the guarded fixed point
+property axiomatically.
 %
 % \max{TODO: more here, specifically this is where we should talk about adequacy I think}
 
+\max{it's confusing that this is the synthetic section but we switch back to external reasoning. Maybe move this to the previous section and revisit it here?}
 Because the solutions we obtain working in guarded domain theory are constructed
 as a sequence of increasingly better approximations, when we want to establish a
 property that holds in the limit, we must reason about all finite
@@ -263,6 +270,7 @@ $x_i \in X_i$ for all $i \in \mathbb{N}$ -- then the denotation of the diverging
 program will be distinct from that of a program that terminates, regardless of
 the number of steps it takes.
 
+\max{shouldn't we say we use clock quantification?}
 In the setting of synthetic guarded domain theory, this same idea applies. To
 construct a global solution we must use an additional construct, e.g., the
 $\square$ modality \cite{10.1007/978-3-319-08918-8_8}, whose semantics in the
@@ -271,6 +279,7 @@ approach involves objects known as \emph{clocks}, whereby
 \emph{clock-quantification} \cite{atkey-mcbride2013} provides a means to obtain
 a global solution.
 
+\max{this next paragraph is a bit too mysterious}
 This has important ramifications for defining an adequate denotational semantics
 in guarded domain theory, as we seek to do in this paper: we do not want our
 denotational semantics to conflate a diverging program with a program that fails
@@ -318,17 +327,17 @@ in Section \ref{sec:mechanization}.
 \end{comment}
 
 The paper is laid out as follows:
+\max{I think there's too much detail in this outline, especially parts 4 and 5. Can we instead expand those into the Intro?}
 \begin{enumerate}
 \item In Section \ref{sec:GTLC} we fix our input language, a fairly
   typical gradually typed cast calculus.
-\item In Section \ref{sec:concrete-term-model} we develop a denotational
-  semantics in synthetic guarded domain theory for the \emph{terms} of the
-  gradual lambda calculus. The model validates the equational theory, but it
-  does not prove graduality as it does not model type or term precision. We use
-  this to introduce some of our main technical tools: modeling recursive types
-  in guarded type theory and modeling effects using call-by-push-value. After
-  defining the model, we use the technique of globalization to extract a
-  well-behaved big-step term semantics satisfying adequacy.
+\item In Section \ref{sec:concrete-term-model} we develop a
+  denotational semantics in synthetic guarded domain theory for the
+  \emph{terms} of the gradual lambda calculus.  The model is adeqauate
+  and validates the equational theory, but it does not satisfy
+  graduality. We use this to introduce some of our main technical
+  tools: modeling recursive types in guarded type theory and modeling
+  effects using call-by-push-value.
 \item In Section \ref{sec:towards-relational-model} we show where the
   New-Licata classical domain theoretic approach fails to adapt
   cleanly to the guarded setting and explore the difficulties of
