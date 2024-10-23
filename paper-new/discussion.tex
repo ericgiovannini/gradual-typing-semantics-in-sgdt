@@ -40,7 +40,13 @@ representability, the relation $c$ is \emph{uniquely determined} by the
 embedding $e$, but since we only have quasi-representability, we need to keep
 the relation around explicitly. So the extra complexity of managing explicit
 relations is a cost of the intensional reasoning that guarded type theory
-introduces.
+introduces. 
+%
+The line of work by New, Licata, and Ahmed involved both denotational methods
+and operational logical relations approaches.
+% The New-Licata-Ahmed axiomatic approach to gradual typing can be
+% applied to both operational and denotational semantics.
+
 
 % Later, New, Licata and Ahmed \cite{new-licata-ahmed2019} extended this axiomatic
 % treatment from call-by-name to call-by-value as well by giving an axiomatic
@@ -48,9 +54,6 @@ introduces.
 
 % \subsubsection{Denotational and Operational Approaches}
 
-The above axiomatic account of gradual typing is independent of the choice of
-operational versus denotational semantics; we give an overview of the two
-approaches below.
 
 %\subsubsection{Double-Categorical Semantics}
 
@@ -132,11 +135,13 @@ the particular operational syntactic calculus being modeled.
 Our work combines the benefits of both the denotational and step-indexed
 approaches. We take as a starting point the denotational approach of New and
 Licata, but we work with guarded type theory (a synthetic form of step-indexing)
-rather than classical domain theory. In the guarded setting, the compositional
-theory of New-Licata breaks down: when accounting for steps, the casts are no
-longer embedding-projection pairs, and we cannot carry out compositional
-reasoning on terms when those terms differ by an arbitrary unknown number of
-steps. Our work provides a novel refinement to their theory that allows for some
+rather than classical domain theory. As we have seen, in the guarded setting the compositional
+theory of New-Licata breaks down. 
+% when accounting for steps, the casts are no
+% longer embedding-projection pairs, and we cannot carry out compositional
+% reasoning on terms when those terms differ by an arbitrary unknown number of
+% steps. 
+Our work provides a novel refinement to their theory that allows for some
 compositional reasoning to be recovered even in the guarded setting.
 
 % \subsubsection{Gradual Dependent Types}
@@ -201,17 +206,7 @@ perturbations as we did in this work.
 
 \subsection{Implications for Gradual Typing Research}
 
-While we have focused on a single semantics in this work, we expect that our
-development can be adapted to prove graduality and (more limited) equational
-reasoning principles for other cast semantics.
-%
-In addition, while we have focused on proving extensional properties in this
-work, the intensional nature of our semantics can be viewed as a form of
-\emph{cost semantics}, where a runtime cost is incurred from inspecting the
-dynamic type. This could be used to verify that cast optimizations such as space
-efficient implementations \cite{herman-tomb-flanagan-2010} are not only
-extensionally correct, but also have lower quantitative cost. We leave this as
-future work.
+
 
 \subsection{Mechanization}\label{sec:mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
@@ -279,6 +274,7 @@ The remaining formalization work is the following:
     $\times$ and $\arr$. These results are proved in the Appendix.
     \item Verifying the rules in the model corresponding to the equations for
     type precision derivations (see the bottom of Figure \ref{fig:gtlc-syntax}).
+    These are also included in the Appendix.
     \item Defining the syntax-to-semantics translation.
 \end{enumerate} 
 
@@ -380,21 +376,53 @@ some theorems on clock globalization.
 % \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
 % disciplines such as gradual dependent types and effect systems.
 
-% \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
-In the future, we plan to apply our approach to give a denotational semantics
-to gradually-typed languages that feature higher-order state or runtime-extensible dynamic
-typing \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
-disciplines such as gradual dependent types and effect systems. This will
-involve adapting prior operational models based on step-indexing (e.g.,
+Our immediate next step is to apply our approach to give a denotational
+semantics to gradually-typed languages with advanced type systems including
+higher-order state or runtime-extensible dynamic typing
+\cite{DBLP:journals/corr/abs-2210-02169}, as well as richer type disciplines
+such as gradual dependent types and effect systems. This will involve adapting
+prior operational models based on step-indexing (e.g.,
 \cite{new-giovannini-licata-2022}) to the denotational setting and using guarded
 type theory to obtain solutions to guarded domain equations as we did in this
 work for the denotation of the dynamic type. The generality of our techniques
 should allow for many of the constructions to be reused across different
 languages. For instance, the free error domain construction can be easily
 extended with additional cases to model effects besides error and stepping.
-Additionally, we aim to complete our Agda formalization and evolve it into a
+We also aim to complete our Agda formalization and evolve it into a
 reusable framework for mechanized denotational semantics of gradually-typed
 languages.
+
+Additionally, while we have focused on a single semantics in this work, there are a
+variety of other cast calculi that satisfy graduality but for which one or more
+equational axioms fail to hold. % TODO cite
+We expect that our development can be adapted to other cast semantics to prove
+graduality and equational reasoning principles (to the extent that the
+principles hold in those cast semantics).
+
+We also plan to use our framework to investigate the performance of
+gradually-typed languages. Although we have focused on proving extensional
+properties in this work, the intensional nature of our semantics can be viewed
+as a form of \emph{cost semantics}, where a runtime cost is incurred from
+inspecting the dynamic type. This could be used to verify that cast
+optimizations such as space efficient implementations
+\cite{herman-tomb-flanagan-2010} are not only extensionally correct, but also
+have lower quantitative cost. We leave this as future work.
+
+% \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
+% In the future, we plan to apply our approach to give a denotational semantics
+% to gradually-typed languages that feature higher-order state or runtime-extensible dynamic
+% typing \cite{DBLP:journals/corr/abs-2210-02169} as well as richer type
+% disciplines such as gradual dependent types and effect systems. This will
+% involve adapting prior operational models based on step-indexing (e.g.,
+% \cite{new-giovannini-licata-2022}) to the denotational setting and using guarded
+% type theory to obtain solutions to guarded domain equations as we did in this
+% work for the denotation of the dynamic type. The generality of our techniques
+% should allow for many of the constructions to be reused across different
+% languages. For instance, the free error domain construction can be easily
+% extended with additional cases to model effects besides error and stepping.
+% Additionally, we aim to complete our Agda formalization and evolve it into a
+% reusable framework for mechanized denotational semantics of gradually-typed
+% languages.
 
 %% to gradually-typed
 %% languages with algebraic effects, building on prior work on gradual typing for effect handlers

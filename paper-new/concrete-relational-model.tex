@@ -352,25 +352,22 @@ bisimilar outputs.
   \bisimsq{A_i}{A_o} f$ and $g' \bisimsq{A_i'}{A_o'} g$ such that $f' \ltsq{c_i}{c_o} g'$.
 \end{definition}
 
-\subsection{Constructing the denotational semantics}
+\subsection{Constructing the Denotational Semantics}\label{sec:relational-model-construction}
 
 With these concepts now defined, we can give an overview of our
 denotational model:
-\begin{theorem}
-  \,
-  \begin{itemize}
+\begin{itemize}
   \item For every type $A$ we define a value type $\sem{A}$, and define $\sem{x_1:A_1,\ldots} = \sem{A_1}\times\cdots$
   \item For every term $\Gamma \vdash M : A$, we define a value morphism $\sem{M} : \sem{\Gamma} \to U\li\sem{A}$.
   \item If $M = M'$ are equal according to our equational theory, then $\sem{M} = \sem{M'}$
   \item For every type precision derivation $c : A \ltdyn A'$ we
     define a value relation $\sem{c} : \sem{A} \rel \sem{A'}$.
   \item For every type precision equivalence $c \equiv c'$ we have a
-    quasi-order-equivalence of relations $\sem{c} \bisim \sem{c'}$.
+    quasi-equivalence of relations $\sem{c} \bisim \sem{c'}$.
   \item For every term precision $\Delta \vdash M \ltdyn M' : c$ we
     have an \emph{extensional} square
     $\sem{M}\ltsqbisim{\sem{\Delta}}{U\li\sem{c}} \sem{M'}$
-  \end{itemize}
-\end{theorem}
+\end{itemize}
 
 For the term semantics $\sem{M}$, nothing really differs from the term
 semantics in Section~\ref{sec:concrete-term-model}. The only difference is
@@ -442,13 +439,17 @@ is defined analogously to that of $\times$.
 
 Finally, the most interesting type is of course the dynamic type. 
 It may seem as though we need to define the perturbations for $D$ by
-guarded recursion, but in fact we define them via least-fixpoint in the category
-of monoids:
+guarded recursion, but in fact we define them via least-fixpoint\footnote{
+  The reason for defining the perturbations inductively is technical and has to
+  do with the fact that we needed to define the perturbations corresponding to the
+  predomain $\later A$ to be the perturbations of $A$, \emph{not} later of the
+  perturbations of $A$. There may be a way to make this work by changing some
+  definitions, but we leave this as future work}
+in the category of monoids:
 %
 \( M_D \cong (M_{D \times D}) \oplus M_{U(D \to \li D)}. \)
 %
 We now explain how to interpret these perturbations as endomorphisms.
-
 We define $i_D : M_D \to \{ f : D \to D \mid f \bisim \id \}$ by induction as follows:
 %
 \begin{align*}
@@ -478,8 +479,8 @@ Next we need to confirm that our interpretation of type precision
 derivations as predomain relations indeed extends to value relations,
 i.e., that the relations are quasi-representable and that they satisfy
 the push-pull property for perturbations. We include most of these technical
-verifications in the appendix (Definition
-\ref{def:value-computation-rel-comp},
+verifications in the appendix (Definitions
+\ref{def:value-computation-rel-comp} and
 \ref{def:functorial-actions-on-relations}).
 
 We go into more detail on the three relations involving the dynamic
@@ -502,7 +503,7 @@ are quasi-left-representable, where all perturbations are taken to be the
 identity elements of the respective monoids.
 %
 For quasi-right-representability, the only nontrivial case is $\li(\iarr)$.
-Recall the defintion of the downcast for $\iarr$ given in Section
+Recall the definition of the downcast for $\iarr$ given in Section
 \ref{sec:term-interpretation}. We know that in order for the DnR and DnL squares
 for $\li \iarr$ to exist, we must insert a delay on the side opposite the
 downcast. In terms of syntactic perturbations, this means that we take $\dellp$
@@ -517,26 +518,26 @@ With this choice for the perturbations, it is straightforward to show that the
 DnL and DnR squares exist using the definition of the downcast and the
 definition of the relation $\iarr$.
 
-The proofs that the precision equivalence imply quasi-equivalence of
-relations are in the appendix (Lemma
-\ref{lem:quasi-order-equiv-functors}).
+Lastly, the interpretation of the type precision equivalence rules $c \equiv c'$
+as quasi-equivalence of the denoted relations $\sem{c} \bisim \sem{c'}$ is
+justified by Lemma \ref{lem:quasi-order-equiv-functors} in the Appendix.
+
+% The type precision equivalence rules follow because $c \equiv c'$
+% implies quasi-equivalence, and that quasi-equivalence implies that
+% $\id \ltsqbisim{\sem{c}}{\sem{c'}} \id$.
 
 \subsubsection{Interpreting Term Precision: Extensional Squares}
 
 Finally, we establish the core result of the semantics: interpreting
-term precision as extensional squares. Fortunately the hard work is
-now complete and the term precision rules follow from our
+term precision as extensional squares. Fortunately, the hard work is
+now complete, and the term precision rules follow from our
 compositional constructions.
 %
-The congruence rules of term precision are modeled easily: congruence
-squares hold both for bisimilarity as well as error ordering, and so
-by combination we also have these for extensional squares.
+In particular, the congruence rules of term precision are modeled easily: congruence
+squares exist both for bisimilarity and for the error ordering, and so
+we also have these for extensional squares.
 %
-The type precision equivalence rule follows because $c \equiv c'$
-implies quasi-equivalence, and that quasi-equivalence implies that
-$\id \ltsqbisim{\sem{c}}{\sem{c'}} \id$.
-
-Most crucially, we verify the existence of the squares for the cast rules. For UpL, the
+Thus, it remains to verify the existence of the squares for the cast rules. For UpL, the
 relevant extensional square is obtained as follows:
 %
 % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMSwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMCwzLCJlX2MiLDIseyJjdXJ2ZSI6MX1dLFsxLDQsIlxcZGVscmVfYyIsMl0sWzIsNSwiXFxwdXNoX3tjJ30oXFxkZWxyZV9jKSIsMix7ImN1cnZlIjoxfV0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsInIoQV8yKSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDUsIlxcaWQiLDAseyJjdXJ2ZSI6LTF9XSxbMCwzLCJlX2MiLDAseyJjdXJ2ZSI6LTF9XSxbOCwxMywiXFxiaXNpbSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDE0LCJcXGJpc2ltIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
