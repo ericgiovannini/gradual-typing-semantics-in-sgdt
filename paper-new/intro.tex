@@ -192,9 +192,6 @@ recursion is \emph{guarded} by a use of the later operator.
 % program will be distinct from that of a program that terminates, regardless of
 % the number of steps it takes.
 
-
-\subsection{Synthetic Guarded Domain Theory}
-
 While guarded domain theory can be presented analytically using
 ultrametric spaces or the topos of trees, in practice it is
 considerably simpler to work \emph{synthetically} by working in a
@@ -219,19 +216,6 @@ property axiomatically.
 %
 In this paper, we work informally in a guarded type theory which is described in
 more detail in Section \ref{sec:guarded-type-theory}.
-
-% The move to synthetic setting is useful, but now you're stuck in the guarded setting
-The simplicity afforded by working in the synthetic setting comes with a
-drawback: by changing our ambient foundations so that all types represent
-step-indexed sets, it is no longer possible to define a type that denotes an
-ordinary set. Roughly speaking, what is needed is an ``escape hatch'' to leave
-the guarded setting and make definitions that are interpreted as constructions
-in ordinary mathematics. This is typically accomplished by adding a modality to
-the guarded type theory. The specific approach we take in this paper is the
-technique of \emph{clock-quantification} \cite{atkey-mcbride2013}. In
-particular, the guarded type theory in which we work has a notion of clocks that
-index all of our guarded constructions. This is discussed in more detail in
-Section \ref{sec:big-step-term-semantics}.
 
 %
 % As in the setting of analytic guarded domain theory, in the synthetic setting it
@@ -340,6 +324,24 @@ Then we want to verify that the big step semantics respects this equational
 theory: if closed programs $M \equiv N$ are equivalent in the equational theory
 then they have the same semantics, $M \Downarrow n \iff N \Downarrow n$ and
 $M\Uparrow \iff N \Uparrow$ and $M \Downarrow \mho \iff N \Downarrow \mho$.
+
+
+% The move to synthetic setting is useful, but now you're stuck in the guarded setting
+We have to take care when defining such a big-step semantics in
+guarded type theory, as a naive definition of termination is
+incorrect: we can prove using guarded recursion that an infinite loop
+terminates! This is because the definition of termination inside
+guarded logic has a different meaning, essentially meaning that for
+every finite number $n$, either the program terminates in $< n$ steps
+or it takes $n+1$ steps, which is equivalent to a statement of
+progress rather than termination. For this reason, we need a kind of
+``escape hatch'' in our ambient type theory to leave the guarded
+setting and make definitions that are interpreted as constructions in
+ordinary mathematics. We incorporate this by using
+\emph{clock-quantification}\max{Eric should provide a citation for Clocked cubical here since that's close to our actual approach} \cite{atkey-mcbride2013} in our type
+theory. In particular, the guarded type theory in which we work has a
+notion of clocks that index all of our guarded constructions. This is
+discussed in more detail in Section \ref{sec:big-step-term-semantics}.
 
 To define the big-step semantics, we apply clock quantification to obtain
 an interpretation of closed programs of base type as partial functions.

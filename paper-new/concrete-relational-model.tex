@@ -197,14 +197,19 @@ error domains equipped with a notion of syntactic perturbation:
 \end{definition}
 
 \begin{remark}
-  The reason why the set of syntactic perturbations needs to carry a monoid
-  structure and why the interpretation needs to be a homomorphism of monoids is
-  related to the construction of the identity relations and composition of
-  relations on value/computation types. As part of this construction, we will
-  need to produce a syntactic perturbation corresponding to the identity
-  predomain/error domain relation, as well as corresponding to the composition
-  of relations. The monoid structure gives us what we need to produce these
-  perturbations.
+  Syntactic perturbations are equipped with a monoid structure in
+  order to support identity and composition relations on value and
+  computation types. That is, the identity relation requires an
+  identity perturbation and composition of relations requires a
+  composition operation on perturbations.
+  %% The reason why the set of syntactic perturbations needs to carry a monoid
+  %% structure and why the interpretation needs to be a homomorphism of monoids is
+  %% related to the construction of the identity relations and composition of
+  %% relations on value/computation types. As part of this construction, we will
+  %% need to produce a syntactic perturbation corresponding to the identity
+  %% predomain/error domain relation, as well as corresponding to the composition
+  %% of relations. The monoid structure gives us what we need to produce these
+  %% perturbations.
   % we will need to produce a syntactic perturbation corresponding to the identity
   % relations $r(A)$, as well as one for the composition of relations. The monoid
   % structure gives us what we need to produce these elements. Likewise, the
@@ -221,18 +226,23 @@ error domains equipped with a notion of syntactic perturbation:
 % The fact that we cannot define the morphisms this way is unfortunate, since doing so would simplify
 % some aspects of the model construction.
 \begin{remark}
-  It might seem strange that in defining the morphisms of value and computation
-  objects, there is no requirement involving the monoids. For example, one could
-  imagine defining a morphism between value objects $(A, M_A, i_A)$ and $(A',
-  M_{A'}, i_{A'})$ to be a predomain morphism $f \colon A \to A'$ along with a
-  monoid homomorphism $h \colon M_A \to M_{A'}$ such that $f$ and $h$ satisfy a
-  compatibility condition with respect to the interpretations $i_A$ and
-  $i_{A'}$. However, with this definition we cannot interpret the function type,
-  since the morphisms defined in this way do not themselves form a value type. 
+  It might seem strange that we equip objects with a monoid of
+  perturbations but we do not require morphisms to respect this
+  structure in any way. A natural attempt would be defining a morphism
+  between value objects $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ to
+  be a predomain morphism $f \colon A \to A'$ along with a monoid
+  homomorphism $h \colon M_A \to M_{A'}$ such that $f$ and $h$ satisfy
+  a compatibility condition with respect to the interpretations $i_A$
+  and $i_{A'}$. However, this condition simply fails to hold for all
+  terms, in particular the property is preserved by $\lambda$
+  abstraction.
+  %% with this definition we cannot interpret the
+  %% function type, since the morphisms defined in this way do not
+  %% themselves form a value type.
   % This is due to the way that the syntactic perturbations are defined for the function type.
   %
-  The fact that we cannot define the morphisms in this way is unfortunate, since
-  doing so would simplify some aspects of the model construction.
+  %% The fact that we cannot define the morphisms in this way is unfortunate, since
+  %% doing so would simplify some aspects of the model construction.
   
   % However, with this definition of morphism, the category of value
   % types is no longer Cartesian closed and is not a model of call-by-push-value.
@@ -490,11 +500,10 @@ in the category of monoids:
 \( M_D \cong (M_{D \times D}) \oplus M_{U(D \to \li D)}. \)
 %
 \begin{remark}
-  The reason for defining the perturbations inductively is technical and has to
-  do with the fact that the perturbations corresponding to the predomain $\later
-  A$ need to be the same as the perturbations of $A$, \emph{not} later of the
-  perturbations of $A$. There may be a way to make this work by changing some
-  definitions; we leave this to future investigation.
+  Here it is crucial to define the perturbations of the dynamic type
+  \emph{inductively} rather than by guarded recursion. If we were to
+  define the perturbations by guarded recursion, then it would be
+  impossible to define the pull homomorphism for the $\iarr$ relation.
 \end{remark}
 %
 We now explain how to interpret these perturbations as endomorphisms.
