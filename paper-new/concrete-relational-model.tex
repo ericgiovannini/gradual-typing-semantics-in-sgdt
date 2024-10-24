@@ -484,15 +484,18 @@ similarly by post-composition with $i_B$.
 
 Finally, the most interesting type is of course the dynamic type. 
 It may seem as though we need to define the perturbations for $D$ by
-guarded recursion, but in fact we define them via least-fixpoint\footnote{
-  The reason for defining the perturbations inductively is technical and has to
-  do with the fact that we needed to define the perturbations corresponding to the
-  predomain $\later A$ to be the perturbations of $A$, \emph{not} later of the
-  perturbations of $A$. There may be a way to make this work by changing some
-  definitions, but we leave this as future work}
+guarded recursion, but in fact we define them via least-fixpoint
 in the category of monoids:
 %
 \( M_D \cong (M_{D \times D}) \oplus M_{U(D \to \li D)}. \)
+%
+\begin{remark}
+  The reason for defining the perturbations inductively is technical and has to
+  do with the fact that the perturbations corresponding to the predomain $\later
+  A$ need to be the same as the perturbations of $A$, \emph{not} later of the
+  perturbations of $A$. There may be a way to make this work by changing some
+  definitions; we leave this to future investigation.
+\end{remark}
 %
 We now explain how to interpret these perturbations as endomorphisms.
 We define $i_D : M_D \to \{ f : D \to D \mid f \bisim \id \}$ by induction as follows:
