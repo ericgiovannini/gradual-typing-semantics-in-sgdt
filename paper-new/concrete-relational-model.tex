@@ -197,28 +197,46 @@ error domains equipped with a notion of syntactic perturbation:
 \end{definition}
 
 \begin{remark}
-  The reason the set of perturbations needs to carry a monoid structure is that
-  we will need to produce a syntactic perturbation corresponding to the identity
-  relations $r(A)$, as well as one for the composition of relations. The monoid
-  structure gives us what we need to produce these elements. Likewise, the
-  reason that the interpretations as semantic perturbations must be
-  \emph{homomorphisms} of monoids is that we need a syntactic perturbation that
-  is interpreted as the identity semantic perturbation, and likewise given two
-  syntactic perturbations $\delta_1$ and $\delta_2$ we need a syntactic
-  pertubration $\delta_{1,2}$ that is interpreted as the composition of the
-  semantic perturbations $i_A(\delta_1)$ and $i_A(\delta_2)$.
+  The reason why the set of syntactic perturbations needs to carry a monoid
+  structure and why the interpretation needs to be a homomorphism of monoids is
+  related to the construction of the identity relations and composition of
+  relations on value/computation types. As part of this construction, we will
+  need to produce a syntactic perturbation corresponding to the identity
+  predomain/error domain relation, as well as corresponding to the composition
+  of relations. The monoid structure gives us what we need to produce these
+  perturbations.
+  % we will need to produce a syntactic perturbation corresponding to the identity
+  % relations $r(A)$, as well as one for the composition of relations. The monoid
+  % structure gives us what we need to produce these elements. Likewise, the
+  % reason that the interpretations as semantic perturbations must be
+  % \emph{homomorphisms} of monoids is that we need a syntactic perturbation that
+  % is interpreted as the identity semantic perturbation, and likewise given two
+  % syntactic perturbations $\delta_1$ and $\delta_2$ we need a syntactic
+  % pertubration $\delta_{1,2}$ that is interpreted as the composition of the
+  % semantic perturbations $i_A(\delta_1)$ and $i_A(\delta_2)$.
+  % These properties are used to define the identity and composition of value and computation relations
 \end{remark}
 
+% It doesn't work: not all types have such an action, e.g., the function type, because of the definition of the perturbations
+% The fact that we cannot define the morphisms this way is unfortunate, since doing so would simplify
+% some aspects of the model construction.
 \begin{remark}
   It might seem strange that in defining the morphisms of value and computation
   objects, there is no requirement involving the monoids. For example, one could
   imagine defining a morphism between value objects $(A, M_A, i_A)$ and $(A',
   M_{A'}, i_{A'})$ to be a predomain morphism $f \colon A \to A'$ along with a
-  monoid homomorphism $h \colon M_A \to M_{A'}$ such that $f$ and $h$ satisfied
-  a compatibility condition with respect to the interpretations $i_A$ and
-  $i_{A'}$. However, with this definition of morphism, the category of value
-  types is no longer Cartesian closed and is not a model of call-by-push-value.
-  This is unfortunate, as it would simplify some aspects of the model construction.
+  monoid homomorphism $h \colon M_A \to M_{A'}$ such that $f$ and $h$ satisfy a
+  compatibility condition with respect to the interpretations $i_A$ and
+  $i_{A'}$. However, with this definition we cannot interpret the function type,
+  since the morphisms defined in this way do not themselves form a value type. 
+  % This is due to the way that the syntactic perturbations are defined for the function type.
+  %
+  The fact that we cannot define the morphisms in this way is unfortunate, since
+  doing so would simplify some aspects of the model construction.
+  
+  % However, with this definition of morphism, the category of value
+  % types is no longer Cartesian closed and is not a model of call-by-push-value.
+  % This is unfortunate, as it would simplify some aspects of the model construction.
 \end{remark} 
 
 % every error domain $B$ with a monoid $M_B$ and interpretation homomorphism $i_B
@@ -560,8 +578,7 @@ In particular, the congruence rules of term precision are modeled easily: congru
 squares exist both for bisimilarity and for the error ordering, and so
 we also have these for extensional squares.
 %
-The \textsc{ErrBot} rule holds because $\mho$ is the least element in the
-ordering on the free error domain. 
+The \textsc{ErrBot} rule holds because $\mho$ is the least element in the semantics of the . 
 %
 Next, the \textsc{EquivTyPrec} rule follows because $c \equiv c'$
 implies quasi-equivalence of the denoted relations, and this in turn implies that
