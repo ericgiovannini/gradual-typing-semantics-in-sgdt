@@ -390,21 +390,24 @@ We also aim to complete our Agda formalization and evolve it into a
 reusable framework for mechanized denotational semantics of gradually-typed
 languages.
 
-Additionally, while we have focused on a single semantics in this work, there are a
-variety of other cast calculi that satisfy graduality but for which one or more
-equational axioms fail to hold. \eric{Max, please add examples}
-We expect that our development can be adapted to other cast semantics to prove
-graduality and equational reasoning principles (to the extent that the
-principles hold in those cast semantics).
+This work has focused on the ``Natural'' semantics of casts , which
+validate the full call-by-value $\eta$ laws for types, but other cast
+semantics have been proposed such as eager
+(\cite{herman-tomb-flanagan-2010}) and transient (\cite{transient})
+cast semantics which trade off certain $\eta$ equalities for other
+benefits such as early error detection or reduced runtime
+overhead\cite{deepandshallowtypes,newlicataahmed19}. It would be a
+good test of the generality of our semantic framework to see if it can
+model these alternative semantics by adjusting the semantics of types
+and casts, and providing proofs of weakened $\eta$ principles.
 
-We also plan to use our framework to investigate the performance of
-gradually-typed languages. Although we have focused on proving extensional
-properties in this work, the intensional nature of our semantics can be viewed
-as a form of \emph{cost semantics}, where a runtime cost is incurred from
-inspecting the dynamic type. This could be used to verify that cast
-optimizations such as space efficient implementations
-\cite{herman-tomb-flanagan-2010} are not only extensionally correct, but also
-have lower quantitative cost.
+Additionally, while our focus in this work has been on reasoning up to
+weak bisimilarity, the presence of explicit step counting in the model
+could be viewed as a form of \emph{cost semantics}, where a runtime
+cost is incurred from inspecting the dynamic type. This could possibly
+be used to verify that cast optimizations such as space efficient
+implementations \cite{herman-tomb-flanagan-2010} are not only
+extensionally correct, but have a lower abstract cost.
 
 % \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
 % In the future, we plan to apply our approach to give a denotational semantics
