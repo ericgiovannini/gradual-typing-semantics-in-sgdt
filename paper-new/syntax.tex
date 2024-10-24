@@ -157,10 +157,11 @@ x)x))$.
    \textrm{let } (x,y) = (V,V') \textrm{ in } N = N[V/x,V'/y] \and
    M[V:A\times A'/p] = \textrm{let } (x,y) = V \textrm{ in } M[(x,y)/p]
 
-  \upc{(r(A))}M = M \and
-  \upc{c'}\upc{c}M = \upc{cc'}M \and
-  \dnc{(r(A))}M = M \and
-  \dnc{c}\dnc{c'}M = \dnc{cc'}M
+  % Removed these as they are not needed. The next rule implies that they are quasi-equivalent.
+  % \upc{(r(A))}M = M \and
+  % \upc{c'}\upc{c}M = \upc{cc'}M \and
+  % \dnc{(r(A))}M = M \and
+  % \dnc{c}\dnc{c'}M = \dnc{cc'}M
 
   \inferrule
   {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
