@@ -163,11 +163,11 @@ x)x))$.
   % \dnc{(r(A))}M = M \and
   % \dnc{c}\dnc{c'}M = \dnc{cc'}M
 
-  \inferrule[Right=EquivTyPrec]
+  \inferrule*[right=EquivTyPrec]
   {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
   {\Delta\vdash M \ltdyn M' : c'}
 
-  \inferrule[Right=ErrBot]
+  \inferrule*[right=ErrBot]
   {}
   {\Delta \vdash \mho \ltdyn M : c}
 
@@ -176,19 +176,19 @@ x)x))$.
   % {}
   % {\dnc {c} \upc {c} M \equidyn M}
 
-  \inferrule*[Right=UpL]
+  \inferrule*[right=UpL]
   {M \ltdyn M' : cc_r}
   {\upc {c} M \ltdyn M' : c_r}
 
-  \inferrule*[Right=UpR]
+  \inferrule*[right=UpR]
   {M \ltdyn M' : c_l}
   {M \ltdyn \upc {c} M' : c_lc}
 
-  \inferrule*[Right=DnL]
+  \inferrule*[right=DnL]
   {M \ltdyn M' : c_r}
   {\dnc {c} M \ltdyn M' : cc_r}
 
-  \inferrule*[Right=DnR]
+  \inferrule*[right=DnR]
   {M \ltdyn M' : c_lc}
   {M \ltdyn \dnc {c} M' : c_l}
   \end{mathpar}
