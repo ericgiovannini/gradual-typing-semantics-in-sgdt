@@ -35,7 +35,7 @@ $A$.
 Given a predomain $A$, we can form the predomain $\later A$. The
 underlying set is $\later |A|$ and the ordering is given by $\tilde{x}
 \ltdyn_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \ltdyn_A
-\tilde{x'}_t)$. Likewise for bisimilarity.
+\tilde{x'}_t)$, and likewise for bisimilarity.
 
 We similarly enhance our error domains with ordering and bisimilarity
 relations, but we further need to impose conditions on the algebraic
@@ -377,6 +377,8 @@ c$, but upon inspection this definition agrees with the one given
 before. Similarly, the validity of the equational theory follows
 easily: $\beta\eta$ holds in our model. We next elaborate on each of
 the remaining components.
+% Interpretations of functions are different: one is arbitrary fucntions, the other is monotone functions that preserve bisimilarity
+% Interpretation of the projection is different since we add a delay
 
 \subsubsection{Interpreting types}\label{sec:perturbation-constructions}
 % \max{this section needs prose}
@@ -522,10 +524,6 @@ Lastly, the interpretation of the type precision equivalence rules $c \equiv c'$
 as quasi-equivalence of the denoted relations $\sem{c} \bisim \sem{c'}$ is
 justified by Lemma \ref{lem:quasi-order-equiv-functors} in the Appendix.
 
-% The type precision equivalence rules follow because $c \equiv c'$
-% implies quasi-equivalence, and that quasi-equivalence implies that
-% $\id \ltsqbisim{\sem{c}}{\sem{c'}} \id$.
-
 \subsubsection{Interpreting Term Precision: Extensional Squares}
 
 Finally, we establish the core result of the semantics: interpreting
@@ -536,6 +534,13 @@ compositional constructions.
 In particular, the congruence rules of term precision are modeled easily: congruence
 squares exist both for bisimilarity and for the error ordering, and so
 we also have these for extensional squares.
+%
+The rule involving error holds because $\mho$ is the least element in the
+ordering on the free error domain. 
+%
+Next, the rule involving type-precision equivalence follows because $c \equiv c'$
+implies quasi-equivalence of the denoted relations, and this in turn implies that
+$\id \ltsqbisim{\sem{c}}{\sem{c'}} \id$.
 %
 Thus, it remains to verify the existence of the squares for the cast rules. For UpL, the
 relevant extensional square is obtained as follows:

@@ -204,9 +204,6 @@ in our denotational model have an error ordering and a bisimilarity relation.
 Then the precision rules for casts could be similarly validated using
 perturbations as we did in this work.
 
-\subsection{Implications for Gradual Typing Research}
-
-
 
 \subsection{Mechanization}\label{sec:mechanization}
 % Discuss Guarded Cubical Agda and mechanization efforts
@@ -275,7 +272,7 @@ The remaining formalization work is the following:
     \item Verifying the rules in the model corresponding to the equations for
     type precision derivations (see the bottom of Figure \ref{fig:gtlc-syntax}).
     These are also included in the Appendix.
-    \item Defining the syntax-to-semantics translation.
+    \item Formalizing the syntax-to-semantics translation.
 \end{enumerate} 
 
 \begin{comment}
@@ -387,14 +384,14 @@ type theory to obtain solutions to guarded domain equations as we did in this
 work for the denotation of the dynamic type. The generality of our techniques
 should allow for many of the constructions to be reused across different
 languages. For instance, the free error domain construction can be easily
-extended with additional cases to model effects besides error and stepping.
+extended with additional cases to model effects besides error and stepping. % TODO cite guarded interaction trees
 We also aim to complete our Agda formalization and evolve it into a
 reusable framework for mechanized denotational semantics of gradually-typed
 languages.
 
 Additionally, while we have focused on a single semantics in this work, there are a
 variety of other cast calculi that satisfy graduality but for which one or more
-equational axioms fail to hold. % TODO cite
+equational axioms fail to hold. \eric{Max, please add examples}
 We expect that our development can be adapted to other cast semantics to prove
 graduality and equational reasoning principles (to the extent that the
 principles hold in those cast semantics).
@@ -406,7 +403,7 @@ as a form of \emph{cost semantics}, where a runtime cost is incurred from
 inspecting the dynamic type. This could be used to verify that cast
 optimizations such as space efficient implementations
 \cite{herman-tomb-flanagan-2010} are not only extensionally correct, but also
-have lower quantitative cost. We leave this as future work.
+have lower quantitative cost.
 
 % \max{Expand on this, e.g. what some of the challenges might be and what would be reusable}
 % In the future, we plan to apply our approach to give a denotational semantics
