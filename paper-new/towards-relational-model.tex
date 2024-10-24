@@ -123,7 +123,7 @@ step-insensitive ordering on $\li A$.
 
 \subsection{Why transitivity is essential}
 
-At this point we might try to weaken from our initial attempt at
+At this point we might try to weaken our initial attempt at
 providing a poset semantics to a semantics where types are equipped
 with merely a reflexive relation, and continue using the
 step-insensitive ordering. However, some level of transitivity is
@@ -246,8 +246,8 @@ Now that we have an intended model of term precision in the form of
 squares, we can see what is required to give a compositional proof of
 graduality. Most of the cases of term precision are just congruence
 and follow easily. The core of the proof of the graduality property is
-in proving the validity of the \emph{cast rules} UpL, UpR, DnL and
-DnR.
+in proving the validity of the \emph{cast rules} $\upl$, $\upr$, $\dnl$, and
+$\dnr$.
 %
 These rules specify a relationship between the semantics of type
 precision derivations $c$ and the corresponding casts $\upc c, \dnc c$ (see Section
@@ -259,7 +259,7 @@ correspondence with the casts $\sem{\upc c}, \sem{\dnc c}$.
 %
 What property should we require?
 
-Consider the UpL rule. It states that if
+Consider the $\upl$ rule. It states that if
 $c : A_1 \ltdyn A_2$ and $c' : A_2 \ltdyn A_3$ and $M : A_1$ is
 related to $N : A_3$ via the composition $c \comp c'$, then the upcast
 $\upc{c} M$ is related to $N$ via $c'$. Since the upcasts are pure
@@ -281,14 +281,14 @@ the following square, where the relation on the top is $\sem{c} \comp \sem{c'}$:
 \end{tikzcd}\]
 While at first look this seems to be specifying a relationship between
 $\sem{c}$ and $\sem{\upc c}$, there is a problem: it also quantifies
-involves an arbitrary other relation $\sem{c'}$! This means we cannot
+over an arbitrary other relation $\sem{c'}$! This means we cannot
 require the existence of this square as part of the definition of a
 relation between value types, as it is self-referential. This would
 seem to imply that we cannot give a compositional model for
 graduality. However, New and Licata observed that in the presence of
 transitivity, we can \emph{derive} the above squares from simpler ones
 that do not involve composition of relations. Below are the simpler squares
-corresponding to UpL, UpR, DnL, and DnR:
+corresponding to $\upl$, $\upr$, $\dnl$, and $\dnr$:
 \begin{center}
   \begin{tabular}{ c | c | c | c} 
     % UpL
@@ -348,7 +348,7 @@ morphism $\upc{c}$, essentially that the relation is a kind of \emph{graph} of
 the function in that $x \binrel{\sem c} y$ if and only if $\sem{\upc c}(x)
 \leq_{A_2} y$ \cite{shulman2007}.
 
-We can use the simpler UpL square to derive the original UpL square by
+We can use the simpler $\upl$ square to derive the original $\upl$ square by
 horizontally composing with the identity square for $c'$:
 %
 % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMSwxLCJBXzIiXSxbMCwxLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwyLCJjJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiXFxsdGR5bl97QV8yfSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzUsNCwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDMsIlxcdXBje2N9IiwyXSxbMiw0LCJcXGlkIl0sWzEsNSwiXFxpZCIsMl1d
@@ -366,7 +366,7 @@ horizontally composing with the identity square for $c'$:
 %
 Then to complete the proof, we observe that the composition of $\ltdyn_{A_2}$ with $c'$ is equal to
 $c'$, because $c'$ is \emph{downward-closed} under the relation on $A_2$.
-An analogous argument shows that we can derive the original UpR square from the simpler version of UpR,
+An analogous argument shows that we can derive the original $\upr$ square from the simpler version of $\upr$,
 this time using the fact that poset relations are \emph{upward-closed}.
 % Thus, we
 % obtain the original UpL square by vertically composing the square shown above
@@ -375,7 +375,7 @@ this time using the fact that poset relations are \emph{upward-closed}.
 To recap, we have shown that in order to carry out the graduality proof
 compositionally, we need that the relations are closed under the ordering on
 each side. In particular, this implies that the ordering relations $\ltdyn_{A}$
-must be transitive. Thus, we cannot entirely drop posets from our semantics.
+must be transitive, so we cannot entirely drop posets from our semantics.
 
 % The actual place where transitivity of the relations on the value types is
 % needed in this argument occurs when $A_3 = A_2$ and we take $c'$ to be
@@ -481,7 +481,7 @@ differing numbers of steps.
 The offending step arises precisely from the place where our
 definition of $D$ uses a $\later$: the function case.
 %
-Consider the representability condition corresponding to the DnL rule
+Consider the representability condition corresponding to the $\dnl$ rule
 for $\iarr \colon \dyntodyn \ltdyn\, \dyn$. This is the square $\sem{\dnc{\iarr}} \ltsq{r({\li D})}{\li\sem{\iarr}} \id$.
 %% % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXGxpIEQiXSxbMCwxLCJcXGxpIFUoRCBcXGFyciBcXGxpIEQpIl0sWzEsMCwiXFxsaSBEIl0sWzEsMSwiXFxsaSBEIl0sWzAsMiwiXFxsZXFfe1xcbGkgRH0iLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsIlxcbGlcXGlhcnIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcZG5je1xcaWFycn0iLDJdLFsyLDMsIlxcaWQiXV0=
 %% \[\begin{tikzcd}[ampersand replacement=\&]
@@ -496,13 +496,13 @@ For this square to be valid with the lock-step ordering the left and
 right hand side would need to take the same number of steps, at least
 when the left-hand side does not error.
 %
-However the right hand side \emph{always} takes $0$ steps, as it is
+However, the right hand side \emph{always} takes $0$ steps, as it is
 the identity function, whereas on the left, our definition of
 $\sem{\dnc{\iarr}}$ had to take an observable step when its input is a
 function: this was inherent to the fact that the function case of the
 dynamic type is guarded by a later.
 
-However, observe that we can remedy this particular situation by
+Observe that we can remedy this particular situation by
 replacing the $\id$ on the right hand side by an innocuous function
 $\delta^* = (\delta \circ \eta)^\dagger$ that on an input value takes
 a single computational step, but is otherwise the identity

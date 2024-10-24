@@ -151,7 +151,7 @@ them from the error domains we define later to model graduality:
   \item A function $\theta_B : \laterhs UB \to UB$ modeling a computational step
   \end{enumerate}
   A homomorphism of error domains $\phi : B \multimap B'$ is a
-  function $\phi : UB \to UB'$ that preserves these in that
+  function $\phi : UB \to UB'$ that preserves $\mho$ and $\theta$, i.e.,
   $\phi(\mho_B) = \mho_{B'}$ and $\phi(\theta_{B}(\tilde{x})) =
   \theta_{B'}(\later (\phi(\tilde{x})))$.  Simple error domains and
   homomorphisms assemble into a category $\ErrDom$ with a forgetful
@@ -170,7 +170,7 @@ where $\delta_B = \theta_B \circ \nxt$ is a map we call the ``delay''
 map which trivially delays an element now to be available later.  As
 an example, we can define $\Omega_B = \qfix(\id) : UB$, the
 ``diverging element'' that ``thinks forever'' in that $\Omega_B =
-\delta(\Omega_B)$. We call this a ``quasi'' fixed point because it is
+\delta_B(\Omega_B)$. We call this a ``quasi'' fixed point because it is
 \emph{nearly} a fixed point except for the presence of the delay map
 $\delta_B$, which is irrelevant from an extensional point of view
 where we would prefer to ignore differences in the number of steps
@@ -303,11 +303,11 @@ as $\inat, \itimes, \iarr$ respectively.
 We now extend our semantics of types to a semantics of terms of
 GTLC. As mentioned above, terms $x:A_1,\ldots \vdash M : A$ are
 modeled as effectful functions $\sem{M}: \sem{A_1}\times \cdots \to U\li\sem{A}$
-and values $x:A_1,\ldots \vdash V : A$ are also be modeled as pure
+and values $x:A_1,\ldots \vdash V : A$ are also modeled as pure
 functions $\sem{V} : \sem{A_1}\times\cdots \to \sem{A}$.
 %
-The interpretation of the typical CBV features of GTLC into a CBPV is
-standard \cite{levy99}, the only additional part we need to account for
+The interpretation of the typical CBV features of GTLC into a model of CBPV is
+standard \cite{levy99}; the only additional part we need to account for
 is the semantics of casts, shown in Figure \ref{fig:term-semantics}.
 %
 %% Much of the semantics is similar to a normal call-by-value denotational
@@ -444,7 +444,7 @@ actually only a function available later, and so we must insert a
     \begin{footnotesize}
   \begin{align*}
     % upcasts
-    \sem{\upc{r(A)}} &= \id_A \\
+    \sem{\upc{r(A)}} &= \id_{\sem{A}} \\
     \sem{\upc{(c \comp c')}} &= \sem{\upc{c'}} \circ \sem{\upc{c}} \\
     \sem{\upc{(c_i \ra c_o)}} &= (\sem{\dnc {c_i}} \tok \li\sem{A_o'})\circ (\sem{A_i} \tok U\li(\sem{\upc {c_o}}))\\
     \sem{\upc{(c_1 \times c_2)}} &= \sem{\upc{c_1}} \times \sem{\upc{c_2}}\\
@@ -459,7 +459,7 @@ actually only a function available later, and so we must insert a
     % \sem{\err_B}       &= \lambda \gamma . \mho \\
     %
     % downcasts
-    \sem{\dnc{r(A)}} &= \id_{FA} \\
+    \sem{\dnc{r(A)}} &= \id_{\li \sem{A}} \\
     \sem{\dnc{(c \comp c')}} &= \sem{\dnc{c}} \circ \sem{\dnc{c'}} \\
     \sem{\dnc{(c_i \ra c_o)}} &= U(\sem{\upc {c_i}} \to \sem{\dnc {c_o}})\\
     \sem{\dnc{(c_1 \times c_2)}} &= (\dnc{c_1} \timesk A_2) \circ (A_1' \timesk \dnc{c_2}) \\
@@ -535,16 +535,17 @@ Given $d : \delay(\mathbb{N} + {\mho})$, we define a notion of termination in
 $i$ steps, written $d \da^i$. We define $d \da^i$ inductively by the rules
 $(\tnow\, n_?) \da^0$ and $(\tlater\, d) \da^{i+1}$ if $d \da^i$ (here, $n_? :
 \mathbb{N} + {\mho}$). From this definition, it is clear that if there is an $i$
-such that $d \da^i$, then this $i$ is unique. Furthermore, from the proof that
-$d$ terminates in $i$ steps, we can extract the result with which $d$
-terminates. This is defined by a straightforward induction on the proof that $d \da^i$.
-
+such that $d \da^i$, then this $i$ is unique. 
+% Furthermore, from the proof that
+% $d$ terminates in $i$ steps, we can extract the result with which $d$
+% terminates. This is defined by a straightforward induction on the proof that $d \da^i$.
 Using this definition of termination, we define a partial function 
 %
 $f \colon \delay (\mathbb{N} + {\mho}) \rightharpoonup \mathbb{N} + {\mho}$
 %
-by existentially quantifying over $i$ for which $d \da^i n_?$. That is, we define
-$f(d) := n_?$ if $d \da^i n_?$ for some $i$, and undefined otherwise.
+by existentially quantifying over $i$ for which $d \da^i n_?$. That is, we
+define $f(d) := n_?$ if $d \da^i n_?$ for some (necessarily unique) $i$, and $f$
+is undefined otherwise.
 
 Now consider the global version of the term semantics, $\sem{\cdot}^{gl} \colon
 \{M \,|\, \cdot \vdash M : \nat \} \to \li^{gl} \mathbb{N}$, defined by

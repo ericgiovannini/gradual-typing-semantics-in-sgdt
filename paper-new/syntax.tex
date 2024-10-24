@@ -141,7 +141,7 @@ Finally, we include 4 rules for reasoning about casts. Intuitively
 these say that the upcast is a kind of \emph{least upper bound} and
 dually that the downcast is a \emph{greatest lower bound}.
 
-As a higher-order gradually typed language we inherently have to deal
+As a higher-order gradually typed language, we inherently have to deal
 with two effects: errors and divergence. Errors arise from failing
 casts, e.g. casting a number to dynamic to a function
 $\dnc{\iarr}\upc{\inat} x$. Divergence arises because our dynamic type
@@ -163,11 +163,11 @@ x)x))$.
   % \dnc{(r(A))}M = M \and
   % \dnc{c}\dnc{c'}M = \dnc{cc'}M
 
-  \inferrule
+  \inferrule[Right=EquivTyPrec]
   {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
   {\Delta\vdash M \ltdyn M' : c'}
 
-  \inferrule
+  \inferrule[Right=ErrBot]
   {}
   {\Delta \vdash \mho \ltdyn M : c}
 

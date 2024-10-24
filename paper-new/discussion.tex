@@ -216,7 +216,7 @@ described in Section \ref{sec:concrete-relational-model}: predomains, error
 domains, morphisms, relations, squares, using the guarded
 features to define the free error domain, the lock-step error ordering, and weak
 bisimilarity. We also formalized the no-go theorem from Section
-\ref{sec:concrete-term-model}.
+\ref{sec:towards-relational-model}.
 
 Building on these definitions, we formalized the notion of semantic
 perturbations and push-pull structures as well as quasi-representable relations,
@@ -384,7 +384,8 @@ type theory to obtain solutions to guarded domain equations as we did in this
 work for the denotation of the dynamic type. The generality of our techniques
 should allow for many of the constructions to be reused across different
 languages. For instance, the free error domain construction can be easily
-extended with additional cases to model effects besides error and stepping. % TODO cite guarded interaction trees
+extended to model effects besides error and stepping
+\cite{guarded-interaction-trees, probabilistic-fpc-guarded}.
 We also aim to complete our Agda formalization and evolve it into a
 reusable framework for mechanized denotational semantics of gradually-typed
 languages.

@@ -151,26 +151,27 @@ domain equation on predomains rather than sets:
 %
 \[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr \li D) \]
 The complete definition of the ordering $\ltdyn_D$ is provided in the appendix
-for completeness.
+for completeness. We refer to the three injections as $e_\nat$, $e_\times$,
+and $e_\to$, respectively.
 
-To interpret term precision, we define three relations involving $D$
+To interpret type precision, we define three relations involving $D$
 as follows. We define $\inat : \mathbb{N} \rel D$ by $(n, d) \in
 \inat$ iff $e_\nat(n) \ltdyn_D d$. We similarly define $\itimes : D
 \times D \rel D$ by $((d_1, d_2), d) \in \itimes$ iff $e_\times(d_1,
 d_2) \ltdyn_D d$, and we define $\text{inj}_\to : U(D \arr \li D) \rel
-D$ by $(f, d) \in \iarr$ iff $e_\to(f) \ltdyn_D d$.
+D$ by $(f, d) \in \iarr$ iff $(e_\to(f) \circ \nxt) \ltdyn_D d$.
 
 \subsection{Phase Two: Perturbations and Quasi-Representable Relations}
 
 We now introduce the additional definitions needed to complete the construction
 of our model. Recall from Section \ref{sec:lock-step-and-weak-bisim} that in order
-to establish the DnL rule for the downcast of $\iarr$, we needed to adjust the
+to establish the $\dnl$ rule for the downcast of $\iarr$, we needed to adjust the
 rule by inserting a ``delay'' on the right-hand side. A similar adjustment is
-needed for the DnR rule for $\iarr$. Moreover, the need to insert delays impacts
+needed for the $\dnr$ rule for $\iarr$. Moreover, the need to insert delays impacts
 the semantics of the cast rules for \emph{all} relations, because of the
 functorial nature of casts. That is, the upcast at a function type $c_i \ra c_o$
 involves a downcast in the domain and an upcast in the codomain. This has two
-consequences: first, the squares corresponding to the rules UpL and UpR may also
+consequences: first, the squares corresponding to the rules $\upl$ and $\upr$ may also
 require the insertion of a delay. Second, we need to be able to insert
 ``higher-order'' delays in a way that follows the structures of the casts.
 
@@ -228,7 +229,7 @@ error domains equipped with a notion of syntactic perturbation:
 
 Having defined syntactic perturbations and value and computation objects, we can
 now make formal the final aspect of the model: the notion of
-quasi-represntability of relations.
+quasi-representability of relations.
 %
 \begin{definition}[quasi-left-representable relations]\label{def:quasi-left-representable}
 Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
@@ -247,7 +248,7 @@ relations $d$.
 
 Likewise, we define quasi-right-representability as follows:
 %
-\begin{definition}[quasi-right-represntable relations]\label{def:quasi-right-representable}
+\begin{definition}[quasi-right-representable relations]\label{def:quasi-right-representable}
 Let $(B, M_B, i_B)$ and $(B', M_{B'}, i_{B'})$ be computation objects, and let
 $d : B \rel B'$ be an error domain relation. We say that $d$ is
 \emph{quasi-right-representable} by an error domain morphism $p : B' \multimap B$ if
@@ -258,7 +259,7 @@ the following two squares exist:
 Quasi-right-representability for predomain relations is defined similarly.
 \end{definition}
 
-For ordinary representability, the relation is \emph{uniqueley
+For ordinary representability, the relation is \emph{uniquely
 determined} by any morphism that left- or right-represents it: if two
 relations are left-represented by the same morphism, then they are
 equal. But for quasi-representability, this is no longer the case due
@@ -282,10 +283,10 @@ specifies how relations interact with perturbations. In particular, we need to
 be able to ``push'' and ``pull'' perturbations along relations $c$ and $d$.
 %
 The intuition for this requirement comes from the construction of the square
-corresponding to the original UpL rule from the square for the simplified
+corresponding to the original $\upl$ rule from the square for the simplified
 version as was shown in Section \ref{sec:towards-relational-model}. Recall that
-we horizontally composed the simplified UpL square for $c$ with the identity
-square for $c'$ on the right. Now that the square for UpL involves a
+we horizontally composed the simplified $\upl$ square for $c$ with the identity
+square for $c'$ on the right. Now that the square for $\upl$ involves a
 perturbation on the right instead of the identity, this construction will not
 work unless we can ``push'' the perturbation on $A_2$ to one on $A_3$. That is,
 given a relation $c : A \rel A'$ and a syntactic perturbation $m_A \in M_A$, we
@@ -369,14 +370,31 @@ denotational model:
     $\sem{M}\ltsqbisim{\sem{\Delta}}{U\li\sem{c}} \sem{M'}$
 \end{itemize}
 
-For the term semantics $\sem{M}$, nothing really differs from the term
-semantics in Section~\ref{sec:concrete-term-model}. The only difference is
-that the definitions of $\sem{\upc c}$ and $\sem{\dnc c}$ can be
-defined as the morphisms that left- and right-quasi-represent $\sem
-c$, but upon inspection this definition agrees with the one given
-before. Similarly, the validity of the equational theory follows
-easily: $\beta\eta$ holds in our model. We next elaborate on each of
-the remaining components.
+The term semantics $\sem{M}$ is nearly identical to the term semantics in
+Section~\ref{sec:concrete-term-model}. One difference is that the interpretation
+of the function type $A_i \ra A_o$ in the term semantics of Section
+\ref{sec:concrete-term-model} involves \emph{arbitrary functions}, while the
+interpretation of the function type in the term semantics defined here involves
+only those functions that are morphisms of predomains. Additionally, the
+semantics of casts is slightly different. In the semantics of Section
+\ref{sec:concrete-term-model}, the projection corresponding to the type
+precision $cc'$ is simply the composition of the projections. In the new
+semantics, the corresponding projection involves a perturbation. The reason for
+this is technical and is a consequence of the construction of the composition of
+value/computation relations. (The relevant projection is defined in the proof of
+Lemma \ref{lem:representation-comp-F-U} in the Appendix.) However, the two
+projections are extensionally equivalent since they are the same up to a
+perturbation.
+
+ % nothing really differs from the term semantics in Section~\ref{sec:concrete-term-model}. The only difference is
+% One difference is that the definitions of $\sem{\upc c}$ and $\sem{\dnc c}$ can be
+% defined as the morphisms that left- and right-quasi-represent $\sem
+% c$, but upon inspection this definition agrees with the one given
+% before. 
+
+The validity of the equational theory follows easily: $\beta\eta$ holds in our
+model. In the remainder of this section, we elaborate on each of the remaining
+components of the model.
 % Interpretations of functions are different: one is arbitrary fucntions, the other is monotone functions that preserve bisimilarity
 % Interpretation of the projection is different since we add a delay
 
@@ -389,17 +407,18 @@ we describe how we enhance each of the constructions we use ($U,\li,\to,\times,D
 with a monoid of syntactic perturbation and a means of interpreting them as semantic
 perturbations.
 
-First consider the free error domain $\li-$. Given a value object
-$(A, M_A, i_A)$ we define the syntactic perturbations $M_{\li A}$ to
-be $\mathbb{N} \oplus M_A$, where $\oplus$ denotes the free product of
-monoids (the coproduct in the category of monoids). The intuition
-behind needing to include $\mathbb{N}$ comes from the example of the
-downcast for $\iarr$. Recall that we adjusted the squares
-corresponding to the DnL and DnR rules by adding $(\delta \circ
-\eta)^\dagger$ on the side opposite the downcast. Thus, we need a
-syntactic perturbation in $M_{\li A}$ that will be interpreted as
-$(\delta \circ \eta)^\dagger$. We accomplish this by taking the
-coproduct with $\mathbb{N}$.
+First consider the free error domain $\li-$. Given a value object $(A, M_A,
+i_A)$ we define the syntactic perturbations $M_{\li A}$ to be $\mathbb{N} \oplus
+M_A$, where $\oplus$ denotes the free product of monoids (the coproduct in the
+category of monoids). The intuition behind needing to include $\mathbb{N}$ comes
+from the example of the downcast for $\iarr$. Recall that we adjusted the
+squares corresponding to the $\dnl$ and $\dnr$ rules by adding $(\delta \circ
+\eta)^\dagger$ on the side opposite the downcast. Thus, we need a syntactic
+perturbation in $M_{\li A}$ that will be interpreted as $(\delta \circ
+\eta)^\dagger$. We accomplish this by taking the coproduct with $\mathbb{N}$.
+Since $\mathbb{N}$ is the free monoid on one generator, defining a homomorphism
+from $\mathbb{N}$ to $\morbisimid{\li A}$ is equivalent to a choice of an
+element in $\morbisimid{\li A}$.
 %
 The interpretation of the perturbations as endomorphisms is defined using the
 universal property of the coproduct of monoids. Specifically, to define the
@@ -435,8 +454,14 @@ $(\id, i_{A_2}(m_2))$.
 % Could state this using the functorial action of \times
 
 The action of $\arr$ on objects is as follows. Given $(A, M_A, iA)$ and $(B,
-M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$ and the interpretation
-is defined analogously to that of $\times$.
+M_B, i_B)$ we define the monoid $M_{A \arr B} = M_A^{op} \oplus M_B$. (Here,
+$M^{op}$ denotes the monoid with the same elements but with the order of
+multiplication reversed, i.e., $x \cdot_{M^{op}} y := y \cdot_M x$.) To define
+the interpretation $i_{A \arr B}$, it suffices to define a homomorphism
+$M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A \arr B}$. The
+former takes an element $m_A$ and a predomain morphism $f : A \to UB$ and
+returns the composition $f \circ i_A(m_A)$, while the latter is defined
+similarly by post-composition with $i_B$.
 % Could state this using the functorial action of \arr
 
 Finally, the most interesting type is of course the dynamic type. 
@@ -506,7 +531,7 @@ identity elements of the respective monoids.
 %
 For quasi-right-representability, the only nontrivial case is $\li(\iarr)$.
 Recall the definition of the downcast for $\iarr$ given in Section
-\ref{sec:term-interpretation}. We know that in order for the DnR and DnL squares
+\ref{sec:term-interpretation}. We know that in order for the $\dnr$ and $\dnl$ squares
 for $\li \iarr$ to exist, we must insert a delay on the side opposite the
 downcast. In terms of syntactic perturbations, this means that we take $\dellp$
 and $\delrp$ in the definition of quasi-right-representability to both be
@@ -517,7 +542,7 @@ generator $1$ to the endomorphism of error domains $(\delta \circ
 \eta)^\dagger$.
 %
 With this choice for the perturbations, it is straightforward to show that the
-DnL and DnR squares exist using the definition of the downcast and the
+$\dnl$ and $\dnr$ squares exist using the definition of the downcast and the
 definition of the relation $\iarr$.
 
 Lastly, the interpretation of the type precision equivalence rules $c \equiv c'$
@@ -535,14 +560,14 @@ In particular, the congruence rules of term precision are modeled easily: congru
 squares exist both for bisimilarity and for the error ordering, and so
 we also have these for extensional squares.
 %
-The rule involving error holds because $\mho$ is the least element in the
+The \textsc{ErrBot} rule holds because $\mho$ is the least element in the
 ordering on the free error domain. 
 %
-Next, the rule involving type-precision equivalence follows because $c \equiv c'$
+Next, the \textsc{EquivTyPrec} rule follows because $c \equiv c'$
 implies quasi-equivalence of the denoted relations, and this in turn implies that
 $\id \ltsqbisim{\sem{c}}{\sem{c'}} \id$.
 %
-Thus, it remains to verify the existence of the squares for the cast rules. For UpL, the
+Lastly, it remains to verify the existence of the squares for the cast rules. For $\upl$, the
 relevant extensional square is obtained as follows:
 %
 % https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMSwwLCJBXzIiXSxbMiwwLCJBXzMiXSxbMCwxLCJBXzIiXSxbMSwxLCJBXzIiXSxbMiwxLCJBXzMiXSxbMCwzLCJlX2MiLDIseyJjdXJ2ZSI6MX1dLFsxLDQsIlxcZGVscmVfYyIsMl0sWzIsNSwiXFxwdXNoX3tjJ30oXFxkZWxyZV9jKSIsMix7ImN1cnZlIjoxfV0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiYyciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFszLDQsInIoQV8yKSIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzQsNSwiYyciLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDUsIlxcaWQiLDAseyJjdXJ2ZSI6LTF9XSxbMCwzLCJlX2MiLDAseyJjdXJ2ZSI6LTF9XSxbOCwxMywiXFxiaXNpbSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDE0LCJcXGJpc2ltIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
@@ -566,8 +591,8 @@ relevant extensional square is obtained as follows:
 % intensional squares.
 We have used the push-pull structure on $c'$ to turn the perturbation on $A_2$
 into a perturbation on $A_3$. Lastly we note that the bottom edge of the square
-is equal to $c'$ by the fact that $c'$ is downward closed. The squares for UpR,
-DnL, and DnR are obtained analogously.
+is equal to $c'$ by the fact that $c'$ is downward closed. The squares for $\upr$,
+$\dnl$, and $\dnr$ are obtained analogously.
 
 % Now that we have defined an intensional model with an interpretation for the
 % dynamic type, we can apply the abstract constructions introduced in Section
