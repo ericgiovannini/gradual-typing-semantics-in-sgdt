@@ -16,7 +16,7 @@ programmers that initially write their code in a dynamically typed language need
 to rewrite some or all of their codebase in a static language if they would like
 to receive the benefits of static typing once their codebase has matured.
 
-\emph{Gradually-typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to
+\emph{Gradually typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to
 resolve this tension by allowing for both static and dynamic typing disciplines
 to be used in the same codebase. These languages support smooth interoperability
 between statically-typed and dynamically-typed styles, allowing the programmer to
@@ -77,15 +77,18 @@ Fundamentally, this property comes down to the behavior of
 assertions.
 
 Additionally, gradually typed languages should offer some of the
-benefits of static typing. While classical type soundness, that
+benefits of static typing. While standard type soundness, that
 well-typed programs are free from runtime errors, is not compatible
-with runtime type errors, we can instead focus on \emph{type-based
-reasoning}. For instance, while dynamically typed $\lambda$ calculi
-only satisfy $\beta$ equality for their type formers, statically typed
-$\lambda$ calculi additionally satisfy type-dependent $\eta$
-properties that ensure that functions are determined by their behavior
-under application and that pattern matching on data types
-is safe and exhaustive.
+with runtime type errors, it is possible instead to prove that
+gradually typed languages validate \emph{type-based reasoning}. For
+instance, while dynamically typed $\lambda$ calculi only satisfy
+$\beta$ equality for their type formers, statically typed $\lambda$
+calculi additionally satisfy type-dependent $\eta$ properties that
+ensure that functions are determined by their behavior under
+application and that pattern matching on data types is safe and
+exhaustive. A gradually typed calculus that validates these
+type-dependent $\eta$ laws then provides some of the type-based
+reasoning that dynamic languages lack.
 
 % moved the remaining paragraphs to a new section later in the intro
 
@@ -129,32 +132,34 @@ This framework has the benefit of being compositional, and was
 expressive enough to be extended to model dependently typed gradual
 typing \cite{gradualizing-cic}.
 %
-\max{we should make clear that we don't yet model these perverse recursive features}
-\eric{In the contributions section, I explain that we don't yet model these features}
 However, an approach based on classical domain theory has fundamental
 limitations: domain theory is incapable of modeling certain perversely
 recursive features of programming languages such as dynamic type tag
 generation and higher-order references, which are commonplace in
 real-world gradually typed systems as well as gradual calculi.
 %
-Our long-term goal is to develop a semantics that will scale up to these
-advanced features, and so we begin with this work by departing from
-classical domain theory.
+Our long-term goal is to develop a denotational approach that can
+scale up to these advanced features, and so we must abandon classical
+domain theory as the foundation in order to make progress. In this
+work, we provide first steps towards this goal by adapting work on a
+simple gradually typed lambda calculus to \emph{guarded domain
+theory}. Our goal is for this model to scale to dynamic type tag
+generation and higher-order references in future work.
 
-The main denotational alternative to classical domain theory that can
-successfully model these advanced features is \emph{guarded} domain
-theory, which we adopt in this work. While classical domain theory is
-based on modeling types as ordered sets with certain joins, guarded
-domain theory is based on an entirely different foundations, sometimes
-(ultra)metric spaces but more commonly as ``step-indexed sets'', i.e.,
-objects in the \emph{topos of trees}
+\emph{Guarded} domain theory is the main denotational alternative to
+classical domain theory that can successfully model these advanced
+features. While classical domain theory is based on modeling types as
+ordered sets with certain joins, guarded domain theory is based on an
+entirely different foundations, sometimes (ultra)metric spaces but
+more commonly as ``step-indexed sets'', i.e., objects in the
+\emph{topos of trees}
 \cite{birkedal-mogelberg-schwinghammer-stovring2011}.  Such an object
 consists of a family $\{X_n\}_{n \in \mathbb{N}}$ of sets along with
 restriction functions $r_n : X_{n+1} \to X_n$ for all $n$.  (in
 category theoretic terminology, these are presheaves on the poset of
-natural numbers.)  We think of a $\mathbb{N}$-indexed set as an infinite
-sequence of increasingly precise approximations to the true type being
-modeled.
+natural numbers.)  We think of a $\mathbb{N}$-indexed set as an
+infinite sequence of increasingly precise approximations to the true
+type being modeled.
 %
 Key to guarded domain theory is that there is an operator
 $\triangleright$ on step-indexed sets called ``later''. In terms of
@@ -164,7 +169,6 @@ theory is that any guarded domain equation $X \cong F(\triangleright
 X)$ has a unique solution. This allows guarded domain theory to model
 essentially \emph{any} recursive concept, with the caveat that the
 recursion is \emph{guarded} by a use of the later operator.
-
 
 % The theorems we want are about the whole sequence of approximations
 % whereas working with presheaves is about each finite approximation
@@ -185,6 +189,24 @@ any fixed $n$, the set $X_n$ fails to distinguish a program that takes $n$ steps
 and then terminates from a program that never terminates. On the other hand, if
 we define the denotation of a program to be a \emph{sequence} of elements $x_i
 \in X_i$ for all $i \in \mathbb{N}$, then the denotation of the diverging
+
+%% \max{what is the point you are trying to convey in this paragraph?}
+%% Because the solutions we obtain working in guarded domain theory are constructed
+%% as a sequence of increasingly better approximations, when we want to establish a
+%% property that holds in the limit, we must reason about all finite
+%% approximations. In the setting of the topos of trees, this manifests as the need
+%% to consider \emph{global elements} of the presheaves, i.e., a family of elements
+%% $x_i \in X_i$ compatible with the restriction maps. For example, consider the
+%% set of programs that may take a computational step or return unit.\footnote{This example is adapted from \cite{mogelberg-paviotti2016}.} In the
+%% topos of trees, we can model this set as the indexed family of sets $\{X_n\}_{n \in \mathbb{N}}$
+%% where for each $n \ge 1$ we define $X_n = \{0,1,\dots,n-1, \bot\}$. Here, $i$ denotes a program that steps
+%% $i$ times and then returns, and $\bot$ denotes a program that fails to terminate
+%% in $n-1$ steps or fewer. For any fixed $n$, the set $X_n$ fails to distinguish a
+%% program that takes $n$ steps and then terminates from a program that never
+%% terminates. On the other hand, if we instead consider the denotation of a
+%% program to be a global element of the presheaf $\{X_n\}_{n \in \mathbb{N}}$ -- a family of elements
+%% $x_i \in X_i$ for all $i \in \mathbb{N}$ -- then the denotation of the diverging
+%% >>>>>>> Stashed changes
 program will be distinct from that of a program that terminates, regardless of
 the number of steps it takes.
 
