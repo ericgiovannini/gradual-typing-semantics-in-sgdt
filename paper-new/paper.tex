@@ -12,6 +12,7 @@
 
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
+\newenvironment{DIFnomarkup}{}{}
 
 
 %% Rights management information.  This information is sent to you
@@ -170,8 +171,9 @@
 \input{discussion}
 
 \bibliographystyle{ACM-Reference-Format}
+\begin{DIFnomarkup}
 \bibliography{references}
-
+\end{DIFnomarkup}
 \appendix
 \input{appendix}
 
