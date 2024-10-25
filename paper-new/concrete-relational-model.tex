@@ -80,14 +80,45 @@ Again we have a reflexive error domain relation $r(B)$ given by the
 ordering. The relational composition of two error domain relations in
 general is not an error domain relation ($\theta$ congruence in
 particular is not preserved), but we instead use an alternative ``free
-composition'' $d \odot d'$ that is inductively generated from the
-relational composition. Details of this construction are in the
-appendix (Definition \ref{def:free-comp-ed-rel}).
+composition'' $d \odot d' : B \rel B''$ that is inductively generated from the
+relational composition. The rules are given in Figure \ref{fig:free-comp-ed-rel}.
+% the appendix (Definition \ref{def:free-comp-ed-rel}).
 
-We also will use the notion of a square $f \ltsq{c_i}{c_o} g$ between
-predomain morphisms as well as squares $\phi \ltsq{d_i}{d_o} \psi$
-between error domain morphisms, which are defined similarly, with no
-extra interaction with the algebraic structure.
+\begin{figure}
+  \begin{mathpar}
+    \inferrule
+    {x \mathbin{d} y \and y \mathbin{d'} z}
+    {x \mathbin{(d \relcomp d')} z}
+
+    \inferrule
+    {x' \ltdyn_{B_1} x \and x \mathbin{(d \relcomp d')} z}
+    {x' \mathbin{(d \relcomp d')} z}
+
+    \inferrule
+    {x \mathbin{(d \relcomp d')} z \and z \ltdyn_{B_3} z'}
+    {x \mathbin{(d \relcomp d')} z'}
+
+    \inferrule
+    { }
+    {\mho_{B_1} \mathbin{(d \relcomp d')} z}
+
+    \inferrule
+    {\later_t[ \tilde{x}_t \mathbin{(d \relcomp d')} \tilde{z}_t ] }
+    {\theta_{B_1}(\tilde{x}) \mathbin{(d \relcomp d')} \theta_{B_3}(\tilde{z}) }
+  \end{mathpar}
+  \caption{The free composition of error domain relations.}
+  \label{fig:free-comp-ed-rel}
+\end{figure}
+
+As in the previous section, we also have the notion of a square $f
+\ltsq{c_i}{c_o} g$ between predomain morphisms, which is defined to mean that
+for all $x \binrel{c_i} y$, we have $f(x) \binrel{c_o} g(y)$. Likewise, we have
+squares $\phi \ltsq{d_i}{d_o} \psi$ between error domain morphisms, which are
+defined similarly, with no extra interaction with the algebraic structure.
+%
+The free composition of error domain relations has the universal property that
+$\phi \ltsq{d \relcomp d'}{d''} \phi'$ if and only if for any $x \binrel{d} y$
+and $y \binrel{d'} z$, we have $\phi(x) \binrel{d''} \phi'(z)$.
 
 In our denotational model of GTLC, we map every type $A$ to a
 predomain $\sem{A}$. These constructions are given by the same
