@@ -28,10 +28,14 @@ of New-Licata.
 ## Changes in Section 2
 
 * Removed the rules corresponding to functoriality of casts from the
-  syntax of our gradually-typed lambda calculus in Figure 2 of Section 2. These
-  rules are not necessary for modeling graduality, and we discovered that the
-  rule corresponding to the composition of downcasts, (dn c ∘ dn c') M = dn
-  (cc') M, is not true in our model.
+  syntax of our gradually-typed lambda calculus in Figure 2 of
+  Section 2. These were left in from a previous version of the
+  semantics, but are not necessary for modeling graduality, and are
+  only true up to weak bisimilarity in our model. For example, the
+  compositionality of downcasts is not generally the same as the
+  downcast for the composite (dn c ∘ dn c') M = dn (cc') M because dn
+  cc' can incur an additional perturbation over the composition of dn
+  c and dn c'.
 
 * Added a paragraph addressing Reviewer A's question about an alternative
   formulation of the axioms for type precision.
