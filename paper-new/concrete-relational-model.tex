@@ -727,7 +727,7 @@ term precision and the corresponding relation on the delay monad.
 % seek to extend this to a relatinoship between a global version of our semantic
 % notion of term precision and the corresponding relation for the delay monad.
 
-To that end, we define a version of our denotation of term precision
+To that end, we define, using clock quantification, a version of our denotation of term precision
 that relates terms of type $\li^{gl} \mathbb{N}$. More concretely, consider the
 predomain $\mathbb{N}$ with ordering and bisimilarity both the equality
 relation. We define a global version of the lock-step error ordering and the
@@ -740,6 +740,8 @@ and the latter is defined by
 %
 \( x \bisim^{gl} y := \forall k. x[k] \bisim y[k]. \)
 %
+In these two definitions, we apply the clock $k$ to the elements $x$ and $y$ of
+type $\li^{gl} \mathbb{N} := \forall (k : \Clock). \li^k \mathbb{N}$.
 
 Correspondingly, we define a version of the lock-step error ordering and weak
 bisimilarity relation on $\delay(\mathbb{N} + {\mho})$ 
