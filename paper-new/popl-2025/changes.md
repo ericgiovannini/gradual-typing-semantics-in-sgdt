@@ -78,8 +78,9 @@ of New-Licata.
 ## Changes to Discussion
 
 * Reorganized the related work section to improve the flow.
-* Addressed Reviewer B's question about the benefits of the denotational
-  approach to gradual typing research.
+* Added Section 6.2 which discusses the benefits of the denotational approach to
+  gradual typing research over operational methods, addressing a question from
+  Reviewer B.
 * Discussed the implications of our work on gradual typing research, e.g.,
   applying it to model alternative cast semantics, and leveraging the
   intensional nature of our model to reason about the quantitative properties of
