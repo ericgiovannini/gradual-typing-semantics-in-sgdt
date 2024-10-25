@@ -99,7 +99,10 @@ relation that is transitive and ``step-insensitive'' on one side:
   step-insensitive instead then $\Omega \binrel{R} x$.
 \end{theorem}
 \begin{proof}
-  By L\"ob induction, in the appendix.
+  By L\"ob induction: we assume that $l$ is related to $\Omega$ later, which implies that
+  $\theta (\nxt\, l) \binrel{R} \theta (\nxt\, \Omega)$. Then observe that 
+  $l \binrel{R} \theta (\nxt\, l) \binrel{R} \theta (\nxt\, \Omega) = \Omega$.
+  See the appendix for more details.
 \end{proof}
 \begin{corollary}
   Let $R$ be a binary relation on $U(\li A)$. If $R$ satisfies
