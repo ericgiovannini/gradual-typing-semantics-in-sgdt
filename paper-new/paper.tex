@@ -1,4 +1,4 @@
-\documentclass[acmsmall,anonymous,review,screen]{acmart}
+\documentclass[acmsmall,review,screen]{acmart}
 \let\Bbbk\relax
 
 \usepackage{quiver}
@@ -13,6 +13,7 @@
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 \newenvironment{DIFnomarkup}{}{}
+\pagestyle{empty}
 
 
 %% Rights management information.  This information is sent to you
@@ -174,6 +175,8 @@
 \begin{DIFnomarkup}
 \bibliography{references}
 \end{DIFnomarkup}
+
+\newpage
 \appendix
 \input{appendix}
 

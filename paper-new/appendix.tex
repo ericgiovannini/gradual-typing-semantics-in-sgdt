@@ -268,36 +268,36 @@ typing. We omitted several technical proofs involving the well-definedness of
 composition of relations and the actions of functors. We provide those proofs in
 this section.
 
-\subsection{Free Composition of Error Domain Relations}
-\begin{definition}\label{def:free-comp-ed-rel}
-  Let $d : B_1 \rel B_2$ and $d' : B_2 \rel B_3$ be error domain relations. We
-  define the composition $dd'$ inductively by the following rules:
-  \begin{mathpar}
-      \inferrule*[right = Comp]
-      {b_1 \mathbin{d} b_2 \and b_2 \mathbin{d'} b_3}
-      {b_1 \mathbin{d \relcomp d'} b_3}
+% \subsection{Free Composition of Error Domain Relations}
+% \begin{definition}\label{def:free-comp-ed-rel}
+%   Let $d : B_1 \rel B_2$ and $d' : B_2 \rel B_3$ be error domain relations. We
+%   define the composition $dd'$ inductively by the following rules:
+%   \begin{mathpar}
+%       \inferrule*[right = Comp]
+%       {b_1 \mathbin{d} b_2 \and b_2 \mathbin{d'} b_3}
+%       {b_1 \mathbin{d \relcomp d'} b_3}
 
-      \inferrule*[right = DnClosed]
-      {b_1' \le_{B_1} b_1 \and b_1 \mathbin{d \relcomp d'} b_3}
-      {b_1' \mathbin{d \relcomp d'} b_3}
+%       \inferrule*[right = DnClosed]
+%       {b_1' \le_{B_1} b_1 \and b_1 \mathbin{d \relcomp d'} b_3}
+%       {b_1' \mathbin{d \relcomp d'} b_3}
 
-      \inferrule*[right = UpClosed]
-      {b_1 \mathbin{d \relcomp d'} b_3 \and b_3 \le_{B_3} b_3'}
-      {b_1 \mathbin{d \relcomp d'} b_3'}
+%       \inferrule*[right = UpClosed]
+%       {b_1 \mathbin{d \relcomp d'} b_3 \and b_3 \le_{B_3} b_3'}
+%       {b_1 \mathbin{d \relcomp d'} b_3'}
 
-      \inferrule*[right = PresErr]
-      { }
-      {\mho_{B_1} \mathbin{d \relcomp d'} b_3}
+%       \inferrule*[right = PresErr]
+%       { }
+%       {\mho_{B_1} \mathbin{d \relcomp d'} b_3}
 
-      \inferrule*[right = PresTheta]
-      {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
-      {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
-  \end{mathpar}
+%       \inferrule*[right = PresTheta]
+%       {\later_t( \tilde{b_1} \mathbin{d \relcomp d'} \tilde{b_3} ) }
+%       {\theta_{B_1}(\tilde{b_1}) \mathbin{d \relcomp d'} \theta_{B_3}(\tilde{b_3}) }
+%   \end{mathpar}
 
-  This has the universal property that $\phi \ltsq{d \relcomp d'}{d''}
-  \phi'$ if and only if for any $b \binrel{d} b'$ and $b' \binrel{d'}
-  b''$ that $\phi(b) \binrel{d''} \phi'(b'')$.
-\end{definition}
+%   This has the universal property that $\phi \ltsq{d \relcomp d'}{d''}
+%   \phi'$ if and only if for any $b \binrel{d} b'$ and $b' \binrel{d'}
+%   b''$ that $\phi(b) \binrel{d''} \phi'(b'')$.
+% \end{definition}
 
 \subsection{The Dynamic Type}
 The ordering $\le_D$ on the predomain $D$ is defined by
@@ -313,35 +313,35 @@ The ordering $\le_D$ on the predomain $D$ is defined by
 and the bisimilarity relation is analogous.
 
 
-\subsection{Functorial Actions on Syntactic Perturbations}
+% \subsection{Functorial Actions on Syntactic Perturbations}
 
-We provide details on the definition of the homomorphisms specifying the
-interpretation of perturbations corresponding for the functors $\li$, $U$,
-$\times$, and $\arr$.
+% We provide details on the definition of the homomorphisms specifying the
+% interpretation of perturbations corresponding for the functors $\li$, $U$,
+% $\times$, and $\arr$.
 
-\begin{itemize}
-  \item To define the homomorphism $i_{\li A}$, by the universal property
-  of the coproduct of monoids it suffices to define two homomorphisms, one from
-  $\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
-  The first homomorphism sends the generator $1 \in \mathbb{N}$ to the error
-  domain endomorpism $(\delta \circ \eta)^\dagger$, and the second sends $m_A \in
-  M_A$ to $\li(i_A(m_A))$ and we observe in both cases that the resulting
-  endomorphisms are bisimilar to the identity since the action of $\li$ on
-  morphisms preserves bisimilarity.
+% \begin{itemize}
+%   \item To define the homomorphism $i_{\li A}$, by the universal property
+%   of the coproduct of monoids it suffices to define two homomorphisms, one from
+%   $\mathbb{N} \to \morbisimid{\li A}$ and one from $M_A \to \morbisimid{\li A}$.
+%   The first homomorphism sends the generator $1 \in \mathbb{N}$ to the error
+%   domain endomorpism $(\delta \circ \eta)^\dagger$, and the second sends $m_A \in
+%   M_A$ to $\li(i_A(m_A))$ and we observe in both cases that the resulting
+%   endomorphisms are bisimilar to the identity since the action of $\li$ on
+%   morphisms preserves bisimilarity.
 
-  \item To define the homomorphism $i_{A_1 \times A_2}$, we
-  appeal to the universal property and give homomorphisms $M_{A_1} \to
-  \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
-  former applies $i_{A_1}$ in the first component and the identity in the second
-  component, while the latter does the reverse with $i_{A_2}$.
+%   \item To define the homomorphism $i_{A_1 \times A_2}$, we
+%   appeal to the universal property and give homomorphisms $M_{A_1} \to
+%   \morbisimid{A_1 \times A_2}$ and $M_{A_2} \to \morbisimid{A_1 \times A_2}$. The
+%   former applies $i_{A_1}$ in the first component and the identity in the second
+%   component, while the latter does the reverse with $i_{A_2}$.
 
-  \item To define the homomorphism $i_{A \arr B}$ it suffices to define a
-  homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
-  \arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
-  UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
-  similarly by post-composition with $i_B$.
+%   \item To define the homomorphism $i_{A \arr B}$ it suffices to define a
+%   homomorphism $M_A^{op} \to \morbisimid{A \arr B}$ and $M_B \to \morbisimid{A
+%   \arr B}$. The former takes an element $m_A$ and a predomain morphism $f : A \to
+%   UB$ and returns the composition $f \circ i_A(m_A)$, while the latter is defined
+%   similarly by post-composition with $i_B$.
 
-\end{itemize}
+% \end{itemize}
 
 \subsection{Lemmas about Perturbations}
 
