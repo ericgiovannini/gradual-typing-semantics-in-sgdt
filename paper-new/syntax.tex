@@ -17,10 +17,10 @@ Any type precision derivation $c : A \ltdyn A'$ induces a pair of
 casts, the upcast $\upc c : A \ra A'$ and the downcast $\dnc c : A' \ra
 A$.
 %
-The syntactic intuition is that $c$ is a proof that $A$ is ``less
-dynamic'' than $A'$. Semantically, this gives us coercions back and
-forth where the upcast is (to a first-order) a pure function whereas
-the downcast can fail.
+The syntactic intuition is that $c$ is a proof that $A$ is ``less dynamic'' than
+$A'$. Semantically, $c$ denotes a relation between the denotations of $A$ and
+$A'$ along with coercions back and forth; the upcast is (to a first-order)
+a pure function while the downcast can fail.
 %
 These casts are inserted automatically in an elaboration from a
 surface language. In this work, we are focused on semantic aspects and
@@ -105,7 +105,7 @@ for terms: $\beta\eta$ equality and term precision in
 Figure~\ref{fig:term-prec}.
 %
 We include standard CBV $\beta\eta$ rules for function and product
-types, as well as equations stating that casts are given functorially.
+types. %, as well as equations stating that casts are given functorially.
 %
 Next, we have \emph{term} precision, an extension of
 type precision to terms.
@@ -118,8 +118,8 @@ The judgment is only well formed when every use of $x : c$ for $c : A
 \ltdyn A'$ is used with type $A$ in $M$ and $A'$ in $M'$ and similarly
 the output types match $c$.
 %
-We elide the congruence rules for every type constructor, e.g., that
-$M \ltdyn M'$ and $N \ltdyn N'$ that $M\,N \ltdyn M'\,N'$.
+We elide the congruence rules for every type constructor, e.g., if
+$M \ltdyn M'$ and $N \ltdyn N'$ then $M\,N \ltdyn M'\,N'$.
 %
 With such congruence rules, reflexivity $M \ltdyn M$ is
 admissible. Transitivity, on the other hand, is intentionally not
