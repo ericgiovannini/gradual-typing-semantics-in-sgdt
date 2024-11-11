@@ -463,17 +463,17 @@ actually only a function available later, and so we must insert a
     \sem{\dnc{r(A)}} &= \id_{\li \sem{A}} \\
     \sem{\dnc{(c \comp c')}} &= \sem{\dnc{c}} \circ \sem{\dnc{c'}} \\
     \sem{\dnc{(c_i \ra c_o)}} &= U(\sem{\upc {c_i}} \to \sem{\dnc {c_o}})\\
-    \sem{\dnc{(c_1 \times c_2)}} &= (\dnc{c_1} \timesk A_2) \circ (A_1' \timesk \dnc{c_2}) \\
+    \sem{\dnc{(c_1 \times c_2)}} &= (\sem{\dnc{c_1}} \timesk \sem{A_2}) \circ (\sem{A_1'} \timesk \sem{\dnc{c_2}}) \\
     \sem{\dnc{\inat}} &= (
-      \lambda V_d . \text{case $({V_d})$ of}
+      \lambda V_d . \text{case $({V_d})$ of }
       \{ \inat\,n \to \eta\, n
          \alt \text{otherwise} \to \mho \})^\dagger \\
     \sem{\dnc{\itimes}} &= (
-      \lambda V_d . \text{case $({V_d})$ of}
+      \lambda V_d . \text{case $({V_d})$ of }
       \{ \itimes(d_1, d_2) \to \eta\, (d_1, d_2)
          \alt \text{otherwise} \to \mho \})^\dagger \\
     \sem{\dnc{\iarr}} &= (
-      \lambda V_d . \text{case $({V_d})$ of}
+      \lambda V_d . \text{case $({V_d})$ of }
       \{ \iarr \tilde{f} \to \theta_t\, (\eta (\tilde{f}_t))
          \alt \text{otherwise} \to \mho \})^\dagger \\
     % \sem{\ret\, V}       &= \lambda \gamma . \eta\, \sem{V} \\
