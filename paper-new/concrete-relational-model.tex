@@ -761,15 +761,20 @@ This implies that the global denotation of the term precision semantics for
 $\li^{gl} \mathbb{N}$ agrees with the corresponding relation $\ltsqbisim{}{}^\text{Delay}$ for $\delay(\mathbb{N} + {\mho})$, i.e.,
 the closure of its lock-step ordering under weak bisimilarity on both sides.
 %
-Then to obtain the desired result, it suffices to show being related in
+Then to obtain the desired result, it suffices to show that being related in
 $\ltsqbisim{}{}^\text{Delay}$ implies that the corresponding partial elements of
-$\mathbb{N} + {\mho}$ are related in the expected manner. That is, if $d
-\ltsqbisim{}{}^\text{Delay} d'$, then $p(d) \ltdyn^{Partial} p(d')$ where $p$ is
-a partial function from delays into $\mathbb{N} + {\mho}$ defined by existential
-quantification over the number of steps $i$ in which $d$ terminates, and the
-relation $\ltdyn^\text{Partial}$ is defined such that $\mho$ is the least
-element, $\bot \ltdyn^\text{Partial} \bot$, and $n \ltdyn^\text{Partial} n$.
-This implication follows from the definition of $\ltsqbisim{}{}^\text{Delay}$.
+$\mathbb{N} + {\mho}$ are related in the expected manner. Specifically, recall
+from Section \ref{sec:big-step-term-semantics} that $-\Downarrow^\text{Delay}$
+is a partial function from delays to $\mathbb{N} + {\mho}$ defined by
+existential quantification over the number of steps in which the argument terminates.
+We want to show that if $d \ltsqbisim{}{}^\text{Delay} d'$, then 
+%
+$(d \Downarrow^\text{Delay}) \ltdyn^\text{Partial}\, (d' \Downarrow^\text{Delay})$,
+%
+where the relation $\ltdyn^\text{Partial}$ is defined such that $\mho$ is the
+least element, $\bot \ltdyn^\text{Partial} \bot$, and $n \ltdyn^\text{Partial}
+n$. This implication follows from the definition of
+$\ltsqbisim{}{}^\text{Delay}$.
 
 % Then our result follows by proving the corresponding result for
 % $\delay(\mathbb{N} + {\mho})$ which in turn follows from the definitions of the
