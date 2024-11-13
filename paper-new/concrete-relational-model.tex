@@ -293,28 +293,34 @@ quasi-representability of relations.
 \begin{definition}[quasi-left-representable relations]\label{def:quasi-left-representable}
 Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
-\emph{quasi-left-representable} by a predomain morphism $e : A \to A'$ if there
+\emph{quasi-left-representable} by a predomain morphism $e_c : A \to A'$ if there
 are perturbations $\delle_c \in M_A$ and $\delre_c \in M_{A'}$ such that the
-following two squares exist: (1) $\upl$: $e \ltsq{c}{\ltdyn_{A'}} i_{A'}(\delre_c)$, and
-(2) $\upr$: $i_A(\delle_c) \ltsq{\ltdyn_{A}}{c} e$.
+following two squares exist: 
+(1) $\upl$: $e_c \ltsq{c}{r(A')} i_{A'}(\delre_c)$, and
+(2) $\upr$: $i_A(\delle_c) \ltsq{r(A)}{c} e_c$.
+% If $c$ is quasi-left-representable by $e_c$, we call $e_c$ an \emph{embedding} morphism.
+
+Quasi-left-representability for error domain relations is defined analogously.
 \end{definition}
 %
 Observe that this weakens the previous notion of representability, since under
 that definition the perturbations were required to be the identity.
 %
-We make the analogous definition of quasi-left-representability for error domain
-relations $d$.
+% We make the analogous definition of quasi-left-representability for error domain
+% relations $d$.
 
 Likewise, we define quasi-right-representability as follows:
 %
 \begin{definition}[quasi-right-representable relations]\label{def:quasi-right-representable}
 Let $(B, M_B, i_B)$ and $(B', M_{B'}, i_{B'})$ be computation objects, and let
 $d : B \rel B'$ be an error domain relation. We say that $d$ is
-\emph{quasi-right-representable} by an error domain morphism $p : B' \multimap B$ if
+\emph{quasi-right-representable} by an error domain morphism $p_d : B' \multimap B$ if
 there are perturbations $\dellp_d \in M_B$ and $\delrp_d \in M_{B'}$ such that
 the following two squares exist: 
-(1) $\dnl$: $p \ltsq{\ltdyn_{B'}}{d} i_{B'}(\delrp_d)$ and
-(2) $\dnr$: $i_B(\dellp_d) \ltsq{d}{\ltdyn_{B}} p$.
+(1) $\dnl$: $p_d \ltsq{r(B')}{d} i_{B'}(\delrp_d)$, and
+(2) $\dnr$: $i_B(\dellp_d) \ltsq{d}{r(B)} p_d$.
+% If $d$ is quasi-right-representable by $p_d$, we call $p_d$ a \emph{projection} morphism.
+
 Quasi-right-representability for predomain relations is defined similarly.
 \end{definition}
 
