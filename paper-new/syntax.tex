@@ -43,20 +43,25 @@ We note the following two admissible principles: any two derivations
 $c,c' : A \ltdyn A'$ of the same fact are equivalent $c \equiv c'$ and
 for any $A$, there is a derivation $\textrm{dyn}(A): A \ltdyn\dyn$. That is, $\dyn$ is the ``most dynamic'' type.
 
-There is a more common set of rules for type precision where reflexivity and
-transitivity are admissible, and whenever $A \ltdyn A'$, there is a unique
-precision derivation witnessing this. These rules are shown in Section
-\ref{sec:appendix-gtlc-syntax} in the Appendix. The reason for choosing our
-system rather than that one is that in our semantics, equivalent type precision
-derivations do not denote \emph{equal} relations. Instead, they denote
-relations that are \emph{quasi-equivalent}, i.e., if two terms are related by
-one then they are related also by the other up to insertion of delays (see
+Our presentation of type precision is non-standard. In the usual
+formulation, reflexivity and transitivity are admissible, and whenever
+$A \ltdyn A'$, there is a unique precision derivation witnessing
+this. These usual rules are given in Section
+\ref{sec:appendix-gtlc-syntax} in the Appendix\max{extended
+  version}. The reason for our presentation choice has to do with our
+semantics, in which type precision derivations denote relations
+between semantic elements of the types. In our semantics,
+equivalent type precision derivations do not denote \emph{equal}
+relations, but instead they denote relations that are only
+\emph{quasi-equivalent}, i.e., if two terms are related by one then
+they are related also by the other up to insertion of delays (see
 Definition \ref{def:quasi-equivalent} for the details).
 %
-However, because all type precision derivations in our system are equivalent, it
-is straightforward to define a translation from the more standard system of type
-and term precision into ours, so ultimately our graduality proofs can still be
-applied to the standard formulation.
+However, because all type precision derivations in our system are
+equivalent, it is straightforward to define a translation from the
+more standard system of type and term precision into ours, so
+ultimately our graduality proofs still apply to the standard
+formulation.
 
 \begin{figure}
   \begin{mathpar}
