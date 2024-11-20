@@ -494,10 +494,9 @@ We now define from the above term model a ``big-step'' semantics. More
 concretely, our goal is to define a partial function 
 $-\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N} + {\mho}$.
 
-To begin, we must first discuss another aspect of guarded type theory,
-\emph{clocks}, originally introduced in \cite{atkey-mcbride2013}. The
+To begin, we must first discuss another aspect of guarded type theory. The
 constructions of guarded type theory ($\later$, $\nxt$, and $\fix$) we have been
-using may be indexed by objects called \emph{clocks}. A clock intuitively serves
+using may be indexed by objects called \emph{clocks} \cite{atkey-mcbride2013}. A clock intuitively serves
 as a reference relative to which steps are counted. For instance, given a clock
 $k$ and type $X$, the type $\later^k X$ represents a value of type $X$ one unit
 of time in the future according to clock $k$.
@@ -507,10 +506,16 @@ clock $k$. In particular, we have for each clock $k$ a type $\li^k X$. The
 notion of \emph{clock quantification} allows us to pass from the guarded setting
 to the usual set-theoretic world. Clock quantification enables us to encode
 coinductive types using guarded recursion. That is, given a type $A$ with a free
-variable $k : \Clock$, we can form the type $A^{gl} := \forall k. A$ (here, $gl$ stands for ``global''). Given a
-functor $F$ that satisfies a technical condition, if $A$ is a guarded recursive
-type satisfying $A \cong F(\later^k A)$, then the type $A^{gl}$ has a final
-$F$-coalgebra structure (see Theorem 4.3 of
+variable $k : \Clock$, we can form the type $A^{gl} := \forall k. A$ (here, $gl$ stands for ``global'').
+%
+A functor $F \colon \mathsf{Type} \to \mathsf{Type}$ is said to \emph{commute
+with clock quantification} if for all $X : \Clock \to \mathsf{Type}$, the
+canonical map $F(\forall k. X_k) \to \forall k. F(X_k)$ is an equivalence \cite{kristensen-mogelberg-vezzosi2022},
+where we write $X_k$ for the application of clock $k$ to $X$.
+%
+Given a functor $F$ that commutes with clock quantification, if $A$ is a guarded
+recursive type satisfying $A \cong F(\later^k A)$, then the type $A^{gl}$ has a
+final $F$-coalgebra structure (see Theorem 4.3 of
 \cite{kristensen-mogelberg-vezzosi2022}). 
 
 Consider the functor $F(X) = \mathbb{N} + {\mho} + X$. By the definition of the
@@ -520,10 +525,10 @@ $\li^k \mathbb{N}
   \cong \mathbb{N} + {\mho} + \later^k (\li \mathbb{N}) 
   \cong F(\later \li^k \mathbb{N})$.
 %
-Furthermore, it can be shown that the functor $F$ satisfies the technical
-condition in the statement of the above-mentioned theorem. Thus, the theorem
-implies that the type $\li^{gl} \mathbb{N} := \forall k. \li^k \mathbb{N}$ is a
-final $F$-coalgebra. In fact, $\li^{gl}$ is isomorphic to a more familiar coninductive type.
+Furthermore, it can be shown that the functor $F$ commutes with clock
+quantification. Thus, the type $\li^{gl} \mathbb{N} := \forall k. \li^k
+\mathbb{N}$ is a final $F$-coalgebra. In fact, $\li^{gl}$ is isomorphic to a
+more familiar coninductive type.
 %
 Given a type $Y$, Capretta's \emph{delay monad} \cite{lmcs:2265},
 which we write as $\text{Delay}(Y)$, is defined as the coinductive type
