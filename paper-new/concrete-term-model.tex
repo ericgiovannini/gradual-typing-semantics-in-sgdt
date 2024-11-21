@@ -111,13 +111,13 @@ that is a refinement of Moggi's monadic semantics
 category $\mathcal V$ of pure morphisms, call-by-push-value works
 instead with a decomposition of such a monad into an adjunction
 between a category $\mathcal V$ of ``value types'' and pure morphisms
-and a category $\mathcal E$ of ``computation types'' and linear
-morphisms. The monad $T$ on $\calV$ is decomposed into a left adjoint
+and a category $\mathcal E$ of ``computation types'' and homomorphisms.
+The monad $T$ on $\calV$ is decomposed into a left adjoint
 $F : \calV \to \calE$ constructing the type $F A$ of computations that
-return $A$ values and and right adjoint $U : \calE \to \calV$
+return $A$ values and right adjoint $U : \calE \to \calV$
 constructing the type $U B$ of values that are first-class suspended
 computations of type $B$. The monad $T$ can then be reconstituted as
-$T = UF$ but the main advantage is that many constructions on
+$T = UF$, but the main advantage is that many constructions on
 effectful programs naturally decompose into constructions on
 value/computation types. Most strikingly, the CBV function type $A
 \rightharpoonup A'$ decomposes into the composition of three
@@ -126,7 +126,7 @@ constructions $U(A \to F A')$ where $\arr : \calV^{op} \times \calE
 considerably simplifies treatment of the CBV function
 type. Additionally, prior work on gradual typing semantics has shown
 that the casts of gradual typing are naturally formulated in terms of
-pairs of a pure morphism and a linear morphism, as we explain below
+pairs of a pure morphism and a homomorphism, as we explain below
 \cite{new-licata-ahmed2019}.
 
 For our simple denotational semantics, the category $\calV$ is simply
@@ -352,12 +352,12 @@ $\calV_k(A,A') = \calE(FA,FA')$. Similarly, we can define a Kleisli
 category of computation types $\calE_k$ to have computation types as
 objects, but have morphisms $\calE_k(B,B') = \calV(UB,UB')$. The
 intuition is that these are the ``effectful'' morphisms between
-value/computation types, whereas the morphisms of $\calV/\calE$ are
-``pure''/``linear''. Then every CBPV type constructor $F,U,\times,\to$
-has in addition to its usual functorial action on pure/linear
-morphisms, an action in each argument on Kleisli morphisms. So for
-instance, the function construction is functorial in pure/linear
-morphisms $\to : \op{\calV} \times \calE \to \calE$ but on Kleisli
+value/computation types, whereas the morphisms of $\calV$ and $\calE$ are
+pure morphisms and homomorphisms, respectively. Then every CBPV type constructor $F,U,\times,\to$
+has in addition to its usual functorial action on pure morphisms/homomorphisms
+an action in each argument on Kleisli morphisms. So for
+instance, the function construction is functorial in pure morphisms/homomorphisms
+$\to : \op{\calV} \times \calE \to \calE$ but on Kleisli
 morphisms what we have is for each computation type $B$ a functorial
 action $-\to B : \calV_k^{op} \to \calE_k$ given by $-\tok B$ on
 objects and for each value type a functorial action $A \tok - :
