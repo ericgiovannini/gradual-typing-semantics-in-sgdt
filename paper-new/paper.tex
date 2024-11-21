@@ -1,4 +1,4 @@
-\documentclass[acmsmall,screen]{acmart}
+\documentclass[acmsmall]{acmart}
 \let\Bbbk\relax
 
 \usepackage{quiver}
@@ -17,23 +17,71 @@
 \settopmatter{printfolios=false}
 
 
+%% CCS Concepts
+\begin{CCSXML}
+  <ccs2012>
+     <concept>
+         <concept_id>10003752.10010124.10010131.10010133</concept_id>
+         <concept_desc>Theory of computation~Denotational semantics</concept_desc>
+         <concept_significance>500</concept_significance>
+         </concept>
+     <concept>
+         <concept_id>10011007.10011006.10011039.10011311</concept_id>
+         <concept_desc>Software and its engineering~Semantics</concept_desc>
+         <concept_significance>300</concept_significance>
+         </concept>
+     <concept>
+         <concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
+         <concept_desc>Software and its engineering~Functional languages</concept_desc>
+         <concept_significance>300</concept_significance>
+         </concept>
+   </ccs2012>
+\end{CCSXML}
+  
+\ccsdesc[500]{Theory of computation~Denotational semantics}
+\ccsdesc[300]{Software and its engineering~Semantics}
+\ccsdesc[300]{Software and its engineering~Functional languages}
+
+%% Additional Key Words and Phrases
+\keywords{Gradual Typing, Denotational Semantics, Synthetic Guarded Domain Theory, Guarded Type Theory}
+
+
+%%% The following is specific to POPL '25 and the paper
+%%% 'Denotational Semantics of Gradual Typing using Synthetic Guarded Domain Theory'
+%%% by Eric Giovannini, Tingting Ding, and Max S. New.
+%%%
+\setcopyright{rightsretained}
+\acmDOI{10.1145/3704863}
+\acmYear{2025}
+\acmJournal{PACMPL}
+\acmVolume{9}
+\acmNumber{POPL}
+\acmArticle{27}
+\acmMonth{1}
+\received{2024-07-11}
+\received[accepted]{2024-11-07}
+
+
+
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
 %% values in them; it is your responsibility as an author to replace
 %% the commands and values with those provided to you when you
 %% complete the rights form.
-\setcopyright{acmcopyright}
-\copyrightyear{2018}
-\acmYear{2018}
-\acmDOI{10.1145/1122445.1122456}
+
+% \setcopyright{acmcopyright}
+% \copyrightyear{2018}
+% \acmYear{2018}
+% \acmDOI{10.1145/1122445.1122456}
+
 
 %% These commands are for a PROCEEDINGS abstract or paper.
-\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural
-  Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
-\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
-  June 03--05, 2018, Woodstock, NY}
-\acmPrice{15.00}
-\acmISBN{978-1-4503-XXXX-X/18/06}
+% \acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural
+%   Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
+% \acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%   June 03--05, 2018, Woodstock, NY}
+% \acmPrice{15.00}
+% \acmISBN{978-1-4503-XXXX-X/18/06}
 
 \input{defs}
 
@@ -96,33 +144,6 @@
   of the core theorems of our development in Guarded Cubical Agda, a
   recent extension of Agda with support for the guarded recursive
   constructions we use.
-%%     We develop a denotational semantics for a simple gradually typed language
-%%     that is adequate and proves the graduality theorem.
-%%     %
-%%     The denotational semantics is constructed using \emph{synthetic
-%%     guarded domain theory} working in a type theory with a later
-%%     modality and clock quantification.
-%%     %
-%%     This provides a remarkably simple presentation of the semantics,
-%%     where gradual types are interpreted as ordinary types in our ambient
-%%     type theory equipped with an ordinary preorder structure to model
-%%     the error ordering.
-%%     %
-%%     This avoids the complexities of classical domain-theoretic models
-%%     (New and Licata) or logical relations models using explicit
-%%     step-indexing (New and Ahmed).
-%%     %
-%%     In particular, we avoid a major technical complexity of New and
-%%     Ahmed that requires two logical relations to prove the graduality
-%%     theorem.
-  
-%%     By working synthetically we can treat the domains in which gradual
-%%     types are interpreted as if they were ordinary sets. This allows us
-%%     to give a ``na\"ive'' presentation of gradual typing where each
-%%     gradual type is modeled as a well-behaved subset of the universal
-%%     domain used to model the dynamic type, and type precision is modeled
-%%     as simply a subset relation.
-%%     %
 \end{abstract}
 
 \maketitle
