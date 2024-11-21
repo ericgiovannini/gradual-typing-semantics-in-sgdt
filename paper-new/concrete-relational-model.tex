@@ -25,7 +25,7 @@ A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
 A \textbf{morphism of predomains} $f : A \to A'$ is a function between
 the underlying sets that is both \emph{monotone} (if
 $x \ltdyn_A x'$, then $f(x) \ltdyn_{A'} f(x')$), and
-\emph{extensional} (if $x \bisim_A x'$, then $f(x) \bisim_{A'} f(x')$).
+\emph{bisimilarity-preserving} (if $x \bisim_A x'$, then $f(x) \bisim_{A'} f(x')$).
 \end{definition}
 
 We will generally write $A$ for both a predomain and its underlying set; if we
@@ -40,7 +40,7 @@ underlying set is $\later |A|$ and the ordering is given by $\tilde{x}
 We similarly enhance our error domains with ordering and bisimilarity
 relations, but we further need to impose conditions on the algebraic
 structure: the error element should be the least element (so that it
-models graduality), the think map should be monotone and extensional
+models graduality), the think map should be monotone and bisimilarity-preserving,
 and the bisimilarity relation should relate $\delta$ to the identity
 (so that it models bisimilarity).
 %
