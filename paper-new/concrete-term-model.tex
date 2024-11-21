@@ -507,7 +507,7 @@ notion of \emph{clock quantification} allows us to pass from the guarded setting
 to the usual set-theoretic world. Clock quantification enables us to encode
 coinductive types using guarded recursion. That is, given a type $A$ with a free
 variable $k : \Clock$, we can form the type $A^{gl} := \forall k. A$ (here, $gl$ stands for ``global'').
-%
+
 A functor $F \colon \mathsf{Type} \to \mathsf{Type}$ is said to \emph{commute
 with clock quantification} if for all $X : \Clock \to \mathsf{Type}$, the
 canonical map $F(\forall k. X_k) \to \forall k. F(X_k)$ is an equivalence \cite{kristensen-mogelberg-vezzosi2022},
@@ -515,8 +515,7 @@ where we write $X_k$ for the application of clock $k$ to $X$.
 %
 Given a functor $F$ that commutes with clock quantification, if $A$ is a guarded
 recursive type satisfying $A \cong F(\later^k A)$, then the type $A^{gl}$ has a
-final $F$-coalgebra structure (see Theorem 4.3 of
-\cite{kristensen-mogelberg-vezzosi2022}). 
+final $F$-coalgebra structure (see Theorem 4.3 of Kristensen et al. \cite{kristensen-mogelberg-vezzosi2022}). 
 
 Consider the functor $F(X) = \mathbb{N} + {\mho} + X$. By the definition of the
 guarded lift, we have that
