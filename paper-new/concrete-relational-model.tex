@@ -444,11 +444,20 @@ only those functions that are morphisms of predomains. Additionally, the
 semantics of casts is slightly different. In the semantics of Section
 \ref{sec:concrete-term-model}, the projection corresponding to the type
 precision $cc'$ is simply the composition of the projections. In the new
-semantics, the corresponding projection involves a perturbation. This is a
-consequence of the construction of the composition of value/computation
-relations (the relevant projection is defined in the proof of Lemma
-\ref{lem:representation-comp-F-U} in the Appendix). However, the two projections
-are extensionally equivalent since they are the same up to a perturbation.
+semantics, the corresponding projection involves a perturbation.  
+%
+% EXTENDED VERSION
+% This is a consequence of the construction of the composition of
+% value/computation relations (the relevant projection is defined in the proof
+% of Lemma \ref{lem:representation-comp-F-U} in the Appendix).
+%
+% CONFERENCE VERSION
+This is a consequence of the construction of the composition of
+value/computation relations (the relevant projection is defined in the appendix
+of the extended version of this paper \cite{gtt-sgdt-extended-version}).
+%
+However, the two projections are extensionally equivalent since they are the
+same up to a perturbation.
 
  % nothing really differs from the term semantics in Section~\ref{sec:concrete-term-model}. The only difference is
 % One difference is that the definitions of $\sem{\upc c}$ and $\sem{\dnc c}$ can be
@@ -571,10 +580,16 @@ One can verify that this defines a homomorphism from $M_D \to \{ f : D \to D : f
 Next we need to confirm that our interpretation of type precision
 derivations as predomain relations indeed extends to value relations,
 i.e., that the relations are quasi-representable and that they satisfy
-the push-pull property for perturbations. We include most of these technical
-verifications in the appendix (Definitions
-\ref{def:value-computation-rel-comp} and
-\ref{def:functorial-actions-on-relations}).
+the push-pull property for perturbations.
+%
+% EXTENDED VERSION
+% We include most of these technical verifications in the appendix (Definitions
+% \ref{def:value-computation-rel-comp} and
+% \ref{def:functorial-actions-on-relations}).
+%
+% CONFERENCE VERSION
+We include most of these technical verifications in the appendix of the extended
+version \cite{gtt-sgdt-extended-version}.
 
 We go into more detail on the three relations involving the dynamic
 type $\inat$, $\itimes$, and $\iarr$. As an illustrative case, we
@@ -611,9 +626,16 @@ With this choice for the perturbations, it is straightforward to show that the
 $\dnl$ and $\dnr$ squares exist using the definition of the downcast and the
 definition of the relation $\iarr$.
 
+% EXTENDED VERSION
+% Lastly, the interpretation of the type precision equivalence rules $c \equiv c'$
+% as quasi-equivalence of the denoted relations $\sem{c} \bisim \sem{c'}$ is
+% justified by Lemma \ref{lem:quasi-order-equiv-functors} in the Appendix.
+%
+% CONFERENCE VERSION
 Lastly, the interpretation of the type precision equivalence rules $c \equiv c'$
 as quasi-equivalence of the denoted relations $\sem{c} \bisim \sem{c'}$ is
-justified by Lemma \ref{lem:quasi-order-equiv-functors} in the Appendix.
+justified in the appendix of the extended version
+\cite{gtt-sgdt-extended-version}.
 
 \subsubsection{Interpreting Term Precision: Extensional Squares}
 
@@ -748,9 +770,17 @@ and the latter is defined by
 In these two definitions, we apply the clock $k$ to the elements $x$ and $y$ of
 type $\li^{gl} \mathbb{N} := \forall (k : \Clock). \li^k \mathbb{N}$.
 
+% EXTENDED VERSION
+% Correspondingly, we define a version of the lock-step error ordering and weak
+% bisimilarity relation on $\delay(\mathbb{N} + {\mho})$ (see Section
+% \ref{sec:relations-on-delay-monad} in the appendix for the definitions).
+%
+% CONFERENCE VERSION
 Correspondingly, we define a version of the lock-step error ordering and weak
-bisimilarity relation on $\delay(\mathbb{N} + {\mho})$ 
-(see Section \ref{sec:relations-on-delay-monad} in the appendix for the definitions).
+bisimilarity relation on $\delay(\mathbb{N} + {\mho})$ (see the appendix of the
+extended version \cite{gtt-sgdt-extended-version} for the
+definitions).
+%
 % \max{do these intermediate details matter for the main body of the paper?}
 %
 %
