@@ -257,7 +257,7 @@ just as in a monadic semantics with monad $U\li$.
 
 \subsection{Modeling the type structure}\label{sec:dynamic-type}
 Much of the type structure of GTLC is simple to model: $\nat$ denotes
-the set of natural numbers and $\times$ denotes the cartesian product
+the set of natural numbers and $\times$ denotes the Cartesian product
 of sets. To model the CBV function type $A \rightharpoonup A'$ we use
 the CBPV decomposition $U(\sem{A} \to \li \sem{A'})$ where $A \to B$
 is the obvious point-wise algebraic structure on the set of functions
@@ -422,7 +422,7 @@ actually only a function available later, and so we must insert a
 %% %
 %% For $\inat$, the upcast is simply $\inl \circ \inl$. The downcast has type $D
 %% \to \li D$ and performs a case inspection on the sum type. If it is a natural
-%% number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modelling
+%% number $n$, then we return $\eta\, n$. Otherwise, we return $\mho$, modeling
 %% the fact that a run-time error occurs.
 %% %
 %% For $\itimes$, the upcast is $\inl \circ \inr$, and the downcast performs a case
@@ -535,7 +535,7 @@ $\li^k \mathbb{N}
 Furthermore, it can be shown that the functor $F$ commutes with clock
 quantification. Thus, the type $\li^{gl} \mathbb{N} := \forall k. \li^k
 \mathbb{N}$ is a final $F$-coalgebra. In fact, $\li^{gl}$ is isomorphic to a
-more familiar coninductive type.
+more familiar coinductive type.
 %
 Given a type $Y$, Capretta's \emph{delay monad} \cite{lmcs:2265},
 which we write as $\text{Delay}(Y)$, is defined as the coinductive type
