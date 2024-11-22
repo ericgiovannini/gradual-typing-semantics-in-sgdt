@@ -90,6 +90,7 @@
 @STRING{popl14 =    popl # ", San Diego, California" }
 @STRING{popl15 =    popl # ", Mumbai, India" }
 @STRING{popl16 =    popl # ", St. Petersburg, Florida" }
+@STRING{popl17 =    popl # ", Paris, France" }
 @STRING{popl19 =    popl # ", Cascais, Portugal" }
 % ----
 @STRING{icfp =      "{I}nternational {C}onference on {F}unctional {P}rogramming
@@ -126,8 +127,12 @@
 @STRING{oopsla98 =  oopsla # ", Vancouver, British Columbia" }
 @STRING{oopsla08 =  oopsla # ", Nashville, Tennessee" }
 % ----
-@STRING{lics =      "IEEE Symposium on Logic in Computer Science (LICS)" }
-@STRING{lics91 =    lics # ", Amsterdam, The Netherlands" }
+@STRING{types = "Types for Proofs and Programs (TYPES)"}
+@STRING{types15 = types # ", Tallinn, Estonia"}
+@STRING{oldLics =      "IEEE Symposium on Logic in Computer Science (LICS)" }
+@STRING{lics =      "ACM/IEEE Symposium on Logic in Computer Science (LICS)" }
+@STRING{lics89 =    oldLics # "Pacific Grove, California" }
+@STRING{lics91 =    oldLics # ", Amsterdam, The Netherlands" }
 @STRING{lics92 =    lics # ", Santa Cruz, California" }
 @STRING{lics93 =    lics # ", Montreal, Canada" }
 @STRING{lics94 =    lics # ", Paris, France" }
@@ -151,7 +156,9 @@
 @STRING{lics12 =    lics # ", Dubrovnik, Croatia" }
 @STRING{lics13 =    lics # ", New Orleans, Louisiana" }
 @STRING{lics14 =    lics # ", Vienna, Austria" }
+@STRING{lics16 =    lics # ", New York City, New York" }
 @STRING{lics17 =    lics # ", Reykjavik, Iceland" }
+@STRING{lics22 =    lics # ", Haifa, Israel" }
 % ----
 @STRING{pldi =      "{ACM SIGPLAN Conference on Programming Language Design
                     and Implementation (PLDI)}" }
@@ -239,6 +246,9 @@
 @STRING{webdb =     {International Workshop on the Web and Databases
                     (WebDB)} }
 @STRING{langsec = "Language-theoretic Security IEEE Security and Privacy Workshop (LangSec)"}
+@STRING{fossacs = "Foundations of Software Science and Computational Structures"}
+@STRING{fossacs09 = fossacs # ", Berlin"}
+@STRING{pacmpl = "Proceedings of the ACM on Programming Languages (PACMPL)"}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,12 +256,11 @@
 
 @INPROCEEDINGS{Nakano2000,
   author={Nakano, H.},
-  booktitle={Proceedings Fifteenth Annual IEEE Symposium on Logic in Computer Science (Cat. No.99CB36332)}, 
-  title={A modality for recursion}, 
+  booktitle=lics00,
+  title={A modality for recursion},
   year={2000},
   volume={},
   number={},
-  pages={255-266},
   doi={10.1109/LICS.2000.855774}}
 
 
@@ -265,61 +274,45 @@
 
 @inproceedings{mogelberg-paviotti2016,
 author = {M\o{}gelberg, Rasmus Ejlers and Paviotti, Marco},
-title = {Denotational Semantics of Recursive Types in Synthetic Guarded Domain Theory},
 year = {2016},
-isbn = {9781450343916},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
+title = {Denotational Semantics of Recursive Types in Synthetic Guarded Domain Theory},
+booktitle = lics16,
 url = {https://doi.org/10.1145/2933575.2934516},
 doi = {10.1145/2933575.2934516},
-abstract = {Guarded recursion is a form of recursion where recursive calls are guarded by delay modalities. Previous work has shown how guarded recursion is useful for reasoning operationally about programming languages with advanced features including general references, recursive types, countable non-determinism and concurrency.Guarded recursion also offers a way of adding recursion to type theory while maintaining logical consistency. In previous work we initiated a programme of denotational semantics in type theory using guarded recursion, by constructing a computationally adequate model of the language PCF (simply typed lambda calculus with fixed points). This model was intensional in that it could distinguish between computations computing the same result using a different number of fixed point unfoldings.In this work we show how also programming languages with recursive types can be given denotational semantics in type theory with guarded recursion. More precisely, we give a computationally adequate denotational semantics to the language FPC (simply typed lambda calculus extended with recursive types), modelling recursive types using guarded recursive types. The model is intensional in the same way as was the case in previous work, but we show how to recover extensionality using a logical relation.All constructions and reasoning in this paper, including proofs of theorems such as soundness and adequacy, are by (informal) reasoning in type theory, often using guarded recursion.},
-booktitle = {Proceedings of the 31st Annual ACM/IEEE Symposium on Logic in Computer Science},
-pages = {317-326},
-numpages = {10},
-keywords = {Synthetic Domain Theory, Denotational Semantics, Guarded Recursion, Type Theory, Recursive Types},
-location = {New York, NY, USA},
-series = {LICS '16}
 }
 
 @inproceedings{veltri-vezzosi2020,
 author = {Veltri, Niccol\`{o} and Vezzosi, Andrea},
 title = {Formalizing $\pi$-Calculus in Guarded Cubical Agda},
 year = {2020},
-isbn = {9781450370974},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 url = {https://doi.org/10.1145/3372885.3373814},
 doi = {10.1145/3372885.3373814},
-abstract = {Dependent type theories with guarded recursion have shown themselves suitable for the development of denotational semantics of programming languages. In particular Ticked Cubical Type Theory (TCTT) has been used to show that for guarded labelled transition systems (GLTS) interpretation into the denotational semantics maps bisimilar processes to equal values. In fact the two notions are proved equivalent, allowing one to reason about equality in place of bisimilarity. We extend that result to the π-calculus, picking early congruence as the syntactic notion of equivalence between processes, showing that denotational models based on guarded recursive types can handle the dynamic creation of channels that goes beyond the scope of GLTSs. Hence we present a fully abstract denotational model for the early π-calculus, formalized as an extended example for Guarded Cubical Agda: a novel implementation of Ticked Cubical Type Theory based on Cubical Agda.},
-booktitle = {Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+booktitle = {ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP)},
 pages = {270-283},
 numpages = {14},
 keywords = {pi-calculus, ticked cubical type theory, denotational semantics, guarded recursion},
 location = {New Orleans, LA, USA},
-series = {CPP 2020}
 }
 
 
 @INPROCEEDINGS{birkedal-mogelberg-schwinghammer-stovring2011,
   author={Birkedal, Lars and Mogelberg, Rasmus Ejlers and Schwinghammer, Jan and Stovring, Kristian},
-  booktitle={2011 IEEE 26th Annual Symposium on Logic in Computer Science}, 
-  title={First Steps in Synthetic Guarded Domain Theory: Step-Indexing in the Topos of Trees}, 
+  booktitle=lics11,
+  title={First Steps in Synthetic Guarded Domain Theory: Step-Indexing in the Topos of Trees},
   year={2011},
   volume={},
   number={},
-  pages={55-64},
-  doi={10.1109/LICS.2011.16}}
+  doi={10.1109/LICS.2011.16}
+}
 
 
 @INPROCEEDINGS{bahr-grathwohl-bugge-mogelberg2017,
   author={Bahr, Patrick and Grathwohl, Hans Bugge and Møgelberg, Rasmus Ejlers},
-  booktitle={2017 32nd Annual ACM/IEEE Symposium on Logic in Computer Science (LICS)}, 
-  title={The clocks are ticking: No more delays!}, 
+  booktitle=lics17,
+  title={The clocks are ticking: No more delays!},
   year={2017},
-  volume={},
-  number={},
-  pages={1-12},
-  doi={10.1109/LICS.2017.8005097}}
+  doi={10.1109/LICS.2017.8005097}
+}
 
 
 @inproceedings{atkey-mcbride2013,
@@ -327,17 +320,11 @@ author = {Atkey, Robert and McBride, Conor},
 title = {Productive Coprogramming with Guarded Recursion},
 year = {2013},
 isbn = {9781450323260},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 url = {https://doi.org/10.1145/2500365.2500597},
 doi = {10.1145/2500365.2500597},
-abstract = {Total functional programming offers the beguiling vision that, just by virtue of the compiler accepting a program, we are guaranteed that it will always terminate. In the case of programs that are not intended to terminate, e.g., servers, we are guaranteed that programs will always be productive. Productivity means that, even if a program generates an infinite amount of data, each piece will be generated in finite time. The theoretical underpinning for productive programming with infinite output is provided by the category theoretic notion of final coalgebras. Hence, we speak of coprogramming with non-well-founded codata, as a dual to programming with well-founded data like finite lists and trees.Systems that offer facilities for productive coprogramming, such as the proof assistants Coq and Agda, currently do so through syntactic guardedness checkers. Syntactic guardedness checkers ensure that all self-recursive calls are guarded by a use of a constructor. Such a check ensures productivity. Unfortunately, these syntactic checks are not compositional, and severely complicate coprogramming.Guarded recursion, originally due to Nakano, is tantalising as a basis for a flexible and compositional type-based approach to coprogramming. However, as we show, by itself, guarded recursion is not suitable for coprogramming due to the fact that there is no way to make finite observations on pieces of infinite data. In this paper, we introduce the concept of clock variables that index Nakano's guarded recursion. Clock variables allow us to "close over" the generation of infinite data, and to make finite observations, something that is not possible with guarded recursion alone.},
-booktitle = {Proceedings of the 18th ACM SIGPLAN International Conference on Functional Programming},
+booktitle = icfp13,
 pages = {197-208},
 numpages = {12},
-keywords = {total functional programming, guarded recursion, coalgebras, corecursion},
-location = {Boston, Massachusetts, USA},
-series = {ICFP '13}
 }
 
 @article{10.1145/2544174.2500597,
@@ -366,16 +353,9 @@ author = {Baunsgaard Kristensen, Magnus and Mogelberg, Rasmus Ejlers and Vezzosi
 title = {Greatest HITs: Higher Inductive Types in Coinductive Definitions via Induction under Clocks},
 year = {2022},
 isbn = {9781450393515},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 url = {https://doi.org/10.1145/3531130.3533359},
 doi = {10.1145/3531130.3533359},
-abstract = {We present Clocked Cubical Type Theory, the first type theory combining multi-clocked guarded recursion with the features of Cubical Type Theory. Guarded recursion is an abstract form of step-indexing, which can be used for construction of advanced programming language models. In its multi-clocked version, it can also be used for coinductive programming and reasoning, encoding productivity in types. Combining this with Higher Inductive Types (HITs) the encoding extends to coinductive types that are traditionally hard to represent in type theory, such as the type of finitely branching labelled transition systems. Among our technical contributions is a new principle of induction under clocks, providing computational content to one of the main axioms required for encoding coinductive types. This principle is verified using a denotational semantics in a presheaf model.},
-booktitle = {Proceedings of the 37th Annual ACM/IEEE Symposium on Logic in Computer Science},
-articleno = {42},
-numpages = {13},
-location = {Haifa, Israel},
-series = {LICS '22}
+booktitle = lics22,
 }
 
 
@@ -383,19 +363,14 @@ series = {LICS '22}
 author = {M\o{}gelberg, Rasmus Ejlers and Veltri, Niccol\`{o}},
 title = {Bisimulation as Path Type for Guarded Recursive Types},
 year = {2019},
-issue_date = {January 2019},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 volume = {3},
 number = {POPL},
 url = {https://doi.org/10.1145/3290317},
 doi = {10.1145/3290317},
-abstract = {In type theory, coinductive types are used to represent processes, and are thus crucial for the formal verification of non-terminating reactive programs in proof assistants based on type theory, such as Coq and Agda. Currently, programming and reasoning about coinductive types is difficult for two reasons: The need for recursive definitions to be productive, and the lack of coincidence of the built-in identity types and the important notion of bisimilarity. Guarded recursion in the sense of Nakano has recently been suggested as a possible approach to dealing with the problem of productivity, allowing this to be encoded in types. Indeed, coinductive types can be encoded using a combination of guarded recursion and universal quantification over clocks. This paper studies the notion of bisimilarity for guarded recursive types in Ticked Cubical Type Theory, an extension of Cubical Type Theory with guarded recursion. We prove that, for any functor, an abstract, category theoretic notion of bisimilarity for the final guarded coalgebra is equivalent (in the sense of homotopy type theory) to path equality (the primitive notion of equality in cubical type theory). As a worked example we study a guarded notion of labelled transition systems, and show that, as a special case of the general theorem, path equality coincides with an adaptation of the usual notion of bisimulation for processes. In particular, this implies that guarded recursion can be used to give simple equational reasoning proofs of bisimilarity. This work should be seen as a step towards obtaining bisimilarity as path equality for coinductive types using the encodings mentioned above.},
-journal = {Proc. ACM Program. Lang.},
+journal = pacmpl,
 month = {jan},
 articleno = {4},
 numpages = {29},
-keywords = {guarded recursion, labelled transition systems, bisimulation, homotopy type theory, coinductive types, Dependent types, cubical type theory, CCS}
 }
 
 
@@ -404,18 +379,13 @@ author = {New, Max S. and Ahmed, Amal},
 title = {Graduality from Embedding-Projection Pairs},
 year = {2018},
 issue_date = {September 2018},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 volume = {2},
 number = {ICFP},
 url = {https://doi.org/10.1145/3236768},
 doi = {10.1145/3236768},
-abstract = {Gradually typed languages allow statically typed and dynamically typed code to interact while maintaining benefits of both styles. The key to reasoning about these mixed programs is Siek-Vitousek-Cimini-Boyland’s (dynamic) gradual guarantee, which says that giving components of a program more precise types only adds runtime type checking, and does not otherwise change behavior. In this paper, we give a semantic reformulation of the gradual guarantee called graduality. We change the name to promote the analogy that graduality is to gradual typing what parametricity is to polymorphism. Each gives a local-to-global, syntactic-to-semantic reasoning principle that is formulated in terms of a kind of observational approximation. Utilizing the analogy, we develop a novel logical relation for proving graduality. We show that embedding-projection pairs (ep pairs) are to graduality what relations are to parametricity. We argue that casts between two types where one is “more dynamic” (less precise) than the other necessarily form an ep pair, and we use this to cleanly prove the graduality cases for casts from the ep-pair property. To construct ep pairs, we give an analysis of the type dynamism relation—also known as type precision or na\"{\i}ve subtyping—that interprets the rules for type dynamism as compositional constructions on ep pairs, analogous to the coercion interpretation of subtyping.},
-journal = {Proc. ACM Program. Lang.},
+journal = pacmpl,
 month = {jul},
 articleno = {73},
-numpages = {30},
-keywords = {logical relations, gradual typing, observational error approximation, dynamic gradual guarantee}
 }
 
 
@@ -424,18 +394,14 @@ author = {New, Max S. and Licata, Daniel R. and Ahmed, Amal},
 title = {Gradual Type Theory},
 year = {2019},
 issue_date = {January 2019},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 volume = {3},
 number = {POPL},
 url = {https://doi.org/10.1145/3290328},
 doi = {10.1145/3290328},
-abstract = {Gradually typed languages are designed to support both dynamically typed and statically typed programming styles while preserving the benefits of each. While existing gradual type soundness theorems for these languages aim to show that type-based reasoning is preserved when moving from the fully static setting to a gradual one, these theorems do not imply that correctness of type-based refactorings and optimizations is preserved. Establishing correctness of program transformations is technically difficult, because it requires reasoning about program equivalence, and is often neglected in the metatheory of gradual languages. In this paper, we propose an axiomatic account of program equivalence in a gradual cast calculus, which we formalize in a logic we call gradual type theory (GTT). Based on Levy’s call-by-push-value, GTT gives an axiomatic account of both call-by-value and call-by-name gradual languages. Based on our axiomatic account we prove many theorems that justify optimizations and refactorings in gradually typed languages. For example, uniqueness principles for gradual type connectives show that if the βη laws hold for a connective, then casts between that connective must be equivalent to the so-called “lazy” cast semantics. Contrapositively, this shows that “eager” cast semantics violates the extensionality of function types. As another example, we show that gradual upcasts are pure functions and, dually, gradual downcasts are strict functions. We show the consistency and applicability of our axiomatic theory by proving that a contract-based implementation using the lazy cast semantics gives a logical relations model of our type theory, where equivalence in GTT implies contextual equivalence of the programs. Since GTT also axiomatizes the dynamic gradual guarantee, our model also establishes this central theorem of gradual typing. The model is parametrized by the implementation of the dynamic types, and so gives a family of implementations that validate type-based optimization and the gradual guarantee.},
-journal = {Proc. ACM Program. Lang.},
+journal = pacmpl,
 month = {jan},
 articleno = {15},
 numpages = {31},
-keywords = {gradual typing, call-by-push-value, graduality}
 }
 
 
@@ -444,18 +410,9 @@ keywords = {gradual typing, call-by-push-value, graduality}
   title =	{{Refined Criteria for Gradual Typing}},
   booktitle =	{1st Summit on Advances in Programming Languages (SNAPL 2015)},
   pages =	{274--293},
-  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
-  ISBN =	{978-3-939897-80-4},
-  ISSN =	{1868-8969},
   year =	{2015},
   volume =	{32},
-  editor =	{Thomas Ball and Rastislav Bodik and Shriram Krishnamurthi and Benjamin S. Lerner and Greg Morrisett},
-  publisher =	{Schloss Dagstuhl--Leibniz-Zentrum fuer Informatik},
-  address =	{Dagstuhl, Germany},
-  URL =		{http://drops.dagstuhl.de/opus/volltexte/2015/5031},
-  URN =		{urn:nbn:de:0030-drops-50312},
   doi =		{10.4230/LIPIcs.SNAPL.2015.274},
-  annote =	{Keywords: gradual typing, type systems, semantics, dynamic languages}
 }
 
 
@@ -464,17 +421,12 @@ author = {Garcia, Ronald and Clark, Alison M. and Tanter, \'{E}ric},
 title = {Abstracting Gradual Typing},
 year = {2016},
 isbn = {9781450335492},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 url = {https://doi.org/10.1145/2837614.2837670},
 doi = {10.1145/2837614.2837670},
-abstract = {Language researchers and designers have extended a wide variety of type systems to support gradual typing, which enables languages to seamlessly combine dynamic and static checking. These efforts consistently demonstrate that designing a satisfactory gradual counterpart to a static type system is challenging, and this challenge only increases with the sophistication of the type system. Gradual type system designers need more formal tools to help them conceptualize, structure, and evaluate their designs. In this paper, we propose a new formal foundation for gradual typing, drawing on principles from abstract interpretation to give gradual types a semantics in terms of pre-existing static types. Abstracting Gradual Typing (AGT for short) yields a formal account of consistency---one of the cornerstones of the gradual typing approach---that subsumes existing notions of consistency, which were developed through intuition and ad hoc reasoning. Given a syntax-directed static typing judgment, the AGT approach induces a corresponding gradual typing judgment. Then the type safety proof for the underlying static discipline induces a dynamic semantics for gradual programs defined over source-language typing derivations. The AGT approach does not resort to an externally justified cast calculus: instead, run-time checks naturally arise by deducing evidence for consistent judgments during proof reduction. To illustrate the approach, we develop a novel gradually-typed counterpart for a language with record subtyping. Gradual languages designed with the AGT approach satisfy by construction the refined criteria for gradual typing set forth by Siek and colleagues.},
-booktitle = {Proceedings of the 43rd Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+booktitle = popl16,
 pages = {429-442},
 numpages = {14},
 keywords = {abstract interpretation, gradual typing, subtyping},
-location = {St. Petersburg, FL, USA},
-series = {POPL '16}
 }
 
 @article{10.1145/2914770.2837670,
@@ -501,19 +453,9 @@ keywords = {subtyping, gradual typing, abstract interpretation}
 @inproceedings{cimini-siek2016,
 author = {Cimini, Matteo and Siek, Jeremy G.},
 title = {The Gradualizer: A Methodology and Algorithm for Generating Gradual Type Systems},
-year = {2016},
-isbn = {9781450335492},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/2837614.2837632},
 doi = {10.1145/2837614.2837632},
-abstract = {Many languages are beginning to integrate dynamic and static typing. Siek and Taha offered gradual typing as an approach to this integration that provides a coherent and full-span migration between the two disciplines. However, the literature lacks a general methodology for designing gradually typed languages. Our first contribution is to provide a methodology for deriving the gradual type system and the compilation to the cast calculus. Based on this methodology, we present the Gradualizer, an algorithm that generates a gradual type system from a well-formed type system and also generates a compiler to the cast calculus. Our algorithm handles a large class of type systems and generates systems that are correct with respect to the formal criteria of gradual typing. We also report on an implementation of the Gradualizer that takes a type system expressed in lambda-prolog and outputs its gradually typed version and a compiler to the cast calculus in lambda-prolog.},
-booktitle = {Proceedings of the 43rd Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
-pages = {443-455},
-numpages = {13},
-keywords = {type systems, methodology, semantics, gradual typing},
-location = {St. Petersburg, FL, USA},
-series = {POPL '16}
+booktitle = popl16,
+year = {2016}
 }
 
 @article{10.1145/2914770.2837632,
@@ -605,20 +547,11 @@ address = "London, UK",
 month = mar,
 year = "2001"}
 
-
-@article{Capretta2005GeneralRV,
-  title={General recursion via coinductive types},
-  author={Venanzio Capretta},
-  journal={Log. Methods Comput. Sci.},
-  year={2005},
-  volume={1}
-}
-
-@article{CohenCoquandHuberMortberg2017,
-  title={Cubical type theory: A constructive interpretation of the univalence axiom},
-  author={Cyril Cohen and Thierry Coquand and Simon Huber and Anders M\"{o}rtberg},
-  journal={IFCoLog J. Log. Appl.},
-  year={2017}
+@InProceedings{CohenCoquandHuberMortberg2017,
+  author =	{Cohen, Cyril and Coquand, Thierry and Huber, Simon and M\"{o}rtberg, Anders},
+  title =	{{Cubical Type Theory: A Constructive Interpretation of the Univalence Axiom}},
+  booktitle =	types15,
+  doi =		{10.4230/LIPIcs.TYPES.2015.5},
 }
 
 @article{VezzosiMortbergAbel2019,
@@ -633,7 +566,7 @@ number = {ICFP},
 url = {https://doi.org/10.1145/3341691},
 doi = {10.1145/3341691},
 abstract = {Proof assistants based on dependent type theory provide expressive languages for both programming and proving within the same system. However, all of the major implementations lack powerful extensionality principles for reasoning about equality, such as function and propositional extensionality. These principles are typically added axiomatically which disrupts the constructive properties of these systems. Cubical type theory provides a solution by giving computational meaning to Homotopy Type Theory and Univalent Foundations, in particular to the univalence axiom and higher inductive types. This paper describes an extension of the dependently typed functional programming language Agda with cubical primitives, making it into a full-blown proof assistant with native support for univalence and a general schema of higher inductive types. These new primitives make function and propositional extensionality as well as quotient types directly definable with computational content. Additionally, thanks also to copatterns, bisimilarity is equivalent to equality for coinductive types. This extends Agda with support for a wide range of extensionality principles, without sacrificing type checking and constructivity.},
-journal = {Proc. ACM Program. Lang.},
+journal = pacmpl,
 month = {jul},
 articleno = {87},
 numpages = {29},
@@ -643,20 +576,17 @@ keywords = {Univalence, Cubical Type Theory, Higher Inductive Types, Dependent P
 @article{new-jamner-ahmed19,
 author = {New, Max S. and Jamner, Dustin and Ahmed, Amal},
 title = {Graduality and Parametricity: Together Again for the First Time},
-year = {2019},
+year = {2020},
 issue_date = {January 2020},
 publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 volume = {4},
 number = {POPL},
 url = {https://doi.org/10.1145/3371114},
 doi = {10.1145/3371114},
-abstract = {Parametric polymorphism and gradual typing have proven to be a difficult combination, with no language yet produced that satisfies the fundamental theorems of each: parametricity and graduality. Notably, Toro, Labrada, and Tanter (POPL 2019) conjecture that for any gradual extension of System F that uses dynamic type generation, graduality and parametricity are ``simply incompatible''. However, we argue that it is not graduality and parametricity that are incompatible per se, but instead that combining the syntax of System F with dynamic type generation as in previous work necessitates type-directed computation, which we show has been a common source of graduality and parametricity violations in previous work. We then show that by modifying the syntax of universal and existential types to make the type name generation explicit, we remove the need for type-directed computation, and get a language that satisfies both graduality and parametricity theorems. The language has a simple runtime semantics, which can be explained by translation to a statically typed language where the dynamic type is interpreted as a dynamically extensible sum type. Far from being in conflict, we show that the parametricity theorem follows as a direct corollary of a relational interpretation of the graduality property.},
-journal = {Proc. ACM Program. Lang.},
-month = {dec},
+journal = pacmpl,
+month = {jan},
 articleno = {46},
 numpages = {32},
-keywords = {graduality, gradual typing, polymorphism, parametricity, logical relation}
 }
 
 @article{lmcs:2265,
@@ -664,7 +594,7 @@ keywords = {graduality, gradual typing, polymorphism, parametricity, logical rel
   AUTHOR = {Venanzio Capretta},
   URL = {https://lmcs.episciences.org/2265},
   DOI = {10.2168/LMCS-1(2:1)2005},
-  JOURNAL = {{Logical Methods in Computer Science}},
+  JOURNAL = lmcs,
   VOLUME = {{Volume 1, Issue 2}},
   YEAR = {2005},
   MONTH = Jul,
@@ -710,7 +640,7 @@ abstract = {In his seminal paper on “Types, Abstraction and Parametric Polymor
 @inproceedings{neis09,
  author = {Georg Neis and Derek Dreyer and Andreas Rossberg},
  title = {Non-Parametric Parametricity},
- booktitle = icfp,
+ booktitle = icfp09,
  pages = "135--148",
  year = {2009},
  month = sep,
@@ -719,17 +649,11 @@ abstract = {In his seminal paper on “Types, Abstraction and Parametric Polymor
 
 @inproceedings{ahmed06,
   author       = {Amal J. Ahmed},
-  editor       = {Peter Sestoft},
-  title        = {Step-Indexed Syntactic Logical Relations for Recursive and Quantified
-                  Types},
-  booktitle    = {Programming Languages and Systems, 15th European Symposium on Programming,
-                  {ESOP} 2006, Held as Part of the Joint European Conferences on Theory
-                  and Practice of Software, {ETAPS} 2006, Vienna, Austria, March 27-28,
-                  2006, Proceedings},
-  series       = {Lecture Notes in Computer Science},
+  title        = {Step-Indexed Syntactic Logical Relations for Recursive and Quantified Types},
+  booktitle    = {15th European Symposium on Programming, {ESOP} 2006, Vienna, Austria},
   volume       = {3924},
   pages        = {69--83},
-  publisher    = {Springer},
+  month        = mar,
   year         = {2006},
   url          = {https://doi.org/10.1007/11693024\_6},
   doi          = {10.1007/11693024\_6},
@@ -740,52 +664,42 @@ abstract = {In his seminal paper on “Types, Abstraction and Parametric Polymor
 author = {Appel, Andrew W. and McAllester, David},
 title = {An indexed model of recursive types for foundational proof-carrying code},
 year = {2001},
-issue_date = {September 2001},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
 volume = {23},
 number = {5},
 issn = {0164-0925},
 url = {https://doi.org/10.1145/504709.504712},
 doi = {10.1145/504709.504712},
-journal = {ACM Trans. Program. Lang. Syst.},
-month = {sep},
+journal = toplas,
+month = sep,
 pages = {657–683},
 numpages = {27}
 }
 
-  
+
 @article{new-giovannini-licata-2022,
   author       = {Max S. New and
                   Eric Giovannini and
                   Daniel R. Licata},
   title        = {Gradual Typing for Effect Handlers},
-  journal      = {Proc. {ACM} Program. Lang.},
+  journal      = pacmpl,
   volume       = {7},
   number       = {{OOPSLA2}},
   pages        = {1758--1786},
   year         = {2023},
   url          = {https://doi.org/10.1145/3622860},
   doi          = {10.1145/3622860},
-  timestamp    = {Sun, 10 Dec 2023 17:01:17 +0100},
-  biburl       = {https://dblp.org/rec/journals/pacmpl/NewGL23.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 @inproceedings{levy99,
   author       = {Paul Blain Levy},
-  editor       = {Jean{-}Yves Girard},
   title        = {Call-by-Push-Value: {A} Subsuming Paradigm},
-  booktitle    = {Typed Lambda Calculi and Applications, 4th International Conference,
-                  TLCA'99, L'Aquila, Italy, April 7-9, 1999, Proceedings},
-  series       = {Lecture Notes in Computer Science},
+  booktitle    = tlca99,
   volume       = {1581},
   pages        = {228--242},
   publisher    = {Springer},
   year         = {1999},
   url          = {https://doi.org/10.1007/3-540-48959-2\_17},
   doi          = {10.1007/3-540-48959-2\_17},
-  timestamp    = {Tue, 14 May 2019 10:00:41 +0200},
 }
 
 
@@ -810,21 +724,10 @@ numpages = {27}
   author       = {Pierre{-}Louis Curien and
                   Marcelo P. Fiore and
                   Guillaume Munch{-}Maccagnoni},
-  editor       = {Rastislav Bod{\'{\i}}k and
-                  Rupak Majumdar},
   title        = {A theory of effects and resources: adjunction models and polarised
                   calculi},
-  booktitle    = {Proceedings of the 43rd Annual {ACM} {SIGPLAN-SIGACT} Symposium on
-                  Principles of Programming Languages, {POPL} 2016, St. Petersburg,
-                  FL, USA, January 20 - 22, 2016},
-  pages        = {44--56},
-  publisher    = {{ACM}},
-  year         = {2016},
-  url          = {https://doi.org/10.1145/2837614.2837652},
+  booktitle    = popl16,
   doi          = {10.1145/2837614.2837652},
-  timestamp    = {Wed, 23 Jun 2021 15:34:31 +0200},
-  biburl       = {https://dblp.org/rec/conf/popl/CurienFM16.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 @phdthesis{Eremondi_2023, series={Electronic Theses and Dissertations (ETDs) 2008+}, title={On the design of a gradual dependently typed language for programming}, url={https://open.library.ubc.ca/collections/ubctheses/24/items/1.0428823}, DOI={http://dx.doi.org/10.14288/1.0428823}, school={University of British Columbia}, author={Eremondi, Joseph S.}, year={2023}, collection={Electronic Theses and Dissertations (ETDs) 2008+}}
@@ -854,7 +757,7 @@ numpages = {27}
                   Jonathan Sterling and
                   Robert Harper},
   title        = {Decalf: {A} Directed, Effectful Cost-Aware Logical Framework},
-  journal      = {Proc. {ACM} Program. Lang.},
+  journal      = pacmpl,
   volume       = {8},
   number       = {{POPL}},
   pages        = {273--301},
@@ -872,15 +775,8 @@ numpages = {27}
                   Lars Birkedal},
   title        = {Denotational semantics of general store and polymorphism},
   journal      = {CoRR},
-  volume       = {abs/2210.02169},
   year         = {2022},
-  url          = {https://doi.org/10.48550/arXiv.2210.02169},
   doi          = {10.48550/ARXIV.2210.02169},
-  eprinttype    = {arXiv},
-  eprint       = {2210.02169},
-  timestamp    = {Fri, 07 Oct 2022 15:24:59 +0200},
-  biburl       = {https://dblp.org/rec/journals/corr/abs-2210-02169.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 @article{action,
@@ -910,8 +806,8 @@ abstract = {The Î»-calculus is considered a useful mathematical tool in the st
 
 @INPROCEEDINGS{39155,
 author={Moggi, E.},
-booktitle={[1989] Proceedings. Fourth Annual Symposium on Logic in Computer Science}, 
-title={Computational lambda-calculus and monads}, 
+booktitle=lics89,
+title={Computational lambda-calculus and monads},
 year={1989},
 volume={},
 number={},
@@ -952,16 +848,6 @@ address="Cham",
 pages="108--123",
 abstract="We show how to construct a logical relation for countable nondeterminism in a guarded type theory, corresponding to the internal logic of the topos Sh$\omega$1 of sheaves over $\omega$1. In contrast to earlier work on abstract step-indexed models, we not only construct the logical relations in the guarded type theory, but also give an internal proof of the adequacy of the model with respect to standard contextual equivalence. To state and prove adequacy of the logical relation, we introduce a new propositional modality. In connection with this modality we show why it is necessary to work in the logic of bf Sh$\omega$1.",
 isbn="978-3-319-08918-8"
-}
-
-@misc{sterling2023denotationalsemanticsgeneralstore,
-      title={Denotational semantics of general store and polymorphism}, 
-      author={Jonathan Sterling and Daniel Gratzer and Lars Birkedal},
-      year={2023},
-      eprint={2210.02169},
-      archivePrefix={arXiv},
-      primaryClass={cs.PL},
-      url={https://arxiv.org/abs/2210.02169}, 
 }
 
 @article{shulman2007,
@@ -1043,8 +929,7 @@ volume = {8},
 number = {POPL},
 url = {https://doi.org/10.1145/3632854},
 doi = {10.1145/3632854},
-abstract = {We present guarded interaction trees — a structure and a fully formalized framework for representing higher-order computations with higher-order effects in Coq, inspired by domain theory and the recently proposed interaction trees. We also present an accompanying separation logic for reasoning about guarded interaction trees. To demonstrate that guarded interaction trees provide a convenient domain for interpreting higher-order languages with effects, we define an interpretation of a PCF-like language with effects and show that this interpretation is sound and computationally adequate; we prove the latter using a logical relation defined using the separation logic. Guarded interaction trees also allow us to combine different effects and reason about them modularly. To illustrate this point, we give a modular proof of type soundness of cross-language interactions for safe interoperability of different higher-order languages with different effects. All results in the paper are formalized in Coq using the Iris logic over guarded type theory.},
-journal = {Proc. ACM Program. Lang.},
+journal = pacmpl,
 month = jan,
 articleno = {12},
 numpages = {30},
@@ -1052,9 +937,9 @@ keywords = {Coq, Iris, denotational semantics, logical relations}
 }
 
 @article{recursion-probabilistic-choice-guarded,
-  title        = {Modelling Recursion and Probabilistic Choice in Guarded Type Theory}, 
+  title        = {Modelling Recursion and Probabilistic Choice in Guarded Type Theory},
   author       = {Philipp Jan Andries Stassen and Rasmus Ejlers Møgelberg and Maaike Zwart and Alejandro Aguirre and Lars Birkedal},
-  journal      = {Proc. {ACM} Program. Lang.},
+  journal      = pacmpl,
   volume       = {9},
   number       = {{POPL}},
   year         = {2025},
@@ -1066,17 +951,13 @@ keywords = {Coq, Iris, denotational semantics, logical relations}
 author="Birkedal, Lars
 and St{\o}vring, Kristian
 and Thamsborg, Jacob",
-editor="de Alfaro, Luca",
 title="Realizability Semantics of Parametric Polymorphism, General References, and Recursive Types",
-booktitle="Foundations of Software Science and Computational Structures",
+booktitle=fossacs09,
 year="2009",
-publisher="Springer Berlin Heidelberg",
-address="Berlin, Heidelberg",
 pages="456--470",
-abstract="We present a realizability model for a call-by-value, higher-order programming language with parametric polymorphism, general first-class references, and recursive types. The main novelty is a relational interpretation of open types (as needed for parametricity reasoning) that include general reference types. The interpretation uses a new approach to modeling references.",
-isbn="978-3-642-00596-1"
+isbn="978-3-642-00596-1",
+doi={10.1007/978-3-642-00596-1\_32}
 }
-
 
 
 @inproceedings{deepandshallowtypes,
@@ -1099,17 +980,8 @@ series = {PLDI 2022}
 author = {Vitousek, Michael M. and Swords, Cameron and Siek, Jeremy G.},
 title = {Big types in little runtime: open-world soundness and collaborative blame for gradual type systems},
 year = {2017},
-isbn = {9781450346603},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3009837.3009849},
 doi = {10.1145/3009837.3009849},
-booktitle = {Proceedings of the 44th ACM SIGPLAN Symposium on Principles of Programming Languages},
-pages = {762–774},
-numpages = {13},
-keywords = {gradual typing, interoperability, semantics, type systems},
-location = {Paris, France},
-series = {POPL '17}
+booktitle = popl17,
 }
 
 @article{levystacks,
@@ -1133,11 +1005,9 @@ publisher = {Association for Computing Machinery},
 address = {New York, NY, USA},
 url = {https://doi.org/10.1145/2603088.2603132},
 doi = {10.1145/2603088.2603132},
-abstract = {To ensure consistency and decidability of type checking, proof assistants impose a requirement of productivity on corecursive definitions. In this paper we investigate a type-based alternative to the existing syntactic productivity checks of Coq and Agda, using a combination of guarded recursion and quantification over clocks. This approach was developed by Atkey and McBride in the simply typed setting, here we extend it to a calculus with dependent types. Building on previous work on the topos-of-trees model we construct a model of the calculus using a family of presheaf toposes, each of which can be seen as a multi-dimensional version of the topos-of-trees. As part of the model construction we must solve the coherence problem for modelling dependent types in locally cartesian closed categories simulatiously in a whole family of locally cartesian closed categories. We do this by embedding all the categories in a large one and applying a recent approach to the coherence problem due to Streicher and Voevodsky.},
-booktitle = {Proceedings of the Joint Meeting of the Twenty-Third EACSL Annual Conference on Computer Science Logic (CSL) and the Twenty-Ninth Annual ACM/IEEE Symposium on Logic in Computer Science (LICS)},
+booktitle = lics14,
 articleno = {71},
 numpages = {10},
 keywords = {categorical semantics, corecursion, denotational semantics, dependent types, guarded recursion},
 location = {Vienna, Austria},
-series = {CSL-LICS '14}
 }
