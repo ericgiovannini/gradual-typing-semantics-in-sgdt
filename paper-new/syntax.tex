@@ -159,9 +159,9 @@ with two effects: errors and divergence. Errors arise from failing
 casts, e.g. casting a number to dynamic to a function
 $\dnc{\iarr}\upc{\inat} x$. Divergence arises because our dynamic type
 allows us to encode untyped lambda calculus, and so we can encode the
-$\Omega$ term with the help of casts $\Omega = (\lambda
-x:\dyn. (\dnc{\iarr} x)x)(\upc{\iarr}(\lambda x:\dyn. (\dnc{\iarr}
-x)x))$.
+$\Omega$ term with the help of casts:
+%
+\[ \Omega = (\lambda (x:\dyn). (\dnc{\iarr} x)\, x)\, (\upc{\iarr}(\lambda (x:\dyn). (\dnc{\iarr} x)\, x)). \]
 
 \begin{figure}
   \begin{mathpar}

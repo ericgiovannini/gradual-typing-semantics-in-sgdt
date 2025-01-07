@@ -144,7 +144,7 @@ steps forever).
 %
 We call these algebraic structures simple error domains to distinguish
 them from the error domains we define later to model graduality:
-\begin{definition}[Simple Error Domains]
+\begin{definition}
   A (simple) error domain $B$ consists of
   \begin{enumerate}
   \item A carrier set $UB$
@@ -196,7 +196,7 @@ domain'' on a set, which models an effectful CBV computation.
 We base the construction on the \emph{guarded
 lift monad} described in \cite{mogelberg-paviotti2016}. Here, we augment the
 guarded lift monad to accommodate the additional effect of failure.
-\begin{definition}[Free error domain]
+\begin{definition}
   For a set $A$, we define the (carrier of) \emph{free error domain} $U(\li A)$ as the unique solution to the guarded domain equation:
   \[ U(\li A) \cong A + 1\, + \laterhs U(\li A). \]
   For which we use the following notation for the three constructors:

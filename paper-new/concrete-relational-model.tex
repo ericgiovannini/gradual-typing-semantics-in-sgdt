@@ -36,6 +36,10 @@ Given a predomain $A$, we can form the predomain $\later A$. The
 underlying set is $\later |A|$ and the ordering is given by $\tilde{x}
 \ltdyn_{\later A} \tilde{x'}$ iff $\later_t(\tilde{x}_t \ltdyn_A
 \tilde{x'}_t)$, and likewise for bisimilarity.
+%
+% Given predomains $A_i$ and $A_o$ and morphisms $f, g : A_i \to A_o$, we define
+% $f \bisimsq{A_i}{A_o} g$ to be the natural extension of bisimilarity to
+% morphisms: given bisimilar inputs, the morphisms have bisimilar outputs.
 
 We similarly enhance our error domains with ordering and bisimilarity
 relations, but we further need to impose conditions on the algebraic
@@ -50,6 +54,7 @@ An \textbf{error domain} $B$ consists of a predomain $B$ along with the followin
     \item A distinguished ``error'' element $\mho_B \in B$ such that $\mho \ltdyn_B x$ for all $x$
     \item A morphism of predomains $\theta_B \colon \later B \to B$
     \item For all $x, y : B$ with $x \bisim_B y$, we have $\theta_B(\nxt\, x) \bisim_B y$
+    % \item We have $\theta_B \circ \nxt \bisimsq{B}{B} \id$
 \end{itemize}
 A \textbf{morphism of error domains} is a morphism of the underlying
 predomains that preserves the error element and the $\theta$ map.
@@ -181,8 +186,16 @@ Section~\ref{sec:concrete-term-model} changed only in that we interpret it as a
 domain equation on predomains rather than sets:
 %
 \[ D \cong \mathbb{N}\, + (D \times D)\, + \laterhs U(D \arr \li D) \]
+%
+% EXTENDED VERSION
+% The complete definition of the ordering $\ltdyn_D$ is provided in the appendix
+% for completeness.
+%
+% CONFERENCE VERSION
 The complete definition of the ordering $\ltdyn_D$ is provided in the appendix
-for completeness. We refer to the three injections as $e_\nat$, $e_\times$,
+of the extended version of this paper \cite{gtt-sgdt-extended-version}.
+%
+We refer to the three injections as $e_\nat$, $e_\times$,
 and $e_\to$, respectively.
 
 To interpret type precision, we define three relations involving $D$
@@ -214,7 +227,7 @@ bisimilar to the identity. We call such an object a \emph{value
 object}, and this will serve as the final definition of a denotation of
 a type in our semantics. Similarly, we define computation objects to be
 error domains equipped with a notion of syntactic perturbation:
-\begin{definition}[value and computation objects + morphisms]
+\begin{definition}
   A \textbf{value object} consists of a predomain $A$, a monoid $M_A$ and a
   homomorphism of monoids $i_A \colon M_A \to \morbisimid{A} := \{ f : A \to A \mid f
   \bisim \id_A \}$.
@@ -290,10 +303,10 @@ Having defined syntactic perturbations and value and computation objects, we can
 now make formal the final aspect of the model: the notion of
 quasi-representability of relations.
 %
-\begin{definition}[quasi-left-representable relations]\label{def:quasi-left-representable}
+\begin{definition}\label{def:quasi-left-representable}
 Let $(A, M_A, i_A)$ and $(A', M_{A'}, i_{A'})$ be value objects, and let $c : A
 \rel A'$ be a predomain relation. We say that $c$ is
-\emph{quasi-left-representable} by a predomain morphism $e_c : A \to A'$ if there
+\textbf{quasi-left-representable} by a predomain morphism $e_c : A \to A'$ if there
 are perturbations $\delle_c \in M_A$ and $\delre_c \in M_{A'}$ such that the
 following two squares exist: 
 (1) $\upl$: $e_c \ltsq{c}{r(A')} i_{A'}(\delre_c)$, and
@@ -311,10 +324,10 @@ that definition the perturbations were required to be the identity.
 
 Likewise, we define quasi-right-representability as follows:
 %
-\begin{definition}[quasi-right-representable relations]\label{def:quasi-right-representable}
+\begin{definition}\label{def:quasi-right-representable}
 Let $(B, M_B, i_B)$ and $(B', M_{B'}, i_{B'})$ be computation objects, and let
 $d : B \rel B'$ be an error domain relation. We say that $d$ is
-\emph{quasi-right-representable} by an error domain morphism $p_d : B' \multimap B$ if
+\textbf{quasi-right-representable} by an error domain morphism $p_d : B' \multimap B$ if
 there are perturbations $\dellp_d \in M_B$ and $\delrp_d \in M_{B'}$ such that
 the following two squares exist: 
 (1) $\dnl$: $p_d \ltsq{r(B')}{d} i_{B'}(\delrp_d)$, and
@@ -329,7 +342,7 @@ determined} by any morphism that left- or right-represents it: if two
 relations are left-represented by the same morphism, then they are
 equal. But for quasi-representability, this is no longer the case due
 to the presence of perturbations. Instead we have the following weaker property:
-\begin{definition}[quasi-equivalence]\label{def:quasi-equivalent}
+\begin{definition}\label{def:quasi-equivalent}
   Let $A$ and $A'$ be value objects, and let $c, c' : A \rel A'$ be relations
   between the underlying predomains. We say that $c$ and $c'$ are
   \textbf{quasi-equivalent}, written $c \qordeq c'$, if there exist
@@ -376,7 +389,7 @@ following definition:
 We can now give the final definition of value and computation relations for our
 model, which serve as the denotation of our type precision derivations:
 %
-\begin{definition}[value relations]
+\begin{definition}
 A \textbf{value relation} between value objects $(A, M_A, i_A)$ and $(A',
 M_{A'}, i_{A'})$ consists of a predomain relation $c : A \rel A'$ that has a
 push-pull structure, is quasi-left-representable by a morphism $e_c : A \to A'$,
@@ -413,7 +426,7 @@ bisimilarity to morphisms: given bisimilar inputs, the functions have
 bisimilar outputs.
 \begin{definition}
   Let $c_i : A_i \rel A_i'$, $c_o : A_o \rel A_o'$ $f : A_i \to A_o$
-  and $g : A_i' \to A_o'$.  An extensional square $f
+  and $g : A_i' \to A_o'$.  An \textbf{extensional square} $f
   \ltsqbisim{c_i}{c_o} g$ holds if there \emph{exist} $f'
   \bisimsq{A_i}{A_o} f$ and $g' \bisimsq{A_i'}{A_o'} g$ such that $f' \ltsq{c_i}{c_o} g'$.
 \end{definition}
@@ -454,7 +467,7 @@ semantics, the corresponding projection involves a perturbation.
 % CONFERENCE VERSION
 This is a consequence of the construction of the composition of
 value/computation relations (the relevant projection is defined in the appendix
-of the extended version of this paper \cite{gtt-sgdt-extended-version}).
+of the extended version \cite{gtt-sgdt-extended-version}).
 %
 However, the two projections are extensionally equivalent since they are the
 same up to a perturbation.
