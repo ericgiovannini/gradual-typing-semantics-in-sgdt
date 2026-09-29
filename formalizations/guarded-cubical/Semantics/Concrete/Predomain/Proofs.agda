@@ -353,10 +353,10 @@ module ClockedProofs (k : Clock) where
       eq' : ▹ ((la : ⟨ 𝕃 A ⟩) -> ext f la ≡ L→L℧B (extL (L℧→LB ∘ f*) (L℧→LA la))) -> (la : ⟨ 𝕃 A ⟩) -> ext f la ≡ L→L℧B (extL (L℧→LB ∘ f*) (L℧→LA la))
       eq' IH (η a) = transport (λ i → unfold-ext f (~ i) (η a) ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ f*) (~ i) (unfold-L℧→L A (~ i) (η a))))
          (sym (cong (LA⊎Unit→L℧A' B (next (LA⊎Unit→L℧A B))) (transport (λ i → (refl {x = L℧→LB (f a)} i) ≡ unfold-L℧→L B i (f a)) refl)
-         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) (f a))) ∙ L℧ALA⊎Unit-iso B .leftInv (f a)))
+         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) (f a))) ∙ L℧ALA⊎Unit-iso B .ret (f a)))
       eq' IH ℧ = transport (λ i → unfold-ext f (~ i) ℧ ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ f*) (~ i) (unfold-L℧→L A (~ i) ℧)))
          (sym (cong (LA⊎Unit→L℧A' B (next (LA⊎Unit→L℧A B))) (transport (λ i → (refl {x = L℧→LB ℧} i) ≡ unfold-L℧→L B i ℧) refl)
-         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) ℧)) ∙ L℧ALA⊎Unit-iso B .leftInv ℧))
+         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) ℧)) ∙ L℧ALA⊎Unit-iso B .ret ℧))
       eq' IH (θ la~) = transport (λ i → unfold-ext f (~ i) (θ la~) ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ f*) (~ i) (unfold-L℧→L A (~ i) (θ la~))))
         λ i → θ (λ t → IH t (la~ t) i)
       
@@ -366,10 +366,10 @@ module ClockedProofs (k : Clock) where
       eq1' : ▹ ((la' : ⟨ 𝕃 A ⟩) -> ext g la' ≡ L→L℧B (extL (L℧→LB ∘ g*) (L℧→LA la'))) -> (la' : ⟨ 𝕃 A ⟩) -> ext g la' ≡ L→L℧B (extL (L℧→LB ∘ g*) (L℧→LA la'))
       eq1' IH (η a) = transport (λ i → unfold-ext g (~ i) (η a) ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ g*) (~ i) (unfold-L℧→L A (~ i) (η a))))
          (sym (cong (LA⊎Unit→L℧A' B (next (LA⊎Unit→L℧A B))) (transport (λ i → (refl {x = L℧→LB (g a)} i) ≡ unfold-L℧→L B i (g a)) refl)
-         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) (g a))) ∙ L℧ALA⊎Unit-iso B .leftInv (g a)))
+         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) (g a))) ∙ L℧ALA⊎Unit-iso B .ret (g a)))
       eq1' IH ℧ = transport (λ i → unfold-ext g (~ i) ℧ ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ g*) (~ i) (unfold-L℧→L A (~ i) ℧)))
          (sym (cong (LA⊎Unit→L℧A' B (next (LA⊎Unit→L℧A B))) (transport (λ i → (refl {x = L℧→LB ℧} i) ≡ unfold-L℧→L B i ℧) refl)
-         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) ℧)) ∙ L℧ALA⊎Unit-iso B .leftInv ℧))
+         ∙ (λ i → unfold-L→L℧ B (~ i) (unfold-L℧→L B (~ i) ℧)) ∙ L℧ALA⊎Unit-iso B .ret ℧))
       eq1' IH (θ la~) = transport (λ i → unfold-ext g (~ i) (θ la~) ≡ unfold-L→L℧ B (~ i) (unfold-extL (L℧→LB ∘ g*) (~ i) (unfold-L℧→L A (~ i) (θ la~))))
         λ i → θ (λ t → IH t (la~ t) i)
       
@@ -377,7 +377,7 @@ module ClockedProofs (k : Clock) where
       eq1 = fix eq1'
       
       eq2 : (lb : L ( ⟨ B ⟩ ⊎ Unit)) -> lb ≡ L℧→LB (L→L℧B lb)
-      eq2 lb = sym (L℧ALA⊎Unit-iso B .rightInv lb)
+      eq2 lb = sym (L℧ALA⊎Unit-iso B .sec lb)
       
 
       f∘≈g∘ : TwoCell (rel-≈ A) (rel-≈ (𝕃 B)) f g -> TwoCell (rel-≈ (A ⊎p UnitPB)) (rel-≈L (B ⊎p UnitPB)) (L℧→LB ∘ f*) (L℧→LB ∘ g*)

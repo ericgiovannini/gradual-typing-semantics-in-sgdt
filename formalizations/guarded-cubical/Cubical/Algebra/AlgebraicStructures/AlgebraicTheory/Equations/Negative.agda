@@ -84,5 +84,5 @@ module _ {ℓX ℓar : Level}
   where
   Eqn-Lift : {Y : Type ℓY} {j : Level}
     → Equations Σ Y ℓR
-    → Equations Σ (Lift {j = j} Y) ℓR
+    → Equations Σ (Lift j Y) ℓR
   Eqn-Lift eqns lhs rhs = eqns (Term-Lower _ lhs) (Term-Lower _ rhs)

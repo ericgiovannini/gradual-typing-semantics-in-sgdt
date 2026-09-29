@@ -179,8 +179,8 @@ path-clock-irrel {A = A} {x = x} {y = y} H =
 -- This would typecheck, but is not sufficient for use in bool2ty-eq.
 -- There, it is crucial that j is ℓ-max ℓ1 ℓ3, not just ℓ3.
 lift-Π-eq : ∀ {ℓ1 ℓ2 ℓ3 : Level} → (X : Type ℓ1) {A : X → Type ℓ2} →
-  ((x : X) → Lift {i = ℓ2} {j = ℓ3} (A x)) ≡
-  Lift {i = ℓ-max ℓ1 ℓ2} {j = ℓ-max ℓ1 ℓ3} ((x : X) → A x)
+  ((x : X) → Lift ℓ3 (A x)) ≡
+  Lift (ℓ-max ℓ1 ℓ3) ((x : X) → A x)
 lift-Π-eq X = isoToPath
   (_ Iso⟨ codomainIsoDep (λ x → invIso LiftIso) ⟩
    _ Iso⟨ LiftIso ⟩
@@ -189,8 +189,8 @@ lift-Π-eq X = isoToPath
 testing : ∀ {ℓ ℓ' ℓ'' : Level} (X : Type ℓ) {A : X → Type ℓ'} →
   _≡_ {ℓ-max (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ')) (ℓ-suc ℓ'')}
       {Type (ℓ-max (ℓ-max ℓ ℓ') ℓ'')}
-      ((x : X) → Lift {ℓ'} {ℓ''} (A x))
-      (Lift {ℓ-max ℓ ℓ'} {ℓ-max ℓ ℓ''} ((x : X) → A x))
+      ((x : X) → Lift ℓ'' (A x))
+      (Lift (ℓ-max ℓ ℓ'') ((x : X) → A x))
 testing X = isoToPath
   (_ Iso⟨ codomainIsoDep (λ x → invIso LiftIso) ⟩
    _ Iso⟨ LiftIso ⟩
@@ -198,8 +198,8 @@ testing X = isoToPath
 
 -- Auxiliary deifnition used for the iso between ⊎ and Σ Bool.
 bool2ty : {ℓ ℓ' : Level} -> Type ℓ -> Type ℓ' -> Bool -> Type (ℓ-max ℓ ℓ')
-bool2ty {ℓ' = ℓ'} A B true = Lift {j = ℓ'} A
-bool2ty {ℓ = ℓ} A B false = Lift {j = ℓ} B
+bool2ty {ℓ' = ℓ'} A B true = Lift ℓ' A
+bool2ty {ℓ = ℓ} A B false = Lift ℓ B
 
 bool2ty-eq : ∀ {ℓ ℓ' ℓ'' : Level} → {X : Type ℓ} {A : X -> Type ℓ'} {B : X -> Type ℓ''} ->
   (b : Bool) ->
@@ -211,7 +211,7 @@ bool2ty-eq {ℓ = ℓ} {ℓ' = ℓ'} {ℓ'' = ℓ''} {X = X} {A = A} {B = B} tru
 bool2ty-eq {ℓ = ℓ} {ℓ' = ℓ'} {ℓ'' = ℓ''} {X = X} {A = A} {B = B} false =
   lift-Π-eq {ℓ1 = ℓ} {ℓ2 = ℓ''} {ℓ3 = ℓ'}  X {A = B}
 
-bool2ty-A-A : (A : Type ℓ) (b : Bool) -> bool2ty A A b ≡ Lift {j = ℓ} A
+bool2ty-A-A : (A : Type ℓ) (b : Bool) -> bool2ty A A b ≡ Lift ℓ A
 bool2ty-A-A A true = refl
 bool2ty-A-A A false = refl
 
@@ -264,8 +264,8 @@ Iso-∀clock-× : {A : Clock → Type ℓ} {B : Clock → Type ℓ'} →
   Iso (∀ k → A k × B k) ((∀ k → A k) × (∀ k → B k))
 Iso.fun Iso-∀clock-× f = (λ k → f k .fst) , (λ k → f k .snd)
 Iso.inv Iso-∀clock-× (f , g) = λ k → f k , g k
-Iso.rightInv Iso-∀clock-× (f , g) = refl
-Iso.leftInv Iso-∀clock-× f = refl
+Iso.sec Iso-∀clock-× (f , g) = refl
+Iso.ret Iso-∀clock-× f = refl
 
 
 

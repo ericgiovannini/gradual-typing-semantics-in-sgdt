@@ -252,7 +252,7 @@ module _ where
     isSet (ErrorDomMor Bᵢ Bₒ)
   EDMorIsSet {Bₒ = Bₒ} = isSetRetract
     (Iso.fun ErrorDomMorIsoΣ) (Iso.inv ErrorDomMorIsoΣ)
-    (Iso.leftInv ErrorDomMorIsoΣ)
+    (Iso.ret ErrorDomMorIsoΣ)
     (isSetΣSndProp PMorIsSet (λ f → isProp× (Bₒ.is-set _ _) (isPropΠ (λ x~ → Bₒ.is-set _ _))))
       where
         module Bₒ = ErrorDomainStr (Bₒ .snd)
@@ -419,7 +419,7 @@ module _ where
     isSet (ErrorDomRel B B' ℓd)
   EDRelIsSet {B = B} {B' = B'} =
     isSetRetract
-      (Iso.fun EDRelIsoΣ) (Iso.inv EDRelIsoΣ) (Iso.leftInv EDRelIsoΣ)
+      (Iso.fun EDRelIsoΣ) (Iso.inv EDRelIsoΣ) (Iso.ret EDRelIsoΣ)
       (isSetΣ
           (isSetPRel {A = ErrorDomain→Predomain B} {A' = ErrorDomain→Predomain B'})
           (λ R → isSet×

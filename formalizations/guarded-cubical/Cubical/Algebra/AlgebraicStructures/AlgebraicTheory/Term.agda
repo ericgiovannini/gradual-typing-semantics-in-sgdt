@@ -133,12 +133,12 @@ module _ {ℓX ℓar : Level}
 
   Term-Lift : {Y : Type ℓY} {j : Level}
     → Term Σ Y
-    → Term Σ (Lift {j = j} Y)
+    → Term Σ (Lift j Y)
   Term-Lift (var y) = var (lift y)
   Term-Lift (oper x vars) = oper x (λ z → Term-Lift (vars z))
 
   Term-Lower : {Y : Type ℓY} {j : Level}
-    → Term Σ (Lift {j = j} Y)
+    → Term Σ (Lift j Y)
     → Term Σ Y
   Term-Lower (var y) = var (lower y)
   Term-Lower (oper x vars) = oper x λ z → Term-Lower (vars z)

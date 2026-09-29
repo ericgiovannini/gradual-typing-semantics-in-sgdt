@@ -64,7 +64,7 @@ module _ (ℓ : Level) where
   open Iso
 
   idCR : ClockedRel X X ℓ
-  idCR x x' n = (x ≡ x') × Lift {j = ℓ} (n ≡ 0)
+  idCR x x' n = (x ≡ x') × Lift ℓ (n ≡ 0)
 
   lemCompRelL : ∀ x y n → (R : ClockedRel X Y ℓ)
               → CompClockedRel idCR R x y n

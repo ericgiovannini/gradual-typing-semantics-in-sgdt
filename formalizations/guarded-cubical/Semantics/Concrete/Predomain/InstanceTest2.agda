@@ -60,8 +60,8 @@ module _
   
 
   _⊎rel_ : Rel (A₁ ⊎ A₂) (A₁' ⊎ A₂') (ℓ-max ℓR₁ ℓR₂)
-  inl x₁ ⊎rel inl y₁ = Lift {j = ℓR₂} (R₁ x₁ y₁)
-  inr x₂ ⊎rel inr y₂ = Lift {j = ℓR₁} (R₂ x₂ y₂)
+  inl x₁ ⊎rel inl y₁ = Lift ℓR₂ (R₁ x₁ y₁)
+  inr x₂ ⊎rel inr y₂ = Lift ℓR₁ (R₂ x₂ y₂)
   _ ⊎rel _ = ⊥*
 
 

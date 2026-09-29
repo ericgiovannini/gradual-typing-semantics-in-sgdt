@@ -357,18 +357,18 @@ module _ {ℓ : Level} where
                 (Rel.⊙V Rel.⊎-inr (ValTyIso→ValRel isoSum-Sigma))
     where
       test-iso : ∀ {X : Type ℓ} {Y : Type ℓ'}
-        → Iso ((Lift {j = ℓ'} X) Prod.× (Lift {j = ℓ} Y))
-              (Σ[ tt ∈ Unit ] ((b : Bool) → if b then Lift {j = ℓ'} X else Lift {j = ℓ} Y))
+        → Iso ((Lift ℓ' X) Prod.× (Lift ℓ Y))
+              (Σ[ tt ∈ Unit ] ((b : Bool) → if b then Lift ℓ' X else Lift ℓ Y))
               
       test-iso {X = X} {Y = Y} .Iso.fun (x , y) = tt ,
-        Bool.elim {A = λ b → if b then Lift X else Lift Y} x y
+        Bool.elim {A = λ b → if b then Lift _ X else Lift _ Y} x y
         
       test-iso .Iso.inv (tt , f) = ((f true) , (f false))
       
-      test-iso .Iso.rightInv (tt , f) = ≡-× refl
+      test-iso .Iso.sec (tt , f) = ≡-× refl
         (funExt (Bool.elim {A = λ b → Bool.elim (f true) (f false) b ≡ f b} refl refl))
         
-      test-iso .Iso.leftInv (x , y) = refl
+      test-iso .Iso.ret (x , y) = refl
       
       iso1 : StrongIsoV (DynV' Types.× DynV') SigmaUnitPiBoolDyn
       iso1 = mkStrongIsoV isoP isoM eq

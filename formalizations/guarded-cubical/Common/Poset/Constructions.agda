@@ -68,8 +68,8 @@ UnitP! = record { f = λ _ -> tt ; isMon = λ _ → refl }
 LiftPoset : {ℓ1 ℓ1' : Level} (X : Poset ℓ1 ℓ1') ->
   (ℓ2 ℓ2' : Level) -> Poset (ℓ-max ℓ1 ℓ2) (ℓ-max ℓ1' ℓ2')
 LiftPoset {ℓ1 = ℓ1} {ℓ1' = ℓ1'} X ℓ2 ℓ2' =
-  (Lift {i = ℓ1} {j = ℓ2} ⟨ X ⟩) ,
-  posetstr (λ {(lift x) (lift y) -> Lift {j = ℓ2'} (x X.≤ y) })
+  (Lift ℓ2 ⟨ X ⟩) ,
+  posetstr (λ {(lift x) (lift y) -> Lift ℓ2' (x X.≤ y) })
   (isposet
     (isOfHLevelLift 2 X.is-set)
     (λ {(lift x) (lift y) (lift p) (lift q) →
@@ -184,10 +184,10 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ'B = ℓ'B} A B =
     module B = PosetStr (B .snd)
 
     order : ⟨ A ⟩ ⊎ ⟨ B ⟩ -> ⟨ A ⟩ ⊎ ⟨ B ⟩ -> Type (ℓ-max ℓ'A ℓ'B)
-    order (inl a1) (inl a2) = Lift {j = ℓ'B} (a1 A.≤ a2)
+    order (inl a1) (inl a2) = Lift ℓ'B (a1 A.≤ a2)
     order (inl a1) (inr b1) = ⊥*
     order (inr b1) (inl a1) = ⊥*
-    order (inr b1) (inr b2) = Lift {j = ℓ'A} (b1 B.≤ b2)
+    order (inr b1) (inr b2) = Lift ℓ'A (b1 B.≤ b2)
 
     propValued : isPropValued order
     propValued (inl a1) (inl a2) = isOfHLevelLift 1 (IsPoset.is-prop-valued A.isPoset a1 a2)

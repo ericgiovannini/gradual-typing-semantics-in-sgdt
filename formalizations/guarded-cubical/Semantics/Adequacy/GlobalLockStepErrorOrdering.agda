@@ -250,7 +250,7 @@ module Adequacy (X : Type ℓ) (Y : Type ℓ') (R : X → Y → Type ℓR)
     -- Ordering on results (values + error)
     _≤res_ : X? × ℕ → Y? × ℕ → Type ℓR
     (inl x , j) ≤res (inl y , i) = (i ≡ j) × R x y
-    (inr tt , j) ≤res (y? , i) = Lift {j = ℓR} (j ≤ i)
+    (inr tt , j) ≤res (y? , i) = Lift ℓR (j ≤ i)
     _ ≤res _ = ⊥*
 
     -- Second, more intuitive, definition of step-indexed lock-step error ordering

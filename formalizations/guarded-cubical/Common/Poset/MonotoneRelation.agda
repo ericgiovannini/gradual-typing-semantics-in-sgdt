@@ -119,7 +119,7 @@ unquoteDecl MonRel'IsoΣ = declareRecordIsoΣ MonRel'IsoΣ (quote (MonRel'))
 isSetMonRel' : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> isSet (MonRel' X Y ℓR)
 isSetMonRel' = isSetRetract
   (Iso.fun MonRel'IsoΣ) (Iso.inv MonRel'IsoΣ)
-  (Iso.leftInv MonRel'IsoΣ)
+  (Iso.ret MonRel'IsoΣ)
     (isSetΣSndProp
       (isSetΠ2 (λ _ _ -> isSetHProp))
       (λ R -> isProp× (isPropΠ5 (λ _ _ _ _ _ -> snd (R _ _)))
@@ -164,7 +164,7 @@ module MonReasoning {ℓR : Level} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y}
 -- show below.
 poset-monrel : {ℓo : Level} -> (X : Poset ℓ ℓ') -> MonRel X X (ℓ-max ℓ' ℓo)
 poset-monrel {ℓ' = ℓ'} {ℓo = ℓo} X = record {
-  R = λ x x' -> Lift {i = ℓ'} {j = ℓo} (rel X x x') ;
+  R = λ x x' -> Lift ℓo (rel X x x') ;
   is-prop-valued = λ x x' -> isOfHLevelLift 1 (isPropValued-poset X x x') ;
   is-antitone = λ {x'} {x} {y}  x'≤x x≤y -> lift (transitive X x' x y x'≤x (lower x≤y)) ;
   is-monotone = λ {x}  {y} {y'} x≤y y≤y' -> lift (transitive X x y y' (lower x≤y) y≤y') }
@@ -215,7 +215,7 @@ CompMonRel {ℓ''} {X = X} {Y = Y} {Z = Z} R1 R2 = record {
 LiftR : {ℓR' : Level} {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} (R : MonRel X Y ℓR) ->
   MonRel X Y (ℓ-max ℓR ℓR')
 LiftR {ℓR' = ℓR'} R = record {
-  R = λ x y -> Lift {j = ℓR'} (R .MonRel.R x y) ;
+  R = λ x y -> Lift ℓR' (R .MonRel.R x y) ;
   is-prop-valued = λ x y -> isOfHLevelLift 1 (R .MonRel.is-prop-valued x y) ;
   is-antitone = λ x'≤x xRy -> lift (R .MonRel.is-antitone x'≤x (lower xRy)) ;
   is-monotone = λ xRy y≤y' -> lift (R .MonRel.is-monotone (lower xRy) y≤y') }

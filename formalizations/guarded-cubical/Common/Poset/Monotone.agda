@@ -111,7 +111,7 @@ module _ where
   MonFunIsSet : {X : Poset ℓX ℓ'X} {Y : Poset ℓY ℓ'Y} -> isSet (MonFun X Y)
   MonFunIsSet {X = X} {Y = Y} = let composedIso = (compIso isoMonFunMonFun' MonFun'IsoΣ) in
     isSetRetract
-      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.leftInv composedIso)
+      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.ret composedIso)
       (isSetΣSndProp
         (isSet→ (isSet-poset Y))
         (isPropIsMon' {X = X} {Y = Y}))

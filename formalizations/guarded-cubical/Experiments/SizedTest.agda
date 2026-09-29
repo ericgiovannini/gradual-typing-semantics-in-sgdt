@@ -32,11 +32,11 @@ TestIso α .Iso.fun (bar β x) = inr x
 TestIso α .Iso.inv (inl tt) = foo α
 TestIso α .Iso.inv (inr x) = bar α x
 
-TestIso α .Iso.rightInv (inl tt) = refl
-TestIso α .Iso.rightInv (inr x) = refl
+TestIso α .Iso.sec (inl tt) = refl
+TestIso α .Iso.sec (inr x) = refl
 
-TestIso α .Iso.leftInv (foo β) = {!!}
-TestIso α .Iso.leftInv (bar β a) = {!!}
+TestIso α .Iso.ret (foo β) = {!!}
+TestIso α .Iso.ret (bar β a) = {!!}
 
 -------------------------------------------------------
 
@@ -52,11 +52,11 @@ Test2Iso α .Iso.fun (bar β x) = inr x
 Test2Iso α .Iso.inv (inl tt) = foo
 Test2Iso α .Iso.inv (inr x) = bar α x
 
-Test2Iso α .Iso.rightInv (inl tt) = refl
-Test2Iso α .Iso.rightInv (inr x) = refl
+Test2Iso α .Iso.sec (inl tt) = refl
+Test2Iso α .Iso.sec (inr x) = refl
 
-Test2Iso α .Iso.leftInv foo = refl
-Test2Iso α .Iso.leftInv (bar β a) = {!!}
+Test2Iso α .Iso.ret foo = refl
+Test2Iso α .Iso.ret (bar β a) = {!!}
 
 
 -------------------------------------------------------
@@ -74,8 +74,8 @@ Test3Iso α .Iso.fun (bar .α x) = inr x
 Test3Iso α .Iso.inv (inl tt) = foo α
 Test3Iso α .Iso.inv (inr x) = bar α x
 
-Test3Iso α .Iso.rightInv (inl tt) = refl
-Test3Iso α .Iso.rightInv (inr x) = refl
+Test3Iso α .Iso.sec (inl tt) = refl
+Test3Iso α .Iso.sec (inr x) = refl
 
-Test3Iso α .Iso.leftInv (foo .(↑ α)) = refl
-Test3Iso α .Iso.leftInv (bar .α a) = refl
+Test3Iso α .Iso.ret (foo .(↑ α)) = refl
+Test3Iso α .Iso.ret (bar .α a) = refl

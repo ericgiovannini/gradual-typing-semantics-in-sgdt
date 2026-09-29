@@ -65,7 +65,7 @@ isSetL : {X : Type ℓ} → isSet X → isSet (L X)
 isSetL {X = X} isSetX = fix isSetL'
   where
     isSetL' : ▹ (isSet (L X)) → isSet (L X)
-    isSetL' IH = isSetRetract (Iso.fun Iso-L ) (Iso.inv Iso-L) (Iso.leftInv Iso-L)
+    isSetL' IH = isSetRetract (Iso.fun Iso-L ) (Iso.inv Iso-L) (Iso.ret Iso-L)
       (isSet⊎ isSetX (isSet▹ IH))
 
 

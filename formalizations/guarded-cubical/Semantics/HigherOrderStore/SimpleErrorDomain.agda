@@ -136,7 +136,7 @@ SEDMorIsSet :
   isSet (SEDMor Bᵢ Bₒ)
 SEDMorIsSet {Bₒ = Bₒ} = isSetRetract
   (Iso.fun SEDMorIsoΣ) (Iso.inv SEDMorIsoΣ)
-  (Iso.leftInv SEDMorIsoΣ)
+  (Iso.ret SEDMorIsoΣ)
   (isSetΣSndProp
     (isSet→ Bₒ.is-set)
     (λ h → isProp× (Bₒ.is-set _ _) (isPropΠ (λ x~ → Bₒ.is-set _ _))))

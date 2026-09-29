@@ -47,7 +47,7 @@ module _ {ℓX ℓar : Level} where
   BinaryOp : Sig ℓX ℓar
   BinaryOp .Sig.X = ⊤*
   BinaryOp .Sig.isDiscreteX x y = yes refl
-  BinaryOp .Sig.ar tt* = Lift {j = ℓar} Bool
+  BinaryOp .Sig.ar tt* = Lift ℓar Bool
 
 
 
@@ -91,13 +91,13 @@ module _ {ℓX ℓar : Level}
 
   Term-Lift : {ℓY : Level} {Y : Type ℓY} {j : Level}
     → Term Σ Y
-    → Term Σ (Lift {j = j} Y)
+    → Term Σ (Lift j Y)
   Term-Lift (var y) = var (lift y)
   Term-Lift (oper x vars) = oper x (λ z → Term-Lift (vars z))
 
   Eqn-Lift : {ℓY : Level} {Y : Type ℓY} {j : Level}
     → Equation Σ Y
-    → Equation Σ (Lift {j = j} Y)
+    → Equation Σ (Lift j Y)
   Eqn-Lift (lhs , rhs) = (Term-Lift lhs , Term-Lift rhs)
 
 
@@ -115,7 +115,7 @@ module _ {ℓX ℓX' ℓar ℓar' : Level}
 
   Eqns-⊎ : Eqns (Σ₁ ⊎Sig Σ₂) (ℓ-max ℓE ℓE') (ℓ-max ℓq ℓq')
   Eqns-⊎ .E = eqns.E ⊎ eqns'.E
-  Eqns-⊎ .q = Sum.rec (Lift {j = ℓq'} ∘ eqns.q) (Lift {j = ℓq} ∘ eqns'.q)
+  Eqns-⊎ .q = Sum.rec (Lift ℓq' ∘ eqns.q) (Lift ℓq ∘ eqns'.q)
   Eqns-⊎ .eqn = Sum.elim
     (λ e → Eqn-Lift (Σ₁ ⊎Sig Σ₂) (Eqn-inl Σ₁ Σ₂ (eqns.eqn e)))
     (λ e → Eqn-Lift (Σ₁ ⊎Sig Σ₂) (Eqn-inr Σ₁ Σ₂ (eqns'.eqn e)))

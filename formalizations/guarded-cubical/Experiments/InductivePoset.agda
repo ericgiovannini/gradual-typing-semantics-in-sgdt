@@ -57,16 +57,16 @@ iso⊎⊎' A B .Iso.fun (inl x) = inl x
 iso⊎⊎' A B .Iso.fun (inr x) = inr x
 iso⊎⊎' A B .Iso.inv (inl x) = inl x
 iso⊎⊎' A B .Iso.inv (inr x) = inr x
-iso⊎⊎' A B .Iso.rightInv (inl x) = refl
-iso⊎⊎' A B .Iso.rightInv (inr x) = refl
-iso⊎⊎' A B .Iso.leftInv (inl x) = refl
-iso⊎⊎' A B .Iso.leftInv (inr x) = refl
+iso⊎⊎' A B .Iso.sec (inl x) = refl
+iso⊎⊎' A B .Iso.sec (inr x) = refl
+iso⊎⊎' A B .Iso.ret (inl x) = refl
+iso⊎⊎' A B .Iso.ret (inr x) = refl
 
 iso××' : ∀ (A : Type ℓ) (B : Type ℓ') → Iso (A × B) (A ×' B)
 iso××' A B .Iso.fun (x , y) = pair x y
 iso××' A B .Iso.inv (pair x y) = x , y
-iso××' A B .Iso.rightInv (pair x y) = refl
-iso××' A B .Iso.leftInv x = refl
+iso××' A B .Iso.sec (pair x y) = refl
+iso××' A B .Iso.ret x = refl
 
 
 ------------------------------------------------

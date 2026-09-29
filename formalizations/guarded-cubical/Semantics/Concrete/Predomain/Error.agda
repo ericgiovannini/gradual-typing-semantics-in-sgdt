@@ -62,7 +62,7 @@ Iso-Error {X = X} = iso to inv sec retr
 
 isSetError : (X : Type ℓ) → isSet X → isSet (Error X)
 isSetError X isSetX =
-  isSetRetract (Iso.fun Iso-Error) (Iso.inv Iso-Error) (Iso.leftInv Iso-Error) (isSet⊎ isSetX isSetUnit)
+  isSetRetract (Iso.fun Iso-Error) (Iso.inv Iso-Error) (Iso.ret Iso-Error) (isSet⊎ isSetX isSetUnit)
 
 
 extError : (X → Error Y) → (Error X → Error Y)

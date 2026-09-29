@@ -59,7 +59,7 @@ module _ {ℓX ℓX' ℓar ℓar' : Level}
   _⊎Sig_ : Sig (ℓ-max ℓX ℓX') (ℓ-max ℓar ℓar')
   (_⊎Sig_) .Sig.X = (Σ₁.X ⊎ Σ₂.X)
   (_⊎Sig_) .Sig.isDiscreteX = discrete⊎ Σ₁.isDiscreteX Σ₂.isDiscreteX
-  (_⊎Sig_) .Sig.ar = Sum.rec (Lift {j = ℓar'} ∘ Σ₁.ar) (Lift {j = ℓar} ∘ Σ₂.ar)
+  (_⊎Sig_) .Sig.ar = Sum.rec (Lift ℓar' ∘ Σ₁.ar) (Lift ℓar ∘ Σ₂.ar)
 
 
 
@@ -78,7 +78,7 @@ module _ {ℓX ℓar : Level} where
   BinaryOp : Sig ℓX ℓar
   BinaryOp .Sig.X = ⊤*
   BinaryOp .Sig.isDiscreteX x y = yes refl
-  BinaryOp .Sig.ar tt* = Lift {j = ℓar} Bool
+  BinaryOp .Sig.ar tt* = Lift ℓar Bool
 
 
 
@@ -129,7 +129,7 @@ module _ (σ : Sig ℓX ℓar)  where
   EquationsLiftCod : (Y : Type ℓY) (ℓR ℓR' : Level)
     → Equations Y ℓR
     → Equations Y (ℓ-max ℓR ℓR')
-  EquationsLiftCod Y ℓR ℓR' eqs lhs rhs = Lift {j = ℓR'} (eqs lhs rhs)
+  EquationsLiftCod Y ℓR ℓR' eqs lhs rhs = Lift ℓR' (eqs lhs rhs)
 
   Equation : {Y : Type ℓY} {ℓR : Level} (eqns : Equations Y ℓR)
     → Type (ℓ-max (ℓ-max (ℓ-max ℓX ℓar) ℓY) ℓR)
@@ -171,7 +171,7 @@ module _ (σ : Sig ℓX ℓar)  where
       (lhs eqns e ≡ mapTerm (λ f → f e) l) × (rhs eqns e ≡ mapTerm (λ f → f e) r)
 
   lem1 : (Y : Type ℓY) (ℓR : Level) (eqs : Equations Y ℓR)
-    → Eqns→Equations (Equations→Eqns Y ℓR eqs) ≡ (Lift {j = ℓ-max (ℓ-max ℓX ℓar) ℓR} Y , {!!})
+    → Eqns→Equations (Equations→Eqns Y ℓR eqs) ≡ (Lift (ℓ-max (ℓ-max ℓX ℓar) ℓR) Y , {!!})
   lem1 Y ℓR eqs = ΣPathP ({!!} , {!!})
 
 
@@ -290,19 +290,19 @@ module _ {ℓX ℓar : Level}
 
   Term-Lift : {Y : Type ℓY} {j : Level}
     → Term Σ Y
-    → Term Σ (Lift {j = j} Y)
+    → Term Σ (Lift j Y)
   Term-Lift (var y) = var (lift y)
   Term-Lift (oper x vars) = oper x (λ z → Term-Lift (vars z))
 
   Term-Lower : {Y : Type ℓY} {j : Level}
-    → Term Σ (Lift {j = j} Y)
+    → Term Σ (Lift j Y)
     → Term Σ Y
   Term-Lower (var y) = var (lower y)
   Term-Lower (oper x vars) = oper x λ z → Term-Lower (vars z)
 
   Eqn-Lift : {Y : Type ℓY} {j : Level}
     → Equations Σ Y ℓR
-    → Equations Σ (Lift {j = j} Y) ℓR
+    → Equations Σ (Lift j Y) ℓR
   Eqn-Lift eqns lhs rhs = eqns (Term-Lower lhs) (Term-Lower rhs)
 
 

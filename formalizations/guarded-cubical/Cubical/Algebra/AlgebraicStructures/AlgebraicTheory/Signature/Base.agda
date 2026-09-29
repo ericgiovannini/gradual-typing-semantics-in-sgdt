@@ -36,7 +36,7 @@ module _ {ℓX ℓX' ℓar ℓar' : Level}
   _⊎Sig_ : Sig (ℓ-max ℓX ℓX') (ℓ-max ℓar ℓar')
   (_⊎Sig_) .Sig.X = (Σ₁.X ⊎ Σ₂.X)
   (_⊎Sig_) .Sig.isDiscreteX = discrete⊎ Σ₁.isDiscreteX Σ₂.isDiscreteX
-  (_⊎Sig_) .Sig.ar = Sum.rec (Lift {j = ℓar'} ∘ Σ₁.ar) (Lift {j = ℓar} ∘ Σ₂.ar)
+  (_⊎Sig_) .Sig.ar = Sum.rec (Lift ℓar' ∘ Σ₁.ar) (Lift ℓar ∘ Σ₂.ar)
 
 
 
@@ -55,4 +55,4 @@ module _ {ℓX ℓar : Level} where
   BinaryOp : Sig ℓX ℓar
   BinaryOp .Sig.X = ⊤*
   BinaryOp .Sig.isDiscreteX x y = yes refl
-  BinaryOp .Sig.ar tt* = Lift {j = ℓar} Bool
+  BinaryOp .Sig.ar tt* = Lift ℓar Bool

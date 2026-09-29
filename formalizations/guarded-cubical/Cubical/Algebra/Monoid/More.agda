@@ -40,7 +40,7 @@ isPropIsMonoidHom : {A : Type ℓ} {B : Type ℓ'}
   isProp (IsMonoidHom M f N)
 isPropIsMonoidHom M f N =
   isPropRetract
-    (Iso.fun IsMonoidHomIsoΣ) (Iso.inv IsMonoidHomIsoΣ) (Iso.leftInv IsMonoidHomIsoΣ)
+    (Iso.fun IsMonoidHomIsoΣ) (Iso.inv IsMonoidHomIsoΣ) (Iso.ret IsMonoidHomIsoΣ)
     (isProp× (N.is-set _ _) (isPropΠ2 (λ x y → N.is-set _ _)))
   where
     module N = MonoidStr N
@@ -506,8 +506,8 @@ module _
   MonoidIso→TypeIso : Iso (M .fst) (N .fst)
   MonoidIso→TypeIso .Iso.fun = isom.fun .fst
   MonoidIso→TypeIso .Iso.inv = isom.inv .fst
-  MonoidIso→TypeIso .Iso.rightInv = isom.rightInv
-  MonoidIso→TypeIso .Iso.leftInv = isom.leftInv
+  MonoidIso→TypeIso .Iso.sec = isom.rightInv
+  MonoidIso→TypeIso .Iso.ret = isom.leftInv
 
   MonoidIso→MonoidEquiv : MonoidEquiv M N
   MonoidIso→MonoidEquiv .fst = isoToEquiv MonoidIso→TypeIso
@@ -569,6 +569,6 @@ module _
   MonoidEquiv→MonoidIso : MonoidIso M N
   MonoidEquiv→MonoidIso .MonoidIso.fun = hom
   MonoidEquiv→MonoidIso .MonoidIso.inv = inv
-  MonoidEquiv→MonoidIso .MonoidIso.rightInv = isom .Iso.rightInv
-  MonoidEquiv→MonoidIso .MonoidIso.leftInv = isom .Iso.leftInv
+  MonoidEquiv→MonoidIso .MonoidIso.rightInv = isom .Iso.sec
+  MonoidEquiv→MonoidIso .MonoidIso.leftInv = isom .Iso.ret
 -}

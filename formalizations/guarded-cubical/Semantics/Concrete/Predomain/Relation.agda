@@ -160,7 +160,7 @@ unquoteDecl PRel'IsoΣ = declareRecordIsoΣ PRel'IsoΣ (quote (PRel'))
 isSetPRel' : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} → isSet (PRel' A A' ℓc)
 isSetPRel' = isSetRetract
   (Iso.fun PRel'IsoΣ) (Iso.inv PRel'IsoΣ)
-  (Iso.leftInv PRel'IsoΣ)
+  (Iso.ret PRel'IsoΣ)
     (isSetΣSndProp
       (isSetΠ2 (λ _ _ -> isSetHProp))
       (λ R -> isProp× (isPropΠ5 (λ _ _ _ _ _ -> snd (R _ _)))
@@ -171,7 +171,7 @@ isSetPRel' = isSetRetract
 isSetPRel : {A : Predomain ℓA ℓ≤A ℓ≈A} {A' : Predomain ℓA' ℓ≤A' ℓ≈A'} → isSet (PRel X Y ℓR)
 isSetPRel = isSetRetract
   (Iso.fun PRelIsoPRel') (Iso.inv PRelIsoPRel')
-  (Iso.leftInv PRelIsoPRel') isSetPRel'
+  (Iso.ret PRelIsoPRel') isSetPRel'
 
 -- Equality of horizontal morphisms follows from equality of the underlying relations.
 
@@ -194,7 +194,7 @@ eqPRel {A = A} {A' = A'} c c' eq =
 -- Identity relation
 posetbisim-monrel : {ℓo : Level} -> (X : Predomain ℓ ℓ' ℓ'') -> PRel X X (ℓ-max ℓ' ℓo)
 posetbisim-monrel {ℓ' = ℓ'} {ℓo = ℓo} X = record {
-  R = λ x x' -> Lift {i = ℓ'} {j = ℓo} (rel-≤ X x x') ;
+  R = λ x x' -> Lift ℓo (rel-≤ X x x') ;
   is-prop-valued = λ x x' -> isOfHLevelLift 1 (prop-valued-≤ X x x') ;
   is-antitone = λ {x'} {x} {y}  x'≤x x≤y -> lift (transitive-≤ X x' x y x'≤x (lower x≤y)) ;
   is-monotone = λ {x}  {y} {y'} x≤y y≤y' -> lift (transitive-≤ X x y y' (lower x≤y) y≤y') }
@@ -298,10 +298,10 @@ _⊎-rel_ {ℓc₁ = ℓc₁} {ℓc₂ = ℓc₂} {A₁ = A₁} {A₁' = A₁'} 
     module A₁'⊎A₂' = PredomainStr ((A₁' ⊎p A₂') .snd)
     
     rel : ⟨ (A₁ ⊎p A₂) ⟩ → ⟨ (A₁' ⊎p A₂') ⟩ → Type (ℓ-max ℓc₁ ℓc₂)
-    rel (inl x₁) (inl x₁') = Lift {j = ℓc₂} (c₁ .R x₁ x₁')
+    rel (inl x₁) (inl x₁') = Lift ℓc₂ (c₁ .R x₁ x₁')
     rel (inl x₁) (inr x₂') = ⊥*
     rel (inr x₂) (inl x₁') = ⊥*
-    rel (inr x₂) (inr x₂') = Lift {j = ℓc₁} (c₂ .R x₂ x₂')
+    rel (inr x₂) (inr x₂') = Lift ℓc₁ (c₂ .R x₂ x₂')
 
     prop-valued : ∀ x y → isProp (rel x y)
     prop-valued (inl x₁) (inl x₁') = isOfHLevelLift 1 (c₁ .is-prop-valued x₁ x₁')
@@ -337,7 +337,7 @@ functionalRel f g c = record {
 LiftPRel : {ℓc ℓc' : Level} {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} (R : PRel A₁ A₂ ℓc) ->
   PRel A₁ A₂ (ℓ-max ℓc ℓc')
 LiftPRel {ℓc' = ℓc'} R = record {
-  R = λ x y → Lift {j = ℓc'} (R .PRel.R x y) ;
+  R = λ x y → Lift ℓc' (R .PRel.R x y) ;
   is-prop-valued = λ x y -> isOfHLevelLift 1 (R .PRel.is-prop-valued x y) ;
   is-antitone = λ x'≤x xRy -> lift (R .PRel.is-antitone x'≤x (lower xRy)) ;
   is-monotone = λ xRy y≤y' -> lift (R .PRel.is-monotone (lower xRy) y≤y') }

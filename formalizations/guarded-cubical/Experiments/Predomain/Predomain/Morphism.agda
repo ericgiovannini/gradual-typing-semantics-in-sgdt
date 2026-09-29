@@ -160,7 +160,7 @@ module _ where
   PMorIsSet : isSet (PMor X Y)
   PMorIsSet {X = X} {Y = Y} = let composedIso = (compIso isoPMorPMor' PMor'IsoΣ) in
     isSetRetract
-      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.leftInv composedIso)
+      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.ret composedIso)
       -- (isSetΣ
       --   (isSet→ (PredomainStr.is-set (Y .snd)))
       --   (λ f → isSet×

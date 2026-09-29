@@ -124,10 +124,10 @@ recUnitP {A = A} x =
 LiftPredomain : {ℓ1 ℓ'1 ℓ''1 : Level} (X : Predomain ℓ1 ℓ'1 ℓ''1) ->
   (ℓ2 ℓ'2 ℓ''2 : Level) -> Predomain (ℓ-max ℓ1 ℓ2) (ℓ-max ℓ'1 ℓ'2) (ℓ-max ℓ''1 ℓ''2)
 LiftPredomain {ℓ1 = ℓ1} {ℓ'1 = ℓ'1} {ℓ''1 = ℓ''1} X ℓ2 ℓ'2 ℓ''2 =
-  (Lift {i = ℓ1} {j = ℓ2} ⟨ X ⟩) ,
+  (Lift ℓ2 ⟨ X ⟩) ,
   predomainstr
     (isOfHLevelLift 2 X.is-set )
-    (λ {(lift x) (lift y) → Lift {i = ℓ'1} {j = ℓ'2} (x X.≤ y)})
+    (λ {(lift x) (lift y) → Lift ℓ'2 (x X.≤ y)})
     (isorderingrelation
       (λ {(lift x) (lift y) (lift p) (lift q) → cong lift (X.is-prop-valued x y p q)})
       (λ {(lift x) → lift (X.is-refl x)})
@@ -135,7 +135,7 @@ LiftPredomain {ℓ1 = ℓ1} {ℓ'1 = ℓ'1} {ℓ''1 = ℓ''1} X ℓ2 ℓ'2 ℓ''
       lift (X.is-trans x y z x≤y y≤z)})
       λ {(lift x) (lift y) (lift x≤y) (lift y≤x) ->
       cong lift (X.is-antisym x y x≤y y≤x)})
-    (λ {(lift x) (lift y) → Lift {i = ℓ''1} {j = ℓ''2} (x X.≈ y)})
+    (λ {(lift x) (lift y) → Lift ℓ''2 (x X.≈ y)})
     (isbisim
       (λ {(lift x) → lift (X.is-refl-Bisim x)})
       (λ {(lift x) (lift y) (lift (x≈y)) → lift (X.is-sym x y x≈y)})
@@ -270,10 +270,10 @@ module _ {A : Type ℓA} {B : Type ℓB} where
   module _ (_≤A_ : Rel A A ℓ≤A) (_≤B_ : Rel B B ℓ≤B) where
    
     ⊎-ord : A ⊎ B -> A ⊎ B -> Type (ℓ-max ℓ≤A ℓ≤B)
-    ⊎-ord (inl a1) (inl a2) = Lift {j = ℓ≤B} (a1 ≤A a2)
+    ⊎-ord (inl a1) (inl a2) = Lift ℓ≤B (a1 ≤A a2)
     ⊎-ord (inl a1) (inr b1) = ⊥*
     ⊎-ord (inr b1) (inl a1) = ⊥*
-    ⊎-ord (inr b1) (inr b2) = Lift {j = ℓ≤A} (b1 ≤B b2)
+    ⊎-ord (inr b1) (inr b2) = Lift ℓ≤A (b1 ≤B b2)
 
     ⊎-ord-prop-valued : isPropValued _≤A_ → isPropValued _≤B_ → isPropValued ⊎-ord
     ⊎-ord-prop-valued HA HB (inl a1) (inl a2) = isOfHLevelLift 1 (HA a1 a2)
@@ -298,10 +298,10 @@ module _ {A : Type ℓA} {B : Type ℓB} where
   module _ (_≈A_ : Rel A A ℓ≈A) (_≈B_ : Rel B B ℓ≈B) where
 
     ⊎-bisim : A ⊎ B -> A ⊎ B -> Type (ℓ-max ℓ≈A ℓ≈B)
-    ⊎-bisim (inl a1) (inl a2) = Lift {j = ℓ≈B} (a1 ≈A a2)
+    ⊎-bisim (inl a1) (inl a2) = Lift ℓ≈B (a1 ≈A a2)
     ⊎-bisim (inl a1) (inr b1) = ⊥*
     ⊎-bisim (inr b1) (inl a1) = ⊥*
-    ⊎-bisim (inr b1) (inr b2) = Lift {j = ℓ≈A} (b1 ≈B b2)
+    ⊎-bisim (inr b1) (inr b2) = Lift ℓ≈A (b1 ≈B b2)
 
     ⊎-bisim-refl : isRefl _≈A_ → isRefl _≈B_ → isRefl ⊎-bisim
     ⊎-bisim-refl HA HB = λ { (inl a) → lift (HA a) ;
@@ -356,10 +356,10 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
     module B = PredomainStr (B .snd)
 
     order : ⟨ A ⟩ ⊎ ⟨ B ⟩ -> ⟨ A ⟩ ⊎ ⟨ B ⟩ -> Type (ℓ-max ℓ'A ℓ'B)
-    order (inl a1) (inl a2) = Lift {j = ℓ'B} (a1 A.≤ a2)
+    order (inl a1) (inl a2) = Lift ℓ'B (a1 A.≤ a2)
     order (inl a1) (inr b1) = ⊥*
     order (inr b1) (inl a1) = ⊥*
-    order (inr b1) (inr b2) = Lift {j = ℓ'A} (b1 B.≤ b2)
+    order (inr b1) (inr b2) = Lift ℓ'A (b1 B.≤ b2)
 
     order-prop-valued : isPropValued order
     order-prop-valued (inl a1) (inl a2) = isOfHLevelLift 1 (prop-valued-≤ A a1 a2)
@@ -382,10 +382,10 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ''A = ℓ''A} {ℓ'B = ℓ'B}  {ℓ''B = ℓ''B} A B 
       cong inr (antisym-≤ B _ _ (lower a≤b) (lower b≤a))
 
     bisim : ⟨ A ⟩ ⊎ ⟨ B ⟩ -> ⟨ A ⟩ ⊎ ⟨ B ⟩ -> Type (ℓ-max ℓ''A ℓ''B)
-    bisim (inl a1) (inl a2) = Lift {j = ℓ''B} (a1 A.≈ a2)
+    bisim (inl a1) (inl a2) = Lift ℓ''B (a1 A.≈ a2)
     bisim (inl a1) (inr b1) = ⊥*
     bisim (inr b1) (inl a1) = ⊥*
-    bisim (inr b1) (inr b2) = Lift {j = ℓ''A} (b1 B.≈ b2)
+    bisim (inr b1) (inr b2) = Lift ℓ''A (b1 B.≈ b2)
 
     bisim-refl : isRefl bisim
     bisim-refl = λ { (inl a) → lift (reflexive-≈ A a) ;
@@ -970,12 +970,12 @@ module _ {ℓY₁ ℓY₂ : Level}
 
   test : (s : X₁ ⊎ X₂) → PredomIso
     (Sum.rec
-      (λ x₁ → ΠP (Lift {j = ℓY₂} (Y₁ x₁)) (A₁ x₁ ∘ lower))
-      (λ x₂ → ΠP (Lift {j = ℓY₁} (Y₂ x₂)) (A₂ x₂ ∘ lower)) s)
+      (λ x₁ → ΠP (Lift ℓY₂ (Y₁ x₁)) (A₁ x₁ ∘ lower))
+      (λ x₂ → ΠP (Lift ℓY₁ (Y₂ x₂)) (A₂ x₂ ∘ lower)) s)
       
-    (ΠP (Sum.rec ((Lift {j = ℓY₂}) ∘ Y₁) ((Lift {j = ℓY₁}) ∘ Y₂) s)
+    (ΠP (Sum.rec ((Lift ℓY₂) ∘ Y₁) ((Lift ℓY₁) ∘ Y₂) s)
       (Sum.elim
-        {C = λ s' → Sum.rec (Lift ∘ Y₁) (Lift ∘ Y₂) s' → Predomain ℓA ℓ≤A ℓ≈A}
+        {C = λ s' → Sum.rec (Lift ℓY₂ ∘ Y₁) (Lift ℓY₁ ∘ Y₂) s' → Predomain ℓA ℓ≤A ℓ≈A}
         (λ x₁ y₁ → A₁ x₁ (lower y₁) ) (λ x₂ y₂ → A₂ x₂ (lower y₂)) s))
   test (inl x) = {!!}
   test (inr x) = {!!}

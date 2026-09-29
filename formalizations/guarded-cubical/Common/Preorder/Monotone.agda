@@ -135,7 +135,7 @@ module _ {ℓ ℓ' : Level} where
   MonFunIsSet : {X Y : Preorder ℓ ℓ'} -> isSet (MonFun X Y)
   MonFunIsSet {X} {Y} = let composedIso = (compIso isoMonFunMonFun' MonFun'IsoΣ) in
     isSetRetract
-      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.leftInv composedIso)
+      (Iso.fun composedIso) (Iso.inv composedIso) (Iso.ret composedIso)
       (isSetΣSndProp
         (isSet→ (isSet-preorder Y))
         (isPropIsMon' {X} {Y}))
