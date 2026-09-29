@@ -1,0 +1,753 @@
+\documentclass[acmsmall, screen]{acmart}
+\let\Bbbk\relax
+
+\usepackage{quiver}
+\usepackage{mathpartir}
+% \usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{wrapfig}
+\usepackage{fancyvrb}
+\usepackage{comment}
+\usepackage{array}
+
+% \theoremstyle{remark} 
+% \newtheorem{theorem}{Theorem}
+% \newtheorem{corollary}{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newenvironment{DIFnomarkup}{}{}
+% \pagestyle{empty}
+% \settopmatter{printfolios=false}
+
+\newcommand{\bibliographypath}{../../paper-new/references}
+\newcommand{\defspath}{../../paper-new/defs}
+
+
+\input{\defspath}
+
+
+\begin{document}
+
+\title{Denotational Semantics for Effectful Gradually Typed Languages using Guarded Type Theory}
+\author{Eric Giovannini}
+\affiliation{
+  \department{Electrical Engineering and Computer Science}
+  \institution{University of Michigan}
+  \country{USA}
+}
+\email{ericgio@umich.edu}
+\orcid{0009-0003-6871-1714}
+
+
+\author{Max S. New}
+\affiliation{
+  \department{Electrical Engineering and Computer Science}
+  \institution{University of Michigan}
+  \country{USA}
+}
+\email{maxsnew@umich.edu}
+\orcid{0000-0001-8141-195X}
+
+\begin{abstract}
+    Gradually-typed langugaes allow for soundly mixing static and dynamically
+    typed programming styles and support migration from a dynamic to static
+    typing style. Establishing the desired metatheoretic properties for
+    real-world gradually-typed languages has proved challenging.
+    %
+    In recent work, Giovannini et al. gave a denotational semantics for a simple
+    gradually-typed lambda calculus using the tools of guarded type theory, and
+    furthermore showed that their semantics was sufficient for establishing the
+    crucial metatheoretic property known as \emph{graduality}, which states that
+    migrating a program by making the types more precise does not fundamentally
+    chance the meaning of the program except to possibly catch more type errors.
+    %
+    
+    In this work, we address two limitations of the work of Giovannini et al.
+    First, we generalize their model to allow for languages with algebraic
+    effects, such as I/O, global state, nondeterminism, etc. Second, we relate
+    the denotational semantics to a more familiar operational semantics.
+\end{abstract}
+
+\maketitle
+
+\newif\ifdraft
+\drafttrue
+\renewcommand{\max}[1]{\ifdraft{\color{blue}[{\bf Max}: #1]}\fi}
+\newcommand{\eric}[1]{\ifdraft{\color{orange}[{\bf Eric}: #1]}\fi}
+\newcommand{\tingting}[1]{\ifdraft{\color{red}[{\bf Tingting}: #1]}\fi}
+
+
+\section{Introduction}
+
+\emph{Gradually typed languages} \cite{siek-taha06, tobin-hochstadt06} allow for
+safe interoperability between static and dynamic typing disciplines in the same
+codebase, and they support the smooth, \emph{gradual} migration from dynamic
+typing to static typing via the addition of explicit typing information.
+%
+% As a result, the programmer can begin with fully dynamically-typed code and
+% \emph{gradually} add explicit typing information to migrate portions of the
+% codebase to a statically typed style without needing to rewrite the entire
+% project in a completely different language.
+%
+One of the fundamental theorems for gradually typed languages is
+\emph{graduality}, also known as the \emph{dynamic gradual guarantee},
+originally defined by Siek, Vitousek, Cimini, and Boyland
+\cite{siek_et_al:LIPIcs:2015:5031, new-ahmed2018}.
+%
+Informally, graduality says that migrating code from dynamic to static typing
+should only allow for the introduction of static or dynamic type errors, and not
+otherwise change the behavior of the program.
+%
+
+Establishing graduality for a given cast calculus has traditionally been a
+tedious endeavor. One common approach involves defining a step-indexed logical
+relation over an operational semantics \cite{TODO}; these methods are inherently
+dependent on the particular calculus being modeled and offer little opportunity
+for reuse of mathematical abstractions across different developments. Another
+method, developed by New and Licata \cite{new-licata-18}, constructs a
+denotational semantics using \emph{classical} domain theory. While
+compositional, this approach suffers from a lack of expressiveness: classical
+domain-theoretic techniques appear incapable of modeling viciously
+self-recursive structures such as higher-order store
+\cite{Birkedal-Stovring-Thamsborg-2009}, which are common in real-world
+gradually-typed languages.
+%
+Thus, it remained an open question whether one could give a semantics for
+gradual typing that combined the expressiveness of the step-indexed approach
+with the compositional nature of denotational semantics.
+
+% Graduality has remained a difficult property to establish, with existing
+% methods being largely tied to syntactic or operational specifics of the
+% language being modeled and offering little opportunity for reuse of common
+% mathematical abstractions.
+
+% Recently, Giovannini et al. \cite{gtt-sgdt} combined the expressiveness of the
+% step-indexed approach with the compositional nature of denotational semantics
+% by...
+
+Recently, Giovannini et al. \cite{gtt-sgdt} answered this question affirmatively
+by constructing a denotational semantics for a simple gradually-typed
+programming language using the tools of guarded type theory \cite{first-steps},
+and proved that their model validates the graduality property. Their model
+combines the expressive power of step-indexing techniques with the compositional
+nature of denotational semantics.
+%
+However, the semantics developed by Giovannini et al. suffers from the
+limitation that it is a single model for a quite bare-bones gradually-typed
+language. Real-world languages can include effects, polymorphism, dependent
+types, etc.
+%
+Furthermore, it is unclear how to relate their model to a more typical
+operational semantics for a cast calculus. It is desirable to establish an
+adequacy result relating their denotational semantics to an operational model.
+More specifically, writing $\sem{M}$ for the denotation of a term $M$, adequacy
+states that an equality of denotations $\sem{M} = \sem{N}$ implies that $M$ and
+$N$ behave the same operationally. This allows one to use facts proved in the
+denotational semantics to reason about the operational behavior of terms.
+
+% In this work, we seek to address these limitations by
+In this work, we seek to address the limitations of the prior model by extending
+their denotational semantics to account for arbitrary algebraic effects, and
+establishing an adequacy theorem relating the resulting denotational model to an
+operational semantics.
+
+The level of generality needed to model arbitrary algebraic effects means that
+the semantics we produce is correspondingly generic. This is true both
+denotationally and operationally. On the denotational side, our guarded
+semantics models effectful computations as a kind of \emph{inductive-guarded
+interaction tree}. These are a generalization of guarded interaction trees
+\cite{guarded-interaction-trees} that allow for inductive occurrences of the
+variable in addition to guarded-recursive ones. The (guarded) graduality theorem
+we obtain is essentially a statement relating term precision to the behavior of
+the interaction trees that the terms denote.
+%
+Likewise, we construct a generic effectful operational semantics following the
+methodology of Kavvos \cite{TODO}. While this approach is applicable to any
+signature of effects, what is missing is a way to turn the semantics into a more
+traditional ``runnable'' operational semantics. For example, a big-step
+semantics for a language with global state would normally involve a transition
+relation between pairs of a term and state.
+
+The missing step in both the operational and denotational semantics is supplied
+by a suitable notion of algebra that interprets the guarded interaction trees as
+a concrete element of an ``observation'' type.
+
+More concretely, the organization of this paper is as follows:
+\begin{enumerate}
+    \item Given a signature of algebraic effects, we define a cast calculus
+    supporting those effects. We give an inequational theory in the form of
+    axioms for type and term precision, and define an operational semantics for
+    the cast calculus, drawing inspiration from recent work of Kavvos
+    \cite{TODO}.
+    \item We show how to construct a denotational semantics for such a cast
+    calculus by adapting the construction of Giovannini et. al \cite{gtt-sgdt}
+    to account for arbitrary algebraic effects.
+    \item Following the technique of the aforementioned work by Kavvos, we prove
+    an adequacy result relating the operational and denotational models in the
+    expected manner.
+\end{enumerate}
+
+
+\subsection{Metatheoretic Preliminaries}
+
+% Working informally in a guarded type theory with ticks and clocks.
+
+
+\section{A Generic Syntax for Gradual Typing with Effects}\label{sec:syntax}
+
+To begin, we fix a framework for specifying gradual cast calculi with algebraic
+effects. We use a syntax based on fine-grain call-by-value presented in Figure
+\ref{fig:gtlc-syntax}.
+
+% TODO should we use CBPV syntax instead?
+% TODO what about coproducts and lazy products?
+
+% TODO if we are doing fine-grain CBV, do we need return and bind?
+
+\begin{figure}
+  \begin{mathpar}
+    \begin{array}{rcl}
+    \text{Types } A &::=& \nat \alt \,\dyn \alt A \ra A' \alt A \times A'\\
+    \text{Type Precision } c &::=& r(A) \alt c c' \alt \iarr \alt \inat \alt \itimes \alt c \ra c' \alt c \times c'\\
+    \text{Values } V &::=& x \alt \upc c V \alt \zro \alt \suc\, V \alt \lda{x}{M} \alt (V,V') \\ 
+    \text{Terms } M,N &::=& \err \alt \upc c M \alt \dnc c M \alt \zro \alt \suc\, M \alt \lda{x}{M} \\ 
+     &&\alt M\, N \alt (M,N) \alt \textrm{let } (x,y) = M \textrm{ in } N \alt \synop{op}{V}{x}{M} \\
+    \text{Contexts } \Gamma &::= &\cdot \alt \Gamma, x : A \\
+    \text{Ctx Precision } \Delta &::=& \cdot\alt \Delta,x:c
+  \end{array}
+
+  \inferrule*[right=Up]
+  {\Gamma \vdash M : A \and c : A \ltdyn A'}
+  {\Gamma \vdash \upc c M : A'}
+
+  \inferrule*[right=Dn]
+  {\Gamma \vdash N : A' \and c : A \ltdyn A'}
+  {\Gamma \vdash \dnc c N : A}
+
+  \inferrule*[right=Eff]
+  {\eff{op}{\sigma}{\tau} 
+    \and \Gamma \vdash V : \sigma 
+    \and \Gamma,x : \tau \vdash M : A}
+  {\Gamma \vdash \synop{op}{V}{x}{M} : A}
+
+  \inferrule{}{\Gamma \vdash \mho : A}
+  \end{mathpar}
+  \begin{mathpar}
+    \inferrule{}{r(A) : A \ltdyn A}\and
+    \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''}\and
+    \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn \dyn}\and
+    \inferrule{}{\inat \colon \nat \ltdyn \dyn}\and
+    \inferrule{}{\itimes \colon \dyn \times \dyn \ltdyn \dyn}\and
+    \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}\and
+    \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}\and
+     r(A)c \equiv c\and
+     c \equiv cr(A')\and
+     c(c'c'') \equiv (cc')c''\and
+     r(A_i \ra A_o) \equiv r(A_i) \ra r(A_o)\and
+     r(A_1\times A_2) \equiv r(A_1) \times r(A_2)\and
+     (c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra c_oc_o') \and
+     (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
+  \end{mathpar}
+  \caption{Syntax for Gradual Typing with Effects}
+  \label{fig:gtlc-syntax}
+\end{figure}
+
+
+% New, Licata, and Ahmed gave a syntax and logic axiomatizing the graduality
+% property \cite{new-licata-ahmed2019}.
+
+\section{Operational Semantics}\label{sec:operational-semantics}
+
+In this section, we define a small-step operational semantics for the generic
+cast calculus introduced in Section \ref{sec:syntax}. Our approach is based on
+the recent work of Kavvos \cite{TODO}, who gave a generic operational semantics
+for a language with algebraic effects.
+
+Following the work of Kavvos, our operational semantics has two kinds of
+reductions. There are \emph{pure reductions}, which comprise the usual $\beta$
+reductions in an ordinary lambda calculus as well as reductions involving casts.
+There are also \emph{impure reductions}, which result from the program making a
+request to its environment and receiving a value in response.
+
+The pure reductions are labelled by a natural number $i \in \{0, 1\}$, which
+intuitively tracks the number of recursive unfoldings involved in each step. The
+source of such steps is the downcast from the dynamic type to a function, since
+in the denotational semantics the function is only available later and hence the
+downcast involves an observable computational step. We track the recursive
+unfolding of terms in the operational semantics to help us relate the
+operational and denotational semantics, which we address in a subsequent
+section.
+%
+
+The impure reductions do not involve any recursive unfolding, so they are not
+labeled by a natural number. A general impure reduction has the form
+%
+\[ M \stepseff{op}{V}{W} N, \]
+%
+which means that $M$ sends value $V$ to the environment and continues as $N$
+upon receiving response $W$.
+
+% TODO if this is for fine-grain call-by-value, then do we need rules involving
+% function application?
+% TODO define evaluation contexts
+% TODO need to define a subset of "first-order values" to be used in the effect
+% operations.
+
+\begin{figure}
+
+  \textbf{Beta rules:}
+
+  \begin{mathpar}
+
+    % Usual beta rules:
+    \inferrule*[right=Beta]
+      { }
+      {(\lambda x : A.M)(V) \stepsin{0} M[V/x]}
+
+    \inferrule*[right=Split]
+      { }
+      {\synsplit{(V_1, V_2)}{x_1}{x_2}{M} \stepsin{0} M[V_1, V_2 / x_1, x_2]}
+
+    \inferrule*[right=Bind]
+      { }
+      {\synbind{\ret\, V}{x}{M} \stepsin{0} M[V/x]}
+  \end{mathpar}
+
+  \textbf{Casts (functorial actions and composition):}
+  \begin{mathpar}
+
+    % Upcast of a function steps when applied to a value:
+    \inferrule*[right=Up-Arr]
+      { c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o' 
+        \and \Gamma \vdash V_f : A_i \ra A_o 
+        \and \Gamma \vdash V : A_i'}
+      { ((\upc (c_i \ra c_o) V_f)\, V) \stepsin{0} (\upc {c_o} (V_f\, (\dnc {c_i} V))) }
+
+    % Downcast of a function steps when applied to a value:
+
+
+    % Up/down cast of a paired value steps to the pair of the up/down casted
+    % values:
+    \inferrule*[right=Up-Pair]
+      { c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}
+      { \upc (c_1 \times c_2) (V_1, V_2) \stepsin{0} (\upc {c_1} V_1, \upc {c_2} V_2) }
+
+    \inferrule*[right=Dn-Pair]
+      { c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}
+      { \dnc (c_1 \times c_2) (V_1, V_2) \stepsin{0} (\dnc {c_1} V_1, \dnc {c_2} V_2) }
+  
+
+    % "Composition" of casts with inj-arr and inj-times:
+    \inferrule*[right=$\iarr$CompUp]
+      { c : A \ltdyn (\dyntodyn) \and \Gamma \vdash M : A }
+      { (\upc (\injarr c) M) \stepsin{0} (\upc \iarr (\upc c M))}
+
+    \inferrule*[right=$\iarr$CompDn]
+      { c : A \ltdyn (\dyntodyn) \and \Gamma \vdash M : \dyn }
+      { (\dnc (\injarr c) M) \stepsin{0} (\dnc c (\dnc \iarr M))}
+
+    \inferrule*[right=$\itimes$CompUp]
+      { c : A \ltdyn (\dyn \times \dyn) \and \Gamma \vdash M : A }
+      { (\upc (\injtimes c) M) \stepsin{0} (\upc \itimes (\upc c M))}
+
+    \inferrule*[right=$\itimes$CompDn]
+      { c : A \ltdyn (\dyn \times \dyn) \and \Gamma \vdash M : \dyn }
+      { (\dnc (\injtimes c) M) \stepsin{0} (\dnc c (\dnc \itimes M))}
+
+
+
+  \end{mathpar}
+
+  \textbf{Casts involving dyn:}
+  \begin{mathpar}
+    % Downcasts of upcasted-to-dyn values:
+    \inferrule*
+      { }
+      { \dnc \inat (\upc \inat V) \stepsin{0} V}
+
+    \inferrule*
+      { c : A \ltdyn (\dyn \times \dyn)}
+      { \dnc {\injtimes c} (\upc {\injtimes c} V) \stepsin{0} V}
+
+    \inferrule*
+      { c : A \ltdyn (\dyntodyn)}
+      { \dnc {\injarr c} (\upc {\injarr c} V) \stepsin{1} V}
+
+    \inferrule*
+     { \text{tag}_1, \text{tag}_2 \in \{ \mathbb{N}, \times, \ra \} }
+     { \dnc {\text{Inj}_{\text{tag}_1}} (\upc {\text{Inj}_{\text{tag}_2}} V) \stepsin{0} \mho }
+
+
+  \end{mathpar}
+
+  \textbf{Effects and congruence rules:}
+  \begin{mathpar}
+
+    % Effects
+    \inferrule*[right=Eff]
+      { \eff{op} \sigma \tau }
+      { \synop{op} V x M \stepslabel{\eff {op} V W} M[W/x] }
+
+    % Congruences
+    \inferrule*[right=Cong]
+      { i \in \{0,1\} \and M \stepsin i N}
+      { E[M] \stepsin{i} E[N] }
+
+    \inferrule*[right=EffCong]
+      {M \stepslabel {\eff {op} V W} N}
+      {E[M] \stepslabel {\eff {op} V W} E[N]}
+
+
+  \end{mathpar}
+  \caption{Operational Semantics (Selected Rules)}
+  \label{fig:operational-semantics}
+\end{figure}
+
+There are $\beta$ rules for functions, pairs, and bind, which are standard. Next
+are the rules involving casts. We first have rules involving upcasts and
+downcasts of functions and products.
+%
+When a function $V_f$ is upcasted, it doesn't immediately step. When the
+upcasted function is applied to a value, the value is downcasted according to
+the domain and applied to the original function $V_f$, and then the result is
+upcasted according to the codomain. The dual holds for a function that is
+downcasted.
+%
+When a pair of values $(V_1, V_2)$ is upcasted, we simply upcast each component
+of the pair, and likewise for downcasting.
+%
+Next we have rules for up/down casts involving composed precision derivations,
+i.e., $\injarr c$ and $\injtimes c$. These rules decompose such casts into the
+cast for $c$ and the primitive injection casts $\iarr$ or $\itimes$. 
+% These rules express the behavior of such casts in
+% terms of the behavior of the cast for $c$ and the behavior of the primitive
+% injection casts $\iarr$ or $\itimes$. 
+For example, to upcast a term using the precision derivation $\injarr c$ where
+$c : A \ltdyn (\dyntodyn)$, we first upcast the term by $c$, and then upcast the
+result by $\iarr : \dyntodyn \ltdyn \dyn$.
+%
+Finally, we have the rules involving downcasting a value that was cast to $\dyn$
+using the injection casts $\inat$, $\injarr c$, and $\injtimes c$. In each case,
+we check that the tag of the upcast matches the tag of the downcast, e.g., the
+upcast is $\iarr$ and the downcast is $\iarr$. If the tags match, then the cast
+steps to the original value; otherwise, the result is an error. Note that when
+downcasting a dynamically-typed function, we record one recursive unfolding. In
+the denotational semantics, this corresponds to inserting a $\theta$.
+%
+% Note also that these rules only mention the primitive injection forms $\inat$,
+% $\iarr$, and $\itimes$ rather than the composed forms $\injarr c$ and $\injtimes
+% c$. This is sufficient because casts involving $\injarr c$ or $\injtimes c$ will
+% first step to terms involving $\iarr$ and $\itimes$, which can then be handled
+% using the rules just discussed.
+
+Next, we have our first impure reduction rule. This rule states that for an
+operation $\text{op}$ with request type $\sigma$ and response type $\tau$, then
+for any possible request value $V$ and response value $W$, the term $\synop{op}
+V x M$ steps to $M[W/x]$. This represents the fact that the environment has
+responded with value $W$, after which the program continues as $M$ with $W$ in
+place of $x$.
+%
+The final two rules are simply congruence rules allowing us to perform pure and
+impure reductions under an arbitrary evaluation context.
+
+\subsection{A Guarded Interaction Tree Semantics}
+
+
+\section{Denotational Semantics}\label{sec:denotational-semantics}
+
+In this section, we discuss how to adapt the model of Giovannini et al.
+\cite{gtt-sgdt} to accommodate algebraic effects. Recall that in their model,
+pure values were modeled as elements of a \emph{predomain}, and effectful
+computations were modeled as elements of an \emph{error domain}, which is a
+predomain equipped with algebraic operations supporting error and computational
+steps. Our approach will be to generalize the notion of error domain to be an
+algebra of a suitable endofunctor corresponding to the signature of effects
+being modeled. Then the free error domain construction will be generalized to
+construct the free such algebraic structure, as an \emph{inductive-guarded
+interaction tree}.
+
+In addition to generalizing error domains, we need to make an important
+technical modification to the model of Giovannini et al. This change is
+motivated by our goal of relating the denotational and operational semantics via
+an adequacy result. In op. cit., the authors mention that the denotations of
+casts in their model involves additional perturbations (i.e., computational
+steps) in order to place certain terms involving casts in lock-step. These
+additional steps ultimately did not matter for the final result, since the
+graduality property is step-insensitive. However, intensionally, these casts
+behave differently from the corresponding casts without the extra steps.
+%
+This presents a difficulty when relating their denotational model to an
+operational semantics: in order for the two semantics to be in lock-step, we
+must define the operational semantics in such a way that the casts take
+additional steps just as they do in the denotational semantics. But this
+requirement is not desirable, as it restricts the kinds of operational semantics
+to which our theorem applies to those that happen to feature this strange cast
+semantics. Users of our framework would need to contort their operational
+semantics into this form if they would like to apply the adequacy result.
+
+Our remedy for this situation is to note that there is an additional degree of
+freedom in the model of Giovannini et al. that up to this point has remained
+unexploited. Leveraging this, we define two \emph{different} cast semantics, one
+where the casts involve perturbations, and one where they do not. The former is
+used in constructing the semantic proofs of the cast axioms, where being in
+lock-step is crucial. The latter is what we use for the denotational term
+semantics of casts, allowing the denotations of casts to be in lock-step with
+the casts in a typical operational model, i.e., where the casts do not take
+additional steps. While the intensional behavior of these two kinds of casts are
+distinct, they are extensionally related in that they are \emph{weakly
+bisimilar}, which is sufficient for the final proof of graduality.
+
+\subsection{Generalizing Error Domains}
+
+In this section, we discuss how to build a model of gradual typing from scratch
+given a collection of effects presented algebraically. Our goal will be to
+generalize the notion of \emph{error domain} from prior work to accommodate
+these effects.
+%
+We begin by reviewing the key ingredients in the denotational semantics of
+Giovannini et al. \cite{gtt-sgdt}. For further discussion, see their paper.
+
+\begin{definition}
+A \textbf{predomain} $A$ consists of a set $A$ along with two relations:
+\begin{itemize}
+    \item A partial order $\ltdyn_A$.
+    \item A reflexive, symmetric ``bisimilarity'' relation $\bisim_A$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}
+An \textbf{error domain} $B$ consists of a predomain $B$ along with the
+following data:
+\begin{itemize}
+    \item A distinguished ``error'' element $\mho_B \in B$ such that $\mho
+    \ltdyn_B x$ for all $x$
+    \item A morphism of predomains $\theta_B \colon \later B \to B$
+    \item For all $x, y : B$ with $x \bisim_B y$, we have $\theta_B(\nxt\, x)
+    \bisim_B y$
+\end{itemize}
+\end{definition}
+
+A \textbf{morphism of predomains} $f : A \to A'$ is a function between the
+underlying sets that is both \emph{monotone} (if $x \ltdyn_A x'$, then $f(x)
+\ltdyn_{A'} f(x')$), and \emph{bisimilarity-preserving} (if $x \bisim_A x'$,
+then $f(x) \bisim_{A'} f(x')$).
+
+A \textbf{morphism of error domains} is a morphism of the underlying predomains
+that preserves the error element and the $\theta$ map.
+%
+For an error domain $B$, we define the predomain morphism $\delta_B := \theta_B
+\circ \nxt$.
+
+A \emph{predomain relation} $c : A \rel A'$ is a relation between $A$ and $A'$
+that is upward closed in $A'$ and downward closed in $A$, as defined in the
+previous section (no condition is required for bisimilarity). The ``reflexive''
+predomain relation is written $r(A)$ and is given by the ordering $\ltdyn_A$.
+The relational composition of two predomain relations is also a predomain
+relation, and $r(A)$ is the identity for this composition.
+
+Error domain relations are predomain relations that are additionally a
+congruence with respect to the algebraic operations $\theta$ and $\mho$:
+%
+\begin{definition}
+  An \textbf{error domain relation} $d : B \rel B'$ is a relation $d$ on the
+  underlying predomains satisfying
+  \begin{enumerate}
+     \item ($\mho$ congruence): $\mho_B \binrel{d} \mho_{B'}$.
+     \item ($\theta$ congruence): For all $\tilde{x}$ in $\laterhs B$ and
+     $\tilde{y} \in \laterhs B'$, if $\laterhs_t (\tilde{x}_t \binrel{d}
+     \tilde{y}_t)$, then $(\theta_B (\tilde{x}) \binrel{d} \theta_{B'}
+     (\tilde{y}))$. 
+  \end{enumerate}
+\end{definition}
+%
+There is again a reflexive error domain relation $r(B)$ given by the ordering.
+The relational composition of two error domain relations in general is not an
+error domain relation ($\theta$ congruence in particular is not preserved), but
+we instead use an alternative ``free composition'' $dd' : B \rel B''$ that is
+inductively generated from the relational composition.
+
+Lastly, we have the notion of a square $f \ltsq{c_i}{c_o} g$ between predomain
+morphisms and of a square between error doamin morphisms:
+
+\begin{definition}
+Let $f : A_i \to A_o$ and $g : A_i' \to A_o'$ be predomain morphisms, and let
+$c_i : A_i \rel A_i'$ and $c_o : A_o \rel A_o'$ be predomain relations. There is
+a \emph{predomain square} $f \ltsq{c_i}{c_o} g$ if for all $x \binrel{c_i} y$,
+we have $f(x) \binrel{c_o} g(y)$. 
+
+Likewise, an \emph{error domain square} $\phi \ltsq{d_i}{d_o} \psi$ is defined
+similarly, with no extra interaction with the algebraic structure.
+\end{definition}
+
+We next review how the model of Giovannini et al. validates the graduality
+property. The authors of that work took as a starting point a semantics with a
+notion of representable relations, which in prior work was sufficient for
+interpreting the four cast rules crucial for graduality. However, as the authors
+show, the notion of representability cannot be applied unchanged to the guarded
+setting because of a fundamental tension between transitivity and
+step-insensitive reasoning. As a result, Giovannini et al. worked with a
+weakened notion that they called \emph{quasi-representability}, which is
+essentially representability up to an explicit delay term. They then developed a
+theory of these delay terms, which they called \emph{syntactic perturbations}.
+
+% TODO more detail on the definition of quasi-representability?
+
+
+In the remainder of this section, we discuss the changes we must make to
+accommodate arbitrary algebraic effects. It turns out that they key question is
+how to generalize the notion of error domain.
+
+Consider a signature $\Sigma$ of algebraic effects given by a type $\Op$ of
+operation names, and for each $\oper : \Op$ a pair of \emph{predomains}
+$\opin{\oper}$ and $\opout{\oper}$ representing respectively the request and
+response types for $\oper$. This signature induces a polynomial endofunctor
+$\Sigma$ on the category of predomains and predomain morphisms.
+%
+Our generalization of error domains will be an algebra $B$ of the endofunctor
+$\Sigma$, equipped with a distinguished error element $\mho$ and a distinguished
+$\theta_B \colon \later B \to B$. 
+%
+Since $\Sigma$ acts on predomains, an algebra of the endofunctor is a predomain
+$B$ equipped with a morphism of predomains $\Sigma(B) \to B$. This means in
+particular that $B$ has ordering and bisimilarity relations.
+%
+As in the definition of an error domain from prior work, we require that $\mho$
+is the smallest element in the ordering, that $\theta$ respects the relations
+(i.e., it is a morphism of predomains), and that $\delta_B := \theta_B \circ
+\nxt$ is bisimilar to the identity.
+
+% As in the definition of an error domain, we also require that the algebra comes
+% with ordering and a bisimilarity relations, that $\mho$ is the smallest element
+% in the ordering, that $\theta$ respects the relations (i.e., it is a morphism of
+% predomains), and that $\delta_B := \theta_B \circ \nxt$ is bisimilar to the
+% identity.
+
+
+% To model gradual typing, we must ensure that the signature has cases for errors
+% and computational steps. To this end, given a signature $\Sigma$ as above, we
+% define $\Sigmahat := (\hat{S}, \hat{P})$, where $\hat{S} = S + \bool$, and
+% $\hat{P}$ is given by $\hat{P}(\inl s) = P\, s$, $\hat{P}(\inr \text{true}) =
+% \bot$, and $\hat{P}(\inr \text{false}) = \top$. 
+% %
+% We will then be interested in algebras of $\Sigmahat \circ \later$. Here, we
+% note that this $\later$ is operating on predomains. Furthermore, this definition
+% implies that all occurrences of the input $X$ are guarded by a $\later$. A
+% further generalization would be to consider algebras of a functor where some
+% occurrences of $X$ are unguarded and others are guarded. In this case, we would
+% need to assume more about our given functor $\Sigma$, e.g., that it is presented
+% as a \emph{polynomial} endofunctor; we will pursue this in the subsequent
+% section.
+
+% More concretely, an algebra of the functor $\Sigmahat \circ \later$ consists of
+% a predomain $|B|$ along with a morphism of predomains
+% %
+% $\alg_B \colon \Sigmahat (\later |B|) \to |B|$.
+% %
+% Note that $\Sigmahat (\later |B|) = \Sigma(\later |B|) \uplus 1 \uplus (\later
+% |B|)$. Thus, an algebra map $\alg_B$ induces three morphisms of predomains; we
+% denote these by $\oper_B \colon \Sigma(\later |B|) \to |B|$, $\mho_B \colon 1
+% \to |B|$, and $\theta_B \colon \later |B| \to |B|$.
+% %
+% Notice also that, by definition of morphism of predomains, these maps preserve
+% the ordering and bisimilarity relations of the relevant predomains.
+
+% TODO: update this
+
+More formally, we make the following definition:
+%
+\begin{definition}\label{def:sigma-domain} 
+  
+  Let $\Sigma = (\Op, \text{In}, \text{Out})$ be a signature as defined above. A
+  \emph{$\Sigma$-domain} is a predomain $B$ along with, for each $\text{op} \in
+  \Op$, a morphism of predomains
+  
+  \[ \alpha^{\oper} : \opin{\oper} \times (\opout{\oper} \to B) \to B. \]
+  
+  Furthermore, the predomain $B$ has a distinguished element $\mho_B$ such that
+  $\mho_B \ltdyn_B x$ for all $x \in B$, along with a distinguished morphism of
+  predomains $\theta_B : \later B \to B$, such that if $x \bisim_{B} y$, then
+  $\delta_B \bisim_{B} y$ where $\delta_B := \theta_B \circ \nxt$.
+\end{definition}
+
+As with ordinary error domains, there are corresponding notions of morphisms,
+relations, and squares of $\Sigma$-domains. Before introducing these, we first
+discuss the action of $\Sigma$ on predomain morphisms and predomain relations.
+
+Let $c : A \rel A'$ be a predomain relation. The action of the endofunctor
+$\Sigma$ on $c$, written $\Sigma(c)$ is a predomain relation between $\Sigma(A)$
+and $\Sigma(A')$.
+
+
+
+Now we can introduce the definitions of morphisms and relations of
+$\Sigma$-domains.
+%
+\begin{definition}\label{def:sigma-domain-mor-rel-sq}
+  Fix $\Sigma$ as above, and let $B$ and $B'$ be $\Sigma$-domains. A
+  \emph{morphism of $\Sigma$-domains} from $B$ to $B$' is a morphism $\phi$ of
+  the underlying predomains that preserves the algebraic structure.
+  %
+  Spelling this out concretely, we have:
+  %
+  (1) $\phi (\alpha^{\oper}_B(x, k)) = \alpha^{\oper}_{B'}(x, \phi \circ k)$,
+  %
+  (2) $\phi(\mho_B) = \mho_{B'}$, and
+  %
+  (3) $\phi \circ \theta_B = \theta_{B'} \circ (\later \phi)$.
+
+  A \emph{relation of $\Sigma$-domains} $d : B \rel B'$ is a relation $|d|$ of
+  the underlying predomains that is a congruence with respect to the algebraic
+  structure. In particular:
+  %
+  (1) If $x \binrel{(\Sigma(|d|))} y$, then $\alpha^{\oper}_B(x) \binrel{|d|} \alpha^{\oper}_{B'}(y)$.
+  %
+  (2) $\mho_B \binrel{|d|} \mho_{B'}$, and
+  %
+  (3) If $\later_t(\tilde{x}_t \binrel{|d|} \tilde{y}_t)$, then
+  $\theta_B(\tilde{x}) \binrel{|d|} \theta_{B'}(\tilde{y})$
+
+  A \emph{square of $\Sigma$-domains} $\phi \ltsq{d}{d'} \phi'$ is defined
+  as a square of the underlying predomains. 
+\end{definition}
+
+\begin{remark}
+  The requirement that $\mho_B$ be related to $\mho_{B'}$ in the definition of
+  relation may seem weaker than the corresponding requirement in the definition
+  of a relation of error domains in the previous section, where we required that
+  $\mho_B \binrel{|d|} y$ for \emph{all} $y \in B'$. However, the former implies
+  the latter using the fact that predomain relations are closed under the
+  ordering on both sides and that $\mho_{B'} \ltdyn y$ for all $y$.
+\end{remark}
+
+
+
+
+
+\section{Relating the Two Semantics}\label{sec:relating-the-semantics}
+
+Having specified the operational and denotational semantics, we now seek to
+prove a theorem relating them. Our goal is to show that the denotatinoal model
+is \emph{adequate} for the operational semantics, that is, if the denotations of
+two terms are equal, then their operational behavior is the same.
+
+To this end, we will define a logical relation between (closed) syntactic terms
+of type $A$ and their denotations as elements of $F\sem{A}$, where $F$ is the
+functor constructing the free error-effect algebra as discussed in Section
+\ref{sec:denotational-semantics}.
+
+\section{Discussion}\label{sec:discussion}
+
+
+
+
+\bibliographystyle{ACM-Reference-Format}
+\begin{DIFnomarkup}
+\bibliography{\bibliographypath}
+\end{DIFnomarkup}
+
+% EXTENDED VERSION
+\newpage
+\appendix
+% \input{appendix}
+
+\end{document}

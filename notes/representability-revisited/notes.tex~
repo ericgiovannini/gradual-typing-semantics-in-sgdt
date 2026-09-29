@@ -1,0 +1,467 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{comment}
+
+\definecolor{myorange}{RGB}{242, 114, 0}
+\definecolor{myblue}{RGB}{0,162,255}
+
+\newcommand{\semptb}[1]{\morbisimid{#1}}
+\newcommand{\ltsqdelay}[2]{\mathrel{{\ltdyn}\text{ptb}^{#1}_{#2}}}
+
+% restriction of a relation R along a vertical morphism f on the left
+\newcommand{\restr}[2]{\mathrel{{#2}^*{#1}}} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% theorem environments
+%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../paper-new/defs}
+
+\begin{document}
+
+\title{Revisiting the Notion of Representability}
+\author{Eric Giovannini}
+
+\maketitle
+
+Our current notion of quasi-representability of relations involves
+perturbations associated to each of our representable relations.  This
+leads to some complications with our semantics:
+
+\begin{itemize}
+  
+\item Composition of quasi-representable relations requires the
+  push-pull property. We will revisit this point later.
+  
+\item The projection associated to $F(cc')$ is not just the
+  composition of the projections for $Fc$ and $Fc'$; it instead
+  involves an additional perturbation. This was not the case in the
+  original term semantics, but it is needed as part of the
+  compositional constructions involving quasi-representability.
+
+\item The notion of quasi-equivalence of relations does not follow
+  from sharing the same embedding and projection morphisms.  Instead,
+  we need a separate primitive notion of quasi-equivalence where we
+  have squares with perturbations.
+  
+\end{itemize}
+
+
+An alternative approach would be to instead define a double category
+such that what were \emph{quasi-representable} relations in the
+original double category of value objects/morphisms/relations/squares
+are now actually \emph{representable} relations in the usual sense
+(i.e. with identity morphisms rather than perturbations).
+
+%% To do this, we will formulate a new double category (actually two, one
+%% for the values and one for the computations).
+
+There are two key differences between this category and the original.
+First, in the new double category, the vertical morphisms come
+equipped with an action on perturbations. Second, the squares in the
+new double category allow for an explicit synchronization of the
+vertical morphisms by a perturbation on both sides. We elaborate on
+these differences below, but first, we must make an important change
+to the definition of value and computation types, requiring that the
+monoid of syntactic perturbations be commutative. We will see why this
+is needed later, but for now note the new definition of
+value/computation objects.
+
+\begin{definition}
+  A \emph{value object} consists of a predomain $A$, a
+  \textbf{commutative} monoid of perturbations $M_A$, and an
+  homomorphism of monoids $i_A : M_A \to \semptb{A}$.
+
+  A \emph{computation object} is defined similarly: an error domain $B$,
+  a \textbf{commutative monoid} $M_B$ and a homomorphism of monoids $i_B$.
+\end{definition}
+
+Note that $\semptb{A}$ is not a commutative monoid, so we will need a
+more complicated universal property to define a homomorphism from a
+freely-constructed commutative monoid into $\semptb{A}$. We will
+discuss this further below.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Vertical Morphisms}
+
+Now we describe the vertical morphisms:
+
+\begin{definition}
+  Given value objects $A = (|A|, M_A, i_A)$ and $A' = (|A'|, M_{A'},
+  i_{A'})$, a \emph{perturbation-preserving morphism} consists of
+  \begin{itemize}
+    \item A morphism of the underlying predomains $f : |A| \to |A'|$
+    \item Two homomorphisms of monoids $h^\to : M_A \to M_{A'}$ and
+      $h^\leftarrow : M_{A'} \to M_A$
+    \item Two coherence conditions: for all $m \in M_A$, we have $f \circ i_A(m) = i_{A'}(h^\to(m)) \circ f$:
+
+          % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzAsMSwiQSJdLFsxLDAsIkEnIl0sWzEsMSwiQSciXSxbMCwyLCJmIl0sWzIsMywiaV97QSd9KGhee1xcdG99KG0pKSJdLFswLDEsImlfQShtKSIsMl0sWzEsMywiZiIsMl1d
+          \[\begin{tikzcd}[ampersand replacement=\&]
+                  A \& {A'} \\
+                  A \& {A'}
+                  \arrow["f", from=1-1, to=1-2]
+                  \arrow["{i_A(m)}"', from=1-1, to=2-1]
+                  \arrow["{i_{A'}(h^{\to}(m))}", from=1-2, to=2-2]
+                  \arrow["f"', from=2-1, to=2-2]
+          \end{tikzcd}\]
+
+          and likewise for all $m' \in M_{A'}$, we have $f \circ i_A(h^\leftarrow(m')) = i_{A'}(m') \circ f$:
+
+          % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQSciXSxbMCwxLCJBIl0sWzEsMSwiQSciXSxbMCwxLCJmIl0sWzIsMywiZiIsMl0sWzEsMywiaV97QSd9KG0nKSJdLFswLDIsImlfQShoXntcXGxlZnRhcnJvd30obScpKSIsMl1d
+          \[\begin{tikzcd}[ampersand replacement=\&]
+                  A \& {A'} \\
+                  A \& {A'}
+                  \arrow["f", from=1-1, to=1-2]
+                  \arrow["{i_A(h^{\leftarrow}(m'))}"', from=1-1, to=2-1]
+                  \arrow["{i_{A'}(m')}", from=1-2, to=2-2]
+                  \arrow["f"', from=2-1, to=2-2]
+          \end{tikzcd}\]
+  \end{itemize}
+
+  We make the analogous definition for computation objects.
+\end{definition}
+
+\vspace{1ex}
+
+\begin{remark}
+Not all predomain/error domain morphisms extend to an action on
+perturbations in this way. The key counterexample is the arrow type
+constructor. The issue is that the perturbations of $A \to B$ are defined as
+$M_A^{op} \oplus M_B$, i.e., both $M_A$ and $M_B$ are in covariant positions.
+But the universal property for the arrow type says that
+%
+\[ \mathcal{V}(\Gamma, U(A \to B)) \cong \mathcal{V}(\Gamma \times A, UB) \]
+%
+On the left, the perturbations are monoid homomorphisms $M_\Gamma
+\multimap (M_A^{op} \oplus M_B)$ whereas on the right they are monoid
+homomorphisms $(M_\Gamma \oplus M_A) \multimap M_B$.
+\end{remark}
+
+
+%% With this new definition of morphism, the next step is to show that
+%% the morphisms of predomains/error domains used in the graduality proof
+%% extend to perturbations.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Squares}
+
+A square in this double category will be defined as a square where we
+are allowed to synchronize the morpisms on either side with a
+perturbation. More concretely:
+
+\begin{definition}
+Let $f : A_i \to A_o$ and $g : A_i' \to A_o'$ be
+perturbation-preserving predomain morphisms and let $c_i : A_i \rel
+A_i'$ and $c_o : A_o \rel A_o'$ be predomain relations.
+%
+We say that $f \ltsqdelay{c_i}{c_o} g$ if there are perturbations
+$m_f$ and $m_g$ such that $i(m_f) \circ f \ltsq{c_i}{c_o} i(m_g) \circ
+g$.
+%
+We make the analogous definition for error domains.
+
+We call such a square a \emph{perturbed square} to distinguish it from an ordinary square.
+\end{definition}
+
+Perturbed squares can be composed vertically and horizontally, as shown in
+the following two lemmas.
+
+\begin{lemma}
+  Suppose $f_1 \ltsqdelay{c_1}{c_2} g_1$ and $f_2 \ltsqdelay{c_2}{c_3} g_2$.
+  Then $(f_2 \circ f_1) \ltsqdelay{c_1}{c_3} (g_2 \circ g_1)$.
+\end{lemma}
+
+\begin{proof}
+  Let $m_{f_1}$ and $m_{g_1}$ be the perturbations in the first
+  square, and let $m_{f_2}$ and $m_{g_2}$ be the perturbations in the
+  second square. We compose the two given squares vertically to obtain
+
+\begin{comment}
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMCwyLCJBXzIiXSxbMiwwLCJBXzEnIl0sWzIsMSwiQV8yJyJdLFsyLDIsIkFfMiciXSxbMCwxLCJmXzEiLDJdLFsxLDIsImlfe0FfMn0obV97Zl8xfSkiLDJdLFszLDQsImdfMSJdLFs0LDUsImlfe0FfMid9KG1fe2dfMX0pIl0sWzAsMywiY18xIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw1LCJjXzIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+        {A_1} \&\& {A_1'} \\
+        {A_2} \&\& {A_2'} \\
+        {A_2} \&\& {A_2'}
+        \arrow["{c_1}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+        \arrow["{f_1}"', from=1-1, to=2-1]
+        \arrow["{g_1}", from=1-3, to=2-3]
+        \arrow["{i_{A_2}(m_{f_1})}"', from=2-1, to=3-1]
+        \arrow["{i_{A_2'}(m_{g_1})}", from=2-3, to=3-3]
+        \arrow["{c_2}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
+\end{tikzcd}\]
+
+and
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzIiXSxbMCwxLCJBXzMiXSxbMCwyLCJBXzMiXSxbMiwwLCJBXzInIl0sWzIsMSwiQV8zJyJdLFsyLDIsIkFfMyciXSxbMCwxLCJmXzIiLDJdLFsxLDIsImlfe0FfM30obV97Zl8yfSkiLDJdLFszLDQsImdfMiJdLFs0LDUsImlfe0FfMyd9KG1fe2dfMn0pIl0sWzAsMywiY18yIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw1LCJjXzMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_2} \&\& {A_2'} \\
+	{A_3} \&\& {A_3'} \\
+	{A_3} \&\& {A_3'}
+	\arrow["{c_2}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+	\arrow["{f_2}"', from=1-1, to=2-1]
+	\arrow["{g_2}", from=1-3, to=2-3]
+	\arrow["{i_{A_3}(m_{f_2})}"', from=2-1, to=3-1]
+	\arrow["{i_{A_3'}(m_{g_2})}", from=2-3, to=3-3]
+	\arrow["{c_3}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
+\end{tikzcd}\]
+\end{comment}
+
+% https://q.uiver.app/#q=WzAsMTAsWzAsMCwiQV8xIl0sWzAsMSwiQV8yIl0sWzAsMiwiQV8yIl0sWzIsMCwiQV8xJyJdLFsyLDEsIkFfMiciXSxbMiwyLCJBXzInIl0sWzAsMywiQV8zIl0sWzAsNCwiQV8zIl0sWzIsMywiQV8zJyJdLFsyLDQsIkFfMyciXSxbMCwxLCJmXzEiLDJdLFsxLDIsImlfe0FfMn0obV97Zl8xfSkiLDJdLFszLDQsImdfMSJdLFs0LDUsImlfe0FfMid9KG1fe2dfMX0pIl0sWzAsMywiY18xIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw1LCJjXzIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDYsImZfMiIsMl0sWzUsOCwiZ18yIl0sWzYsNywiaV97QV8zfShtX3tmXzJ9KSIsMl0sWzgsOSwiaV97QV8zJ30obV97Z18yfSkiXSxbNyw5LCJjXzMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_1} \&\& {A_1'} \\
+	{A_2} \&\& {A_2'} \\
+	{A_2} \&\& {A_2'} \\
+	{A_3} \&\& {A_3'} \\
+	{A_3} \&\& {A_3'}
+	\arrow["{c_1}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+	\arrow["{f_1}"', from=1-1, to=2-1]
+	\arrow["{g_1}", from=1-3, to=2-3]
+	\arrow["{i_{A_2}(m_{f_1})}"', from=2-1, to=3-1]
+	\arrow["{i_{A_2'}(m_{g_1})}", from=2-3, to=3-3]
+	\arrow["{c_2}"', "\shortmid"{marking}, no head, from=3-1, to=3-3]
+	\arrow["{f_2}"', from=3-1, to=4-1]
+	\arrow["{g_2}", from=3-3, to=4-3]
+	\arrow["{i_{A_3}(m_{f_2})}"', from=4-1, to=5-1]
+	\arrow["{i_{A_3'}(m_{g_2})}", from=4-3, to=5-3]
+	\arrow["{c_3}"', "\shortmid"{marking}, no head, from=5-1, to=5-3]
+\end{tikzcd}\]
+
+Now we commute the inner perturbation with the inner function on both
+sides. That is, we have
+%
+$f_2 \circ i_{A_2}(m_{f_1}) = i_{A_3}(f_2^\to(m_{f_1})) \circ f_2$,
+%
+and likewise
+%
+$g_2 \circ i_{A_2'}(m_{g_1}) = i_{A_3'}(g_2^\to(m_{g_1})) \circ g_2$,
+%
+where $f_2^\to : M_{A_2} \to M_{A_3}$ is the homomorphism of monoids
+corresponding to $f_2$ and similarly for $g_2^\to$.
+Doing so, we see that the above square is equivalent to
+
+% https://q.uiver.app/#q=WzAsMTAsWzAsMCwiQV8xIl0sWzAsMSwiQV8yIl0sWzAsMiwiQV8yIl0sWzIsMCwiQV8xJyJdLFsyLDEsIkFfMiciXSxbMiwyLCJBXzInIl0sWzAsMywiQV8zIl0sWzAsNCwiQV8zIl0sWzIsMywiQV8zJyJdLFsyLDQsIkFfMyciXSxbMCwxLCJmXzEiLDJdLFsxLDIsImZfMiIsMl0sWzMsNCwiZ18xIl0sWzQsNSwiZ18yIl0sWzAsMywiY18xIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw2LCJpX3tBXzN9KGZfMl5cXHRvKG1fe2ZfMX0pKSIsMl0sWzUsOCwiaV97QV8zJ30oZ18yXlxcdG8obV97Z18xfSkpIl0sWzYsNywiaV97QV8zfShtX3tmXzJ9KSIsMl0sWzgsOSwiaV97QV8zJ30obV97Z18yfSkiXSxbNyw5LCJjXzMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{A_1} \&\& {A_1'} \\
+	{A_2} \&\& {A_2'} \\
+	{A_2} \&\& {A_2'} \\
+	{A_3} \&\& {A_3'} \\
+	{A_3} \&\& {A_3'}
+	\arrow["{c_1}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+	\arrow["{f_1}"', from=1-1, to=2-1]
+	\arrow["{g_1}", from=1-3, to=2-3]
+	\arrow["{f_2}"', from=2-1, to=3-1]
+	\arrow["{g_2}", from=2-3, to=3-3]
+	\arrow["{i_{A_3}(f_2^\to(m_{f_1}))}"', from=3-1, to=4-1]
+	\arrow["{i_{A_3'}(g_2^\to(m_{g_1}))}", from=3-3, to=4-3]
+	\arrow["{i_{A_3}(m_{f_2})}"', from=4-1, to=5-1]
+	\arrow["{i_{A_3'}(m_{g_2})}", from=4-3, to=5-3]
+	\arrow["{c_3}"', "\shortmid"{marking}, no head, from=5-1, to=5-3]
+\end{tikzcd}\]
+
+Thus, we can take the perturbation corresponding to $f_2 \circ f_1$ to
+be $m_{f_2} \dot f_2^\to(m_{f_1})$ and the pertubation corresponding
+to $g_2 \circ g_1$ to be $m_{g_2} \dot g_2^\to(m_{g_1})$.
+
+\end{proof}
+
+
+\begin{lemma}
+  If $f \ltsqdelay{c_i}{c_o} g$ and $g \ltsqdelay{c_i'}{c_o'} h$, then
+  $f \ltsqdelay{c_i \odot c_i'}{c_o \odot c_o'} h$.
+\end{lemma}
+\begin{proof}
+
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Push-Pull}
+
+As we have seen in the previous section, the push-pull property is
+still necessary.  But as it turns out, our new definition of vertical
+morphisms allows us to \emph{derive} push-pull for relations
+that are the restriction of an identity relation along a morphism:
+
+\begin{lemma}
+  Let $f : A \to A'$ be a perturbation-preserving morphism. Then the
+  relation $\restr{\ltdyn_{A'}}{f} : A \rel A'$, defined by $x \restr{\ltdyn_{A'}}{f}
+  y := f x \mathrel{\ltdyn_{A'}} y$, has the push-pull property.
+\end{lemma}
+\begin{proof}
+  First we show how to derive push. The push homomorphism is simply
+  given by $h^\to$; it remains to show the existence of the following
+  square:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzAsMSwiQSJdLFsxLDAsIkEnIl0sWzEsMSwiQSciXSxbMCwyLCJcXHJlc3Rye1xcbHRkeW5fe0EnfX17Zn0iLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsIlxccmVzdHJ7XFxsdGR5bl97QSd9fXtmfSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMSwiaV9BKG0pIiwyXSxbMiwzLCJpX3tBJ30oaF57XFx0b30obSkpIl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	A \& {A'} \\
+	A \& {A'}
+	\arrow["{\restr{\ltdyn_{A'}}{f}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{i_A(m)}"', from=1-1, to=2-1]
+	\arrow["{i_{A'}(h^{\to}(m))}", from=1-2, to=2-2]
+	\arrow["{\restr{\ltdyn_{A'}}{f}}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\]
+
+By definition, it will suffice to construct a square
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBIl0sWzAsMSwiQSJdLFsxLDAsIkEnIl0sWzAsMiwiQSciXSxbMSwyLCJBJyJdLFsxLDEsIkEnIl0sWzAsMiwiXFxyZXN0cntcXGx0ZHluX3tBJ319e2Z9IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJpX0EobSkiLDJdLFszLDQsIlxcbHRkeW5fe0EnfSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMywiZiIsMl0sWzUsNCwiXFxpZCJdLFsyLDUsImlfe0EnfShoXntcXHRvfShtKSkiXV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	A \& {A'} \\
+	A \& {A'} \\
+	{A'} \& {A'}
+	\arrow["{\restr{\ltdyn_{A'}}{f}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["{i_A(m)}"', from=1-1, to=2-1]
+	\arrow["{i_{A'}(h^{\to}(m))}", from=1-2, to=2-2]
+	\arrow["f"', from=2-1, to=3-1]
+	\arrow["\id", from=2-2, to=3-2]
+	\arrow["{\ltdyn_{A'}}", "\shortmid"{marking}, no head, from=3-1, to=3-2]
+\end{tikzcd}\]
+
+Now since $f$ preserves perturbations, the left-hand side of the
+square is equal to $i_{A'}(h^\to(m) \circ f$, so the above is the same
+as
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBIl0sWzAsMSwiQSciXSxbMSwwLCJBJyJdLFswLDIsIkEnIl0sWzEsMiwiQSciXSxbMSwxLCJBJyJdLFswLDIsIlxccmVzdHJ7XFxsdGR5bl97QSd9fXtmfSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMSwiZiIsMl0sWzMsNCwiXFxsdGR5bl97QSd9IiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJpX3tBJ30oaF57XFx0b30obSkpIiwyXSxbNSw0LCJpX3tBJ30oaF57XFx0b30obSkpIl0sWzIsNSwiXFxpZCJdLFsxLDUsIlxcbHRkeW5fe0EnfSIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	A \& {A'} \\
+	{A'} \& {A'} \\
+	{A'} \& {A'}
+	\arrow["{\restr{\ltdyn_{A'}}{f}}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["f"', from=1-1, to=2-1]
+	\arrow["\id", from=1-2, to=2-2]
+	\arrow["{\ltdyn_{A'}}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+	\arrow["{i_{A'}(h^{\to}(m))}"', from=2-1, to=3-1]
+	\arrow["{i_{A'}(h^{\to}(m))}", from=2-2, to=3-2]
+	\arrow["{\ltdyn_{A'}}", "\shortmid"{marking}, no head, from=3-1, to=3-2]
+\end{tikzcd}\]
+
+The top square exists by definition of the restriction of a relation
+along a morphism, and the second square is a horizontal identity
+square. Composing these vertically, we are finished.
+
+The pull property is derived in an analogous manner.
+  
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Revisiting the Graduality Proof}
+
+Having described the double category in which the casts live, we now
+return to the graduality proof.  We need to verify that the morphisms
+of predomains/error domains used to define the cast morphisms do in
+fact extend to perturbations.
+
+We also need to check that the type constructors act on squares.
+
+\subsubsection{Representability}
+
+Recall that the notion of \emph{quasi}-representability of a relation involves a
+perturbation corresponding to the morphism opposite the cast. For each
+of the \upl, \upr, \dnl, and \dnr rules there is a distinguished
+perturbation that appears in the relevant square.
+%
+In the double category of casts we have just defined, the
+perturbations are moved into the definition of the squares themselves.
+Thus, we can define representability of a relation as the familiar
+notion of representability of a horizontal morphism in a double
+category. In particular:
+
+\begin{definition}
+  Let $A$ and $A'$ be value objects, and let $c : A \rel A'$ be a
+  predomain relation.  We say that $c$ is \emph{left-representable by}
+  a perturbation-preserving morphism $e_c : A \to A'$ if there are
+  squares $\upl : e_c \ltsqdelay{c}{r(A')} \id_{A'}$ and $\upr : \id_A
+  \ltsqdelay{r(A)}{c} e_c$. We say that $c$ is \emph{left-representable}
+  if it is left-representable by $e_c$ for some $e_c$.
+
+  We say that $c$ is \emph{right-representable by} a
+  perturbation-preserving morphism $p_c : A' \to A$ if there are
+  squares $\dnr : \id_A \ltsqdelay{c}{r(A)} p_c$ and
+  $\dnl : p_c \ltsqdelay{r(A')}{c} \id_{A'}$.
+
+  We define the notion of representability for error domain relations
+  analogously.
+  
+\end{definition}
+
+An important consequence of this definition is that if $c$ is left
+(resp. right) representable, then it is actually determined up to
+perturbation by the embedding (resp. projection) morphism.  More
+specifically, suppose $c$ is left-representable by a morphism $e_c$.
+Consider the relation $\restr{\ltdyn_{A'}}{e_c}$, i.e., the
+restriction of the identity relation on $A'$ along the morphism $e_c$.
+The fact that $c$ is left-representable by $e_c$ implies that $c$ is
+\emph{order-equivalent} to $\restr{\ltdyn_{A'}}{e_c}$, as shown in the
+lemma below.
+
+\begin{lemma}
+  Let $c : A \rel A'$ be a predomain relation. If $c$ is left-representable by $e_c$,
+  then there is a perturbed square $\id \ltsqdelay{c}{\restr{\ltdyn_{A'}}{e_c}} \id$
+  and a perturbed square $\id \ltsqdelay{\restr{\ltdyn_{A'}}{e_c}}{c} \id$.
+\end{lemma}
+\begin{proof}
+  We first show that both $c$ and $\restr{\ltdyn_{A'}}{e_c}$ are left-represented by the same embedding.
+
+  % Need to paste the relevant squares horizontally along the equal
+  % embedding, but we cannot compose squares horizontally without the
+  % relations satisfying push-pull.
+  
+\end{proof}
+
+
+\subsubsection{Value and Computation Relations}
+
+We now revisit the definition of value and computation
+relations. Recall that the original definitions mentioned
+quasi-representability. We begin by restating the definitions in terms
+of representability:
+
+\begin{definition}
+  Let $A$ and $A'$ be value objects. A value relation $c : A \rel A'$ is a relation between the underlying predomains such that:
+  \begin{itemize}
+  \item $c$ satisfies push-pull.
+  \item $c$ is left-representable
+  \item $Fc$ is right-representable
+  \end{itemize}
+
+  A computation relation $d : B \rel B'$ is defined analogously.
+\end{definition}
+
+However, 
+
+
+\subsubsection{The Model Construction}
+
+\begin{enumerate}
+  \item If $c$ and $c'$ are value relations, then there is a value relation $c \odot c'$. Likewise for computation relations.
+  \item If $c$ is a value relation, then there is a computation relation $Fc$.
+  \item If $d$ is a computation relation, then there is a value relation $Ud$.
+  \item If $c_1$ and $c_2$ are value relations, then there is a value relation $c_1 \times c_2$
+  \item If $c$ is a value relation and $d$ is a computation relation, then there is a computation relation $c \to d$.
+\end{enumerate}
+
+
+\end{document}
+

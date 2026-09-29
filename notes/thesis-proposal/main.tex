@@ -1,0 +1,1011 @@
+% \documentclass[acmsmall]{acmart}
+
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[margin=1.0in]{geometry}
+\linespread{1.2}
+
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{comment}
+
+\usepackage{url}
+\usepackage{hyperref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% theorem environments
+%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{question}{Question}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../paper-new/defs}
+
+\newcommand{\osum}{\text{OSum}}
+\newcommand{\inj}[2]{\text{inj}_{#1}({#2})}
+\newcommand{\case}[1]{\text{Case}\,{#1}}
+\newcommand{\newcase}[3]{\text{newcase}_{#1}{#2}; {#3}}
+\newcommand{\icase}[1]{\text{Inj}_{\case{#1}}}
+\newcommand{\tref}{\text{ref}}
+\newcommand{\new}{\text{new}}
+\newcommand{\set}{\text{set}}
+\newcommand{\get}{\text{get}}
+
+\definecolor{mygreen}{RGB}{0, 142, 27}
+\definecolor{mypurple}{RGB}{90,74,146}
+\definecolor{myblue}{RGB}{38,87,175}
+
+\begin{document}
+
+%% TODO
+%% - Surface language versus cast calculus
+%%
+%% - Where to introduce type precision, casts, etc?
+%%   1. In the intro?
+%%   2. In a syntax section specific to the gradual lambda calculus?
+%%   3. In the relational model section?
+%%
+%% - Too repetitive regarding pitfalls of New-Licata approach
+%%
+%% - Downcast for the dynamic type involves a case on the sum type
+
+\title{Thesis Proposal}
+\author{Eric Giovannini}
+\date{April 11, 2025}
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+My thesis work is in the area of \emph{semantics for gradually typed programming
+langugaes}. Roughly speaking, gradually-typed languages allow the programmer to
+combine both static and dynamic typing disciplines in the same codebase, and to
+\emph{gradually} migrate smoothly from a dynamic to static style over time. My
+goal has been to advance the state of the art in the mathematical tools used to
+model gradually-typed languages and ensure that the languages satisfy the
+intended formal properties.
+%
+
+In the remainder of this section, we provide background on gradual typing and
+the desired properties of gradually-typed languages. We then discuss prior
+approaches to formally proving these criteria, with a view towards motivating
+the novel approach developed in my thesis work.
+
+\subsection{Gradual Typing: Background}\label{sec:background-gradual-typing}
+
+In programming language design, there is a tension between \emph{static} typing
+and \emph{dynamic} typing disciplines. With static typing, the code is
+type-checked at compile time, while in dynamic typing, the type checking is
+deferred to run-time. Both approaches have benefits and excel in different
+scenarios, with static typing offering compile-time assurance of a program's
+type safety and type-based reasoning principles that justify program
+optimizations, and dynamic typing allowing for rapid prototyping of a codebase
+without committing to fixed type signatures.
+%
+Most languages choose between static or dynamic typing and as a result,
+programmers that initially write their code in a dynamically typed language need
+to rewrite some or all of their codebase in a static language if they would like
+to receive the benefits of static typing once their codebase has matured.
+
+\emph{Gradually typed languages} \cite{siek-taha06, tobin-hochstadt06} seek to
+resolve this tension by allowing for both static and dynamic typing disciplines
+to be used in the same codebase. These languages support smooth interoperability
+between statically-typed and dynamically-typed styles. As a result, the programmer
+can begin with fully dynamically-typed code and \emph{gradually} add explicit typing
+information to migrate portions of the codebase to a statically typed style
+without needing to rewrite the entire project in a completely different language.
+
+% The idea of one program in a gradually-typed language being ``more dynamic'' or
+% ``more static'' than another is made formal by the notion of a \emph{term
+% precision ordering}. 
+
+The idea of a program becoming ``more static'' over time as the programmer
+performs the migration is made formal via a \emph{term precision ordering} on
+programs. Term precision gives us the ability to compare programs based on their
+relative amount of static typing information. We think of this as a syntactic
+relation on programs where a program $M$ is more static or precise than $N$ if,
+roughly speaking, $M$ has more typing annotations than $N$.
+
+One of the fundamental theorems for gradually typed languages is
+\emph{graduality}, also known as the \emph{dynamic gradual guarantee},
+originally defined by Siek, Vitousek, Cimini, and Boyland
+\cite{siek_et_al:LIPIcs:2015:5031, new-ahmed2018}.
+%
+Informally, graduality says that migrating code from dynamic to static typing
+should only allow for the introduction of static or dynamic type errors, and not
+otherwise change the behavior of the program.
+%
+% TODO figure here
+%
+%
+This is a way to formalize the programmer's intuition that increasing precision
+corresponds to a generalized form of runtime assertions: there are no observable
+behavioral changes up to the point of the first dynamic type error.
+%
+% Fundamentally, this property comes down to the behavior of \emph{runtime type
+% casts}, which implement these generalized runtime assertions.
+
+Another desired property of gradually typed languages is that they should offer
+some of the benefits of static typing. While standard type soundness, that
+well-typed programs are free from runtime errors, is not compatible with runtime
+type errors, it is possible instead to prove that gradually typed languages
+validate \emph{type-based reasoning}. For instance, while dynamically typed
+$\lambda$ calculi only satisfy $\beta$ equality for their type formers,
+statically typed $\lambda$ calculi additionally satisfy type-dependent $\eta$
+properties that ensure that functions are determined by their behavior under
+application and that pattern matching on data types is safe and exhaustive. A
+gradually typed calculus that validates these type-dependent $\eta$ laws then
+provides some of the type-based reasoning that dynamic languages lack.
+
+
+
+\subsection{Prior Work}\label{sec:background-semantics}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+There are several methods of establishing the desired properties of
+gradually-typed languages; we discuss these below.
+
+%%\subsubsection{From Static to Gradual}
+
+Siek et al., in the same work that introduces the dynamic gradual guarantee
+\cite{siek_et_al:LIPIcs:2015:5031}, also prove the property for a simple
+gradually-typed language via a syntactic simulation argument. This proof method
+is closely tied to the syntax of the language, and there is limited opportunity
+for reuse of common abstractions across different languages.
+% and there is limited opportunity for reuse of common building blocks of the
+% proofs across different languages.
+%
+This lack of reusability is addressed somewhat by Siek and Chen
+\cite{siek-chen2021}, who give a framework for proving graduality in the Agda
+proof assistant. The framework is parameterized by the specific language for
+which one wants to prove graduality, and the proof of graduality proceeds via
+the syntactic simulation argument.
+%
+However, the main lemmas of the work are still tied to the particular
+operational syntactic calculus being modeled.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A second line of work for proving graduality consists of starting with a
+statically-typed language, and \emph{deriving} from it a language that satisfies
+graduality by construction. The methods of Abstracting Gradual Typing
+\cite{garcia-clark-tanter2016} and the formal tools of the Gradualizer
+\cite{cimini-siek2016} follow this approach. The main downside to these
+approaches lies in their inflexibility: since the process in entirely
+mechanical, the language designer must adhere to the predefined framework.  Many
+gradually typed languages do not fit into either framework, e.g., Typed Racket
+\cite{tobin-hochstadt06, tobin-hochstadt08}, and the semantics produced is not
+always the desired one.
+%
+Furthermore, while these frameworks do prove graduality of the resulting
+languages, they do not show the correctness of the equational theory, which is
+equally important to sound gradual typing.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Another major line of work for proving graduality consists of modeling the
+% language via an operational semantics and defining a step-indexed logical
+% relation over that semantics \cite{new-ahmed2018, new-licata-ahmed2019,
+% new-jamner-ahmed19, new-giovannini-licata-2022}.
+
+Another common approach to proving graduality involves defining a semantic model
+for a gradually-typed language and establishing the graduality property in the
+model.
+%
+Providing a semantics for gradual typing is inherently complicated in that it
+involves (1) recursion and recursive types through the presence of dynamic
+typing, (2) effects in the form of divergence and errors, and (3) relational
+models to capture the graduality property. Any such semantics needs to address
+each of these points.
+
+% A line of work by New, Licata and Ahmed
+% \cite{new-ahmed2018,new-licata18,new-licata-ahmed2019} develops an axiomatic
+% account of gradual typing and proves graduality by interpreting type precision
+% $c : A \ltdyn A'$ as an \emph{embedding-projection pair}, that is, a pure
+% embedding function $e : A \to A'$ and a possibly erroring projection $p : \li
+% A' \multimap \li A$ such that $p \circ e = \id$ and $e \circ p \ltdyn \id$.
+
+One major line of work in the semantic approach consists of modeling the
+language via an operational semantics and defining a step-indexed logical
+relation over that semantics \cite{new-ahmed2018, new-licata-ahmed2019,
+new-jamner-ahmed19, new-giovannini-licata-2022}. These techniques have been used
+to model a variety of languages combining gradual typing with other interesting
+features.
+%
+Step-indexed techniques are robust enough to scale to essentially arbitrary
+self-referential definitions, which means they can model highly recursive
+programming language features such as higher-order store and runtime-extensible
+dynamic types
+\cite{appelmcallester01,ahmed06,neis09,new-jamner-ahmed19}.
+% Unfortunately, the proofs involve a complicated combination of induction on
+% the syntax and tedious step-index manipulation
+However, as is common with operational approaches, the graduality proofs based
+on these techniques are highly repetitive and technical. Each development
+formulates a new logical relation from first-principles and proves many of the
+same tedious lemmas without reusable mathematical abstractions across languages.
+
+% TODO mention that I was one of the authors of the GrEff work
+% Additionally, the logical relations constructed to prove graduality in prior
+% work \cite{new-ahmed2018,new-licata-ahmed2019,new-giovannini-licata-2022} suffer
+% from technical complications of requiring two separate expression relations, one
+% that counts steps on the left and the other on the right, and there is no
+% analogue of this in our approach. However, using two expression relations allows
+% some but not all transitive reasoning of term precision to be recovered. In the
+% future we aim to explore if this approach is feasible in guarded semantics.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In the quest for a more compositional and language-independent approach, New and
+Licata \cite{new-licata18} constructed a denotational semantics for gradual
+typing using the tools of classical domain theory (e.g., $\omega$-CPOs). This
+model was extended by Lennon-Bertrand, Maillard, Tabareau and Tanter
+\cite{gradualizing-cic} to prove graduality of a gradual dependently typed
+calculus $\textrm{CastCIC}^{\mathcal G}$. This domain-theoretic approach
+demonstrated that it is possible to give a compositional semantic framework for
+proving graduality. However, an approach based on classical domain theory has
+fundamental limitations: domain theory appears incapable of modeling certain
+perversely recursive features of programming languages such as dynamic type tag
+generation and higher-order references \cite{Birkedal-Stovring-Thamsborg-2009},
+which are commonplace in real-world gradually typed systems as well as gradual
+calculi.
+
+
+% the inability to model viciously self-referential structures such
+% as higher-order extensible state and similar features such as runtime-extensible
+% dynamic types.
+
+% Since these features are quite common in dynamically typed languages, we have
+% developed in this work a new denotational framework that can be extended to
+% model these type system features.
+
+% A further advantage of the denotational approach is that it easily validates
+% equational reasoning, not just graduality, and it is completely independent of
+% any particular syntax of gradual typing.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Goal: combine the compositional nature of the denotational approach  with the
+% expressiveness of the step-indexed approach
+
+The goal of the bulk of my thesis work has been to combine the benefits of both
+the denotational and step-indexed approaches --- the compositional nature of the
+denotational approach and the expressive power of step-indexing. We therefore
+take as a starting point the denotational approach of New and Licata. However,
+rather than work with classical domain theory, we instead work with
+\emph{guarded type theory}, a \emph{synthetic} form of step-indexing. The
+synthetic approach to step-indexing introduces additional primitives to the type
+theory that capture the essence of step-indexing axiomatically. It is especially
+useful as a setting in which to define denotational semantics of languages
+involving recursive types, making it a well-suited candidate for modelling
+gradually-typed languages.
+%
+Unfortunately, the compositional theory of New-Licata breaks down in the guarded
+setting.
+% when accounting for steps, the casts are no longer embedding-projection pairs,
+% and we cannot carry out compositional reasoning on terms when those terms
+% differ by an arbitrary unknown number of steps. 
+My thesis work provides a novel refinement to their semantics that allows for
+some compositional reasoning to be recovered even in the guarded setting.
+
+% TODO thesis statement
+The claim put forth in this thesis is that \textbf{the use of synthetic methods
+facilitates the construction of compositional semantics for real-world
+gradually-typed programming languages.}
+%
+In the remainder of this document, we substantiate this claim by describing the
+two major research projects that make up the core of my thesis work. The second
+project forms the majority of my thesis work so far and is more directly
+relevant to my claim, and we therefore devote significantly more space to
+discussing it. We then discuss the next major step in this research program and
+outline a plan for the work to be completed.
+
+
+
+% Our goal in this work is to provide an \emph{expressive}, \emph{reusable},
+% \emph{compositional} semantic framework for defining such well-behaved semantics
+% of gradually typed programs.
+% %
+% Our approach to achieving this goal is to provide a compositional
+% \emph{denotational semantics}, mapping types to a kind of semantic domain, terms
+% to functions and relations such as term precision to proofs of semantic
+% relations between the denoted functions.
+% %
+% Since the denotational constructions are all syntax-independent, the
+% constructions we provide may be reused for similar languages. Since it is
+% compositional, components can be mixed and matched depending on what source
+% language features are present.
+
+
+
+% A line of work by New, Licata and Ahmed
+% \cite{new-ahmed2018,new-licata18,new-licata-ahmed2019} develops an axiomatic
+% account of gradual typing and proves graduality by interpreting type precision
+% $c : A \ltdyn A'$ as an \emph{embedding-projection pair}, that is, a pure
+% embedding function $e : A \to A'$ and a possibly erroring projection $p : \li A'
+% \multimap \li A$ such that $p \circ e = \id$ and $e \circ p \ltdyn \id$. At
+% first glance, our model of precision looks different: it is a \emph{relation}
+% $\sem{c} : A \rel A'$ with a quasi-representability structure that gives us
+% something close to $e$ and $p$ in an embedding-projection pair. The relationship
+% between these models is that \emph{if} the relation were \emph{truly}
+% representable we would have that $e$ and $p$ form a \emph{Galois connection} $e
+% \circ p \ltdyn \id$ and $\id \ltdyn p \circ e$. However, we have dropped the
+% stronger property of retraction from our analysis in this work. With true
+% representability, the relation $c$ is \emph{uniquely determined} by the
+% embedding $e$, but since we only have quasi-representability, we need to keep
+% the relation around explicitly. So the extra complexity of managing explicit
+% relations is a cost of the intensional reasoning that guarded type theory
+% introduces. 
+% %
+% The line of work by New, Licata, and Ahmed involved both denotational methods
+% and operational logical relations approaches.
+
+% \subsection{Guarded Type Theory}
+
+% \section{Overview of Work Done So Far}
+
+\section{Gradual Typing for Effect Handlers}
+
+My work on gradual typing began with a paper investigating the combination of
+gradual typing with algebraic effect handlers \cite{new-giovannini-licata-2022}.
+%
+In that paper, we presented a new gradually-typed langauge, called GrEff, with
+support for algebraic effects and handlers. We sought to study the question of
+retrofitting an effect typing system onto an existing language with effects that
+lacks such a system. In GrEff, the code in a program can exist along a spectrum
+between completely \emph{fully unchecked} and \emph{fully checked} effects. In
+the former, the type system is concerned only with the input and output types of
+effect operations. With the latter, the type system additionally tracks which
+effects a given part of the program may raise.
+
+The motivation for this work was less about the approach to proving graduality
+for GrEff, and more about the design of the language itself. Indeed, the method
+by which we proved graduality for GrEff is an extension of the operational
+logical relations methods employed in prior work. There were some novelties
+related to handling gradual subtyping in the semantics, but these were largely
+straightforward.
+
+% Maybe start this paragraph differently
+However, while constructing these proofs, the lack of reusable building blocks
+afforded by the operational approach became especially apparent. Additionally,
+manual step-index manipulation was a pervasive part of the development and
+proved to be tedious and error-prone. Overall, the time and effort required to
+carry out the proofs was enormous: the appendix in the technical report is over
+60 pages long \cite{new-giovannini-licata-2022-extended}!
+%
+We concluded that while the operational approach was sufficient for proving
+graduality, the need to reprove all the basic lemmas and essentially redo the
+entire development for each new language presents a significant roadblock to
+ensuring the soundness of future gradually-typed languages.
+
+% Show the logical relation?
+
+Of course, the operational approach based on step-indexing is not the only means
+of establishing graduality. As discussed above, the denotational model of New
+and Licata \cite{new-licata18} is not tied to any particular operational
+syntactic calculus. Instead, their semantic framework consists of
+language-independent, compositional abstractions.
+%
+% TODO review this part
+%
+However, by being based on classical domain theory, the semantics of New and
+Licata is limited in what language features it can handle. Specifically, it
+cannot scale to model languages with higher-order store or dynamic type-tag
+generation. Since these features are common in dynamically-typed programming
+langugaes, it makes sense that a good semantic foundation for gradual typing
+should include support for these features.
+% Since these features are common in dynamically-typed programming
+% languages, they are also important to include in real-world gradually-typed
+% languages. Thus, it makes sense that a good semantic foundation for gradual
+% typing should include support for these features.
+
+% We therefore seek to combine the expressive nature of step-indexing with the
+% compositional nature of denotational semantics.
+
+We were therefore motivated to seek an alternative approach that features the
+best of both worlds; this is the topic of my subsequent project.
+
+\section{Denotational Semantics of Gradual Typing using Synthetic Guarded Domain Theory}
+
+\subsection{Guarded Type Theory}
+
+% In this work, we seek to combine the expressive nature of step-indexing with the
+% compositional nature of denotational semantics.
+In this work, we seek to define a model of gradual typing that combines the
+expressive nature of step-indexing with the compositional nature of denotational
+semantics.
+%
+A key ingredient in achieving this goal is \emph{guarded type theory}, which is
+a non-standard foundations with axioms that capture the reasoning principles of
+step-indexing \cite{birkedal-mogelberg-schwinghammer-stovring2011,
+kristensen-mogelberg-vezzosi2022}. Guarded type theory is a kind of metalanguage
+in which we can define denotational semantics of programming languages involving
+general recursion. Guarded type theory differs from classical domain theory in
+that it can scale to arbitrarily complex recursive definitions.
+
+The new reasoning principles provided by guarded type theory are as follows.
+First, there is an operation $\later$ (``later'') that acts on types. A value of
+type $\later X$ intuitively represents a value of type $X$ available one
+``computational step'' in the future. There is a function $\nxt$ that delays an
+element available now to be available later. Lastly, there is \emph{guarded
+recursion}. This principle states that there is a unique solution to any
+recursive type equation of the form $X \cong F(\later X)$, that is, any
+recursive type equation where the variable $X$ is guarded by $\later$.
+% (In the step-indexed approach, this corresponds roughly to the idea of
+% defining a predicate by induction over the natural number step index.)
+
+The main fact to remember about guarded type theory is that, as with
+step-indexing, it is \emph{intensional}, or step-aware: the denotation of a term
+in guarded type theory reflects the computational steps it takes. This is in
+contrast to classical domain theory, where the steps taken by a term are not
+reflected in its denotation. The intensional nature of guarded type theory makes
+defining a semantics easier in some places, while introducing challenges in
+others.
+% State that this makes the relational semantics difficult?
+
+% Much of the interesting work in this paper involves solving the challenges
+% arising from the intensional nature of guarded type theory
+
+\subsection{Result}
+
+% Our first major result is a denotational semantics for a simple gradually-typed
+% language defined using guarded type theory. The language we model has natural
+% numbers, products, and call-by-value-style functions. Furthermore, recall from
+% Section \ref{sec:background-semantics} that any semantics for gradually-typed
+% languages must model errors and divergence. Therefore, our semantics is a
+% partial function from closed terms of type $\nat$ to either a natural number or
+% a runtime error:
+
+Our first major result is a denotational semantics for a simple gradually-typed
+language defined using guarded type theory. The language we model has natural
+numbers, products, and call-by-value-style functions. We will introduce more
+details about the language as they are needed. (We refer the reader to our POPL
+2025 paper for the full definitions \cite{gtt-sgdt}.) Recall from Section
+\ref{sec:background-semantics} that any semantics for gradually-typed languages
+must model errors and divergence. Therefore, our semantics is a partial function
+from closed terms of type $\nat$ to either a natural number or a runtime error:
+%
+\[ -\Downarrow : \{M \,|\, \cdot \vdash M : \nat \} \rightharpoonup \mathbb{N}
+\cup \{\mho\} \] 
+%
+It is a partial function because the program may not terminate. Here, $\mho$ is
+notation for a runtime type error. We write $M \Downarrow n$ and $M\Downarrow
+\mho$ to mean this semantics is defined as a number or error, and $M\Uparrow$ to
+mean the semantics is undefined, representing divergence.
+
+Our semantics satisfies the two key properties discussed in Section
+\ref{sec:background-gradual-typing}. First, it validates \textbf{type-based
+reasoning}. That is, if two closed terms of type $\nat$ are equivalent according
+to the equational theory of the language, then they have the same behavior:
+either they both evaluate to the same natural number $n$, they both error, or
+they both fail to terminate.
+%
+Second, our semantics satisfies the \textbf{graduality} property: If $M$ and $N$
+are closed terms of type $\nat$ where $M$ is more precise than $N$, then either
+$M$ errors, in which case we don't care what $N$ does, or $M$ and $N$ have the
+same behavior. These results are stated in detail below.
+
+\begin{theorem}[Type-Based Reasoning]
+    Let $\cdot \vdash M, N : \nat$. If $M \equiv N$, then $M$ and $N$ have the
+    same behavior, in that:
+    \begin{align*}
+        M \Downarrow n &\iff N \Downarrow n \\
+        M \Downarrow \mho &\iff N \Downarrow \mho \\
+        M \Uparrow &\iff N \Uparrow
+    \end{align*}
+\end{theorem}
+
+\begin{theorem}[Graduality]
+    Let $\cdot \vdash M, N : \nat$. If $M \ltdyn N$, then either:
+    \begin{enumerate}
+        \item $M \Downarrow \mho$.
+        \item $M \Uparrow$ and $N \Uparrow$.
+        \item $M \Downarrow n$ and $N \Downarrow n$ for some natural number $n$.
+    \end{enumerate}
+\end{theorem}
+
+
+% A well-behaved semantics should then satisfy several properties. First, it
+% should be \emph{adequate}: natural number constants should evaluate to
+% themselves: $n \Downarrow n$. Second, it should validate type based reasoning.
+% To formalize type based reasoning, languages typically have an equational theory
+% $M \equiv N$ specifying when two terms should be considered equivalent.
+% Then we want to verify that the big step semantics respects this equational
+% theory: if closed programs $M \equiv N$ are equivalent in the equational theory
+% then they have the same semantics, $M \Downarrow n \iff N \Downarrow n$ and
+% $M\Uparrow \iff N \Uparrow$ and $M \Downarrow \mho \iff N \Downarrow \mho$.
+
+
+% In the remainder of this section, we will discuss the main ideas in the
+% construction of our semantics. We begin with a more detailed overview of the
+% gradually-typed language we model.
+
+In the remainder of this section, we will discuss the main ideas in the
+construction of the semantics.
+
+% \subsection{Details of the Cast Calculus}
+% Give an overview of the language. Include type and term precision?
+
+\subsection{Modeling Gradually-Typed Programs}
+
+We now dive into more detail about our semantics, with an eye towards
+understanding the places where guarded type theory makes defining the semantics
+simple, and the places where it introduces challenges. 
+%
+The first question we need to address is how to model effectful programs. Recall
+that the language we are modeling involves errors and computational steps. Given
+a type $A$, we define a new type we call the \emph{free error domain} on $A$,
+written $\li A$. We define the free error domain on $A$ via guarded recursion as
+the solution to the equation
+%
+\[ \li A \cong A + 1 + \later \li A. \]
+%
+That is, an element of the free error domain is either a returned value of type
+$A$, an error, or an element defined ``later''. The latter can be thought of as
+a ``thinking'' or ``computing'' element, such that after one time step has
+passed we will be able to access the element. Of course, this element may itself
+be a value, an error, or another thinking element. 
+
+% We use the notation for the three constructors as shown on the right of the slide.
+
+We will use the notation $\eta : A \to \li A$, $\mho : \li A$, and $\theta :
+\later \li A \to \li A$ to refer to the three injections into the sum.
+
+% TODO diverging element
+
+\subsection{Modeling Dynamic Typing}
+
+Next, we consider how to model dynamic typing. Recall that our language, like
+all gradually-typed languages, has a special \emph{dynamic type} written $\dyn$
+(pronounced ``dyn''). The type $\dyn$ represents a statically-unknown type. The
+language we are modeling has natural numbers, products, and call-by-value-style
+functions. Thus, to model the dynamic type, we seek a semantic type $D$
+satisfying the following equation. 
+%
+\[ D \cong \Nat + (D \times D) + (D \to \li D). \]
+%
+Notice that $D$ occurs on the left of the arrow in the function case; this means
+that the equation does not have inductive or conductive solutions. It
+\emph{does} have solutions using classical domain theory, but in this work we
+are using guarded type theory rather than classical domain theory. 
+%
+Indeed, consider the related equation where we guard the negative occurrence by
+placing a later operator outside the function case:
+%
+\[ D \cong \Nat + (D \times D) + \later (D \to \li D). \]
+%
+We can solve above equation using a combination of least fixpoint and guarded
+recursion. More details on solving the equation are given in our POPL 2025 paper
+\cite{gtt-sgdt}.
+
+Though this use of the later modality gives us a semantics for the dynamic type
+essentially for free, it comes at a cost: \textbf{A program must take an
+observable step whenever it wants to inspect a value of the dynamic type that
+happens to be a function.} This has major implications for the relational
+semantics, as we discuss below.
+
+
+\subsection{Relational Semantics}
+
+% Before moving forward, we must introduce some additional important concepts in
+% gradual typing. In addition to term precision (introduced in Section
+% \ref{sec:background-gradual-typing}), there is also an analogous ordering on
+% types called \emph{type precision} that represents when one type is more static
+% or dynamic than another. The dynamic type is the top element in this ordering.
+
+Before moving forward, we discuss some additional important concepts in gradual
+typing. Recall the notion of term precision introduced in Section
+\ref{sec:background-gradual-typing}. There is an analogous ordering on types
+called \emph{type precision} that represents when one type is more static or
+dynamic than another. Specifically, we write $A \ltdyn A'$ to represent that
+type $A$ is more precise (i.e., more static) than type $A'$. We use an explicit
+syntax of \emph{type precision derivations} $c : A \ltdyn A'$; see our POPL 2025
+paper for the details \cite{gtt-sgdt}. The dynamic type $\dyn$ is the top
+element in the type precision ordering, as it is the \emph{least} precise type.
+% There is a dynamic type $\dyn$, pronounced ``dyn''. This represents a
+% statically-unknown type, and $\dyn$ is the top element in the type precision
+% ordering.
+
+Gradually-typed languages are typically elaborated to a lower-level
+representation called a \emph{cast calculus}. This involves inserting explicit
+coercion terms called \emph{casts} at the boundaries between static and
+dynamically-typed code to ensure that the static types are enforced at runtime.
+Specifically, whenever $c : A \ltdyn A'$, there is an \emph{upcast} $\upc c$
+from terms $A$ to $A'$, and a \emph{downcast} $\dnc c$ from $A'$ to $A$. Upcasts
+always succeed, but downcasts can fail at runtime if the types are incompatible.
+%
+% Gradually-typed languages also feature explicit coercion terms called
+% \emph{casts} which are inserted by the compiler at the boundaries between static
+% and dynamically-typed code to ensure that the types are enforced at runtime.
+% Specifically, whenever $c : A \ltdyn A'$, there is an \emph{upcast} $\upc c$
+% from terms $A$ to $A'$, and a \emph{downcast} $\dnc c$ from $A'$ to $A$. Upcasts
+% always succeed, but downcasts can fail at runtime if the types are incompatible.
+%
+% Recall that gradually-typed languages are elaborated to a cast calculus where
+% there are explicit casts at the boundaries between static and
+% dynamically-typed code. 
+The key point to remember about casts in our semantics is that
+\textbf{casts can take steps}. For example, downcasting the dynamic type to a
+function type involves a step since the function is only available later.
+
+Prior work has established that the graduality property essentially boils down
+to the behavior of the cast terms \cite{new-ahmed2018}, shown in Figure
+\ref{fig:cast-axioms}. There are four key axioms that capture the intended
+behavior of casts, two for upcasts and two for downcasts. These axioms describe
+the intended relationship between a type precision and the corresponding
+up/downcasts.
+%
+The basic idea is that \textbf{upcasts make terms less precise}, while
+\textbf{downcasts make terms more precise}.
+
+%% TODO figure
+\begin{figure}
+  \begin{mathpar}
+
+  \inferrule*[right=UpL]
+  {M \ltdyn N : c}
+  {\upc c M \ltdyn N : A'}
+
+  \inferrule*[right=UpR]
+  {M \ltdyn N : A}
+  {M \ltdyn \upc c N : c}
+
+  \inferrule*[right=DnL]
+  {M \ltdyn N : A'}
+  {\dnc c M \ltdyn N : c}
+
+  \inferrule*[right=DnR]
+  {M \ltdyn N : c}
+  {M \ltdyn \dnc c N : A}
+
+  \end{mathpar}
+  \caption{Cast Axioms (Simplified Form)}
+  \label{fig:cast-axioms}
+\end{figure}
+
+The axioms shown here are simplified from the original formulation as used in
+prior work. However, compositional reasoning allows us to \emph{derive} the more
+complicated rules from the ones shown here. The alternative would be to prove
+the more complicated ones from scratch in the model as was done in prior
+operational approaches such as our Gradual Typing for Effect Handlers paper
+\cite{new-giovannini-licata-2022}. The derivation of the original cast axioms
+from the simplified ones serves as a specific example of the benefits of a
+compositional approach to the semantics of gradual typing.
+
+\subsubsection{A First Attempt at a Relational Model}
+
+We next examine how we might attempt to model type and term precision. We will
+base the relational semantics on the prior denotational model of New and Licata
+\cite{new-licata18}, as follows:
+
+\begin{itemize}
+    \item We model our types as sets with a partial ordering relation, representing
+    the term precision ordering on values.
+    \item Terms will denote monotone functions into the free error domain.
+    \item A type precision relationship $c : A \ltdyn A'$ will be modeled as a
+    \emph{representable relation} between the denoted posets. The precise
+    definition of representability is not important for this discussion; what is
+    important is that it allows us to interpret the four cast axioms discussed
+    in the previous section.
+    \item Term precision will be modeled as a logical-relations style relationship
+    between the denoted monotone functions, that is, related inputs are mapped to
+    related outputs.
+\end{itemize}
+
+Unfortunately, the New-Licata semantics does not carry over directly to the
+guarded setting. The issue lies in the requirement that the relations be representable.
+%The issue is connected to the definition of representability of relations.
+%
+In more detail, the problem is a consequence of the tension between the
+requirements of \emph{step-insensitivity} and \emph{transitivity}, which are
+both necessary properties for our semantics. A relation is step-insensitive when
+it is oblivious to the steps taken by terms. We need our relations to be
+step-insensitive because on the one hand casts can take steps, but on the other
+hand representability requires that casts be related to the identity function,
+which does not step. 
+%
+For example, recall the $\dnr$ rule:
+%
+\begin{mathpar}
+  \inferrule*[right=DnR]
+  {M \ltdyn N : c}
+  {M \ltdyn \dnc c N : A}
+\end{mathpar}
+%
+Notice that the downcast may take an observable step beyond $N$, but $M$ remains
+the same in the premise and conclusion of the rule. In other words, $M$ may
+become ``out of sync'' with the downcast.
+
+In addition to step-insensitivity, we also need transitivity. Transitivity is
+necessary for us to be able to compose smaller proofs into larger proofs, e.g.,
+deriving the original cast axioms from the simplified ones relies on
+transitivity.
+%
+However, as we prove in the paper via a no-go theorem, \textbf{unrestricted
+step-insensitivity is not compatible with transitivity}: it is not possible to
+define a relation that has both properties.
+
+
+\subsubsection{Adjusting the Model: Perturbations}
+
+Transitivity is non-negotiable given our goal of a compositional semantics, so
+we choose to give up on (unrestricted) step-insensitivity. Specifically, we work
+with a \emph{lock-step ordering relation} that is transitive but \emph{sensitive
+to steps}. This breaks the representability condition, which as we saw requires
+step-insensitivity. (Casts may step and so are not necessarily in lock-step with
+the identity function.) To remedy this situation, we restore a small amount of
+step-insensitivity in a controlled manner using special synchronizing terms we
+call \emph{perturbations}. These are explicitly inserted delay terms that put
+both sides into lock-step. Perturbations mimic the stepping behavior of casts,
+but are \emph{weakly bisimilar} to the identity function, that is, equivalent to
+the identity function when ignoring steps. Finally, we relax the definition of
+representability to allow for casts to be lock-step related to perturbations
+rather than only to the identity function. We call this notion
+\emph{quasi-representability}.
+
+The updated axioms for casts are as shown in Figure \ref{fig:cast-axioms-adjusted}.
+Notice that on the sides opposite the casts, we allow for there to be a
+\emph{perturbation}. The perturbation mimics the stepping behavior of the cast,
+allowing both sides to remain synchronized.
+
+\begin{figure}
+  \begin{center}
+    \begin{tabular}{m{14em} m{14em}}
+      \begin{mathpar}
+        \inferrule*[right=UpL]
+        {M \ltdyn N : c}
+        {\upc c M \ltdyn {\color{blue}\delta^{r,e}(}N{\color{blue}{)}} : A'}
+      \end{mathpar} &
+      %
+      \begin{mathpar}
+        \inferrule*[right=UpR]
+        {M \ltdyn N : A}
+        {{\color{blue}\delta^{l,e}(}M{\color{blue})} \ltdyn \upc c N : c}
+      \end{mathpar} \\
+      %
+      \begin{mathpar}
+        \inferrule*[right=DnL]
+        {M \ltdyn N : A'}
+        {\dnc c M \ltdyn {\color{blue}\delta^{r,p}(}N{\color{blue})} : c}
+      \end{mathpar} &
+      %
+      \begin{mathpar}
+        \inferrule*[right=DnR]
+        {M \ltdyn N : c}
+        {{\color{blue}\delta^{l,p}(} M {\color{blue})} \ltdyn \dnc c N : A}
+      \end{mathpar}
+    \end{tabular}
+  \end{center}
+
+  \caption{Adjusted Cast Axioms}
+  \label{fig:cast-axioms-adjusted}
+\end{figure}
+
+\subsection{Summary of the Model}
+
+Having introduced perturbations and quasi-representable relations, we now
+summarize the final version of the semantics, with the new features
+{\color{blue}highlighted in blue}.
+
+\begin{itemize}
+  \item Types denote sets with:
+  \begin{enumerate}
+    \item A partial ordering relation (terms must be in lock-step).
+    \item {\color{blue} A weak bisimilarity relation.}
+    \item {\color{blue} A monoid of syntactic perturbations.}
+  \end{enumerate}
+  \item Terms denote \emph{monotone}, {\color{blue}bisimilarity-preserving}
+  functions into the free error domain.
+  \item Type precision denotes {\color{blue}quasi-}representable relations that
+  {\color{blue}interact with syntactic perturbations}.
+  \item Term precision is modeled by {\color{blue}taking the lock-step ordering
+  on the denoted monotone functions, and closing it under weak bisimilarity on
+  both sides.}
+\end{itemize}
+
+The last point deserves elaboration: We define the denotation of term precision
+$M \ltdyn N$ to mean that there are functions $f$ and $g$ such that $M \bisim f
+\ltdyn g \bisim N$ where $\bisim$ is weak bisimilarity and $\ltdyn$ is the
+lock-step ordering.
+
+The important takeaway here is that we have separated term precision into a
+combination of weak bisimilarity and lock-step reasoning, using syntactic
+perturbations as a means to explicitly synchronize terms where needed, which
+allows for compositional reasoning while still accommodating the steps taken by
+casts.
+
+% \subsection{Adequacy of the Model}
+
+
+\subsection{Agda Formalization}
+
+In parallel with developing the theory discussed in this paper, we have
+developed a partial formalization of our results in Guarded Cubical Agda
+\cite{veltri-vezzosi2020}, which extends the Agda type checker with support for
+the primitives of guarded type theory. The formalization is available online
+\cite{artifact}. Most of the model constructions have been formalized, with the
+exception of some lemmas involving quasi-representable relations. We also did
+not formalize the translation from the syntax into our semantic model because it
+led to prohibitively poor performance of typechecking in Agda.
+
+
+% \subsection{Investigating Variations of the Semantics}
+
+\section{Extending to More Advanced Language Features}\label{sec:remaining-work}
+
+Our next major step is to extend our semantics to accommodate languages
+with higher-order store and/or dynamic type-tag generation.
+%
+We plan to begin with higher-order store, and then depending on the difficulty
+we may also consider dynamic type-tag generation as part of this thesis.
+
+Higher-order store allows for the storage of values of arbitrary type, including
+functions. Concretely, there is a type of \emph{references} of type $A$, denoted
+$\tref\, A$. The programmer can allocate a new reference cell of type $A$, and
+given a reference cell the programmer can perform get and set operations to read
+and write the value in the cell.
+
+For the next step of my thesis work, I will consider the language obtained by
+augmenting the simple gradually-typed language we modeled previously with the
+features of higher-order store. My goal is to adapt our guarded model of gradual
+typing to this language. The main technical change that this will require is the
+move from a ``set-based'' semantics to a semantics based in \emph{presheaves}
+over a category of worlds. This is needed to account for the fact that shape of
+the store may change over the course of the program as the programmer allocates
+new reference cells. The world tracks the reference cells that have been
+allocated, and a presheaf on worlds is essentially a set that is allowed to vary
+based on the current world, i.e., the current shape of the store.
+%
+The main challenge will be to adapt the constructs of our guarded model to the
+setting of presheaves. I plan to draw guidance from the work of Sterling et al.
+\cite{DBLP:journals/corr/abs-2210-02169}, who give a denotational semantics for
+higher-order store using guarded type theory.
+
+% Much of the work will lie in adapting the relational semantics
+
+\begin{comment}
+
+\begin{figure}
+    \begin{mathpar}
+      % Syntax
+      \begin{array}{rcl}
+      \text{Types } A &::=& \nat \alt A \ra A' \alt A \times A' \alt \osum \alt {\color{blue} \case{A}}\\
+      \text{Type Precision } c &::=&
+        r(A) \alt c c' 
+             \alt \iarr \alt \inat \alt \itimes 
+             \alt {\color{blue} \inj{V}{V}}
+             \alt c \ra c' \alt c \times c'\\
+      \text{Values } V &::=& 
+        x \alt \upc c V \alt \zro \alt \suc\, V 
+          \alt \lda{x}{M} \alt (V,V') \\ 
+      \text{Terms } M,N &::=& 
+        \err \alt \upc c M \alt \dnc c M 
+             \alt \zro \alt \suc\, M \alt \lda{x}{M} \\ 
+           &&\alt M\, N \alt (M,N) 
+             \alt \textrm{let } (x,y) = M \textrm{ in } N
+             \alt {\color{blue} \newcase{A}{x}{M} } \\
+      \text{Contexts } \Gamma &::= &\cdot \alt \Gamma, x : A \\
+      \text{Ctx Precision } \Delta &::=& \cdot\alt \Delta,x:c
+    \end{array}
+  
+    % Selected typing rules
+    \inferrule
+    {\Gamma \vdash M : A \and c : A \ltdyn A'}
+    {\Gamma \vdash \upc c M : A'}
+  
+    \inferrule
+    {\Gamma \vdash N : A' \and c : A \ltdyn A'}
+    {\Gamma \vdash \dnc c N : A}
+
+    \inferrule
+    {\Gamma, x : \case A \vdash M : A'}
+    {\Gamma \vdash \newcase{A}{x}{M} : A'}
+  
+    \inferrule{}{\Gamma \vdash \mho : A}
+    \end{mathpar}
+    
+    \caption{Cast Calculus Syntax and Typing Rules}
+    \label{fig:gtlc-syntax}
+  \end{figure}
+
+  \begin{figure}
+    % Type precision rules
+    \begin{mathpar}
+      \inferrule{}{r(A) : A \ltdyn A}
+
+      \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}
+                {cc' : A \ltdyn A''}
+
+      \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn \dyn}
+
+      \inferrule{}{\inat \colon \nat \ltdyn \dyn}
+
+      \inferrule{}{\itimes \colon \dyn \times \dyn \ltdyn \dyn}
+
+      \inferrule{}{\color{blue}\icase{A} \colon \case{A} \ltdyn \dyn}
+
+      \inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}
+                {c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}
+
+      \inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}
+                {c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}
+    \end{mathpar}
+
+    % Type precision equivalence
+    \begin{mathpar}
+       r(A)c \equiv c\and
+       c \equiv cr(A')\and
+       c(c'c'') \equiv (cc')c''\and
+       r(A_i \ra A_o) \equiv r(A_i) \ra r(A_o)\and
+       r(A_1\times A_2) \equiv r(A_1) \times r(A_2)\and
+       (c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra c_oc_o') \and
+       (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
+    \end{mathpar}
+    \caption{Type Precision Derivations and Precision Equivalence}
+    \label{fig:gtlc-type-precision}
+  \end{figure}
+
+\end{comment}
+
+
+\section{Plan for Remainder of Thesis Work}\label{sec:timeline}
+
+Below is an approximate timeline I am proposing for completing the remainder of
+the work. This is subject to change based on the work that we agree upon.
+
+% Note that this is assuming that the technical work remaining is as described in
+% the previous section. If we agree that there is additional technical work to be
+% done, the timeline will need to change.
+
+\begin{itemize}
+    \item May 2025 - October 2025: complete the majority of the remaining
+    technical work.
+    \item October 2025 - January 2026: wrap-up technical work and focus on
+    writing the dissertation.
+    % I plan to be a GSI (a graduate teaching assistant) during the fall semester.
+    % Therefore, the time I will have to dedicate to the dissertation will be
+    % reduced during this period.
+    \item January 2026 - April 2026: complete a first draft of the dissertation;
+    begin preparing for defense.
+    \item May 2026 or August 2026 - defend thesis and complete edits to
+    dissertation.
+    \item July 2026 - submit the new technical work to the POPL conference.
+\end{itemize}
+
+Note: I plan to be a GSI (a graduate teaching assistant) during the Fall 2025
+semester. Therefore, the time I will have to dedicate to the dissertation will
+be reduced during this period.
+
+
+% \bibliographystyle{ACM-Reference-Format}
+\bibliographystyle{plain}
+\bibliography{../../paper-new/references}
+% \bibliography{refs}
+
+\end{document}
+
+% In the study of semantics of gradual typing, a distinction is made between the
+% \emph{surface language}, which is the language in which the programmer writes
+% code, and the \emph{cast calculus}, which is a lower-level language with
+% explicit \emph{runtime type casts} that ensure that the static types in a
+% gradually-typed program are enforced at runtime. The surface language is
+% \emph{elaborated} to the cast calculus and the semantics is defined over the
+% cast calculus.

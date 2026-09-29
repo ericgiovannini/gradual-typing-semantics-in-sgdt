@@ -1,0 +1,25 @@
+% https://q.uiver.app/#q=WzAsMTAsWzAsMCwiQSJdLFswLDEsIkEiXSxbMCwyLCJBIl0sWzIsMCwiQSJdLFsyLDEsIkEnIl0sWzIsMiwiQSciXSxbMCwzLCJBIl0sWzIsMywiQScnIl0sWzEsMiwiQSciXSxbMSwzLCJBJyJdLFswLDEsIlxcZGVsbGVfYyIsMl0sWzEsMiwiXFxpZCIsMl0sWzIsNiwiXFxwdWxsX2MoXFxkZWxsZV97Yyd9KSIsMl0sWzQsNSwiXFxpZCJdLFszLDQsImVfYyJdLFs1LDcsImVfe2MnfSJdLFswLDMsInIoQSkiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDQsImMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDgsImMiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs4LDUsInIoQScpIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbNiw5LCJjIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbOSw3LCJjJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzgsOSwiXFxkZWxsZV97Yyd9IiwyXSxbMTEsMTMsIigqKSIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxMCwxNCwiXFx1cHJfYyIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyMiwxNSwiIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEyLDIyLCIoKiopIiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIyLDE1LCJcXHVwcl97Yyd9IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&,column sep=3.15em]
+	A \&\& A \\
+	A \&\& {A'} \\
+	A \& {A'} \& {A'} \\
+	A \& {A'} \& {A''}
+	\arrow[""{name=0, anchor=center, inner sep=0}, "{\delle_c}"', from=1-1, to=2-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "\id"', from=2-1, to=3-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "{\pull_c(\delle_{c'})}"', from=3-1, to=4-1]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "\id", from=2-3, to=3-3]
+	\arrow[""{name=4, anchor=center, inner sep=0}, "{e_c}", from=1-3, to=2-3]
+	\arrow[""{name=5, anchor=center, inner sep=0}, "{e_{c'}}", from=3-3, to=4-3]
+	\arrow["{r(A)}", "\shortmid"{marking}, no head, from=1-1, to=1-3]
+	\arrow["c", "\shortmid"{marking}, no head, from=2-1, to=2-3]
+	\arrow["c", "\shortmid"{marking}, no head, from=3-1, to=3-2]
+	\arrow["{r(A')}", "\shortmid"{marking}, no head, from=3-2, to=3-3]
+	\arrow["c"', "\shortmid"{marking}, no head, from=4-1, to=4-2]
+	\arrow["{c'}"', "\shortmid"{marking}, no head, from=4-2, to=4-3]
+	\arrow[""{name=6, anchor=center, inner sep=0}, "{\delle_{c'}}"', from=3-2, to=4-2]
+	\arrow["{(*)}"{description}, draw=none, from=1, to=3]
+	\arrow["{\upr_c}"{description}, draw=none, from=0, to=4]
+	\arrow[draw=none, from=6, to=5]
+	\arrow["{(**)}"{description}, draw=none, from=2, to=6]
+	\arrow["{\upr_{c'}}"{description}, draw=none, from=6, to=5]
+\end{tikzcd}\]

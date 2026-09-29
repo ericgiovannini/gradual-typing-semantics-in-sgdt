@@ -1,0 +1,175 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{comment}
+
+\usepackage{url}
+\usepackage{hyperref}
+
+\newcommand{\All}{\Forall}
+\newcommand{\Exists}{\exists}
+\newcommand{\W}{\mathbb{W}}
+\newcommand{\U}{\mathbb{U}}
+\newcommand{\heap}{\mathbb{H}}
+\newcommand{\calt}{\mathcal{T}}
+\newcommand{\world}{\mathsf{World}}
+
+\newcommand{\finmap}[1]{\mathbb{N} \rightharpoonup_{fin} {#1}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% theorem environments
+%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{question}{Question}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../paper-new/defs}
+
+\begin{document}
+
+\title{Towards a Denotational Semantics for Gradual Typing with Higher-Order Store}
+\author{Eric Giovannini}
+
+\maketitle
+
+\section{Introduction}
+
+In this note, we will explore how to extend the denotational model of gradual
+typing from our POPL 2025 paper \cite{gradualtyping-popl2025} to accommodate
+languages with higher-order store. Our starting point is the paper by Sterling
+et al. on denotational semantics for general store and polymorphism via guarded
+type theory \cite{DBLP:journals/corr/abs-2210-02169}.
+
+We proceed in two phases:
+\begin{enumerate}
+    \item As a warm-up, we focus first on the \emph{term} model only. That is,
+    we only interpret types and terms. The main point of interest here will be
+    solving the equation for the dynamic type.
+    \item We then extend the techniques to the full \emph{relational} model,
+    which means defining a notion of weak bisimilarity, strong error ordering,
+    perturbations, and (quasi-)representability.
+\end{enumerate}
+
+\subsection{Goals}
+
+
+
+
+\section{The Ambient Guarded Type Theory}
+
+Before describing the model, we need to fix an ambient guarded metatheory in
+which we will carry out our constructions.
+%
+The model in the POPL 2025 paper is constructed in Clocked Cubical Type Theory
+(CCTT) as introduced by Kristensen et al.
+\cite{kristensen-mogelberg-vezzosi2022}. CCTT is a guarded type theory combining
+the existing notion of \emph{multi-clock guarded recursion} \cite{atkey-mcbride2013}
+with higher-inductive types and univalence from cubical type theory.
+
+% CCTT is a guarded type theory with a notion of \emph{clocks}, which index each
+% of the guarded constructions, and \emph{ticks}, which are used as evidence that
+% one abstract time step has passed according to a clock $k$.
+
+% The technique of \emph{clock-quantification} \cite{atkey-mcbride2013} is used as
+% a kind of ``escape hatch'' from the guarded world to obtain a coinductive/global
+% semantics in the category of sets for terms of base type.
+
+The crucial property about the ambient type theory is that it is compatible with
+our definition of weak bisimilairty on the free error domain. More specifically,
+in order for weak bisimilarity on $\li A$ to be a \emph{relation}, it is
+necessary to use an existential quantifier in defining the cases where one side
+returns immediately and the other side steps. (If we use $\Sigma$ instead, then
+the resulting definition is \emph{not} a relation as it is not Prop-valued.)
+%
+However, one can show that in the topos of trees model of guarded type theory,
+the diverging computation terminates, if the number of steps is existentially
+quantified. That is, one can show that $\exists n. \Omega = \delta^n(\eta\, x)$
+holds, where $\Omega = \fix\, \theta$ and $\delta = \theta \circ \nxt$.
+%
+As a result, under our definition of weak bisimilarity we have $\Omega \bisim
+(\eta\, x)$ in the topos of trees model.
+
+% The practical consequence of this fact is that there is at least one model of
+% guarded type theory where our construction of a denotational semantics for
+% gradual typing cannot be carried out.
+
+The practical consequence of this fact is that our construction of a guarded
+denotational semantics for gradual typing cannot be carried out in the topos of
+trees. Fortunately, this issue does not occur in the model of Clocked Cubical
+Type Theory. That is, one cannot prove in that model that $\Omega \bisim (\eta\,
+x)$.
+
+Things become potentially problematic when we try to reconcile CCTT with the
+ambient type theory in the paper by Sterling et al.
+\cite{DBLP:journals/corr/abs-2210-02169}. The key difference in their guarded
+type theory is the existence of an impredicative universe of types, which plays
+a crucial role in modeling higher-order store.
+%
+The authors construct a model of their type theory by essentially taking
+presheaves on $\omega$ internally to a realizability topos. This is sufficient
+for showing the existence of a model of guarded type theory with an
+impredicative universe. However, it is unclear whether these techniques extend
+to the more complicated model of Kristensen et al.
+
+This leads us to our first open question:
+
+\begin{question}
+Is it consistent to modify Clocked Cubical Type Theory
+\cite{kristensen-mogelberg-vezzosi2022} with an axiom asserting the existence of an
+impredicative universe of types?
+\end{question}
+
+\section{The Cast Calculus}
+
+We work with a standard gradually-typed lambda calculus with natural numbers
+and the ability to allocate new reference cells at runtime.
+
+\section{The Term Model}
+
+\subsection{Worlds}
+
+As in \cite{DBLP:journals/corr/abs-2210-02169}, we define worlds via guarded
+recursion as the solution to
+
+\[ \W = \finmap{\later [\W, \U]}.  \] 
+
+\subsection{CBPV Decomposition}
+
+
+\subsection{The Dynamic Type}
+
+
+\section{Relational Model}
+
+\subsection{Phase 1: Predomains and Error Domains}
+
+\subsection{Phase 2: Perturbations and (Quasi-)representable Relations}
+
+
+\section{Discussion}
+
+
+
+\bibliographystyle{plain}
+% \bibliography{../../paper-new/references}
+\bibliography{refs}
+
+\end{document}

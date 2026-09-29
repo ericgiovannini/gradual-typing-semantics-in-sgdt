@@ -1,0 +1,39 @@
+
+Remaining Work
+
+* Abstract Model
+  - Thin double category
+  - Displayed category of squares
+  - Products, coproducts, exponentials
+  - Strong monad
+
+* Concrete Model
+  - Poset with Perturbations
+    + Nat
+    + Lift
+    + Kleisli functions
+    + Sums and products
+    + Later
+    + Dyn
+
+
+  - Lock-step error ordering
+
+  - Quasi-representable relations
+    + Identity                A ⊑ A
+    + Composition             A ⊑ B ⊑ C --> A ⊑ C
+    + Kleisli functions       Ai -> L Ao ⊑ Bi -> L Bo
+    + Inj-nat
+    + Inj-arrow 
+      
+
+  - Weak bismilarity relation
+
+  - Strong monad structure
+
+* Interpretation of syntax into abstract model
+
+* Proof of intensional graduality for GSTLC
+
+* Extensional graduality using weak bisimilarity and globalization
+  

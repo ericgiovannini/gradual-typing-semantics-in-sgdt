@@ -1,0 +1,105 @@
+\section{Call-by-push-value}
+
+\subsection{Morphisms of CBPV Models}
+
+There are two relevant notions of \emph{morphism} of CBPV models:
+\emph{strict} and \emph{lax}.
+% morphisms of CBPV models
+Given call-by-push-value models
+$\mathcal M_1 = (\mathcal V_1, \mathcal E_1, \arr_1, U_1, F_1)$ and
+$\mathcal M_2 = (\mathcal V_2, \mathcal E_2, \arr_2, U_2, F_2)$,
+A \emph{strict} morphism $G$ from $M_1$ to $M_2$ is given by a pair of functors
+$G_{\mathcal{V}}: V_1 \to V_2$ and $G_{\mathcal{E}} : E_1 \to E_2$
+that strictly presere the constructors:
+\begin{enumerate}
+  \item $G_{\mathcal{E}} \circ F_1 = F_2 \circ G_{\mathcal{V}}$
+  \item $G_{\mathcal{V}} \circ U_1 = U_2 \circ G_{\mathcal{E}}$
+  \item $G_{\mathcal{E}}(A \arr_1 B) = G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) = G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) = 1_2$
+\end{enumerate}
+As well as strictly preserving the corresponding universal morphisms
+and coherence isomorphisms.
+
+A lax morphism instead preserves these only up to transformation
+\begin{enumerate}
+  \item $G_{\mathcal{E}} \circ F_1 \Rightarrow F_2 \circ G_{\mathcal{V}}$
+  \item $G_{\mathcal{V}} \circ U_1 \Rightarrow U_2 \circ G_{\mathcal{E}}$
+  \item $G_{\mathcal{E}}(A \arr_1 B) \Rightarrow G_{\mathcal{V}}(A) \arr_2 G_{\mathcal{E}}(B)$
+  \item $G_{\mathcal{V}}(A_1 \times_1 A_2) \Rightarrow G_{\mathcal{V}}(A_1) \times_2 G_{\mathcal{V}}(A_2)$
+  \item $G_{\mathcal{V}}(1_1) \Rightarrow 1_2$
+\end{enumerate}
+Additionally a lax morphism should have a relationship between these
+transformations and the universal morphisms, but we will only consider
+lax morphisms of thin categories, where such conditions hold
+trivially.
+
+\subsection{Kleisli Actions of CBPV Type Constructors}
+
+In CBPV models, all the type constructors are interpreted as functors:
+\begin{enumerate}
+\item $\to : \op\calV \times \calE \to \calE$
+\item $\times : \calV \times \calV \to \calV$
+\item $F : \calV \to \calE$
+\item $U : \calE \to \calV$
+\end{enumerate}
+That is, they all have functorial actions on \emph{pure} morphisms of
+value types and \emph{linear} morphisms of computation types.
+%
+We use these functorial actions extensively in the construction of
+casts and their corresponding perturbations. But when defining
+downcasts of value types and upcasts of computation types, we
+additionally need a second functorial action of these categories:
+functoriality in \emph{impure} morphisms of value types and
+\emph{non-linear} morphisms of computation types. These notions of
+morphism are given by the \emph{Kleisli} categories $\calVk$ and
+$\calEk$ which have value types and computation types as objects but
+morphisms are defined as
+\[ \calVk(A,A') = \calE(F A, FA')\]
+\[ \calEk(B,B') = \calV(U B, U B')\]
+with composition given by composition in $\calE/\calV$.  That is we
+need to define a second functorial action, that agrees with the above
+on objects for these Kleisli categories:
+\begin{enumerate}
+\item $\tok : \op\calVk \square \calEk \to \calEk$
+\item $\timesk : \calVk \square \calVk \to \calVk$
+\item $\Fk : \calVk \to \calEk$
+\item $\Uk : \calEk \to \calVk$
+\end{enumerate}
+Note that rather than the product of categories we use the ``funny
+tensor product'' $\square$. This is because the action on
+impure/non-linear morphisms for $\tok/\timesk$ do not satisfy ``joint
+functoriality'' but instead only ``separate functoriality'', meaning
+we give rather than an action on morphisms in both categories
+simultaneously instead an action on each argument categories morphisms
+with the object in the other category fixed. The existence of these
+functorial actions for $\tok$ and $\timesk$ is reliant on the
+\emph{strength} of the adjunction. We describe them using the internal
+language of CBPV in order to more easily verify their
+existence/functoriality:
+\begin{enumerate}
+\item For $\tok$ we define for $\phi : \calE(F A,F A')$ and $B \in \calE$ the morphism $\phi \tok B : \calV(U(A' \to B),U(A\to B))$ as
+  \[ t:U(A'\to B) \vdash \phi \tok B = \{ \lambda x. x' \leftarrow \phi\,[\ret x]; ! t x'\} : U(A \to B) \]
+  and for $A \in \calV$ and $f : \calV(UB,UB')$ we define $A \tok f : \calV(U(A \to B),U(A\to B'))$ as
+  \[ t : U(A \to B) \vdash A \tok f = \{ \lambda x. !f[\{ ! t x \}]\} \]
+\item For $\timesk$ we define for $\phi : \calE(F A_1,FA_2)$ and $A' \in \calV$ the morphism $\phi \timesk A_2$ as
+  \[ \bullet : F(A_1\times A_2) \vdash \phi \timesk A_2 = (x_1,x_2) \leftarrow \bullet; x_1' \leftarrow \phi[\ret x_1]; \ret (x_1',x_2) : F(A_1'\times A_2)\]
+  and $A_1 \timesk \phi$ is defined symmetrically.
+\item For $\Uk$ we need to define for $f : \calV(UB,UB')$ a morphism $\Uk f : \calE(FUB,FUB')$. This is simply given by the functorial action of $F$: $\Uk f = F(f)$
+\item Similarly $\Fk \phi = U\phi$
+\end{enumerate}
+
+Functoriality in each argument is easily established, meaning for
+example for the function type is functorial in each argument:
+\begin{enumerate}
+\item $(\phi \circ \phi') \tok B = (\phi' \tok B) \circ (\phi \tok B)$
+\item $\id \tok B = \id$
+\item $A \tok (f \circ f') = (A \tok f) \circ (A \tok f)$
+\item $A \tok \id = \id$
+\end{enumerate}
+
+Finally, note that all of these constructions lift to squares in a
+double CBPV model since the squares themselves form a CBPV model and
+the projection functions preserve CBPV structure. For instance, given a square
+$\alpha : \phi \ltdyn_{F c_o}^{F c_i} \phi'$ and a horizontal morphism $d : B \rel B'$ of appropriate type, we get a square
+\[ \alpha \tok d : \phi \tok B \ltdyn_{U(c_o \to d)}^{U(c_i \to d)} \phi' \tok B' \]

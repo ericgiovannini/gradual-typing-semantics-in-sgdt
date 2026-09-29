@@ -1,0 +1,68 @@
+
+* DONE Extensional adequacy theorem
+
+* DONE Quasi-representability of the three relations involving Dyn
+  (inj-nat, inj-times, inj-arr)
+
+* TODO The underlying type of Dyn is a Set
+
+* [IN-PROGRESS] Push-pull for inj-nat, inj-times, and inj-arr:
+
+  Need to define the homomorphisms between the respective monoids of
+  syntactic perturbations, and show that we obtain the required
+  squares
+
+* TODO Kleisli arrow and product are functorial (involves reasoning about monadic ext)
+
+* Action of Kleisli arrow and product on perturbations
+
+  ** Define the actions on *semantic* perturbations (endomorphisms
+  bisimilar to the identity)
+
+  ** Define the homomorphisms between the *syntactic* perturbations
+  
+  ** Show that the homomorphisms are coherent with respect to the
+  interpretation as endomorphisms
+
+* Action of the functors ⟶, U, F, and × on valtype/comptype relations:
+
+  Sub-lemmas:
+
+    ** If c is left-rep, then Fc is left-rep as an error domain relation 
+    ** *If d is right-rep, then Ud is right-rep as a predomain relation*
+
+    ** If c₁ and c₂ are left-rep, then c₁ × c₂ is left-rep
+    ** If Fc₁ and Fc₂ are right-rep, then F(c₁ × c₂) is right-rep.
+
+    ** If c is left-rep and d is right-rep, then c ⟶ d is right-rep
+    ** *If Fc is right-rep and Ud is left-rep, then U(c ⟶ d) is left-rep*
+
+  *Bolded* lemmas require the use of Kleisli Perturbations
+
+* Composition of value type and computation type relations:
+
+  A value type relation between a value object (A, MA, iA) and (A', MA', iA') is:
+  1. A predomain relation c : A o-* A'
+  2. Push-pull structure for c with respect to MA and MA'
+  3. A quasi-left-representation for c
+  4. A quasi-right-representation for Fc
+
+  Sub-lemmas:
+
+    ** If c and c' are left-rep, then cc' is left-rep
+    ** If Fc and Fc' are right-rep, then F(cc') is right-rep
+
+    ** If d and d' are right-rep, then dd' is right-rep
+    ** If Ud and Ud' are left-rep, then U(dd') is left-rep
+
+    ** If two computation relations d and d' are left-represented by
+    the same embedding then they are quasi-equivalent.
+
+    ** If two value relations c and c' are right-represented by the
+    same projection then they are quasi-equivalent.
+
+  where (A, MA, iA), (A', MA', iA') and (A'', MA'', iA'') are value
+  types and c : A o-* A' and c' : A' o-* A'' are predomain relations
+  /satisfying push-pull/. Similarly for d and d'.
+
+

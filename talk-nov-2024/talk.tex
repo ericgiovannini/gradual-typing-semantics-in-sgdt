@@ -1,0 +1,1797 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+]{beamer}
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{quiver}
+\usepackage{mathpartir}
+% \usepackage{enumitem}
+\usepackage{wrapfig}
+\usepackage{fancyvrb}
+\usepackage{comment}
+\usepackage{array}
+
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\newcommand{\To}{\Rightarrow}
+\newcommand{\inl}{\mathsf{inl}}
+\newcommand{\inr}{\mathsf{inr}}
+\newcommand{\altbar}{\mathrel{\bf \,\mid\,}}
+
+\newcommand{\ob}{\text{Ob}}
+
+
+\newcommand{\extlc}{\text{Ext-}\lambda}
+\newcommand{\extlcm}{\text{Ext-}\lambda^{-\text{trans}}}
+\newcommand{\extlcmm}{\text{Ext-}\lambda^{-\text{trans}-\text{cast}}}
+\newcommand{\extlcprime}{\text{Ext-}\lambda'}
+\newcommand{\intlc}{\text{Int-}\lambda}
+\newcommand{\intlcbisim}{\text{Int$_\approx$-}\lambda}
+\newcommand{\erase}[1]{\lfloor {#1} \rfloor}
+
+
+\newcommand{\uarrowl}{\mathrel{\rotatebox[origin=c]{-30}{$\leftarrowtail$}}}
+\newcommand{\uarrowr}{\mathrel{\rotatebox[origin=c]{60}{$\leftarrowtail$}}}
+\newcommand{\darrowl}{\mathrel{\rotatebox[origin=c]{30}{$\twoheadleftarrow$}}}
+\newcommand{\darrowr}{\mathrel{\rotatebox[origin=c]{120}{$\twoheadleftarrow$}}}
+\newcommand{\vuarrow}{\mathrel{\rotatebox[origin=c]{-90}{$\leftarrowtail$}}}
+\newcommand{\vdarrow}{\mathrel{\rotatebox[origin=c]{90}{$\twoheadleftarrow$}}}
+
+% Types, terms, and precision 
+
+\newcommand{\dyn}{{?}}
+\newcommand{\nat}{\text{Nat}}
+\newcommand{\bool}{\text{Bool}}
+\newcommand{\ra}{\rightharpoonup}
+\newcommand{\Ret}[1]{\mathsf{Ret\,}{#1}}
+\newcommand{\hole}[1]{\bullet \colon {#1}}
+\newcommand{\dyntodyn}{\dyn \ra\, \dyn}
+
+
+\newcommand{\up}[2]{\langle{#2}\uarrowl{#1}\rangle}
+\newcommand{\dn}[2]{\langle{#1}\darrowl{#2}\rangle}
+
+\newcommand{\upc}[1]{\text{up}\,{#1}\,}
+\newcommand{\dnc}[1]{\text{dn}\,{#1}\,}
+
+
+% \newcommand{\ret}{\mathsf{ret}}
+\newcommand{\err}{\mho}
+\newcommand{\zro}{\textsf{zro}}
+\newcommand{\suc}{\textsf{suc}}
+\newcommand{\lda}[2]{\lambda {#1} . {#2}}
+
+\newcommand{\injarr}[1]{\textsf{Inj}_\ra ({#1})}
+\newcommand{\injnat}[1]{\textsf{Inj}_\text{nat} ({#1})}
+\newcommand{\casenat}[4]{\text{Case}_\text{nat} ({#1}) \{ \text{no} \to {#2} \altbar \text{nat}({#3}) \to {#4} \}}
+\newcommand{\casearr}[4]{\text{Case}_\ra ({#1}) \{ \text{no} \to {#2} \altbar \text{fun}({#3}) \to {#4} \}}
+\newcommand{\casedyn}[5]{\text{Case}_\Dyn ({#1}) \{ \text{nat}({#2}) \to {#3} \altbar \text{fun}({#4}) \to {#5} \}}
+%\newcommand{\bind}[3]{\text{var } {#1} = {#2} \text{ in } {#3}}
+\newcommand{\matchnat}[4]{\text{match } {#1} \text{ with } \{ \textsf {zero} \Rightarrow {#2} \altbar \textsf{ suc } {#3} \Rightarrow {#4} \}}
+
+\newcommand{\refl}{\text{refl}}
+
+\newcommand{\Lift}{\text{Lift}}
+
+%\newcommand{\rel}{\circ\hspace{-4px}-\hspace{-4px}\bullet}
+%% \newcommand{\rel}{\mathrel{\circ\mkern-6mu-\mkern-6mu\bullet}}
+%% \def\rel{\mathrel{\joinrel=}}
+\newcommand{\rel}{\mathrel{{\relbar}\hspace{-2px}{\relbar}\hspace{-2px}{\shortmid}\hspace{-2px}{\relbar}\hspace{-2px}{\relbar}}}
+% \newcommand{\wand}{\mathrel{-\mkern-6mu*}}
+\newcommand{\wand}{\mathrel{\multimap}}
+\newcommand{\ltdyn}{\sqsubseteq}
+\newcommand{\gtdyn}{\sqsupseteq}
+\newcommand{\equidyn}{\mathrel{\gtdyn\ltdyn}}
+\newcommand{\gamlt}{\Gamma^\ltdyn}
+\newcommand{\deltalt}{\Delta^\ltdyn}
+\newcommand{\relcomp}{\odot}
+
+\newcommand{\hasty}[3]{{#1} \vdash {#2} \colon {#3}}
+\newcommand{\vhasty}[3]{{#1} \vdash^v {#2} \colon {#3}}
+\newcommand{\phasty}[3]{{#1} \vdash^c {#2} \colon {#3}}
+\newcommand{\etmprec}[4]{{#1} \vdash {#2} \ltdyn_e {#3} \colon {#4}}
+\newcommand{\itmprec}[4]{{#1} \vdash {#2} \ltdyn_i {#3} \colon {#4}}
+\newcommand{\etmequidyn}[4]{{#1} \vdash {#2} \equidyn_e {#3} \colon {#4}}
+\newcommand{\itmequidyn}[4]{{#1} \vdash {#2} \equidyn_i {#3} \colon {#4}}
+\newcommand{\synbisim}{\approx_{\text{syn}}}
+
+\newcommand{\Dwn}{\Downarrow}
+\newcommand{\qte}[1]{\text{quote}({#1})}
+
+\newcommand{\elab}[1]{\text{Elab}({#1})}
+
+% Perturbations
+\newcommand{\pertp}{\text{Pert}^\text{P}}
+\newcommand{\perte}{\text{Pert}^\text{E}}
+\newcommand{\pertdyn}[2]{\text{pert-dyn}({#1}, {#2})}
+\newcommand{\delaypert}[1]{\text{delay-pert}({#1})}
+
+\newcommand{\pertc}{\text{Pert}_{\text{C}}}
+\newcommand{\pertv}{\text{Pert}_{\text{V}}}
+
+
+% SGDT and Intensional Stuff
+
+\newcommand{\later}{{\vartriangleright}}
+\newcommand{\laterhs}{{\later}}
+\newcommand{\type}{\texttt{Type}}
+\newcommand{\lob}{\text{L\"{o}b}}
+\newcommand{\tick}{\mathsf{tick}}
+\newcommand{\nxt}{\mathsf{next}}
+\newcommand{\fix}{\mathsf{fix}}
+\newcommand{\kpa}{\kappa}
+
+% Model-related stuff
+\newcommand{\calV}{\mathcal{V}}
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calVk}{\mathcal{V}_k}
+\newcommand{\calEk}{\mathcal{E}_k}
+\newcommand{\tok}{\mathrel{\mathop{\to}\limits^{\textrm{\footnotesize k}}}}
+\newcommand{\timesk}{\mathrel{\mathop{\times}\limits^{\textrm{k}}}}
+\newcommand{\Fk}{\mathrel{\mathop{F}\limits^{\textrm{k}}}}
+\newcommand{\Uk}{\mathrel{\mathop{U}\limits^{\textrm{k}}}}
+
+\newcommand{\op}[1]{{#1}^{\textrm{op}}}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\Set}{\mathsf{Set}}
+\newcommand{\ErrDom}{\mathsf{ErrDom}}
+\newcommand{\PreDom}{\mathsf{PreDom}}
+\newcommand{\Yo}{\mathsf{Yo}}
+\newcommand{\Hom}{\mathsf{Hom}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\gfix}{\texttt{gfix}}
+\newcommand{\qfix}{\texttt{qfix}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\laterhat}{\widehat{\later}}
+\newcommand{\El}{\mathsf{El}}
+\newcommand{\Clock}{\mathsf{Clock}}
+
+\newcommand{\Machine}[1]{\mathsf{Machine}\, {#1}}
+
+
+% Predomains and EP pairs
+\newcommand{\Nat}{\mathsf{Nat}}
+\newcommand{\Dyn}{\mathsf{Dyn}}
+\newcommand{\ty}[1]{\langle {#1} \rangle}
+\newcommand{\li}{L_\mho}
+\newcommand{\liclk}[1]{L_\mho [{#1}]}
+
+\newcommand{\ext}[2]{\text{ext}\,{#1}\,{#2}}
+\newcommand{\map}[2]{\text{map}\,{#1}\,{#2}}
+
+\newcommand{\ltls}{\ltdyn}
+\newcommand{\bisim}{\approx}
+\newcommand{\semlt}{\le}
+\newcommand{\semltbad}{\lesssim}
+
+%\newcommand{\injarr}{\textsf{Inj}_\to}
+%\newcommand{\injnat}{\textsf{Inj}_\mathbb{N}}
+
+\newcommand{\id}{\mathsf{id}}
+\newcommand{\ep}{\leadsto}
+
+\newcommand{\emb}[2]{\mathsf{emb}_{#1}({#2})}
+\newcommand{\proj}[2]{\mathsf{proj}_{#1}({#2})}
+
+\newcommand{\monto}{\to_m}
+
+
+% Notation for wait functions
+\newcommand{\wre}{w_r^e}
+\newcommand{\wle}{w_l^e}
+\newcommand{\wrp}{w_r^p}
+\newcommand{\wlp}{w_l^p}
+
+\newcommand{\sem}[1]{\llbracket {#1} \rrbracket}
+\newcommand{\semgl}[1]{{\sem{#1}}^\text{gl}}
+
+
+% Denotational model
+\newcommand{\errdom}{\textsf{ErrDom}}
+
+\newcommand{\ptb}{\text{ptb}}
+\newcommand{\push}{\text{push}}
+\newcommand{\pull}{\text{pull}}
+
+\newcommand{\pv}{P^{\mathcal{V}}}
+\newcommand{\pe}{P^{\mathcal{E}}}
+\newcommand{\ptbv}{\text{ptb}^\mathcal{V}}
+\newcommand{\ptbe}{\text{ptb}^\mathcal{E}}
+
+\newcommand{\Ppure}{P}
+\newcommand{\Pk}{P^K}
+\newcommand{\ptbk}{\text{ptb}^K}
+
+
+\newcommand{\upf}{\text{up}}
+\newcommand{\dnf}{\text{dn}
+}
+\newcommand{\arr}{\to}
+\newcommand{\comp}{}
+
+\newcommand{\ltsq}[2]{\mathrel{\ltdyn^{#1}_{#2}}}
+\newcommand{\bisimsq}[2]{\mathrel{\bisim^{#1}_{#2}}}
+\newcommand{\ltsqbisim}[2]{\mathrel{{\widetilde{\ltdyn}}^{#1}_{#2}}}
+\newcommand{\ltbisim}{\mathrel{\widetilde{\ltdyn}}}
+\newcommand{\vf}{\mathcal{V}_f}
+\newcommand{\vsq}{\mathcal{V}_{sq}}
+\newcommand{\ef}{\mathcal{E}_f}
+\newcommand{\esq}{\mathcal{E}_{sq}}
+
+\newcommand{\morbisimid}[1]{\text{Endo}_\bisim({#1})}
+
+
+\newcommand{\sv}{s_{\mathcal{V}}}
+\newcommand{\tv}{t_{\mathcal{V}}}
+\newcommand{\rv}{r_{\mathcal{V}}}
+\newcommand{\se}{s_{\mathcal{E}}}
+\newcommand{\te}{t_{\mathcal{E}}}
+\newcommand{\re}{r_{\mathcal{E}}}
+
+\newcommand{\Ff}{F_f}
+\newcommand{\Fsq}{F_{sq}}
+\newcommand{\Uf}{U_f}
+\newcommand{\Usq}{U_{sq}}
+\newcommand{\arrf}{\arr_f}
+\newcommand{\arrsq}{\arr_{sq}}
+
+\newcommand{\vsim}{\mathcal{V}_{\bisim}}
+\newcommand{\esim}{\mathcal{E}_{\bisim}}
+\newcommand{\svsim}{s_{\mathcal{V}}^\bisim}
+\newcommand{\tvsim}{t_{\mathcal{V}}^\bisim}
+\newcommand{\rvsim}{r_{\mathcal{V}}^\bisim}
+\newcommand{\sesim}{s_{\mathcal{E}}^\bisim}
+\newcommand{\tesim}{t_{\mathcal{E}}^\bisim}
+\newcommand{\resim}{r_{\mathcal{E}}^\bisim}
+
+
+
+\newcommand{\ve}{\mathcal{V}_e}
+\newcommand{\ee}{\mathcal{E}_e}
+
+\newcommand{\vr}{\mathcal{V}_r}
+\newcommand{\er}{\mathcal{E}_r}
+
+\newcommand{\relatedin}[3]{{#1}\, {#3}\, {#2}}
+\newcommand{\binrel}[1]{\mathbin{#1}}
+
+
+\newcommand{\da}{\downarrow}
+
+\newcommand{\ret}{\text{ret}}
+\newcommand{\bind}[3]{{#1} <- {#2}\, ; \, {#3}}
+
+\newcommand{\piv}{\Pi^\mathcal{V}}
+\newcommand{\pie}{\Pi^\mathcal{E}}
+
+\newcommand{\upl}{\textsc{UpL}}
+\newcommand{\upr}{\textsc{UpR}}
+\newcommand{\dnl}{\textsc{DnL}}
+\newcommand{\dnr}{\textsc{DnR}}
+
+\newcommand{\delre}{\delta^{r,e}}
+\newcommand{\delle}{\delta^{l,e}}
+\newcommand{\delrp}{\delta^{r,p}}
+\newcommand{\dellp}{\delta^{l,p}}
+
+\newcommand{\qordeq}{\bisim}
+
+\newcommand{\inat}{\text{Inj}_\mathbb{N}}
+\newcommand{\itimes}{\text{Inj}_\times}
+\newcommand{\iarr}{\text{Inj}_\to}
+
+\newcommand{\tnat}{\mathsf{nat}}
+\newcommand{\ttimes}{\mathsf{times}}
+\newcommand{\tfun}{\mathsf{fun}}
+
+\newcommand{\cased}[7]{
+    \begin{align*}
+    \text{Case}_D ({#1}) &\text{ of } \{ \\
+        &\altbar \text{nat}({#2}) \to {#3}  \\
+        &\altbar \text{times}({#4}) \to {#5}  \\
+        &\altbar \text{fun}({#6}) \to {#7} \}
+    \end{align*}
+}
+
+\newcommand{\inone}{\mathsf{in}_1}
+\newcommand{\intwo}{\mathsf{in}_2}
+\newcommand{\inthree}{\mathsf{in}_3}
+\newcommand{\infour}{\mathsf{in}_4}
+\newcommand{\infive}{\mathsf{in}_5}
+
+
+\newcommand{\delay}{\text{Delay}}
+\newcommand{\ledelay}{\le^{\text{Del}}}
+\newcommand{\bisimdelay}{\bisim^{\text{Del}}}
+\newcommand{\tnow}{\mathsf{now}}
+\newcommand{\tlater}{\mathsf{later}}
+\newcommand{\Da}{\Downarrow}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Denotational Semantics of Gradual Typing using Synthetic Guarded Domain Theory},
+  pdfauthor={Eric Giovannini, Tingting Ding, and Max S. New},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Denotational Semantics of Gradual Typing using Synthetic Guarded
+Domain Theory}
+\author{Eric Giovannini, Tingting Ding, and Max S. New}
+\date{November 2024}
+
+\begin{document}
+\frame{\titlepage}
+
+\hypertarget{introduction-and-background}{%
+\section{Introduction and
+Background}\label{introduction-and-background}}
+
+\begin{frame}{Big Idea}
+\protect\hypertarget{big-idea}{}
+This work is about constructing a \textbf{denotational semantics} for
+\textbf{gradually-typed programming languages}.
+\end{frame}
+
+\begin{frame}{Gradual Typing}
+\protect\hypertarget{gradual-typing}{}
+\begin{itemize}
+\tightlist
+\item
+  Idea: Combine static and dynamic typing disciplines in the same
+  language
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Desired Properties of Gradually Typed Languages}
+\protect\hypertarget{desired-properties-of-gradually-typed-languages}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Graduality}: Migrating from a static to a dynamic typing
+  discipline should not change the semantics of the program except to
+  catch more errors
+\end{itemize}
+
+\pause
+
+\includegraphics{fig1.drawio.png}\\
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Soundness} of the equational theory: justifies program
+  optimizations
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Our Goal}
+\protect\hypertarget{our-goal}{}
+\textbf{Provide an \emph{expressive}, \emph{reusable},
+\emph{compositional} semantic framework for defining well-behaved
+semantics of gradually typed programs.}
+\end{frame}
+
+\begin{frame}{Denotational Semantics of Gradually-Typed Languages}
+\protect\hypertarget{denotational-semantics-of-gradually-typed-languages}{}
+\begin{itemize}
+\item
+  Even simple gradually-typed languages are nontrivial to model!
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Recursion and recursive types through the presence of dynamic types
+    \(\rightarrow\) \textbf{domain theory}
+  \end{itemize}
+
+  \pause
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Effects in the form of divergence and errors \(\rightarrow\)
+    \textbf{monads} or \textbf{adjunctions}
+  \end{itemize}
+
+  \pause
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Relational models to capture the graduality property \(\rightarrow\)
+    \textbf{reflexive graph categories} or \textbf{double categories}
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Prior work: denotational models using classical domain theory (New and
+  Licata 2018)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Benefit: compositional and reusable
+  \item
+    Limitation: can't scale to advanced language features such as
+    higher-order store
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Guarded Domain Theory}
+\protect\hypertarget{guarded-domain-theory}{}
+\begin{itemize}
+\item
+  Alternative to classical domain theory that can scale to arbitrarily
+  complex definitions
+\item
+  Based on an entirely different foundations, most commonly
+  ``step-indexed sets'\,', i.e., objects in the \emph{topos of trees}
+  \cite{birkedal-mogelberg-schwinghammer-stovring2011}.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    A family \(\{X_n\}_{n \in \mathbb{N}}\) of sets along with
+    restriction functions \(r_n : X_{n+1} \to X_n\) for all \(n\).\\
+  \item
+    Idea: infinite sequence of increasingly precise approximations to
+    the true type being modeled.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Guarded Domain Theory, Continued}
+\protect\hypertarget{guarded-domain-theory-continued}{}
+\begin{itemize}
+\tightlist
+\item
+  Operator \(\later\) (pronounced ``later'\,')
+\item
+  Delays the approximation by one step
+\item
+  Any guarded domain equation \(X \cong F(\later X)\) has a unique
+  solution.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Guarded Type Theory}
+\protect\hypertarget{guarded-type-theory}{}
+\begin{itemize}
+\tightlist
+\item
+  Synthetic presentation of guarded domain theory
+\item
+  \(\later\) is taken as a primitive operation on types
+\item
+  Axiom that \emph{guarded} domain equations have a (necessarily unique)
+  solution.
+\item
+  Benefit: we model an object language type as a \emph{set} instead of a
+  step-indexed set
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Adapting the New-Licata Approach}
+\protect\hypertarget{adapting-the-new-licata-approach}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Motivating question}: can we adapt the denotational model of
+  New-Licata to guarded domain theory?
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Key issue: \emph{intensional} nature of the semantics
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Unfolding the dynamic type involves an observable computational step
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\item
+  Casts take observable steps \(\rightarrow\) graduality must be
+  insensitive to steps
+\item
+  So the model must allow for reasoning \emph{up to weak bisimilarity}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Two terms are \textbf{weakly bisimilar} if they differ only in their
+    number of computational steps
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Key Issue in Constructing the Model}
+\protect\hypertarget{key-issue-in-constructing-the-model}{}
+\begin{itemize}
+\tightlist
+\item
+  Some amount of transitive reasoning is necessary to define a
+  syntax-independent model of gradual typing
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  In the guarded setting, it is not possible to reason transitively up
+  to weak bisimilarity! (Follows from a no-go theorem we establish)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Our solution: combination of strong error ordering + weak bisimilarity
+\end{itemize}
+
+\pause
+
+\begin{longtable}[]{@{}cc@{}}
+\toprule\noalign{}
+Strong error ordering & Weak Bisimilarity \\
+\midrule\noalign{}
+\endhead
+sensitive to steps & insensitive to steps \\
+transitive reasoning & \emph{not} transitive \\
+\bottomrule\noalign{}
+\end{longtable}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{syntactic perturbations}: explicit synchronizations that we
+  manipulate syntactically
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Adequacy}
+\protect\hypertarget{adequacy}{}
+\end{frame}
+
+\begin{frame}{Contributions}
+\protect\hypertarget{contributions}{}
+\begin{itemize}
+\item
+  We define a denotational semantics for a simple gradually-typed cast
+  calculus in guarded type theory.
+\item
+  We prove that the model is adequate for the graduality property.
+\item
+  Most of our core theorems have been verified in Guarded Cubical Agda.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Outline of Remainder of the Talk}
+\protect\hypertarget{outline-of-remainder-of-the-talk}{}
+\begin{enumerate}
+\tightlist
+\item
+  Describe the syntax of the cast calculus that we will interpret into
+  our model.
+\item
+  Give a model for the \emph{terms} of our cast calculus.
+\item
+  Extend the model to a relational model.
+\item
+  Discuss related and future work.
+\end{enumerate}
+\end{frame}
+
+\hypertarget{syntax}{%
+\section{Syntax}\label{syntax}}
+
+\begin{frame}{Types and Terms}
+\protect\hypertarget{types-and-terms}{}
+\begin{figure}
+  \begin{mathpar}
+  \begin{array}{rcl}
+    \text{Types } A &::=& \nat \altbar \,\dyn \altbar A \ra A' \altbar A \times A'\\
+    \text{Type Precision } c &::=& r(A) \altbar c c' \altbar \iarr \\
+        &&\altbar \inat \altbar \itimes \altbar c \ra c' \altbar c \times c'\\
+    \text{Values } V &::=& x \altbar \upc c V \altbar \zro \altbar \suc\, V \altbar \lda{x}{M} \altbar (V,V') \\ 
+    \text{Terms } M,N &::=& \err\altbar \upc c M \altbar \dnc c M \altbar \zro \altbar \suc\, M \altbar \lda{x}{M} \\ 
+        &&\altbar M\, N \altbar (M,N) \altbar \textrm{let } (x,y) = M \textrm{ in } N\\
+    \text{Contexts } \Gamma &::= &\cdot \altbar \Gamma, x : A \\
+    \text{Ctx Precision } \Delta &::=& \cdot\altbar \Delta,x:c
+  \end{array}
+  \end{mathpar}
+  \caption{GTLC Cast Calculus Syntax}
+  \label{fig:gtlc-syntax}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Typing Rules (Selected)}
+\protect\hypertarget{typing-rules-selected}{}
+\begin{figure}
+  \begin{mathpar}
+ 
+  \inferrule
+  {\Gamma \vdash M : A \and c : A \ltdyn A'}
+  {\Gamma \vdash \upc c M : A'}
+
+  \inferrule
+  {\Gamma \vdash N : A' \and c : A \ltdyn A'}
+  {\Gamma \vdash \dnc c N : A}
+
+  \inferrule{}{\Gamma \vdash \mho : A}
+  
+  \end{mathpar}
+  \caption{GTLC Typing Rules (Selected)}
+  \label{fig:gtlc-typing}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Type Precision}
+\protect\hypertarget{type-precision}{}
+\begin{figure}
+  \begin{mathpar}
+    \inferrule{}{r(A) : A \ltdyn A} \and
+    \inferrule{c : A \ltdyn A' \and c' : A' \ltdyn A''}{cc' : A \ltdyn A''} \\
+    \inferrule{}{\iarr \colon \dyn \ra \dyn \ltdyn \dyn}\and
+    \inferrule{}{\inat \colon \nat \ltdyn \dyn} \and
+    \inferrule{}{\itimes \colon \dyn \times \dyn \ltdyn \dyn} \\
+    \scalebox{0.80}{\inferrule{c_i : A_i \ltdyn A_i' \and c_o : A_o \ltdyn A_o'}{c_i \ra c_o : (A_i \ra A_o) \ltdyn (A_i' \ra A_o')}}\and
+    \scalebox{0.80}{\inferrule{c_1 : A_1 \ltdyn A_1' \and c_2 : A_2 \ltdyn A_2'}{c_1 \times c_2 : (A_1 \times A_2) \ltdyn (A_1' \times A_2')}}
+  \end{mathpar}
+  \caption{GTLC Type Precision Derivations}
+  \label{fig:gtlc-type-prec}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Type Precision Equivalence}
+\protect\hypertarget{type-precision-equivalence}{}
+\begin{itemize}
+\tightlist
+\item
+  Equational theory \(c \equiv c'\) that implies that the corresponding
+  casts are weakly bisimilar in the semantics
+\end{itemize}
+
+\begin{figure}
+  \begin{mathpar}
+     r(A)c \equiv c\and
+     c \equiv cr(A')\and
+     c(c'c'') \equiv (cc')c''\and
+     r(A_i \ra A_o) \equiv r(A_i) \ra r(A_o)\and
+     r(A_1\times A_2) \equiv r(A_1) \times r(A_2)\and
+     (c_i \ra c_o)(c_i' \ra c_o')\equiv (c_ic_i' \ra c_oc_o') \and
+     (c_1\times c_2)(c_1'\times c_2')\equiv (c_1c_1' \times c_2c_2')
+  \end{mathpar}
+  \caption{GTLC Type Precision Equivalence}
+  \label{fig:gtlc-type-prec-equiv}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Term Precision}
+\protect\hypertarget{term-precision}{}
+\begin{itemize}
+\item
+  Extension of type precision to terms
+\item
+  \(\Delta \vdash M \ltdyn M' : c\) where \(\Delta\) is a context where
+  variables are assigned to type precision derivations.
+\end{itemize}
+
+\begin{figure}
+  \begin{mathpar}
+  %(\lambda x. M)(V) = M[V/x] \and (V : A \ra A') = \lambda x. V\,x\\
+
+  % \textrm{let } (x,y) = (V,V') \textrm{ in } N = N[V/x,V'/y] \and
+  % M[V:A\times A'/p] = \textrm{let } (x,y) = V \textrm{ in } M[(x,y)/p]
+
+  \inferrule*[right=EquivTyPrec]
+  {\Delta\vdash M \ltdyn M' : c \and c \equiv c'}
+  {\Delta\vdash M \ltdyn M' : c'}
+
+  \inferrule*[right=ErrBot]
+  {}
+  {\Delta \vdash \mho \ltdyn M : c}\\
+
+  \inferrule*[right=UpL]
+  {M \ltdyn M' : cc_r}
+  {\upc {c} M \ltdyn M' : c_r}
+
+  \inferrule*[right=UpR]
+  {M \ltdyn M' : c_l}
+  {M \ltdyn \upc {c} M' : c_lc}
+
+  \inferrule*[right=DnL]
+  {M \ltdyn M' : c_r}
+  {\dnc {c} M \ltdyn M' : cc_r}
+
+  \inferrule*[right=DnR]
+  {M \ltdyn M' : c_lc}
+  {M \ltdyn \dnc {c} M' : c_l}
+  \end{mathpar}
+  \caption{Term Precision Rules (Selected)}
+  \label{fig:term-prec}
+\end{figure}
+\end{frame}
+
+\hypertarget{a-simple-term-model-in-guarded-type-theory}{%
+\section{A Simple Term Model in Guarded Type
+Theory}\label{a-simple-term-model-in-guarded-type-theory}}
+
+\begin{frame}{More about Guarded Type Theory}
+\protect\hypertarget{more-about-guarded-type-theory}{}
+\begin{itemize}
+\tightlist
+\item
+  Recall: Operator \(\later : \type \to \type\)
+\item
+  \emph{Guarded} fixpoint operator \(\fix : (\later A \to A) \to A\)
+  satisfying \(\fix\, f = f (\nxt (\fix\, f))\)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The recursive occurrence is guarded by a \(\later\)
+  \item
+    Constructing a Prop in this manner corresponds to \(\lob\)-induction
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ticked Cubical Type Theory}
+\protect\hypertarget{ticked-cubical-type-theory}{}
+\begin{itemize}
+\tightlist
+\item
+  Abstract sort \(\tick\)
+\item
+  \(\later A\) is modeled as \(\tick \to A\)
+\item
+  The type \(A\) is allowed to depend on \(t\); we write \(\later_t A\)
+\item
+  Rules are similar to those of ordinary \(\Pi\) types
+\item
+  Restriction on tick application to prevent writing a term
+  \(\later \later A \to \later A\)
+\item
+  Notation: \(M_t\) for tick application
+\end{itemize}
+\end{frame}
+
+\begin{frame}{A CBPV Model}
+\protect\hypertarget{a-cbpv-model}{}
+\begin{itemize}
+\tightlist
+\item
+  Goal of this section: define a model for only the \textbf{types and
+  terms} of GTLC
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  We follow the structure of Levy's Call-by-Push-Value \cite{levy99}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Refinement of Moggi's monadic semantics \cite{MOGGI199155} that
+    decomposes Moggi's monad \(T\) into an adjunction \(T = UF\):
+  \end{itemize}
+\end{itemize}
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJcXGNhbFYiXSxbMiwwLCJcXGNhbEUiXSxbMCwxLCJcXHRleHR7VmFsdWUgVHlwZXN9Il0sWzAsMiwiXFx0ZXh0e1B1cmUgbW9ycGhpc21zfSJdLFsyLDEsIlxcdGV4dHtDb21wdXRhdGlvbiB0eXBlc30iXSxbMiwyLCJcXHRleHR7SG9tb21vcnBoaXNtc30iXSxbMCwxLCJGIiwwLHsiY3VydmUiOi0zfV0sWzEsMCwiVSIsMCx7ImN1cnZlIjotM31dLFs2LDcsIiIsMCx7ImxldmVsIjoxLCJzdHlsZSI6eyJuYW1lIjoiYWRqdW5jdGlvbiJ9fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+    \calV \&\& \calE \\
+    {\text{Value Types}} \&\& {\text{Computation types}} \\
+    {\text{Pure morphisms}} \&\& {\text{Homomorphisms}}
+    \arrow[""{name=0, anchor=center, inner sep=0}, "F", curve={height=-18pt}, from=1-1, to=1-3]
+    \arrow[""{name=1, anchor=center, inner sep=0}, "U", curve={height=-18pt}, from=1-3, to=1-1]
+    \arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=0, to=1]
+\end{tikzcd}\]
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \(A \rightharpoonup A'\) decomposes into \(U(A \to F A')\) where
+  \(\arr : \calV^{op} \times \calE \to \calE\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Value and Computation Categories}
+\protect\hypertarget{value-and-computation-categories}{}
+\begin{itemize}
+\tightlist
+\item
+  Value category: sets and functions
+\item
+  Computation category: sets equipped with algebraic structure, and
+  homomorphisms that preserve this structure
+\item
+  Effects we model: errors and computational steps
+\end{itemize}
+
+\pause
+
+\begin{definition}[Simple Error Domains]
+  A (simple) error domain $B$ consists of
+  \begin{enumerate}
+  \item A carrier set $UB$
+  \item An element $\mho_{B} : UB$ representing error
+  \item A function $\theta_B : \laterhs UB \to UB$ modeling a computational step
+  \end{enumerate}
+\end{definition}
+\end{frame}
+
+\begin{frame}{The Free Error Domain}
+\protect\hypertarget{the-free-error-domain}{}
+\begin{definition}[Free error domain]
+  For a set $A$, we define the (carrier of) \emph{free error domain} $U(\li A)$ as the unique solution to the guarded domain equation:
+  \[ U(\li A) \cong A + 1\, + \laterhs U(\li A). \]
+  We use the following notation for the three constructors:
+  \begin{enumerate}
+  \item $\eta \colon A \to U(\li A)$
+  \item $\mho \colon U(\li A)$
+  \item $\theta \colon \laterhs U(\li A) \to U(\li A)$
+  \end{enumerate}
+\end{definition}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \(\mho\) and \(\theta\) provide the error domain structure for
+  \(\li A\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Satisfies the following universal property of being free: any function
+  \(f : U(\li A) \to UB\) uniquely extends to a homomorphism
+  \(f^\dagger : \li A \multimap B\) satisfying
+  \(Uf^\dagger \circ \eta = f\).
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  We will write \(\theta_t(\dots)\) to mean
+  \(\theta (\lambda t. \dots)\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modeling the Type Structure}
+\protect\hypertarget{modeling-the-type-structure}{}
+\begin{itemize}
+\tightlist
+\item
+  \(\nat\) denotes the set of natural numbers
+\item
+  \(\times\) denotes the cartesian product of sets.
+\item
+  CBV function type \(A \rightharpoonup A'\) denotes the CBPV
+  decomposition \(U(\sem{A} \to \li \sem{A'})\)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(A \to B\) is the functions from \(A\) to \(UB\) with the obvious
+    point-wise algebraic structure
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The Dynamic Type}
+\protect\hypertarget{the-dynamic-type}{}
+\textbf{Classical domain theory}:
+
+\[D \cong \Nat + (D \times D) + U(D \to \li D)\]
+
+\begin{itemize}
+\tightlist
+\item
+  No inductive or coinductive solutions
+\end{itemize}
+
+\pause
+
+\textbf{Guarded domain theory}:
+
+\begin{equation}\label{eq:dyn}
+D \cong \Nat + (D \times D)\, + \laterhs U(D \to \li D).
+\end{equation}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  We solve this equation by a mixture of inductive types and guarded
+  fixed points.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Solving the Equation for the Dynamic Type}
+\protect\hypertarget{solving-the-equation-for-the-dynamic-type}{}
+\begin{itemize}
+\tightlist
+\item
+  Consider the parameterized inductive type
+\end{itemize}
+
+\[ D'\, X := \mu T. \Nat + (T \times T) + X.\]
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  We construct \(D\) as the unique solution to the guarded domain
+  equation
+\end{itemize}
+
+\[D \cong D'(\laterhs U(D \to \li D))\]
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Expanding the guarded fixed point and least fixed point property gives
+  us that \(D\) satisfies Equation \(\ref{eq:dyn}\).
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  We refer to the three injections for numbers, pairs and functions as
+  \(\inat, \itimes, \iarr\) respectively.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Interpreting the Terms}
+\protect\hypertarget{interpreting-the-terms}{}
+\begin{itemize}
+\item
+  Terms \(x:A_1,\ldots \vdash M : A\) are effectful functions
+  \(\sem{M}: \sem{A_1}\times \cdots \to U\li\sem{A}\)
+\item
+  Values \(x:A_1,\ldots \vdash V : A\) are pure functions
+  \(\sem{V} : \sem{A_1}\times\cdots \to \sem{A}\).
+\item
+  Only nontrivial terms: \textbf{casts}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Interpreting Casts}
+\protect\hypertarget{interpreting-casts}{}
+\begin{itemize}
+\tightlist
+\item
+  Upcasts \(\leadsto\) pure functions
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\sem{\upc c} : \sem{A} \to \sem{A'}\)
+  \end{itemize}
+\item
+  Downcasts \(\leadsto\) homomorphisms of error domains
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\sem{\dnc c} : \li\sem{A'} \multimap \li\sem{A}\).
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Reflexivity casts \(\leadsto\) identities
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\sem{\upc{r(A)}} = \id_{\sem{A}}\)
+  \item
+    \(\sem{\dnc{r(A)}} = \id_{\li \sem{A}}\)
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Transitivity of type precision \(\leadsto\) composition
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\sem{\upc{(c \comp c')}} = \sem{\upc{c'}} \circ \sem{\upc{c}}\)
+  \item
+    \(\sem{\dnc{(c \comp c')}} = \sem{\dnc{c}} \circ \sem{\dnc{c'}}\)
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Upcasts for products/downcasts for functions \(\leadsto\) functorial
+  actions of \(\times\) and \(\to\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{What about downcasts for products and upcasts for functions?}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Kleisli Actions of Type Constructors}
+\protect\hypertarget{kleisli-actions-of-type-constructors}{}
+\end{frame}
+
+\begin{frame}{Casts for the Dynamic Type}
+\protect\hypertarget{casts-for-the-dynamic-type}{}
+\begin{itemize}
+\tightlist
+\item
+  Recall: \(D \cong \Nat + (D \times D)\, + \laterhs U(D \to \li D)\).
+\item
+  Upcasts are just the injections into the coproduct, except for
+  \(\iarr\) where we must precompose with \(\nxt\)
+\item
+  Downcasts perform pattern matching and return the value if it is of
+  the correct type; otherwise error
+
+  \begin{itemize}
+  \tightlist
+  \item
+    In the function case, the function value is only available later
+  \item
+    So we must insert a \(\theta\) (i.e., take an observable step) to
+    gain access to the function
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Extracting a Well-Behaved Semantics}
+\protect\hypertarget{extracting-a-well-behaved-semantics}{}
+\begin{itemize}
+\tightlist
+\item
+  Goal: define a partial ``big-step semantics'\,' function
+\item
+  \textbf{Clock quantification}: method of escaping the guarded world
+  and expressing ordinary set-theoretic definitions
+\item
+  Idea: All guarded constructs are indexed by a clock \(k\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Recall the free error domain:
+  \(U\li^k X \cong X + 1 + \later^k U(\li^k X)\)
+\item
+  We define a global version of the free error domain:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \((\li^{gl} X) := \forall k . (\li^k X)\) (ignoring the \(U\))
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\hypertarget{towards-a-relational-model}{%
+\section{Towards a Relational Model}\label{towards-a-relational-model}}
+
+\begin{frame}{The Goal}
+\protect\hypertarget{the-goal}{}
+Provide a compositional interpretation of \emph{type} and \emph{term
+precision} such that we can extract the graduality relation from our
+model.
+\end{frame}
+
+\begin{frame}{A Naive Approach}
+\protect\hypertarget{a-naive-approach}{}
+\begin{itemize}
+\tightlist
+\item
+  Idea: enhance our value and computation types to carry a poset
+  structure
+\item
+  For most type formers the structure is deifned functorially
+\item
+  \textbf{Key design choice}: ordering on the free error domain
+  \(\li A\).
+\item
+  First attempt: \emph{step-insensitive error ordering}
+\end{itemize}
+
+\pause
+
+\begin{figure}
+      \begin{align*}
+        \mho \semltbad l &\text{ iff } \top \\
+        %
+        \eta\, x \semltbad \eta\, y &\text{ iff } 
+            x \ltdyn y \\
+        %
+        \theta\, \tilde{l} \semltbad \theta\, \tilde{l'} &\text{ iff } 
+            \later_t (\tilde{l}_t \semltbad \tilde{l'}_t) \\
+        %
+        \theta\, \tilde{l} \semltbad \mho &\text{ iff } \exists n. \theta\, \tilde{l} = \delta^n(\mho) \\
+        %
+        \theta\, \tilde{l} \semltbad \eta\, y &\text{ iff } \exists n. \exists x \ltdyn y.
+            (\theta\, \tilde{l} = \delta^n(\eta\, x)) \\
+        %
+        \eta\, x \semltbad \theta\, \tilde{l'} &\text { iff }
+            \exists n. \exists y \gtdyn x. (\theta\, \tilde{l'} = \delta^n (\eta\, y))
+    \end{align*}
+    \caption{Step-insensitive error ordering}
+    \label{fig:step-insensitive-error-ordering}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Problem: Lack of Transitivity}
+\protect\hypertarget{problem-lack-of-transitivity}{}
+\begin{itemize}
+\tightlist
+\item
+  This relation is \emph{not} a partial ordering, because it is
+  \textbf{not transitive}!
+\item
+  Follows from the following theorem:
+\end{itemize}
+
+\pause
+
+\begin{theorem}[No-go Theorem]\label{thm:no-go}
+  Let $R$ be a binary relation on the free error domain $U(\li A)$. Suppose
+  $R$ satisfies the following properties:
+  \begin{enumerate}
+  \item Transitivity
+  \item $\theta$-congruence: If $\later_t (\tilde{x}_t \binrel{R} \tilde{y}_t)$, then $\theta(\tilde{x}) \binrel{R} \theta(\tilde{y})$.
+  \item Right step-insensitivity: If $x \binrel{R} y$ then $x \binrel{R} \delta y$.
+  \end{enumerate}
+  Then for any $l : U(\li A)$, we have $l \binrel{R} \Omega$ where $\Omega = \fix\, \theta$.
+  If $R$ is left step-insensitive instead then $\Omega \binrel{R} x$.
+\end{theorem}
+
+\pause
+
+\begin{proof}
+  By L\"ob induction: we assume that $l$ is related to $\Omega$ later, which implies that
+  $\theta (\nxt\, l) \binrel{R} \theta (\nxt\, \Omega)$. Then observe that
+
+  $$l \binrel{R} \theta (\nxt\, l) \binrel{R} \theta (\nxt\, \Omega) = \Omega.$$
+\end{proof}
+\end{frame}
+
+\begin{frame}{Problem: Lack of Transitivity, Continued}
+\protect\hypertarget{problem-lack-of-transitivity-continued}{}
+\begin{corollary}
+  Let $R$ be a binary relation on $U(\li A)$. If $R$ satisfies
+  transitivity, $\theta$-congruence and left and right
+  step-insensitivity, then $R$ is the total relation: $\forall x, y. x
+  \binrel{R} y$.
+\end{corollary}
+
+\pause
+
+\begin{proof}
+  $x \binrel{R} \Omega$ and $\Omega \binrel{R} y$ by the previous
+  theorem. Then by transitivity $x \binrel R y$.
+\end{proof}
+
+\pause
+
+\begin{itemize}
+\item
+  \(\semltbad\) satisfies \(\theta\)-congruence and left and right
+  step-insensitivity, so if it is also transitivie then it is the total
+  relation.
+\item
+  But e.g., for the flat poset strucutre on \(\mathbb N\),
+  \(\eta 0 \semltbad \eta 1\) is false.
+\item
+  Thus \(\semltbad\) is \textbf{not transitive}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Why Transitivity is Necessary}
+\protect\hypertarget{why-transitivity-is-necessary}{}
+\begin{itemize}
+\tightlist
+\item
+  Q: How to prove graduality compositionally?
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Let's try to adapt the New-Licata approach to the guarded setting.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Adapting the Graduality Proof}
+\protect\hypertarget{adapting-the-graduality-proof}{}
+\begin{itemize}
+\tightlist
+\item
+  Interpret types as posets
+\item
+  Interpret a type precision derivation \(c : A \rel A'\) as a
+  \emph{poset relation} between the posets \(\sem{A}\) and \(\sem{A'}\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Downward closed}: if \(x' \ltdyn_{A} x\) and
+  \(x \mathrel{c} y\), then \(x' \mathrel{c} y\).
+\item
+  \emph{Upward closed}: if \(x \mathrel{c} y\) and \(y \ltdyn_{A'} y'\),
+  then \(x \mathrel{c} y'\).
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Given a poset \(A\), there is an identity poset relation \(r(A)\)
+  given by the poset ordering \(\ltdyn_A\)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{It is a poset relation because it's transitive}
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Given two poset relations \(c : A_1 \rel A_2\) and
+  \(c' : A_2 \rel A_3\), we define their composition \(cc'\) in the
+  usual manner
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Modeling Term Precision}
+\protect\hypertarget{modeling-term-precision}{}
+\begin{itemize}
+\tightlist
+\item
+  For closed terms: \(\sem{M \ltdyn M' : c}\) is defined to be the
+  relation \(\sem{M} \binrel{(U\li\sem{c})} \sem{M'}\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  For open terms: need a relationship between the denoted monotone
+  functions
+
+  \begin{itemize}
+  \tightlist
+  \item
+    We say that \(f \ltsq{c_i}{c_o} g\) if for all \(x : A_i\) and
+    \(y : A_i'\) with \(x \binrel{c_i} y\), we have
+    \(f(x) \binrel{c_o} g(y)\)
+  \item
+    We call this relationship a \emph{square}
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\[
+\begin{tikzcd}[ampersand replacement=\&]
+  {A_i} \& {A_i'} \\
+  {A_o} \& {A_o'}
+  \arrow["{c_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  \arrow["f"', from=1-1, to=2-1]
+  \arrow["g", from=1-2, to=2-2]
+  \arrow["{c_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}
+\]
+\end{frame}
+
+\begin{frame}{Squares}
+\protect\hypertarget{squares}{}
+\begin{itemize}
+\tightlist
+\item
+  ``vertical identity'\,' square \(\id \ltsq{c}{c} \id\) for any \(c\)
+\item
+  ``horizontal identity'\,' square \(f \ltsq{r(A_i)}{r(A_o)} f\) for any
+  monotone function \(f : A_i \to A_o\)
+\end{itemize}
+
+\vspace{4ex}
+
+\pause
+
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Vertical composition}:
+
+If \(f \ltsq{c_1}{c_2} f'\) and \(g \ltsq{c_2}{c_3} g'\), then
+\(g \circ f \ltsq{c_1}{c_3} g' \circ f'\)
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMCwyLCJBXzMiXSxbMSwwLCJBXzEnIl0sWzEsMSwiQV8yJyJdLFsxLDIsIkFfMyciXSxbMCwzLCJjXzEiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDQsImNfMiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsNSwiY18zIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJmIiwyXSxbMSwyLCJnIiwyXSxbMyw0LCJmJyJdLFs0LDUsImcnIl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+    {A_1} \& {A_1'} \\
+    {A_2} \& {A_2'} \\
+    {A_3} \& {A_3'}
+    \arrow["{c_1}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+    \arrow["f"', from=1-1, to=2-1]
+    \arrow["{f'}", from=1-2, to=2-2]
+    \arrow["{c_2}", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \arrow["g"', from=2-1, to=3-1]
+    \arrow["{g'}", from=2-2, to=3-2]
+    \arrow["{c_3}", "\shortmid"{marking}, no head, from=3-1, to=3-2]
+\end{tikzcd}
+\]
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Horizontal composition}:
+
+If \(f \ltsq{c_i}{c_o} g\) and \(g \ltsq{c_i'}{c_o'} h\), then
+\(f \ltsq{c_i c_i'}{c_o c_o'} h\).
+
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJBX2kiXSxbMSwwLCJBX2knIl0sWzAsMSwiQV9vIl0sWzEsMSwiQV9vJyJdLFsyLDAsIkFfaScnIl0sWzIsMSwiQV9vJyciXSxbMCwxLCJjX2kiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDQsImNfaSciLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDMsImNfbyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzMsNSwiY19vJyIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMiwiZiIsMl0sWzEsMywiZyIsMl0sWzQsNSwiaCIsMl1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+    {A_i} \& {A_i'} \& {A_i''} \\
+    {A_o} \& {A_o'} \& {A_o''}
+    \arrow["{c_i}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+    \arrow["f"', from=1-1, to=2-1]
+    \arrow["{c_i'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+    \arrow["g"', from=1-2, to=2-2]
+    \arrow["h"', from=1-3, to=2-3]
+    \arrow["{c_o}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \arrow["{c_o'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+\end{tikzcd}\]
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The Graduality Proof}
+\protect\hypertarget{the-graduality-proof}{}
+\begin{itemize}
+\tightlist
+\item
+  Goal: interpret \textbf{term precision rules}
+\item
+  Most cases are just congruence rules and are easy to establish
+\end{itemize}
+
+\begin{mathpar}
+  \inferrule{M \ltdyn M' : c_i \ra c_o \and N \ltdyn N' : c_i}{M\, N \ltdyn M'\, N' : c_o}
+\end{mathpar}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  The core of the proof of the graduality: proving the validity of the
+  \textbf{cast rules} \(\upl\), \(\upr\), \(\dnl\), and \(\dnr\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Representable Relations}
+\protect\hypertarget{representable-relations}{}
+\begin{itemize}
+\tightlist
+\item
+  The four cast rules specify a relationship between the semantics of
+  type precision derivations \(c\) and the corresponding casts
+  \(\upc c, \dnc c\)
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  E.g. \(\upl\) rule:
+\end{itemize}
+
+\[\begin{tikzcd}[ampersand replacement=\&]
+  {\sem{A_1}} \& {\sem{A_2}} \& {\sem{A_3}} \\
+  {\sem{A_2}} \&\& {\sem{A_3}}
+  \arrow["\sem{c}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  \arrow["{\sem{\upc{c}}}"', from=1-1, to=2-1]
+  \arrow["{\sem{c'}}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+  \arrow["\id", from=1-3, to=2-3]
+  \arrow["{\sem{c'}}"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+\end{tikzcd}\]
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Problem: this rule quantifies over an arbitrary relation \(\sem{c'}\)!
+\item
+  This means the definition of relation is self-referential!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Simpler Squares}
+\protect\hypertarget{simpler-squares}{}
+\begin{itemize}
+\tightlist
+\item
+  In the presence of transitivity, we can \emph{derive} the above
+  squares from simpler ones, shown below:
+\end{itemize}
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    % UpL
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzIiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJyKEFfMikiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcdXBje2N9IiwyXSxbMiwzLCJcXGlkIl0sWzYsNywiXFx0ZXh0e1VwTH0iLDMseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_2} \\
+      {A_2} \& {A_2}
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\upc{c}}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "\id", from=1-2, to=2-2]
+      \arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{UpL}}"{marking, allow upside down}, draw=none, from=0, to=1]
+  \end{tikzcd} &
+    %
+    % UpR
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzEiXSxbMSwxLCJBXzIiXSxbMCwyLCJyKEFfMSkiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcaWQiLDJdLFsyLDMsIlxcdXBjIGMiXSxbNiw3LCJcXHRleHR7VXBSfSIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_1} \\
+      {A_1} \& {A_2}
+      \arrow["{r(A_1)}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "\id"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\upc c}", from=1-2, to=2-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{UpR}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd} \\ \hline
+    %
+    %
+    %
+    % DnL
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzIiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzIiXSxbMCwyLCJyKEFfMikiLDAseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxLDMsImMiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcZG5jIGMiLDJdLFsyLDMsIlxcaWQiXSxbNiw3LCJcXHRleHR7RG5MfSIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_2} \& {A_2} \\
+      {A_1} \& {A_2}
+      \arrow["{r(A_2)}", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "{\dnc c}"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "\id", from=1-2, to=2-2]
+      \arrow["c"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{DnL}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd} &
+    %
+    % DnR
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBXzEiXSxbMCwxLCJBXzEiXSxbMSwwLCJBXzIiXSxbMSwxLCJBXzEiXSxbMCwyLCJjIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJyKEFfMSkiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJiYXJyZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDEsIlxcaWQiLDJdLFsyLDMsIlxcZG5jIGMiXSxbNiw3LCJcXHRleHR7RG5SfSIsMyx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+    \begin{tikzcd}[ampersand replacement=\&]
+      {A_1} \& {A_2} \\
+      {A_1} \& {A_1}
+      \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+      \arrow[""{name=0, anchor=center, inner sep=0}, "\id"', from=1-1, to=2-1]
+      \arrow[""{name=1, anchor=center, inner sep=0}, "{\dnc c}", from=1-2, to=2-2]
+      \arrow["{r(A_1)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \arrow["{\text{DnR}}"{marking, allow upside down}, draw=none, from=0, to=1]
+    \end{tikzcd}
+  \end{tabular}
+\end{center}
+
+\begin{itemize}
+\tightlist
+\item
+  The squares say that the relation \(c\) is \emph{representable} by the
+  morphisms \(\upc{c}\) and \(\dnc{c}\)
+\item
+  i.e., the relation is a kind of \emph{graph} of the morphism in that
+  \(x \binrel{\sem c} y\) if and only if
+  \(\sem{\upc c}(x) \leq_{A_2} y\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Composing the Squares}
+\protect\hypertarget{composing-the-squares}{}
+Derive the original \(\upl\) square from the simpler \(\upl\) square:
+
+\[\begin{tikzcd}[ampersand replacement=\&]
+    {A_1} \& {A_2} \& {A_3} \\
+    {A_2} \& {A_2} \& {A_3}
+    \arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+    \arrow["{\upc{c}}"', from=1-1, to=2-1]
+    \arrow["{c'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+    \arrow["\id"', from=1-2, to=2-2]
+    \arrow["\id", from=1-3, to=2-3]
+    \arrow["{r(A_2)}"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+    \arrow["{c'}"', "\shortmid"{marking}, no head, from=2-2, to=2-3]
+\end{tikzcd}\]
+
+The composition of \(r(A_2)\) with \(c'\) is equal to \(c'\), because
+\(c'\) is \emph{downward-closed}
+\end{frame}
+
+\begin{frame}{Key Takeaway}
+\protect\hypertarget{key-takeaway}{}
+To carry out the graduality proof compositionally, the relations need to
+be closed under the ordering on each side
+
+\textbf{In particular, the ordering relations \(r(A)\) must be
+transitive}
+\end{frame}
+
+\begin{frame}{Resolution: Splitting the Ordering}
+\protect\hypertarget{resolution-splitting-the-ordering}{}
+\begin{itemize}
+\tightlist
+\item
+  Recall: The step-insensitive error ordering is not transitive
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Accounting for Steps Taken by Casts}
+\protect\hypertarget{accounting-for-steps-taken-by-casts}{}
+\end{frame}
+
+\hypertarget{a-relational-model-of-gradual-typing}{%
+\section{A Relational Model of Gradual
+Typing}\label{a-relational-model-of-gradual-typing}}
+
+\begin{frame}{Phase 1: Predomains and Error Domains}
+\protect\hypertarget{phase-1-predomains-and-error-domains}{}
+\end{frame}
+
+\begin{frame}{Value and Computation Objects}
+\protect\hypertarget{value-and-computation-objects}{}
+\end{frame}
+
+\begin{frame}{Quasi-Representable Relations}
+\protect\hypertarget{quasi-representable-relations}{}
+\end{frame}
+
+\begin{frame}{Manipulating Perturbations: Push-Pull}
+\protect\hypertarget{manipulating-perturbations-push-pull}{}
+\end{frame}
+
+\begin{frame}{Summary of the Model}
+\protect\hypertarget{summary-of-the-model}{}
+\end{frame}
+
+\begin{frame}{Relational Adequacy}
+\protect\hypertarget{relational-adequacy}{}
+\end{frame}
+
+\hypertarget{discussion-and-future-work}{%
+\section{Discussion and Future Work}\label{discussion-and-future-work}}
+
+\begin{frame}{Related Work}
+\protect\hypertarget{related-work}{}
+\begin{itemize}
+\item
+  Embedding-projection pairs
+\item
+  Denotational models using classical domain theory
+\item
+  Step-indexed operational models
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Agda Mechanization}
+\protect\hypertarget{agda-mechanization}{}
+\begin{itemize}
+\tightlist
+\item
+  Formalized most of the key pieces of the model construction in Guarded
+  Cubical Agda \cite{veltri-vezzosi2020}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Predomain/error domains, morphisms, relations, squares
+  \item
+    Free error domain
+  \item
+    Value/computation objects, syntactic perturbations, semantic
+    perturbations, push-pull property
+  \item
+    Quasi-representable relations
+  \item
+    The dynamic type as a value object, along with the relations
+    corresponding to the three injections
+  \item
+    Adequacy of the model with respect to the graduality property
+  \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\tightlist
+\item
+  Some formalization work remains:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Lemmas about quasi-representability of actions of \(\to\) and
+    \(\times\) on relations
+  \item
+    Verifying type precision equivalence rules in the semantics
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Future Work}
+\protect\hypertarget{future-work}{}
+\begin{itemize}
+\tightlist
+\item
+  Extend to languages with higher-order store and/or dynamic type-tag
+  generation
+\item
+  Prove graduality for alternative cast semantics, e.g., eager
+  (\cite{herman-tomb-flanagan-2010}) and transient (\cite{transient})
+  cast semantics
+\item
+  Utilize the \emph{intensional} nature of our model to analyze the
+  efficiency of different cast semantics
+\end{itemize}
+\end{frame}
+
+\end{document}

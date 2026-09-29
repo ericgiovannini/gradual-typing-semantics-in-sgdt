@@ -1,0 +1,1729 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{tikz-cd}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{comment}
+\usepackage{quiver}
+
+\definecolor{myorange}{RGB}{242, 114, 0}
+\definecolor{myblue}{RGB}{0,162,255}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% theorem environments
+%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{nonnum-theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newtheorem{example}{Example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../../paper-new/defs}
+
+
+
+% Is there a notion of naturality for functors on double categories that
+% involves horizontal morphisms?
+
+% Come up with consistent notation for the double category of values of a double
+% CBPV model, and likewise for computations
+
+
+
+
+\begin{document}
+
+\title{An Abstract, Guarded Categorical Model of Gradual Typing}
+\author{Eric Giovannini}
+
+\maketitle
+
+\section{Introduction}
+
+The work of Giovannini et al. \cite{gtt-sgdt} constructs a denotational
+semantics for a simple gradually-typed lambda calculus using guarded type
+theory.
+%
+Many of the aspects of the model construction are in fact independent of the
+details of the particular language being modeled, e.g., the specific types and
+effects in the language.
+%
+In this work, we seek to abstract over these details and present an abstract
+categorical framework for constructing models of gradual typing in guarded type
+theory.
+
+With this abstract framework in hand, we then define concrete semantics for
+gradually-typed languages with simple effects.
+
+\subsection{Why an Abstract Model?}
+
+The model developed by Giovannini et al. suffers from the limitation that it is
+a single model for a quite bare-bones gradually-typed language. Real-world
+languages can include effects, polymorphism, dependent types, etc. The goals of
+an abstract model are twofold:
+
+\begin{enumerate}
+  \item To promote a better understanding of the essence of any guarded
+  relational semantics of gradual tying independent of the particular language
+  features being modeled.
+  \item To allow for developers of languages to establish graduality for their
+  language by instantiating our abstract framework.
+\end{enumerate}
+
+\subsection{Challenges}
+
+Prior work by New and Licata \cite{new-licata18} defines a categorical model for
+gradual typing that serves as the basis for denotational semantics using
+\emph{classical} domain theory. Their model is based on \emph{double categories}
+\cite{shulman2007}.
+%
+Unfortunately, as Giovannini et al. point out, adapting this model to the
+guarded setting poses significant challenges, and much of their work consists of
+defining a version of the model that works in guarded type theory.
+
+Inspired by the solution of Giovannini et al., we refine the notion of abstract
+categorical model of gradual typing into two novel classes of model suitable for
+the guarded setting. We call these \emph{extensional} and \emph{intensional}
+models.
+
+% TODO more explanation
+
+\subsection{Outline}
+
+This work is organized as follows.
+
+\begin{itemize}
+  \item We begin in Section \ref{sec:idealized-models} with an overview of the
+  existing abstract double-categorical semantics for gradual typing by New and
+  Licata.
+  \item We review the difficulties in adapting the New-Licata denotational model
+  to the guarded setting.
+  \item We motivate the refinement of the notion of abstract model into
+  extensional and intensional models and present their definitions in full.
+  \item We discuss the construction of an extensional model of gradual typing
+  from a suitable ``base'' double category of effectful functions and relations.
+  \item With the constructions in hand, we then instantiate the abstract
+  framework to define concrete models of gradual typing capable of modeling
+  languages with simple effects.
+\end{itemize}
+
+\subsection{Ambient Guarded Metalanguage}
+
+Because guarded type theory plays a central role in the construction of the
+concrete model in prior work, it is natural to expect that our abstract
+framework should to some degree incorporate aspects of guarded type theory.
+%
+To that end, we demand the following of the categories involved in the
+description of our abstract model:
+
+\begin{enumerate}
+    \item There is an applicative functor $\later \colon \calC \to \calC$.
+    \item There is a morphism $\nxt \colon X \to \later X$ for any object $X$.
+    \item For any morphism $f$ of the form $\later X \to X$, there is a unique
+    morphism $\fix f \colon 1 \to X$ such that $\fix f = f \circ \nxt \circ \fix
+    f$.
+\end{enumerate}
+
+
+% \section{Extensional and Intensional Models}
+
+\section{Double Categorical Semantics of Graduality}\label{sec:idealized-models}
+
+We begin with a review of abstract categorical models for gradual typing
+described in prior work.
+%
+New and Licata \cite{new-licata18} modeled the graduality and type casts for
+call-by-name gradual typing using \emph{double categories}, which are defined to
+be categories internal to the category of categories. That is, a double category
+$\mathcal C$ consists of a category $\mathcal C_f$ of ``objects and function
+morphisms'' and a category $\mathcal C_{sq}$ of ``relation morphisms and
+squares'' with functors (reflexive relation) $r : C_f \to C_{sq}$ and (source
+and target) $s,t : C_{sq} \to C_f$ satisfying $sr = tr = \id$ as well as a
+composition operation $c : C_{sq} \times_{s,t} C_{sq} \to C_{sq}$ respecting
+source and target. This models an abstract notion of functions and relations.
+For notation, we write function morphisms as $f : A \to B$ and relation
+morphisms as $c : A \rel B$ where $c \in C_{sq}$ and $s(c) = A$ and $t(c) = B$.
+Finally, a morphism $\alpha$ from $c$ to $d$ with $s(\alpha) = f$ and $s(\beta)
+= g$ is visualized as
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkEnIl0sWzEsMSwiQiciXSxbMCwyLCJmIiwyXSxbMSwzLCJnIl0sWzAsMSwiYyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiZCIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	A \& B \\
+	{A'} \& {B'}
+	\arrow["f"', from=1-1, to=2-1]
+	\arrow["g", from=1-2, to=2-2]
+	\arrow["c", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow["d"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+\end{tikzcd}\] 
+
+Such a morphism is thought of as an abstraction of the notion of relatedness of
+functions: functions take related inputs to related outputs. The composition
+operations and functoriality give us a notion of composition of relations as
+well as functions and vertical and horizontal composition of squares. In this
+work we will be chiefly interested in \emph{locally thin} double categories,
+that is, double categories where there is at most one square for any $f,c,g,d$.
+In this case we use the notation $f \ltsq{c}{d} g$ to mean that a square like the
+above exists.
+
+New, Licata and Ahmed \cite{new-licata-ahmed2019} extended the axiomatic syntax
+to call-by-push-value but did not analyze the structure categorically. We fill
+in this missing analysis now, extending the double categorical semantics given
+in \cite{new-licata18} from cartesian closed categories to CBPV models. 
+
+We begin by reviewing the definition of a CBPV model:
+
+\begin{definition}
+  A CBPV model $\calM$ consists of:
+  \begin{itemize}
+    \item A cartesian-closed category $\calV$ of values and pure morphisms.
+    \item A category $\calE$ of computations and linear morphisms.
+    \item Functors $F : \calV \to \calE$ and $U : \calE \to \calV$ with $F \dashv U$.
+    \item An action of $\calV$ on $\calE$, i.e., a functor $\arr \colon
+    \calV^{op} \times \calE \to \calE$ satisfying the usual coherence laws,
+    and such that $U(A \arr B)$ is isomorphic to $A \Rightarrow UB$.
+  \end{itemize}
+
+  A \emph{strict homomorphism of CBPV models} from $(\mathcal V,\mathcal
+  E,\ldots)$ to $(\mathcal V', \mathcal E',\ldots)$ consists of functors $G_v :
+  \mathcal V \to \mathcal V'$ and $G_e : \mathcal E \to \mathcal E'$ that
+  strictly preserve all CBPV constructions; see the appendix for a more detailed
+  definition. We call this a strict morphism in contrast to a \emph{lax}
+  morphism, which only preserves CBPV constructions up to transformation.
+\end{definition}
+
+A model of the congruence rules of the CBPV system can be given by a locally
+thin ``double CBPV model'', which we define below:
+
+\begin{definition}\label{def:double-cbpv-model}
+  A \emph{double CBPV model} is a category internal to the category of CBPV
+  models and \emph{strict} homomorphisms of CBPV models\footnote{it may be
+  possible to also define this as a notion of CBPV model internal to some
+  structured $2$-category of categories, but we are not aware of any such
+  definition of an internal CBPV model}.
+\end{definition}
+
+Part of the data of a double CBPV model can be visualized as follows:
+
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXHZzcSJdLFsyLDAsIlxcZXNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFx0diIsMCx7Im9mZnNldCI6LTEsImN1cnZlIjotMn1dLFswLDIsIlxcc3YiLDIseyJvZmZzZXQiOjEsImN1cnZlIjoyfV0sWzEsMywiXFx0ZSIsMCx7Im9mZnNldCI6LTEsImN1cnZlIjotMn1dLFsxLDMsIlxcc2UiLDIseyJvZmZzZXQiOjEsImN1cnZlIjoyfV0sWzMsMSwiXFxyZSJdLFs0LDUsIlxcYm90IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzYsNywiXFxib3QiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\vsq \&\& \esq \\
+	\\
+	\vf \&\& \ef
+	\arrow[""{name=0, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=1-1, to=1-3]
+	\arrow["\tv", shift left, curve={height=-12pt}, from=1-1, to=3-1]
+	\arrow["\sv"', shift right, curve={height=12pt}, from=1-1, to=3-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=1-3, to=1-1]
+	\arrow["\te", shift left, curve={height=-12pt}, from=1-3, to=3-3]
+	\arrow["\se"', shift right, curve={height=12pt}, from=1-3, to=3-3]
+	\arrow["\rv", from=3-1, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=3-1, to=3-3]
+	\arrow["\re", from=3-3, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=3-3, to=3-1]
+	\arrow["\bot"{description}, draw=none, from=0, to=1]
+	\arrow["\bot"{description}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+
+The diagram above makes it clear that there are two useful ways of viewing a
+double CBPV model $\calM$. First, we can view $\calM$ as pair of CBPV models,
+one forming the objects and vertical morphisms (the bottom of the diagram) and
+the other forming the horizontal morphisms and the squares (the top of the
+diagram). Alternatively, we can view $\calM$ as a pair of double categories, one
+for the values (the left of the diagram), and one for the computations (the
+right of the diagram). For the latter viewpoint, we will often write $\calC$ to
+stand for an unspecified such double category associated with a double CBPV
+model.
+
+Given a double CBPV model, we can interpret the syntax of gradual typing as
+follows. Type precision $A \ltdyn A'$ is interpreted as a relation morphism $c_A
+: A \rel A'$ in $\mathcal V_{sq}$, and term precision $\Gamma \ltdyn \Gamma'
+\vdash M \ltdyn M' : A \ltdyn A'$ is interpreted as a square $M
+\ltsq{c_\Gamma}{UF c_A} M'$.
+%
+% TODO review this
+The fact that $t,r$ and the composition are all given by strict CBPV
+homomorphisms says that all the type constructors lift to precision
+(monotonicity of type constructors) as well as all term constructors
+(congruence). Further, $r$ and composition being strict homomorphisms implies
+that all type constructors strictly preserve the identity relation (identity
+extension) and composition.
+
+Next, to model type casts, the New-Licata model further requires that every
+value relation $c : A \rel A'$ is \emph{left representable} by a function $u_c :
+A \to A'$ and every computation relation $d : B \rel B'$ is \emph{right
+representable} by a function $d_c : B' \to B$. In a locally thin double
+category, left and right representability are defined as follows:
+
+\begin{definition} % TODO these are the simpler versions of the rules
+  A relation $R : A \rel B$ is \emph{left representable} by $f : A \to B$ if $f
+  \ltsq{R}{r(B)} \id$ and $\id \ltsq{r(A)}{R} f $.
+
+  Dually, $R : A \rel B$ is \emph{right representable} by $g : B \to A$ if $\id
+  \ltsq{R}{r(A)} g$ and $g \ltsq{r(B)}{R} \id$.
+\end{definition}
+
+% These squares say that the relation $c$ is \emph{representable} by the upcast
+% morphism $\upc{c}$, essentially that the relation is a kind of \emph{graph} of
+% the function in that $x \binrel{\sem c} y$ if and only if $\sem{\upc c}(x)
+% \leq_{A_2} y$ \cite{shulman2007}.
+
+These squares are sufficient to model the UpL/UpR/DnL/DnR rules for casts.
+% TODO this is possible because of horizontal composition of squares
+Additionally, since representable morphisms compose, the compositionality of
+casts comes for free. However, the retraction property must be added as an
+additional axiom to the model. 
+%
+To model the error being the least element, the New-Licata model adds the
+requirement that $\mho \circ {!} \ltsq{r(A)}{r(UB)} f$ holds for all $f :
+\mathcal V(A,B)$. Finally, the dynamic type can be modeled as an arbitrary value
+type $D$ with arbitrary relations $\nat \rel D$ and $D \ra D \rel D$ and $D
+\times D \rel D$ (or whatever basic type cases are required).
+
+
+\section{Adapting the Notion of Model to Guarded Type Theory}
+
+
+% we have seen in the previous section that there are obstructions to developing a
+% concrete model in \emph{guarded} type theory. While guarded type theory makes
+% the construction of arbitrary guarded recursive definitions possible, it comes
+% at a significant cost to reasoning: unfolding of recursive definitions is
+% explicit. In a denotational semantics, this means that non-well-founded
+% recursion must perform a kind of \emph{observable step}. This presents a
+% difficulty in proving graduality, which is a property that is oblivious to the
+% number of steps that a program takes.
+
+% Therefore, to prove graduality, we must be able to relate terms that take
+% different numbers of steps. In the previous section we have examined two ways of
+% doing this: in the first approach by defining an ordering $\semltbad$ that is
+% closed under delays, and in the second by decomposing this ordering into a
+% lock-step error ordering and a weak bisimilarity relation. But either way, we
+% cannot escape the confines of Theorem \ref{thm:no-go}, which tells us that
+% neither of these fomulations is transitive.
+
+\subsection{Challenges in Adapting the New-Licata Model}
+
+While the original double categorical semantics introduced in Section
+\ref{sec:idealized-models} can be satisfied with classical domain theoretic
+models as demonstrated by New and Licata \cite{new-licata18}, Giovannini et al.
+\cite{gtt-sgdt} show that the New-Licata model cannot be directly adapted to
+work in the guarded setting.
+
+Key to understanding the issue is the fact that the equation for the dynamic
+type involves a later, which means that when inspecting an element of the
+dynamic type which is a function, an \emph{observable step} is required in the
+semantics. This means that downcasts from the dynamic type may take an
+observable step, and thus \emph{any} cast may take steps as it may involve a
+downcast from the dynamic type functorially.
+
+The issue in adapting the New-Licata model to the guarded setting is related to
+the representability condition on the relations. At a high level, the problem
+arises as a result of a tension between \emph{transitive reasoning} and
+\emph{step-insensitivity}.
+%
+Transitive reasoning is desirable because it allows us to derive the cast rules
+needed for graduality from the simpler, compositional versions of the rules.
+This is crucial because the original rules quantify over an additional,
+arbitrary type precision derivation and are therefore not syntax-independent.
+%
+On the other hand, the graduality property, as axiomatized by the
+representability of type precision relations, is fundamentally a
+step-insensitive property. The casts, which may involve observable steps, must
+be related to the identity function, which does not step. The relation
+modeling term precision must be able to account for this mismatch.
+
+However, Giovannini et al. show that transitivity and unrestricted
+step-insensitivity (plus a third minor condition) are incompatible as properties
+of a relation in guarded type theory (see their Theorem 4.1 for a precise
+statement).
+%
+The solution adopted by Giovannini et al. is to work with a \emph{lock-step
+error ordering} that is transitive, and then restore a small amount of
+step-insensitivity where needed through explicit synchronizing terms they call
+\emph{perturbations}. The perturbations mimic the stepping behavior of casts,
+but are otherwise equivalent to the identity, a property they formalize via a
+notion of \emph{weak bisimilarity}. The authors relax the definition of
+representability to allow for casts to be lock-step related to perturbations
+rather than only to the identity function.
+%
+Finally, to define the denotation of term precision, the authors take the
+closure of the lock-step ordering under weak bisimilarity on both sides:
+%
+\[ M \ltbisim N := \exists f, g.\, M \bisim f \ltdyn g \bisim N, \] 
+%
+where $\bisim$ is weak bisimilarity and $\ltdyn$ is the lock-step ordering.
+%
+The idea is that two terms are related if they can be synchronized in some
+number of steps to two terms that are \emph{lock-step} related.
+% This definition allows them to relate terms that differ up to a perturbation. 
+% 
+By separating term precision into a combination of weak bisimilarity and
+lock-step reasoning, and using syntactic perturbations as a means to explicitly
+synchronize terms as necessary, the authors achieve compositional reasoning
+while still accommodating the steps taken by casts.
+
+
+\subsection{Refining the Notion of Abstract Model}
+
+As discussed in the previous section, the original notion of double categorical
+model of graudal typing is not compatible with guarded type theory, where the
+denotational semantics involves observable steps.
+%
+We are therefore led to \emph{refine} this notion of model to one that is
+compatible with guarded type theory.
+%
+To motivate this refinement, consider the model of Giovannini et al.
+\cite{gtt-sgdt} as reviewed in the previous section. Consider the following two
+key observations about their model:
+%
+\begin{enumerate}
+    \item The denotation of term precision (i.e., $\ltbisim$) is \emph{not}
+    transitive. This follows from their no-go theorem (Theorem 4.1), as the
+    relation satisfies the other two properties in the theorem and so it cannot
+    be transitive.
+    \item It is possible to derive the original representability rules for casts
+    from the simplified versions using transitive reasoning.
+\end{enumerate}
+%
+At first glance, these two observations seem contradictory. How can one use
+transitivity if it does not hold? The key insight is that observations (1) and
+(2) take place in two distinct settings. The derivation described in observation
+(2) occurs \emph{before} the final denotation of term precision is defined. That
+is, in (2), the relation in question is the lock-step ordering, \emph{not} its
+closure under weak bisimilarity. The lock-step ordering is transitive, and thus
+we can derive the required representability squares from the simplified ones via
+horizontal composition of squares. Recall that perturbations are involved at
+this point in order to keep terms in lock-step. Thus, much of the work in the
+model construction consists of showing that the theory of perturbations is
+compositional in the appropriate manner.
+
+The existence of these two distinct settings in the concrete model motivates our
+refinement of the idealized abstract model of gradual typing. In particular, we
+divide the idealized notion of model into two classes, which we call
+\emph{extensional} and \emph{intensional} models. The formal definitions will
+follow, but the main idea can be understood in light of observations (1) and (2)
+above. An \emph{extensional model} is an abstraction of the idea of working ``up
+to weak bisimilarity'', i.e., extensionally. Such a model does not include
+transitivity of term precision, since transitive reasoning and extensional
+reasoning are incompatible in the guarded setting. On the other hand, an
+extensional model does validate the rules for casts (in their original form).
+% Such a model does not include transitivity of term precision, but does model
+% the representability rules for casts (in their original form). 
+Thus, we can interpret the syntax of gradual typing into an extensional model,
+as the graduality property boils down to the validity of the representability
+rules.
+
+In contrast, an \emph{intensional model} is an abstraction of the idea of
+working with a transitive, lock-step ordering, and using perturbations to
+synchronize terms as needed. The restricted form of step-insensitivity provided
+by perturbations allows us to reason up to observable steps without using weak
+bisimilarity. Intensional models are appealing because they allow us to apply
+compositional reasoning principles, e.g., deriving the original forms of the
+cast rules from the simplified versions. On the other hand, intensional models
+do not directly validate graduality, as we need to ``collapse'' the
+perturbations to define the denotation of term precision. However, from an
+intensional model, we can \emph{construct} an extensional model by performing
+the abstract analogue of closing the lock-step ordering under weak bisimilarity.
+
+In the remainder of this section, we define extensional and intensional models.
+In the following section, we discuss how to construct an extensional model.
+% ...and outline the steps to construct an extensional model.
+
+
+% To this end, we develop an abstract notion of \emph{extensional} model where
+% intuitively, ordering is up to weak bisimilarity. Transitivity of term precision
+% does not hold in this setting, so the definition of extensional model weakens
+% the idealized notion of model from double categories to reflexive graph
+% categories. In particular, the definition drops the operation of horizontal
+% pasting of squares, but it maintains a form of representability of relations
+% crucial for graduality. An extensional model is sufficient for interpreting the
+% terms and inequational theory of gradual typing. Unfortunately, as was mentioned
+% in the previous section, constructing such a model directly is difficult: since
+% we lack transitvity, we must take as primitive the original, more complicated
+% representability rules. This makes the model dependent on the particular details
+% of the cast calculus being modeled.
+
+% However, the story does not end here. The approach of decomposing the ordering
+% into the lock-step ordering and weak bisimilarity has the advantage that we can
+% employ transitive reasoning when working with the lock-step ordering. The caveat
+% is that we can no longer model casts as representable morphisms when reasoning
+% with observable computation steps.
+% %
+% To axiomatize this situation abstractly, we introduce an intermediate notion of
+% \emph{intensional} model, where intuitively, the ordering considers
+% computational steps to be observable. Intensional models are based on double
+% categories, but representability must be weakened to ``quasi-representability'',
+% a kind of representability \emph{up to} observable steps. To reason up to
+% observable steps without using weak bisimilarity, we develop a more refined
+% notion we call \emph{perturbations}, certain terms that are bisimilar to the
+% identity but can be manipulated explicitly in constructions. We then show that
+% the compositional construction of casts from domain theoretic models can be
+% adapted to this intensional setting by incorporating some explicit manipulation
+% of perturbations. Finally, we show that taking an ``extensional collapse'' by
+% weak bisimilarity provides a model that validates the graduality property.
+
+\subsection{Extensional Models of Gradual Typing}
+
+Since we lack transitivity of ordering when reasoning extensionally in guarded
+type theory, our weakened notion of extensional model is based on reflexive
+graph categories rather than double categories. This means we lose the reasoning
+principle of horizontal pasting of squares. We will still require a notion of
+\emph{composition} of relations, to model the transitivity of type precision. We
+note that without horizontal pasting of squares, the notion of left/right
+representability of relations is not sufficient to interpret the cast rules of
+gradual typing. Instead, in an extensional model we work with a generalized
+notion of representability that corresponds to the non-compositional form of the
+cast rules:
+
+\begin{definition}
+    Let $c : A \rel A'$ and $f : A \to A'$ in a reflexive graph category with
+    composition of relations. We say that $c$ is \emph{universally
+    left-representable by} $f$ if for any $c_l : A_l \rel A$ and $c_r : A' \rel
+    A_r$ we have $f \ltsq{cc_r}{c_r} \id$ and $\id \ltsq{c_l}{c_lc} f$.
+    %
+    Dually, let $d : B \rel B'$ and $\phi : B' \to B$.  We say that $d$ is
+    \emph{universally right-representable by} $\phi$ if for any $d_l : B_l \rel
+    B$ and $d_r : B' \rel B_r$ we have $\id \ltsq{d_ld}{d_l} \phi$ and $\phi
+    \ltsq{d_r}{dd_r}\id$.
+\end{definition}
+
+In a reflexive graph category, these notions are stronger than the definitions
+of left/right representability, since we can pick $c_l,c_r,d_l,d_r$ to be the
+reflexive relations. In a double category these are equivalent, but the
+equivalence uses horizontal pasting.
+
+Additionally, while in the presence of horizontal pasting compositionality of
+representable morphisms is automatic, without this principle we must require it
+explicitly.
+%
+Finally, we explicitly add in a requirement that the type
+constructors are functorial on relations up to order equivalence.
+
+In summary:
+\begin{definition}\label{def:extensional-model}
+    An \emph{extensional model of gradual typing} consists of:
+
+    \begin{enumerate}
+    \item A locally thin reflexive graph internal to CBPV models.
+    \item Composition of value and computation relations that form a category
+    with the reflexive relations as identity. Call these categories $\mathcal
+    V_r,\mathcal E_r$.
+    \item Identity-on-objects functors $\upf : \mathcal V_r \to \mathcal V_f$
+    and $\dnf : \mathcal E_r^{op} \to \mathcal E_f$ such that every $\upf\, c$
+    universally left-represents $c$ and every $\dnf\, d$ universally
+    right-represents $d$.
+    \item The CBPV connectives $U,F,\times,\to$ are all \emph{covariant}
+    functorial on relations up to equivalence: $U(dd') \equidyn U(d)U(d')$
+    etc.\footnote{The reflexive graph structure already requires that these
+    functors preserve identity relations.}
+        \begin{itemize}
+        \item $U(dd') \equidyn U(d)U(d')$
+        \item $F(cc') \equidyn F(c)F(c')$
+        \item $(cc') \to (dd') \equidyn (c \to d)(c' \to d')$
+        \item $(c_1c_1') \times (c_2c_2') \equidyn (c_1 \times c_2)(c_1'\times c_2')$
+        \end{itemize}
+        where $c \equidyn c'$ means $\id \ltsq{c}{c'}\id$ and $\id \ltsq{c'}{c}
+        \id$.
+    \item A natural transformation $\mho : 1 \Rightarrow U$ such that $\mho
+        \circ {!} \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$.
+    \item Distinguished value type $\nat$ with morphisms $z : \mathcal
+        V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+    \item Distinguished value types $D$ with distinguished relations $\iarr{}:
+        U(D \to F D) \rel D$ and $\inat : \nat \rel D$ and $\itimes : D \times D
+        \rel D$ each satisfying the retraction property $\dnc
+        {\iarr{}}F(\upc{\iarr{}}) \equidyn \id$.
+\end{enumerate}
+\end{definition}
+
+An extensional model of gradual typing is sufficient to interpret the syntax of
+a gradual cast calculus.
+
+
+\subsection{Intensional Models of Gradual Typing}
+
+An intensional model of gradual typing is an abstraction of working in a setting
+where the ordering on terms is transitive but requires terms to be in lock-step.
+To aid in understanding the definition of an intensional model, we break the
+definition into five steps, with each one building on the previous. The last
+step will be the definition we have in mind when we refer to an intensional
+model.
+
+% The steps in the definition of intensional model are as follows:
+% \begin{enumerate}
+%   \item A double CBPV model
+% \end{enumerate}
+
+The starting point for an intensional model is the same as that of an idealized
+model of gradual typing: namely, a double CBPV model (see Definition
+\ref{def:double-cbpv-model}). In particular, unlike the extensional model where
+we could only compose \emph{relations} horizontally, here we also have a
+horizontal composition operation on squares.
+
+% The starting point is similar to that of the extensional model. This time,
+% however, since we are working intensionally, the semantic denotation of term
+% precision \emph{is} transitive, so we \emph{do} have a horizontal composition
+% operation on squares. Compare this to the extensional case, where we could only
+% compose \emph{relations} horizontally, not squares.
+% %
+% We can specify this data compactly as a category internal to the category of
+% CBPV models and lax morphisms, where we require that the reflexivity, source,
+% and target morphisms are strict. In particular, as in the extensional case,
+% there is a CBPV model of ``objects'' $\mathcal M_f$ and a CBPV model of
+% ``arrows'' $\mathcal M_{sq}$. There are strict CBPV morphisms $r : \mathcal M_f
+% \to \mathcal M_{sq}$ and $s, t : \mathcal M_{sq} \to \mathcal M_f$, just as
+% before.
+% %
+% But now, we also have a CBPV morphism $m$ from the pullback $\mathcal M_{sq}
+% \times_{s = t} \mathcal M_{sq}$ to $\mathcal M_{sq}$, i.e., ``composition of
+% arrows''. In particular, this consists of a functor $m_{\mathcal{V}} : \vsq
+% \times_{\sv = \tv} \vsq \to \vsq$ for composition of value relations/squares,
+% and a functor $m_{\mathcal{E}} : \esq \times_{\se = \te} \esq \to \esq$ for
+% composition of computation relations/squares. Furthermore, $s \circ m = s \circ
+% \pi_1$ and $t \circ m = t \circ \pi_2$.
+
+As in the definition of extensional model, we also require the existence of a
+natural transformation $\mho : 1 \Rightarrow U$ such that $\mho\, \circ\,{!}
+\ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$, and a distinguished value type
+$\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s : \mathcal V(\nat,\nat)$.
+
+To model intensional behavior, we specify that the model has a natural
+transformation $\delta \colon U \Rightarrow U$. Specifically, this means there
+is a family of vertical morphisms $\delta_B \in \vf(UB, UB)$, which is natural
+in $B$ with respect to composition of vertical morphisms: for all $\phi \in
+\ef(B_i, B_o)$ we have $U\phi \circ \delta_{B_1} = \delta_{B_2} \circ (U\phi)$.
+Naturality of $\delta$ furthermore implies that for any $d : B \rel B'$, there
+is a square $\delta_{B} \ltsq{Ud}{Ud} \delta_{B'}$.
+
+We call a model satisfying these requirements an \emph{intensional pre-model}.
+For the sake of ease of reference, we recap the definition below:
+%
+\begin{definition}
+  An \textbf{intensional pre-model} consists of:
+  \begin{itemize}
+    \item A double CBPV model, i.e., a category internal to the category of CBPV
+    models and lax morphisms, where we require that the morphisms $r$, $s$, and
+    $t$ are strict.
+    \item A natural transformation $\mho : 1 \Rightarrow U$ such that $\mho
+    \circ {!} \ltsq{r(A)}{r(UB)} f$ for any $f : A \to UB$. 
+    \item A value type $\nat$ with morphisms $z : \mathcal V(1,\nat)$ and $s :
+    \mathcal V(\nat,\nat)$.
+    \item A natural transformation $\delta \colon U \Rightarrow U$.
+  \end{itemize}
+\end{definition}
+
+
+\begin{lemma}
+  We have the following properties involving the delay maps in any intensional
+  pre-model:
+  \begin{enumerate}
+    \item We can define a computation morphism $\delta_{FA}^* \in \ef(FA, FA)$ for
+    all $A$. To do so, first compose the unit $\eta_A \in \vf(A, UFA)$ with the
+    morphism $\delta_{FA} \in \vf(UFA, UFA)$, and then by the adjunction we get a
+    computation morphism $\delta_{FA}^* \in \ef(FA, FA)$.
+    \item There is a square $\delta_{FA}^* \ltdyn_{Fc}^{Fc} \delta_{FA'}^*$ for all $c : A \rel A$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  See appendix.
+\end{proof}
+
+%   U\phi \circ \delta_{B_1}
+% = U\phi \circ \theta_{B_1} \circ \nxt 
+% = \theta_{B_2} \circ \later(U\phi) \circ \nxt
+% = \theta_{B_2} \circ \nxt \circ U\phi
+% = \delta_{B_2} \circ U\phi
+
+\subsubsection{Weak Bisimilarity}\label{sec:abstract-model-bisimilarity}
+
+The next ingredient in the definition of intensional model is \emph{weak
+bisimilarity}, which formalizes the notion that two morphisms are the same ``up
+to steps'', i.e., they differ only in that one may wait more than the other.
+%
+In particular, for any pair of objects $A$ and $A'$, in $\vf$, we require that
+there is a reflexive, symmetric relation $\bisim_{A,A'}$ on the hom-set $\vf(A,
+A')$, called the \emph{weak bisimilarity} relation. Similarly for the
+computation category: there is a reflexive, symmetric relation $\bisim_{B,B'}$
+defined on each hom-set $\ef(B, B')$.
+%
+Additionally, the weak bisimilarity relation should be a congruence with respect
+to composition: if $f \bisim_{A,A'} f'$ and $g \bisim_{A',A''} g'$, then $g
+\circ f \bisim_{A,A''} g' \circ f'$, and likewise for computations.
+
+% It seems this is needed when defining the actions of the functors on semantic perturbations.
+The bisimilarity relation should also be preserved by the functors $U, F, \arr$,
+and $\times$ e.g., if $f \bisim_{A',A} g$ and $\phi \bisim_{B,B'} \phi'$, then
+$f \arr \phi \bisim_{A \arr B, A' \arr B'} g \arr \phi'$. Similarly, the two
+directions of the isomorphism of hom-sets $\vf(A, UB) \cong \ef(FA, B)$ should
+preserve bisimilarity.
+
+We can state all of this compactly by requiring that the categories $\vf$ and
+$\ef$ be \emph{enriched} over the symmetric monoidal category $\setapprox$,
+whose objects are sets equipped with a reflexive, symmetric relation and whose
+arrows are functions between the sets that preserve the relation. Then we
+require that the functors $U, F, \arr$, and $\times$ are
+$\setapprox$-enriched, and likewise $F \dashv U$ as enriched functors.
+%
+Note that $\vsq$ and $\esq$ are not $\setapprox$-enriched, so in the functors
+$r, s, t$ between $\vf$ and $\vsq$ and between $\ef$ and $\esq$, we view $\vf$
+and $\ef$ as ordinary categories, where we simply forget the bisimilarity
+relation on hom-sets.
+
+Lastly, we require that for any computation object $B$, the delay map $\delta_B
+\colon UB \to UB$ (which is defined in terms of $\theta_B$) is bisimilar to the
+identity: $\delta_B \bisim_{UB, UB} \id_{UB}$.
+
+
+\begin{definition}\label{def:step-1-model}   
+An \emph{intensional pre-model with bisimilarity} is an intensional pre-model
+$\calM$ such that:
+\begin{itemize}
+  % \item There is a reflexive, symmetric relation $\bisim$ on the hom-sets
+  % $\vf(A,A')$ and $\ef(B,B')$ such that $\bisim$ preserves composition.
+  \item The categories $\vf$ and $\ef$ are enriched over $\setapprox$.
+  \item The functors $U, F, \arr$, and $\times$ are $\setapprox$-enriched, and
+  the adjunction $F \dashv U$ is an enriched adjunction.
+  \item For each $B$, the delay map $\delta_{B}$ is bisimilar to the identity
+  $\delta_B \bisim_{UB, UB} \id_{UB}$.
+\end{itemize}
+\end{definition}
+
+If $\calM$ is an intensional pre-model with bisimilarity, it will sometimes be
+useful to have a concise definition describing the value objects, morphisms,
+relations, and squares as a coherent unit, and likewise for the computations. To
+do this, we introduce some terminology:
+
+\begin{definition}\label{def:bisim-dbl-cat}
+  A \emph{bisimilarity reflexive-graph} $\calC$ consists of:
+  \begin{itemize}
+    \item A category $\cf$ of objects and vertical morphisms, enriched in
+    $\setapprox$.
+    \item A thin category $\csq$ of horizontal morphisms and squares.
+    \item A functor $r: |\cf| \to \csq$ where $|\cf|$ is the underlying ordinary
+    category of $\cf$.
+    \item Functors $s, t: \csq \to |\cf|$ such that $sr = tr = \id$.
+  \end{itemize}
+
+  A \emph{functor} $G : \calC \to \calC'$ of bisimilarity reflexive-graphs
+  consists of:
+  \begin{itemize}
+    \item A $\setapprox$-enriched functor $G_f: \cf \to \cf'$.
+    \item A functor $G_{sq} : \csq \to \csq'$.
+    \item Source and target are preserved: $s' \circ G_{sq} = G_f \circ s$, and $t' \circ G_{sq} = G_f \circ t$.
+    \item Reflexivity is preserved: $r' \circ G_f = G_{sq} \circ r$.
+  \end{itemize}
+
+  Let $G, H: \calC \to \calC'$ be functors of bisimilarity reflexive-graphs. A
+  \emph{natural transformation} $\alpha: G \to H$ consists of:
+  \begin{itemize}
+    \item A $\setapprox$-enriched natural transformation $\alpha^f: G_f \to H_f$.
+    \item A natural transformation $\alpha^{sq}: G_{sq} \to H_{sq}$.
+  \end{itemize}
+
+  A \emph{bisimilarity double-category} is a bisimilarity reflexive graph that
+  additionally has a ``horizontal composition'' functor $\circ \colon \csq
+  \times_{s = t} \csq \to \csq$ where $\csq \times_{s = t} \csq$ is the
+  following pullback:
+
+    % https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXGNzcSBcXHRpbWVzX3tzID0gdH0gXFxjc3EiXSxbMCwxLCJcXGNzcSJdLFsxLDAsIlxcY3NxIl0sWzEsMSwiXFxjZiJdLFswLDFdLFsxLDNdLFsyLDNdLFswLDJdLFswLDMsIiIsMSx7Im9mZnNldCI6Miwic3R5bGUiOnsibmFtZSI6ImNvcm5lciJ9fV1d
+  \[\begin{tikzcd}[ampersand replacement=\&]
+    {\csq \times_{s = t} \csq} \& \csq \\
+    \csq \& \cf
+    \arrow[from=1-1, to=1-2]
+    \arrow[from=1-1, to=2-1]
+    \arrow["\lrcorner"{anchor=center, pos=0.125}, shift right=2, draw=none, from=1-1, to=2-2]
+    \arrow[from=1-2, to=2-2]
+    \arrow[from=2-1, to=2-2]
+  \end{tikzcd}\]
+
+  We additionally require that composition is well-behaved with respect to the
+  source and target functors, and satisfies associativity and left and right
+  unit laws, as in an ordinary double category.
+
+% % https://q.uiver.app/#q=WzAsNSxbMSwwLCJcXGNzcSBcXHRpbWVzX3tzID0gdH0gXFxjc3EiXSxbMSwyLCJcXGNmIl0sWzEsMSwiXFxjc3EiXSxbMCwxLCJcXGNzcSJdLFsyLDEsIlxcY3NxIl0sWzAsMiwiXFxjaXJjIl0sWzIsMSwicyIsMix7Im9mZnNldCI6MX1dLFszLDEsInMiLDJdLFswLDMsIlxccGlfMSIsMl0sWzAsNCwiXFxwaV8yIl0sWzQsMSwidCJdLFsyLDEsInQiLDAseyJvZmZzZXQiOi0xfV1d
+% \[\begin{tikzcd}[ampersand replacement=\&]
+% 	\& {\csq \times_{s = t} \csq} \\
+% 	\csq \& \csq \& \csq \\
+% 	\& \cf
+% 	\arrow["{\pi_1}"', from=1-2, to=2-1]
+% 	\arrow["\circ", from=1-2, to=2-2]
+% 	\arrow["{\pi_2}", from=1-2, to=2-3]
+% 	\arrow["s"', from=2-1, to=3-2]
+% 	\arrow["s"', shift right, from=2-2, to=3-2]
+% 	\arrow["t", shift left, from=2-2, to=3-2]
+% 	\arrow["t", from=2-3, to=3-2]
+% \end{tikzcd}\]
+
+  A \emph{(lax) functor of bisimilarity double-categories} is defined
+  analogously to a functor of bisimilarity reflexive-graphs, except we
+  additionally require that the functor preserves composition of horizontal
+  morphisms up to a square:
+
+%   % https://q.uiver.app/#q=WzAsNSxbMCwwLCJHWF8xIl0sWzEsMCwiR1hfMiJdLFsyLDAsIkdYXzMiXSxbMCwxLCJHWF8xIl0sWzIsMSwiR1hfMyJdLFszLDQsIkcoUiBcXGNpcmMgUicpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJHUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiR1InIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwzLCJcXGlkIiwyXSxbMiw0LCJcXGlkIl1d
+% \[\begin{tikzcd}[ampersand replacement=\&]
+% 	{GX_1} \& {GX_2} \& {GX_3} \\
+% 	{GX_1} \&\& {GX_3}
+% 	\arrow["GR", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+% 	\arrow["\id"', from=1-1, to=2-1]
+% 	\arrow["{GR'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+% 	\arrow["\id", from=1-3, to=2-3]
+% 	\arrow["{G(R \circ R')}"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+% \end{tikzcd}\]
+
+% https://q.uiver.app/#q=WzAsNSxbMCwwLCJHWF8xIl0sWzEsMCwiR1hfMiJdLFsyLDAsIkdYXzMiXSxbMCwxLCJHWF8xIl0sWzIsMSwiR1hfMyJdLFszLDQsIkcoUiBcXGNpcmMgUicpIiwyLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMCwxLCJHUiIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImJhcnJlZCJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzEsMiwiR1InIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiYmFycmVkIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMiw0LCIiLDAseyJvZmZzZXQiOi0xLCJzdHlsZSI6eyJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiIiwyLHsib2Zmc2V0IjoxLCJzdHlsZSI6eyJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzAsMywiIiwxLHsic3R5bGUiOnsiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsyLDQsIiIsMSx7InN0eWxlIjp7ImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{GX_1} \& {GX_2} \& {GX_3} \\
+	{GX_1} \&\& {GX_3}
+	\arrow["GR", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+	\arrow[shift right, no head, from=1-1, to=2-1]
+	\arrow[no head, from=1-1, to=2-1]
+	\arrow["{GR'}", "\shortmid"{marking}, no head, from=1-2, to=1-3]
+	\arrow[shift left, no head, from=1-3, to=2-3]
+	\arrow[no head, from=1-3, to=2-3]
+	\arrow["{G(R \circ R')}"', "\shortmid"{marking}, no head, from=2-1, to=2-3]
+\end{tikzcd}\]
+
+\end{definition}
+
+Bisimilarity double-categories, functors between them, and natural
+transformations of such functors form a 2-category, which we denote
+$\bisimdblcat$:
+%
+\begin{lemma}
+  There is a 2-category $\bisimdblcat$ whose objects are bisimilarity
+  double-categories, whose 1-cells are functors between bisimilarity
+  double-categories, and whose 2-cells are natural transformations between such
+  functors.
+\end{lemma}
+\begin{proof}
+  See appendix.
+\end{proof}
+
+% TODO:
+% Opposite of a bisim double-cat 
+% Product of bisim double-cats
+% Exponential of bisim double-cats
+
+With these definitions in hand, we can give an alternative definition of an
+intensional pre-model with bisimilarity:
+
+\begin{definition}
+  An intensional pre-model with bisimilarity consists of the following diagram
+  in $\bisimdblcat$:
+
+  % https://q.uiver.app/#q=WzAsMixbMCwwLCJcXGNhbFYiXSxbMiwwLCJcXGNhbEUiXSxbMCwxLCJGIiwwLHsiY3VydmUiOi00fV0sWzEsMCwiVSIsMV0sWzEsMCwiVSIsMSx7ImN1cnZlIjotNH1dLFsxLDAsIlxcRGVsdGEoMV9cXGNhbFYpIiwwLHsib2Zmc2V0IjotMywiY3VydmUiOi01fV0sWzIsMywiIiwwLHsibGV2ZWwiOjEsInN0eWxlIjp7Im5hbWUiOiJhZGp1bmN0aW9uIn19XSxbMyw0LCJcXGRlbHRhIiwwLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfX1dLFs1LDQsIlxcbWhvIiwyLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfX1dXQ==
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\calV \&\& \calE
+	\arrow[""{name=0, anchor=center, inner sep=0}, "F", curve={height=-24pt}, from=1-1, to=1-3]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "U"{description}, from=1-3, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "U"{description}, curve={height=-24pt}, from=1-3, to=1-1]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "{\Delta(1_\calV)}", shift left=3, curve={height=-30pt}, from=1-3, to=1-1]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=0, to=1]
+	\arrow["\delta", shorten <=3pt, shorten >=3pt, Rightarrow, from=1, to=2]
+	\arrow["\mho"', shorten <=2pt, shorten >=2pt, Rightarrow, from=3, to=2]
+\end{tikzcd}\]
+
+  Along with a functor of bisimilarity double-categories $\arr \colon \calV^{op}
+  \times \calE \to \calE$ satisfying $U(A \arr B) \cong A \Rightarrow UB$
+  
+  Which additionally satisfies:
+  \begin{itemize}
+    \item 
+  \end{itemize}
+\end{definition}
+
+
+\subsubsection{Perturbations}\label{sec:abstract-model-perturbations}
+
+We next focus on the specification of perturbations in a pre-model with
+bisimilarity. To begin, let $\calC$ be a bisimilarity double-category.
+%
+% Let $\calM$ be a pre-model with bisimilarity, and let $\calC$ stand
+% for the double category of values of $\calM$, or the double category of
+% computations of $\calM$.
+%
+For an object $X$ of $\calC$, a \emph{semantic perturbation} of $X$ is an
+endomorphism $f \in \cf(X, X)$ such that $f \bisim_{X,X} \id_X$. The collection
+of semantic perturbations on $X$ forms a monoid under composition, with the
+identity element being the identity $\id_X$. We write $\semptb{X}$ to refer to
+this monoid.
+
+For every object $X \in \cf$, we require that there is a monoid $M_X$ of
+\emph{syntactic perturbations} of $X$ and a monoid homomorphism $i_X : M_X \to
+\semptb{X}$ that interprets these as semantic perturbations.
+
+The prototypical semantic perturbation for a computation object $B$ is the delay
+map $\delta_B \colon UB \to UB$. We require that for any computation object $B$,
+the monoid $M_{UB}$ contains an element $m$ such that $i_{UB}(m) = \delta_B$.
+
+We require that the functors $\times, \timesk$, $\arr, \tok$, $U, \Uk$, $F, \Fk$
+all preserve perturbations. As in the prior work of Giovannini et al., we also
+require that the perturbations interact nicely with the relation morphisms.
+Namely, if $R : X \rel X'$ is a relation morphism, we require there to be two
+homomorphisms of monoids $\push_R : M_X \to M_{X'}$ and $\pull_R : M_{X'} \to
+M_X$. The authors call this the \emph{push-pull property}.
+
+If $\calM$ is a pre-model with bisimilarity that additionally satisfies the
+above properties, we say that $M$ is a \emph{pre-model with perturbations}. To
+summarize:
+%
+% TODO
+\begin{definition}\label{def:step-2-model} 
+  A \emph{pre-model with perturbations} $\calM$ is a pre-model with
+  bisimilarity, such that the following additional requirements are met:
+  \begin{enumerate}
+    \item For each object (value or computation) $X$, there is a monoid $M_X$
+    and a homomorphism of monoids $i_X : M_X \to \semptb{X}$.
+    \item For all $B$, there is an element $m$ such that $i_{UB}(m) = \delta_B$.
+    \item The functors $\times, \timesk$, $\arr, \tok$, $U, \Uk$, $F, \Fk$
+    preserve perturbations.
+    \item The push-pull property holds for all $c : A \rel A'$ and all $d : B
+    \rel B'$.
+  \end{enumerate}
+\end{definition}
+
+
+\subsection{Representable Relations}\label{sec:abstract-model-representable}
+
+Now we turn to the notion of representability of horizontal morphisms, which
+allows us to specify the behavior of casts.
+%
+As in the case of an idealized abstract model, we want that each value
+horizontal morphism $c$ is left-representable by an embedding morphism $e_c$ and
+$Fc$ is right-representable by a projection morphism $p_c$, and dually for
+computation horizontal morphisms $d$. However, since casts take observable
+steps, we must insert perturbations on the side opposite the cast to keep both
+sides in lock-step. This is because the squares in an intensional model are
+intended to model a strong error ordering between vertical morphisms in which
+both sides must have the same stepping behavior. Following Giovannini et al., we
+call this weakened notion of representability up-to an explicit perturbation
+\emph{quasi-representability}.
+
+In this section, we begin with the notion of intensional pre-model with
+perturbations as defined in the previous section, and provide the additional
+conditions that axiomatize the behavior of casts. The precise definitions are as
+follows.
+
+First, let $\mathcal M$ be any double category with a notion of perturbations,
+i.e., for any object $X$ in $\mathcal M$ there is a monoid $\Ptb_X$ with a monoid
+homomorphism into the endomorphisms on $X$.
+%
+\begin{definition}\label{def:quasi-left-representable}
+  Let $R$ be a horizontal morphism in $\mathcal M$ between objects $X$ and $Y$.
+  We say that $R$ is \emph{quasi-left-representable by} a vertical morphism $f$
+  in $\mathcal M(X, Y)$ if there are perturbations $\delle_R \in \Ptb_X$ and
+  $\delre_R \in \Ptb_Y$ such that there is a square $\upl : f \ltsq{R}{r(Y)}
+  \ptb(\delre_R)$ and a square $\upr : \ptb(\delle_R) \ltsq{r(X)}{R} f$.
+
+  \begin{center}
+    \begin{tabular}{ m{7em} m{7em} } 
+      % UpL
+      \begin{tikzcd}[ampersand replacement=\&]
+        X \& {Y} \\
+        {Y} \& {Y}
+        \arrow["f"', from=1-1, to=2-1]
+        \arrow["\ptb(\delta_R^{r,e})", from=1-2, to=2-2]
+        \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["r(Y)", "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \end{tikzcd}
+      &
+      % UpR
+      \begin{tikzcd}[ampersand replacement=\&]
+        X \& {X} \\
+        {X} \& {Y}
+        \arrow["\ptb(\delta_R^{l,e})"', from=1-1, to=2-1]
+        \arrow["f", from=1-2, to=2-2]
+        \arrow["r(X)", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+        \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+      \end{tikzcd}
+    \end{tabular}
+  \end{center}
+%
+\end{definition}
+
+\begin{definition}\label{def:quasi-right-representable}
+  Let $R$ be a horizontal morphism between $X$ and $Y$. We say that $R$ is
+  \emph{quasi-right-representable by} $f \in \mathcal M(Y, X)$ if there exist
+  perturbations $\dellp_R \in \Ptb_X$ and $\delrp_R \in \Ptb_Y$ such that we
+  have a square $\dnr : \ptb(\dellp_R) \ltsq{R}{r(X)} f$ and a square $\dnl : f
+  \ltsq{r(Y)}{R} \ptb(\delrp_R)$.
+  %
+  % \begin{center}
+  %   \begin{tabular}{ m{7em} m{7em} } 
+  %     % DnR
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       {X} \& {Y} \\
+  %       {X} \& {X}
+  %       \arrow["\delta_R^{l,p}"', from=1-1, to=2-1]
+  %       \arrow["f", from=1-2, to=2-2]
+  %       \arrow["R", "\shortmid"{marking}, no head, from=1-1, to=1-2]
+  %       \arrow[from=2-1, to=2-2, Rightarrow, no head]
+  %     \end{tikzcd}
+  %     &
+  %     % DnL
+  %     \begin{tikzcd}[ampersand replacement=\&]
+  %       {Y} \& {Y} \\
+  %       {X} \& {Y}
+  %       \arrow["f"', from=1-1, to=2-1]
+  %       \arrow["\delta_R^{r,p}", from=1-2, to=2-2]
+  %       \arrow[from=1-1, to=1-2, Rightarrow, no head]
+  %       \arrow["R"', "\shortmid"{marking}, no head, from=2-1, to=2-2]
+  %     \end{tikzcd}
+  %   \end{tabular}
+  % \end{center}
+  % %
+  % We call the first square $\dnr$ and the second square $\dnl$.
+  %
+\end{definition}
+
+We can now define a notion of an intensional model where the horizontal
+morphisms are quasi-representable:
+%
+\begin{definition}\label{def:step-3-model}
+  Let $\calM$ be an intensional pre-model with perturbations. We say that
+  $\calM$ is a \emph{pre-model with representability} if:
+  \begin{itemize}
+    \item Every value horizontal morphism $c : A \rel A'$ is
+    quasi-left-representable in the double category $\calV$. That is, there is a
+    morphism $\upc{c} \in \calV(A, A')$ that quasi-left-represents $c$.
+    \item Every computation horizontal morphism $d : B \rel B'$ is
+    quasi-right-representable in $\calE$. That is, there is a morphism $\dnc{d}
+    \in \calE(B', B)$ that quasi-right-represents $d$.
+  \end{itemize}
+\end{definition}
+
+\subsection{The Dynamic Type}\label{sec:abstract-model-dyn}
+
+We now discuss how to specify the denotation of the dynamic type in an
+intensional model. It is important to note that it makes sense to axiomatize the
+dynamic type already in a base intensional pre-mdoel. That is, we do not require
+the notions of weak bisimilarity, perturbations, or representability of
+horizontal morphisms to define the denotation of the dynamic type.
+% However, for our purposes, we will assume we are given an intensional
+% pre-model with representability.
+
+% Given such a model $\calM$, to interpret the dynamic type we require that
+% there is...
+
+Let $\calM$ be an intensional pre-model, a pre-model with bisimilarity, a
+pre-model with perturbations, or a pre-model with representability. To interpret
+the dynamic type, we require that there is a distinguished value object $D \in
+\calV$, such that for every value object $A$, there is a distinguished
+horizontal morphism $\inj{A} \colon A \rel D$.
+
+Now we can state the definition of an intensional model:
+\begin{definition}
+  An \emph{intensional model of gradual typing} is an intensional pre-model with
+  representability that furthermore has an interpretation of the dynamic type.
+\end{definition}
+
+\section{Constructing a Guarded Model of Gradual Typing}
+
+In this section, we discuss how to \emph{construct} an abstract model of gradual
+typing via a step-by-step process. Recall that the ultimate goal is to build an
+extensional model of gradual typing (Definition \ref{def:extensional-model}), as
+such a model contains the structure necessary to interpret the syntax and
+precision rules of a gradual cast calculus.
+
+Although the definition of an extensional model involves a significant amount of
+data, it is not necessary to create an instance of an extensional model from
+scratch. Much of the difficult work can be carried out abstractly. In
+particular, it is possible to construct an extensional model from an intensional
+model using the abstract analogue of the bisimilarity-closure construction in
+the work of Giovannini et al. Moreover, much of the construction of an
+intensional model can also be carried out abstractly.
+
+% \subsection{Starting Point: Intensional Pre-Model with Bisimilarity}
+
+We take as a starting point an intensional pre-model with bisimilarity
+(Definition \ref{def:step-1-model}).
+
+\subsection{Adding Perturbations}
+
+Suppose we are given an intensional pre-model with bisimilarity $\calM$. Our
+goal is to construct a model $\calM'$ with perturbations, as in Definition
+\ref{def:step-2-model}.
+
+The summary of the construction is as follows:
+%
+\begin{itemize}
+  \item
+  A value object in $\calM'$ consists of a value object $A$ of $\calM$
+  paired with a monoid $\Ptb_A$ of syntactic perturbations, and a homomorphism of
+  monoids $\ptb_A : \Ptb_A \to \semptb{A}$ interpreting the perturbations as
+  semantic perturbations.
+  %
+  Dually, a computation object of $\calM'$ consists of a computation object $B$ of
+  $\calM$ paired with a monoid $\Ptb_B$, along with a monoid homomorphism $\ptb_B
+  : \Ptb_B \to \semptb{B}$.
+
+  \item
+  The value and computation vertical morphisms in $\calM'$ are defined simply as
+  those of $\calM$; they do not interact with the perturbations.
+
+  \item 
+  % TODO is this a property of the relation, or additional structure?
+  A value relation $c: (A, \Ptb_A, \ptb_A) \rel (A', \Ptb_{A'}, \ptb_{A'})$ in
+  $\calM'$ is defined to be a value relation $c : A \rel A'$ in $\calM$ that
+  satisfies the push-pull property with respect to the monoids $\Ptb_A$ and
+  $\Ptb_{A'}$.
+  %
+  Dually, a computation relation $d: (B, \Ptb_B, \ptb_B) \rel (B', \Ptb_{B'},
+  \ptb_{B'})$ in $\calM'$ is defined to be a computation relation in $\calM$ that
+  satisfies the push-pull property with respect to $\Ptb_B$ and $\Ptb_{B'}$.
+
+  \item
+  Lastly, value and computation squares in $\calM'$ are defined to be the same as
+  those in $\calM$.
+\end{itemize}
+
+\subsection{Adding Representability}
+
+\subsection{The Dynamic Type}
+
+Lastly, suppose we are given an intensional pre-model with representability
+$\calM$, along with an object $D$ with distinguished relations $\inat, \itimes,
+\iarr$.
+%
+We construct a model for which each value object $A$ has a corresponding
+horizontal morphism $\inj{c} : A \rel D$.
+
+\subsection{Extracting an Extensional Model: The Bisimilarity-Closure Construction}
+
+Lastly, we can obtain an extensional model from an intensional model using the
+abstract analogue of the bisimilarity-closure definition in the work of
+Giovannini et al. In particular, let $\calM$ be an intensional model. We define
+an extensional model $\calM'$ as follows. The objects and vertical/horizontal
+morphisms are the same as those in $\calM$; it is only the definition of squares
+that differs.
+
+Specifically, let $f : X_i \to X_o$ and $g : X_i' \to X_o'$ be vertical
+morphisms (of either value or computation types). Let $R_i : X_i \rel X_i'$ and
+$R_o : X_o \rel X_o'$ be horizontal morphisms. We define
+%
+\[ f \ltsqbisim{R_i}{R_o} g := 
+  \exists f', g'.\, f \bisim_{X_i, X_o} f' \ltsq{R_i}{R_o} g' \bisim_{X_i', X_o'} g. \]
+%
+It remains to verify that the model satisfies the requirements of an extensional
+model. 
+%
+% TODO deriving the original cast rules from the simplified ones in the intensional model
+%
+The basic idea is that the perturbations in the intensional squares are all
+bisimilar to the identity function, and hence they disappear when we perform the
+above construction.
+
+\section{Constructions on Abstract Models}
+
+In this section, we explain how to augment a model of gradual typing with
+additional effects presented in the form of an adjunction on the value or
+computation categories.
+%
+We assume the minimum amount of data given, i.e., an intensional pre-model with
+bisimilarity $\calM$ (see Definition \ref{def:step-1-model}), along with a
+suitable value object interpreting the dynamic type.
+
+%
+% We assume here that the categories modeling the value and computation types are
+% set-based (as opposed to a Kripke model of presheaves). The main obligation will
+% be to construct the double categories of values and computations and the pair of
+% adjoint functors $F$ and $U$ between these double categories.
+%
+% Importantly, we also assume that the equation for the dynamic type is of the
+% same form as described in the previous section. Since the construction of the
+% perturbations for the dynamic type does not depend on the specific
+% implementations of the functors $U$, $F$, $\times$ and $\arr$, we need only
+% construct the underlying type, the ordering, and the bisimilarity relation for
+% the dynamic type.
+
+% Our approach is as follows. Suppose we are given an intensional pre-model with
+% bisimilarity $\calM$ (see Definition \ref{def:step-1-model}).
+
+Recall that we can visualize (part of) the underlying double CBPV model of
+$\calM$ as follows:
+%
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXHZzcSJdLFsyLDAsIlxcZXNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcZWYiXSxbMiwzLCJcXEZmIiwwLHsiY3VydmUiOi0yfV0sWzMsMiwiXFxVZiIsMCx7ImN1cnZlIjotMn1dLFswLDEsIlxcRnNxIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EiLDAseyJjdXJ2ZSI6LTJ9XSxbMiwwLCJcXHJ2Il0sWzAsMiwiXFx0diIsMCx7Im9mZnNldCI6LTEsImN1cnZlIjotMn1dLFswLDIsIlxcc3YiLDIseyJvZmZzZXQiOjEsImN1cnZlIjoyfV0sWzEsMywiXFx0ZSIsMCx7Im9mZnNldCI6LTEsImN1cnZlIjotMn1dLFsxLDMsIlxcc2UiLDIseyJvZmZzZXQiOjEsImN1cnZlIjoyfV0sWzMsMSwiXFxyZSJdLFs0LDUsIlxcYm90IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzYsNywiXFxib3QiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\vsq \&\& \esq \\
+	\\
+	\vf \&\& \ef
+	\arrow[""{name=0, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=1-1, to=1-3]
+	\arrow["\tv", shift left, curve={height=-12pt}, from=1-1, to=3-1]
+	\arrow["\sv"', shift right, curve={height=12pt}, from=1-1, to=3-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=1-3, to=1-1]
+	\arrow["\te", shift left, curve={height=-12pt}, from=1-3, to=3-3]
+	\arrow["\se"', shift right, curve={height=12pt}, from=1-3, to=3-3]
+	\arrow["\rv", from=3-1, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=3-1, to=3-3]
+	\arrow["\re", from=3-3, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=3-3, to=3-1]
+	\arrow["\bot"{description}, draw=none, from=0, to=1]
+	\arrow["\bot"{description}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+%
+Now suppose we are given a pair of adjunctions $\Ff' \dashv \Uf'$ and $\Fsq'
+\dashv \Usq'$, of the form
+%
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXHZzcSJdLFsyLDAsIlxcdnNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcdmYiXSxbMiwzLCJcXEZmJyIsMCx7ImN1cnZlIjotMn1dLFszLDIsIlxcVWYnIiwwLHsiY3VydmUiOi0yfV0sWzAsMSwiXFxGc3EnIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EnIiwwLHsiY3VydmUiOi0yfV0sWzIsMCwiXFxydiJdLFswLDIsIlxcc3YiLDAseyJvZmZzZXQiOi0xLCJjdXJ2ZSI6LTJ9XSxbMCwyLCJcXHR2IiwyLHsib2Zmc2V0IjoxLCJjdXJ2ZSI6Mn1dLFsxLDMsIlxcdHYiLDAseyJvZmZzZXQiOi0xLCJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHN2IiwyLHsib2Zmc2V0IjoxLCJjdXJ2ZSI6Mn1dLFszLDEsIlxccnYiXSxbNCw1LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs2LDcsIlxcYm90IiwxLHsic2hvcnRlbiI6eyJzb3VyY2UiOjIwLCJ0YXJnZXQiOjIwfSwic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoibm9uZSJ9LCJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\vsq \&\& \vsq \\
+	\\
+	\vf \&\& \vf
+	\arrow[""{name=0, anchor=center, inner sep=0}, "{\Fsq'}", curve={height=-12pt}, from=1-1, to=1-3]
+	\arrow["\sv", shift left, curve={height=-12pt}, from=1-1, to=3-1]
+	\arrow["\tv"', shift right, curve={height=12pt}, from=1-1, to=3-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{\Usq'}", curve={height=-12pt}, from=1-3, to=1-1]
+	\arrow["\tv", shift left, curve={height=-12pt}, from=1-3, to=3-3]
+	\arrow["\sv"', shift right, curve={height=12pt}, from=1-3, to=3-3]
+	\arrow["\rv", from=3-1, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "{\Ff'}", curve={height=-12pt}, from=3-1, to=3-3]
+	\arrow["\rv", from=3-3, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "{\Uf'}", curve={height=-12pt}, from=3-3, to=3-1]
+	\arrow["\bot"{description}, draw=none, from=0, to=1]
+	\arrow["\bot"{description}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+%
+We seek conditions under which the compositions of these adjunctions forms a
+double CBPV model with bisimilarity of the form
+%
+% https://q.uiver.app/#q=WzAsNixbMCwwLCJcXHZzcSJdLFsyLDAsIlxcdnNxIl0sWzAsMiwiXFx2ZiJdLFsyLDIsIlxcdmYiXSxbNCwwLCJcXGVzcSJdLFs0LDIsIlxcZWYiXSxbMiwzLCJcXEZmJyIsMCx7ImN1cnZlIjotMn1dLFszLDIsIlxcVWYnIiwwLHsiY3VydmUiOi0yfV0sWzAsMSwiXFxGc3EnIiwwLHsiY3VydmUiOi0yfV0sWzEsMCwiXFxVc3EnIiwwLHsiY3VydmUiOi0yfV0sWzIsMCwiXFxydiJdLFswLDIsIlxcc3YiLDAseyJvZmZzZXQiOi0xLCJjdXJ2ZSI6LTJ9XSxbMCwyLCJcXHR2IiwyLHsib2Zmc2V0IjoxLCJjdXJ2ZSI6Mn1dLFsxLDMsIlxcdHYiLDAseyJvZmZzZXQiOi0xLCJjdXJ2ZSI6LTJ9XSxbMSwzLCJcXHN2IiwyLHsib2Zmc2V0IjoxLCJjdXJ2ZSI6Mn1dLFszLDEsIlxccnYiXSxbMSw0LCJcXEZzcSIsMCx7ImN1cnZlIjotMn1dLFs0LDEsIlxcVXNxIiwwLHsiY3VydmUiOi0yfV0sWzMsNSwiXFxGZiIsMCx7ImN1cnZlIjotMn1dLFs1LDMsIlxcVWYiLDAseyJjdXJ2ZSI6LTJ9XSxbNCw1LCJcXHRlIiwyLHsib2Zmc2V0IjotMSwiY3VydmUiOi0yfV0sWzQsNSwiXFxzZSIsMix7Im9mZnNldCI6MSwiY3VydmUiOjJ9XSxbNSw0LCJcXHJlIl0sWzYsNywiXFxib3QiLDEseyJzaG9ydGVuIjp7InNvdXJjZSI6MjAsInRhcmdldCI6MjB9LCJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJub25lIn0sImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbOCw5LCJcXGJvdCIsMSx7InNob3J0ZW4iOnsic291cmNlIjoyMCwidGFyZ2V0IjoyMH0sInN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxNiwxNywiIiwwLHsibGV2ZWwiOjEsInN0eWxlIjp7Im5hbWUiOiJhZGp1bmN0aW9uIn19XSxbMTgsMTksIiIsMCx7ImxldmVsIjoxLCJzdHlsZSI6eyJuYW1lIjoiYWRqdW5jdGlvbiJ9fV1d
+\[\begin{tikzcd}[ampersand replacement=\&]
+	\vsq \&\& \vsq \&\& \esq \\
+	\\
+	\vf \&\& \vf \&\& \ef
+	\arrow[""{name=0, anchor=center, inner sep=0}, "{\Fsq'}", curve={height=-12pt}, from=1-1, to=1-3]
+	\arrow["\sv", shift left, curve={height=-12pt}, from=1-1, to=3-1]
+	\arrow["\tv"', shift right, curve={height=12pt}, from=1-1, to=3-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{\Usq'}", curve={height=-12pt}, from=1-3, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "\Fsq", curve={height=-12pt}, from=1-3, to=1-5]
+	\arrow["\tv", shift left, curve={height=-12pt}, from=1-3, to=3-3]
+	\arrow["\sv"', shift right, curve={height=12pt}, from=1-3, to=3-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "\Usq", curve={height=-12pt}, from=1-5, to=1-3]
+	\arrow["\te"', shift left, curve={height=-12pt}, from=1-5, to=3-5]
+	\arrow["\se"', shift right, curve={height=12pt}, from=1-5, to=3-5]
+	\arrow["\rv", from=3-1, to=1-1]
+	\arrow[""{name=4, anchor=center, inner sep=0}, "{\Ff'}", curve={height=-12pt}, from=3-1, to=3-3]
+	\arrow["\rv", from=3-3, to=1-3]
+	\arrow[""{name=5, anchor=center, inner sep=0}, "{\Uf'}", curve={height=-12pt}, from=3-3, to=3-1]
+	\arrow[""{name=6, anchor=center, inner sep=0}, "\Ff", curve={height=-12pt}, from=3-3, to=3-5]
+	\arrow["\re", from=3-5, to=1-5]
+	\arrow[""{name=7, anchor=center, inner sep=0}, "\Uf", curve={height=-12pt}, from=3-5, to=3-3]
+	\arrow["\bot"{description}, draw=none, from=0, to=1]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=2, to=3]
+	\arrow["\bot"{description}, draw=none, from=4, to=5]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=6, to=7]
+\end{tikzcd}\]
+
+
+
+
+
+\section{Instantiating the Abstract Framework}
+
+Now that we have demonstrated how to construct a guarded model of gradual
+typing, we instantiate our framework with several examples of concrete
+gradually-typed languages.
+
+\subsection{A Model for the Simple Gradually-Typed Lambda Calculus}\label{sec:gtlc-concrete-model}
+
+We begin with the gradually-typed lambda calculus as described in Section 2 of
+the paper of Giovannini et al. \cite{gtt-sgdt}. Following their construction, we
+define an intensional pre-model with bisimilarity for this language as follows:
+
+\begin{itemize}
+  \item Value objects are \emph{predomains} --- sets $A$ equipped with a partial
+  ordering relation $\ltdyn_A$ and a reflexive, symmetric relation $\bisim_A$.
+
+  \item Value vertical morphisms are \emph{predomain morphisms}. A predomain
+  morphism between $A_i$ and $A_o$ is a function $f : A_i \to A_o$ between the
+  underlying sets that preserves the ordering and bisimilarity relations.
+
+  \item Value horizontal morphisms are \emph{predomain relations}. A predomain
+  relation $c$ between $A$ and $A'$ is a relation between the underlying sets
+  that is closed under the predomain ordering relations on both sides.
+  Composition of predomain relations is given by the usual relational
+  composition.
+
+  \item A value square specifies the usual logical relations relationship
+  between predomain morphisms: $f \ltsq{c_i}{c_o} g$ means that for any $x
+  \binrel{c} y$, we have $f(x) \binrel{c_o} g(y)$.
+
+  \item Computation objects are \emph{error domains} --- predomains $B$ that
+  additionally have a least element $\mho_B \ltdyn b$, and a morphism of
+  predomains $\theta: \later B \to B$ such that $\delta_B := \theta_B \circ
+  \nxt$ is bisimilar to the identity morphism.
+
+  \item Computation vertical morphisms are \emph{error domain morphisms}
+  
+  \item Computation horizontal morphisms are \emph{error domain relations}. An
+  error domain relation $d : B \rel B'$ consists of a relation between the
+  underlying predomains that additionally respects the error and $\theta$
+  elements.
+  %
+  Composition of error domain relations $d$ and $d'$ is not given by composition
+  of the underlying predomain relations; instead, it is defined inductively as
+  the smallest error domain relation containing the composition of the
+  underlying predomain relations.
+  
+  \item A computation square $\phi \ltsq{d}{d'} \phi'$ is defined analogously to
+  a value square.
+\end{itemize}
+
+The functor $U$ from error domains to predomains simply forgets the error
+element and the $\theta$ map.
+%
+The functor $F$ from predomains to error domains takes a predomain $A$ to the
+\emph{free error domain} on $A$. The underlying predomain of $FA$ is defined as
+the unique solution to the guarded recursive type equation
+%
+\[ U(FA) \cong A + 1 + \later U(FA), \]
+%
+where we name the constructors $\eta: A \to U(FA)$, $\mho: UFA$, and $\theta:
+\later U(FA) \to U(FA)$.
+
+The ordering relation on $FA$ is the \emph{lock-step} error ordering defined in
+Figure \ref{fig:lock-step-error-ordering}, which also defines the weak
+bisimilarity relation on $FA$.
+
+\begin{figure}
+  \begin{minipage}{0.5\textwidth}
+    \fbox{$l_1 \ltls l_2$}
+    \begin{align*}
+        &\eta\, x \ltls \eta\, y \text{ if } 
+            x \mathbin{\ltdyn_A} y \\
+        %		
+        &\mho \ltls l' \\
+        %
+        &\theta\, \tilde{l} \ltls \theta\, \tilde{l'} \text{ if } 
+            \later_t (\tilde{l}_t \ltls \tilde{l'}_t)
+    \end{align*}
+  \end{minipage}
+  \begin{minipage}{0.5\textwidth}
+  \fbox{$l_1 \bisim l_2$}
+    \begin{align*}
+        \eta\, x \bisim \eta\, y &\text{ iff } x \bisim_A y \\
+      %
+        \mho \bisim \mho &\text{ iff } \top \\
+      %		
+        \theta\, \tilde{x} \bisim \theta\, \tilde{y} &\text{ iff } \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+      %	
+        \theta\, \tilde{x} \bisim \mho &\text{ iff } \exists n. \theta\, \tilde{x} = \delta^n(\mho)\\
+      %	
+        \theta\, \tilde{x} \bisim \eta\, y &\text{ iff } \exists n. \exists x \bisim_A y.
+          (\theta\, \tilde{x} = \delta^n(\eta\, x))\\
+      %
+        \mho \bisim \theta\, \tilde{y} &\text{ iff } \exists n. \theta\, \tilde{y} = \delta^n(\mho) \\
+      %	
+        \eta\, x \bisim \theta\, \tilde{y} &\text { iff } \exists n. \exists y \bisim_A x. (\theta\, \tilde{y} = \delta^n (\eta\, y))
+      \end{align*}
+  \end{minipage}
+    \caption{The lock-step error ordering and weak bisimilarity relations on $FA$.}
+    \label{fig:lock-step-error-ordering}
+\end{figure}
+
+Given two predomains $A$ and $A'$, we can form their product $A \times A'$,
+where the partial ordering and bisimilarity relations are the obvious extensions
+to the product of the underlying sets.
+%
+Given predomains $A_i$ and $A_o$, the set of morphisms of predomains from $A_i$
+to $A_o$ also forms a predomain, denoted $A_i \Rightarrow A_o$, with the
+ordering and bisimilarity relations defined in the obvious way, e.g., $f \bisim
+g := \forall x \bisim y.\, f(x) \bisim g(y)$.
+
+In particular, when the codomain is of the form $U(B)$ for some error domain
+$B$, then the predomain $A \Rightarrow UB$ inherits the structure of an error
+domain from that of $B$. The error element is the constant function returning
+$\mho_B$, and the $\theta$ map takes a later-morphism $\tilde{f}$ and returns
+the morphism $\lambda x. \theta_B((\later \tilde{f})\, x)$ using the action of
+$\later$ on morphisms.
+
+It is straightforward to verify that the functors $\times, \arr, U,$ and $F$
+extend to relations and squares.
+
+
+Lastly, to define the denotation of the dynamic type, we first construct a
+predomain $|D|$ satisfying
+%
+\[ |D| \cong \mathbb{N} + |D| \times |D| + U(D \arr FD), \]
+%
+where the functors in question are understood to be operating on the categories
+of predomains and error domains as appropriate. In particular, $\later$ acts on
+predomains: for a predomain $A$, the ordering and bisimilarity relations on
+$\later A$ are defined in the obvious manner --- two elements of $\later A$ are
+related if one time step later, they are related in $A$.
+%
+Having defined the predomain for the dyanmic type, we then define the monoid of
+perturbations for the dynamic type by least-fixpoint in the category of monoids
+as
+\[ 
+  M_D \cong (M_D \oplus M_D) \oplus 
+  (\mathbb{N} \oplus M_D^{op} \oplus \mathbb{N} \oplus M_D),
+\]
+and the interpretation $i_D$ of the perturbations as endomorphisms of $|D|$ is
+defined straightfowardly. The resulting triple of $(|D|, M_D, i_D)$ is taken as
+the denotation of the dynamic type.
+
+% The composition $UF$ defines a (strong) monad on the category of predomains.
+
+% \subsection{Additional Set-Based Examples}
+
+% We next consider additional examples where the value types are set-based (as
+% opposed to a Kripke model of presheaves). The main obligation will be to
+% construct the double categories of values and computations and the pair of
+% adjoint functors $F$ and $U$ between these double categories.
+% %
+% Importantly, we assume that the equation for the dynamic type is the same. Since
+% the construction of the perturbations for the dynamic type does not depend on
+% the specific implementations of the functors $U$, $F$, $\times$ and $\arr$, we
+% need only construct the underlying type, ordering relation, and bisimilarity
+% relation for the dynamic type.
+
+\begin{comment}
+\subsection{New Models From Old}
+
+%\subsubsection{Global State}
+
+
+We begin by considering \emph{global state} as an effect. Recall that, given an
+adjunction $F \dashv U$ with $F : C \to D$, we can augment $C$ with global state
+for a state object $S \in C$ by composing it with the usual product-exponential
+adjunction: % TODO citation?
+%
+% https://q.uiver.app/#q=WzAsMyxbMCwwLCJDIl0sWzEsMCwiQyJdLFsyLDAsIkQiXSxbMCwxLCJTIFxcdGltZXMgLSIsMCx7ImN1cnZlIjotMX1dLFsxLDAsIlMgXFxSaWdodGFycm93IC0iLDAseyJjdXJ2ZSI6LTF9XSxbMSwyLCJGIiwwLHsiY3VydmUiOi0xfV0sWzIsMSwiVSIsMCx7ImN1cnZlIjotMX1dLFszLDQsIiIsMCx7ImxldmVsIjoxLCJzdHlsZSI6eyJuYW1lIjoiYWRqdW5jdGlvbiJ9fV0sWzUsNiwiIiwwLHsibGV2ZWwiOjEsInN0eWxlIjp7Im5hbWUiOiJhZGp1bmN0aW9uIn19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	C \& C \& D
+	\arrow[""{name=0, anchor=center, inner sep=0}, "{S \times -}", curve={height=-6pt}, from=1-1, to=1-2]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{S \Rightarrow -}", curve={height=-6pt}, from=1-2, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "F", curve={height=-6pt}, from=1-2, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "U", curve={height=-6pt}, from=1-3, to=1-2]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=0, to=1]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+
+
+% https://q.uiver.app/#q=WzAsMyxbMCwwLCJcXGNhbFZfZiJdLFsxLDAsIlxcY2FsVl9mIl0sWzIsMCwiXFxjYWxFX2YiXSxbMCwxLCJTIFxcdGltZXMgLSIsMCx7ImN1cnZlIjotMX1dLFsxLDAsIlMgXFxSaWdodGFycm93IC0iLDAseyJjdXJ2ZSI6LTF9XSxbMSwyLCJGIiwwLHsiY3VydmUiOi0xfV0sWzIsMSwiVSIsMCx7ImN1cnZlIjotMX1dLFszLDQsIiIsMCx7ImxldmVsIjoxLCJzdHlsZSI6eyJuYW1lIjoiYWRqdW5jdGlvbiJ9fV0sWzUsNiwiIiwwLHsibGV2ZWwiOjEsInN0eWxlIjp7Im5hbWUiOiJhZGp1bmN0aW9uIn19XV0=
+\[\begin{tikzcd}[ampersand replacement=\&]
+	{\calV_f} \& {\calV_f} \& {\calE_f}
+	\arrow[""{name=0, anchor=center, inner sep=0}, "{S \times -}", curve={height=-6pt}, from=1-1, to=1-2]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{S \Rightarrow -}", curve={height=-6pt}, from=1-2, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "F", curve={height=-6pt}, from=1-2, to=1-3]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "U", curve={height=-6pt}, from=1-3, to=1-2]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=0, to=1]
+	\arrow["\dashv"{anchor=center, rotate=-90}, draw=none, from=2, to=3]
+\end{tikzcd}\]
+
+\end{comment}
+
+% \subsubsection{Generalizing Error Domains: Guarded Interaction Trees}
+
+\subsection{New Models From Scratch}
+
+Next, we discuss how we can build a new model of gradual typing from scratch
+given a collection of effects presented algebraically. Our goal will be to
+generalize the notion of error domain to accommodate these effects.
+
+% We now explore how to generalize the notion of error domain and the free error
+% domain construction to accommodate additional effects besides errors and
+% computational steps. We do this in two phases: first, we work at the level of
+% sets and functions, and then we consider the ordering and bisimilarity relations.
+
+% Recall that the input to the abstract model construction is an intensional
+% pre-model with bisimilarity, in addition to a suitable object modeling the
+% dynamic type.
+
+More concretely, let $\Sigma: \PreDom \to \PreDom$ be an endofunctor on the
+category of predomains (see the previous section for the definition of
+predomain). The purpose of $\Sigma$ is to represent a signature of effects.
+First, to model gradual typing we need to ensure that signature has cases for
+errors and computational steps. To do this systematically, we define
+$\Sigmahat := \Sigma \uplus \Delta(1) \uplus \text{Id}$, where $\uplus$ is
+the coproduct of functors, and $\Delta(1)$ is the constant functor returning the
+terminal predomain $1$.
+%
+We will then be interested in algebras of $\Sigmahat \circ \later$. Here, we
+note that this $\later$ is operating on predomains. Furthermore, this definition
+implies that all occurrences of the input $X$ are guarded by a $\later$. A
+further generalization would be to consider algebras of a functor where some
+occurrences of $X$ are unguarded and others are guarded. In this case, we would
+need to assume more about our given functor $\Sigma$, e.g., that it is presented
+as a \emph{polynomial} endofunctor; we will pursue this in the subsequent
+section.
+
+More concretely, an algebra of the functor $\Sigmahat \circ \later$ consists of
+a predomain $|B|$ along with a morphism of predomains
+%
+$\alg_B \colon \Sigmahat (\later |B|) \to |B|$.
+%
+Note that $\Sigmahat (\later |B|) = \Sigma(\later |B|) \uplus 1 \uplus (\later
+|B|)$. Thus, an algebra map $\alg_B$ induces three morphisms of predomains; we
+denote these by $\oper_B \colon \Sigma(\later |B|) \to |B|$, $\mho_B \colon 1
+\to |B|$, and $\theta_B \colon \later |B| \to |B|$.
+%
+Notice also that, by definition of morphism of predomains, these maps preserve
+the ordering and bisimilarity relations of the relevant predomains.
+
+
+% We write $\op_B$ to refer to the map $\alg_B \circ \inone \colon \Sigma(\later B) \to B$,
+% where $\inone$ is the first injection into the coproduct (recall the definition of $\Sigmahat$).
+% We write $\mho_B$ to refer to the map $\alg_B \circ \intwo \colon 1 \to B$,
+% We write $\theta_B$ to refer to the map $\alg_B \circ \inthree \colon \later B \to B$.
+
+We can now define the object that will serve as the analogue of error domains in
+our construction:
+%
+\begin{definition}\label{def:sigma-domain}
+  Let $\Sigma: \PreDom \to \PreDom$ be a functor. A \emph{$\Sigma$-domain} is an
+  algebra of the functor $\Sigmahat \circ \later$. 
+  %i.e., a predomain $B$ along with a morphism of predomains $\alg_B \colon
+  %\Sigmahat (\later B) \to B$.
+  Furthermore, the element $\mho_B \colon 1 \to B$ has the property that $\mho_B
+  \ltdyn_B x$ for all $x \in B$. % TODO does this follow from an algebraic equation?
+\end{definition}
+
+\begin{example}
+  For $\Sigma := \Delta(0)$, where $0$ is the empty predomain, we recover the
+  original notion of error domain from Section \ref{sec:gtlc-concrete-model}.
+\end{example}
+
+% TODO define the action of later on predomain relations?
+As with ordinary error domains, there are corresponding notions of morphisms,
+relations, and squares of $\Sigma$-domains:
+%
+\begin{definition}\label{def:sigma-domain-mor-rel-sq}
+  Fix $\Sigma$ as above, and let $B$ and $B'$ be $\Sigma$-domains. A
+  \emph{morphism of $\Sigma$-domains} from $B$ to $B$' is a morphism $\phi$ of
+  the underlying predomains that preserves the algebraic structure, i.e.,
+  $\alg_{B'} \circ (\Sigmahat \circ \later)(\phi) = \phi \circ \alg_B$.
+  %
+  Spelling this out concretely, we have in particular that
+  %
+  (1) $\phi \circ \oper_B = \oper_{B'} \circ ((\Sigmahat \circ \later)(\phi))$,
+  %
+  (2) $\phi(\mho_B) = \mho_{B'}$, and
+  %
+  (3) $\phi \circ \theta_B = \theta_{B'} \circ (\later \phi)$.
+
+  A \emph{relation of $\Sigma$-domains} $d : B \rel B'$ is a relation $|d|$ of
+  the underlying predomains that is a congruence with respect to the algebraic
+  structure, i.e., if $x \binrel{\Sigmahat(\later |d|)} y$, then $\alg_B(x)
+  \binrel{|d|} \alg_B(y)$. (Here, we have used the actions of the predomain
+  functor $\Sigmahat$ and the predomain functor $\later$ on predomain
+  relations.) 
+  %
+  Spelling out the above requirement, we have in particular
+  %
+  (1) If $x \binrel{(\Sigma(\later |d|))} y$, then $\oper_B(x) \binrel{|d|} \oper_{B'}(y)$.
+  %
+  (2) $\mho_B \binrel{|d|} \mho_{B'}$, and
+  %
+  (3) If $\later_t(\tilde{x}_t \binrel{|d|} \tilde{y}_t)$, then
+  $\theta_B(\tilde{x}) \binrel{|d|} \theta_{B'}(\tilde{y})$
+
+  A \emph{square of $\Sigma$-domains} $\phi \ltsq{d}{d'} \phi'$ is defined
+  analogously to a square of predomains. 
+\end{definition}
+
+\begin{remark}
+  The requirement that $\mho_B$ be related to $\mho_{B'}$ in the definition of
+  relation may seem weaker than the corresponding requirement in the definition
+  of a relation of error domains in the previous section, where we required that
+  $\mho_B \binrel{|d|} y$ for \emph{all} $y \in B'$. However, the former implies
+  the latter using the fact that predomain relations are closed under the
+  ordering on both sides and that $\mho_{B'} \ltdyn y$ for all $y$.
+\end{remark}
+
+% TODO composition of \Sigma-domain relations
+
+Now we proceed to describe an intensional pre-model with bisimilarity based on
+an adjunction between predomains and $\Sigma$-domains. More specifically:
+%
+\begin{itemize}
+  \item As in Section \ref{sec:gtlc-concrete-model}, the value objects, vertical
+  morphisms, horizontal morphisms, and squares are respectively predomains,
+  morphisms of predomains, predomain relations, and predomain squares.
+
+  \item The computation objects are $\Sigma$-domains as defined above. Vertical
+  morphisms, horizontal morphisms, and squares are respectively morphisms,
+  relations, and squares of $\Sigma$-domains, as defined above.
+\end{itemize}
+
+Observe that the predomain $A \To UB$ consisting of predomain morphisms $A \to
+UB$ inherits the $\Sigma$-domain structure of $B$.
+
+Next, we define the adjunction $F \dashv U$ between predomains and
+$\Sigma$-domains. The functor $U$ simply forgets the additional algebraic
+structure. The functor $F$ constructs, for a predomain $A$, the free
+$\Sigma$-domain on $A$. The underlying set is defined by guarded recursion as
+the type with the following constructors:
+%
+\begin{align*}
+  \GT{\Sigma}{A} &:=      \GTret  \colon A \to \GT{\Sigma}{A} \\
+              &\mid \GTop         \colon \Sigma(\laterhs \GT{\Sigma}{A}) \to \GT{\Sigma}{A}
+              &\mid \mho_\Sigma   \colon \GT{\Sigma}{A} \\
+              &\mid \theta_\Sigma \colon \laterhs \GT{\Sigma}{A} \to \GT{\Sigma}{A} \\
+\end{align*}
+%
+The ordering and bisimilarity relations on $\GT{\Sigma}{A}$ are a generalization
+of the lock-step error ordering and weak bisimilarity from the previous section.
+The full definitions are given in Figure \ref{fig:gtree-ordering-bisim}. Notice
+in the cases when both sides are a $\GTop$, we pass the relation being defined
+to $\Sigma$, but under a later.
+%
+Formally, since $\Sigma$ is a functor on \emph{predomains}, what we are actually
+doing is applying the guarded-recursive assumption that a predomain structure
+for the set $\GT{\Sigma}{A}$ exists later. Alternatively, instead of applying
+$\Sigma$ to a predomain, one can think of this as simply applying its action on
+the ordering or bisimilarity relations to the ordering/bisimilarity relation
+that we assume exists later.
+
+\begin{figure}
+  \begin{minipage}{0.5\textwidth}
+    \fbox{$l_1 \ltls l_2$}
+    \begin{align*}
+        &\GTret\, x \ltls \GTret\, y \text{ if } x \mathbin{\ltdyn_A} y \\
+        %
+        &\GTop\, x \ltls \GTop\, y \text{ if } x \mathbin{\Sigma(\laterhs \ltls)} y \\
+        %
+        &\mho_\Sigma \ltls l' \\
+        %
+        &\theta\, \tilde{l} \ltls \theta\, \tilde{l'} \text{ if } 
+            \later_t (\tilde{l}_t \ltls \tilde{l'}_t)
+    \end{align*}
+  \end{minipage}
+  \begin{minipage}{0.5\textwidth}
+    \fbox{$l_1 \bisim l_2$}
+    \begin{align*}
+        \GTret\, x \bisim \GTret\, y &\text{ iff } x \bisim_A y \\
+      %		
+        \mho \bisim \mho &\text{ iff } \top \\
+      %
+        \theta\, \tilde{x} \bisim \theta\, \tilde{y} &\text{ iff } \later_t (\tilde{x}_t \bisim \tilde{y}_t) \\
+      %	
+        \GTop\, x \bisim \GTop\, y \text{ if } x \mathbin{\Sigma(\laterhs \bisim)} y \\
+      %
+      %
+      %
+        \theta\, \tilde{x} \bisim \mho &\text{ iff } \exists n. \theta\, \tilde{x} = \delta^n(\mho)\\
+      %	
+        \theta\, \tilde{x} \bisim \eta\, y &\text{ iff } \exists n. \exists x \bisim_A y.
+          (\theta\, \tilde{x} = \delta^n(\eta\, x))\\
+      %
+        \mho \bisim \theta\, \tilde{y} &\text{ iff } \exists n. \theta\, \tilde{y} = \delta^n(\mho) \\
+      %	
+        \eta\, x \bisim \theta\, \tilde{y} &\text { iff } \exists n. \exists y \bisim_A x. (\theta\, \tilde{y} = \delta^n (\eta\, y))
+      \end{align*}
+  \end{minipage}
+    \caption{The lock-step error ordering and weak bisimilarity relations on $\GT{\Sigma}{A}$.}
+    \label{fig:gtree-ordering-bisim}
+\end{figure}
+
+We observe that $\GT{\Sigma}{A}$ is the free $\Sigma$-domain on $A$: the set of
+morphisms of predomains $A \to UB$, where $B$ is a $\Sigma$-domain, is in
+bijection with morphisms of $\Sigma$-domains $\GT{\Sigma}{A} \to B$.
+
+Additionally, we define the action of the functor $F$ on predomain relations $c
+: A \rel A'$ as the heterogeneous version of the above lock-step ordering.
+
+\subsection{Generalization: Allowing for Non-Guarded Occurrences}
+
+In the previous section, we required that all recursive occurrences of the
+$\Sigma$-domain were guarded by a later. We can generalize this situation to
+allow for non-guarded occurrences, provided they are positive.
+
+\subsection{Example: State}
+
+
+
+
+\begin{comment}
+
+Suppose we are given a container $E = (S \colon \text{Type}, P \colon S \to
+\text{Type})$. Intuitively, $S$ represents the names of a collection of effects,
+and for each $s : S$, the arity of the effect is given by $Ps$. For a container
+$E$, the polynomial endofunctor presented by $E$ is defined by $P_E(X) =
+\Sigma_{s : S} \Pi_{p : P s} X$.
+%
+To model gradual typing, we need to ensure that our containers have cases for
+errors and computational steps. To do this systematically, given a container $E
+= (S, P)$ as above, we will define a \emph{modified container} $\hat{E}$ by
+$(S', P')$ where $S' := S + 2$, and $P'$ is defined as follows. We define $P'
+(\inl\, s) = P s$, and $P' (\inr\, \text{true}) = \bot$, and $P' (\inr\,
+\text{false}) = \top$.
+%
+We will then be interested in algebras of the functor $P_{\hat{E}} \circ
+\later$. Note that this means all recursive occurrences are guarded by a
+$\later$. A further generalization would be to consider the case where some
+occurrences are inductive and others are guarded-recursive; we do not pursue
+this approach here.
+
+\begin{definition}
+  Let $E$ be a container. An $E$-domain is an algebra of the functor
+  $P_{\hat{E}} \circ \later$, i.e., a set $B$ along with a map $a \colon
+  P_{\hat{E}} (\later B) \to B$.
+\end{definition}
+
+\begin{example}
+  When $E$ is the empty container, we recover the usual notion of error domains.
+\end{example}
+
+
+To define the free-forgetful adjunction, we use the notion of \emph{guarded
+interaction tree} \cite{guarded-interaction-trees}. We recall the basics of
+guarded interaction trees below; see their paper for more details.
+%
+Given a ground type $A$ and a signature of effects $E$, we define the type of
+guarded interaction trees for $A$ and $E$, denoted $\GT{E}{A}$, via guarded
+recursion as the datatype with the following constructors:
+%
+\begin{align*}
+  \GT{E}{A} &:=   \GTret   \colon A \to \GT{E}{A} \\
+            &\mid \mho_E   \colon \GT{E}{A} \\
+            &\mid \theta_E \colon \laterhs \GT{E}{A} \to \GT{E}{A} \\
+            &\mid \GTeff   \colon \Pi_{i \in I}(
+                                    \ins_i(\laterhs \GT{E}{A})
+                                    \times (\outs_i(\laterhs \GT{E}{A}) \to \laterhs \GT{E}{A})
+                                  ) \to \GT{E}{A}
+\end{align*}
+%
+Here, the effect signature $E$ consists of a set of operation names $I$ and for
+each $i \in I$, functions $\ins_i$ and $\outs_i$ from Type to Type that
+determine the arities of the operations. The $\GTret$ constructor takes an
+element $x$ of $A$ and returns a tree that 
+
+\end{comment}
+
+
+
+\section{Discussion}
+
+\subsection{Future Work}
+
+Giovannini et. al have contributed an Agda mechanization of most of the concrete
+model construction described in their paper. % TODO citation?
+%
+It would be interesting to mechanize the abstract model we have formulated in
+this work and instantiate it to obtain the concrete model they constructed as
+well as models for languages with other effects as described in this work.
+
+
+\bibliographystyle{plain}
+\bibliography{../../paper-new/references}
+
+\appendix
+
+\include{appendix}
+
+\end{document}
