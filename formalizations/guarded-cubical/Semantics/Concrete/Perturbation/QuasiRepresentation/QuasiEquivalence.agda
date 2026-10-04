@@ -1,6 +1,5 @@
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Common.Later
 module Semantics.Concrete.Perturbation.QuasiRepresentation.QuasiEquivalence (k : Clock) where
@@ -30,7 +29,7 @@ private
     ℓ≤ ℓ≈ ℓM : Level
     ℓA ℓA' ℓ≤A ℓ≤A' ℓ≈A ℓ≈A' ℓMA ℓMA' : Level
     ℓB ℓB' ℓ≤B ℓ≤B' ℓ≈B ℓ≈B' ℓMB ℓMB' : Level
-    ℓc ℓc' ℓd ℓd' : Level
+    ℓc ℓc' ℓc'' ℓd ℓd' ℓd'' : Level
   
     ℓA₁   ℓ≤A₁   ℓ≈A₁   : Level
     ℓA₁'  ℓ≤A₁'  ℓ≈A₁'  : Level
@@ -365,3 +364,300 @@ module _
   eqEmb→quasiEquivV .sq-c'-c = c'≈⊑≈c .snd .snd
 
 
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+
+-- Quasi-order-equivalence is reflexive, symmetric and transitive.
+-- Reflexivity uses the identity perturbations, symmetry swaps the two
+-- squares, and transitivity multiplies the perturbations and composes
+-- the squares vertically.
+
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'} where
+  open QuasiOrderEquivV
+  open IsMonoidHom
+  private
+    module MA  = MonoidStr (PtbV A .snd)
+    module MA' = MonoidStr (PtbV A' .snd)
+    iA : _ → _
+    iA = fst ∘ interpV A .fst
+    iA' : _ → _
+    iA' = fst ∘ interpV A' .fst
+    module iA  = IsMonoidHom (interpV A .snd)
+    module iA' = IsMonoidHom (interpV A' .snd)
+
+    𝔸  = ValType→Predomain A
+    𝔸' = ValType→Predomain A'
+
+  quasiEquivV-refl : (c : PRel 𝔸 𝔸' ℓc) → QuasiOrderEquivV A A' c c
+  quasiEquivV-refl c .δ₁  = MA.ε
+  quasiEquivV-refl c .δ₁' = MA'.ε
+  quasiEquivV-refl c .sq-c-c' =
+    subst2 (λ f g → PSq c c f g)
+      (sym (cong fst iA.presε)) (sym (cong fst iA'.presε)) (Predom-IdSqV c)
+  quasiEquivV-refl c .δ₂  = MA.ε
+  quasiEquivV-refl c .δ₂' = MA'.ε
+  quasiEquivV-refl c .sq-c'-c =
+    subst2 (λ f g → PSq c c f g)
+      (sym (cong fst iA.presε)) (sym (cong fst iA'.presε)) (Predom-IdSqV c)
+
+  quasiEquivV-sym : {c : PRel 𝔸 𝔸' ℓc} {c' : PRel 𝔸 𝔸' ℓc'} →
+    QuasiOrderEquivV A A' c c' → QuasiOrderEquivV A A' c' c
+  quasiEquivV-sym e .δ₁  = e .δ₂
+  quasiEquivV-sym e .δ₁' = e .δ₂'
+  quasiEquivV-sym e .sq-c-c' = e .sq-c'-c
+  quasiEquivV-sym e .δ₂  = e .δ₁
+  quasiEquivV-sym e .δ₂' = e .δ₁'
+  quasiEquivV-sym e .sq-c'-c = e .sq-c-c'
+
+  quasiEquivV-trans : {c : PRel 𝔸 𝔸' ℓc} {c' : PRel 𝔸 𝔸' ℓc'} {c'' : PRel 𝔸 𝔸' ℓc''} →
+    QuasiOrderEquivV A A' c c' → QuasiOrderEquivV A A' c' c'' → QuasiOrderEquivV A A' c c''
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .δ₁  = e₂ .δ₁ MA.· e₁ .δ₁
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .δ₁' = e₂ .δ₁' MA'.· e₁ .δ₁'
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .sq-c-c' =
+    subst2 (λ f g → PSq c c'' f g)
+      (sym (cong fst (iA.pres· (e₂ .δ₁) (e₁ .δ₁))))
+      (sym (cong fst (iA'.pres· (e₂ .δ₁') (e₁ .δ₁'))))
+      (CompSqV {c₁ = c} {c₂ = c'} {c₃ = c''}
+        {f₁ = iA (e₁ .δ₁)} {g₁ = iA' (e₁ .δ₁')} {f₂ = iA (e₂ .δ₁)} {g₂ = iA' (e₂ .δ₁')}
+        (e₁ .sq-c-c') (e₂ .sq-c-c'))
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .δ₂  = e₁ .δ₂ MA.· e₂ .δ₂
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .δ₂' = e₁ .δ₂' MA'.· e₂ .δ₂'
+  quasiEquivV-trans {c = c} {c' = c'} {c'' = c''} e₁ e₂ .sq-c'-c =
+    subst2 (λ f g → PSq c'' c f g)
+      (sym (cong fst (iA.pres· (e₁ .δ₂) (e₂ .δ₂))))
+      (sym (cong fst (iA'.pres· (e₁ .δ₂') (e₂ .δ₂'))))
+      (CompSqV {c₁ = c''} {c₂ = c'} {c₃ = c}
+        {f₁ = iA (e₂ .δ₂)} {g₁ = iA' (e₂ .δ₂')} {f₂ = iA (e₁ .δ₂)} {g₂ = iA' (e₁ .δ₂')}
+        (e₂ .sq-c'-c) (e₁ .sq-c'-c))
+
+
+module _ {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'} where
+  open QuasiOrderEquivC
+  open IsMonoidHom
+  private
+    module MB  = MonoidStr (PtbC B .snd)
+    module MB' = MonoidStr (PtbC B' .snd)
+    iB : _ → _
+    iB = fst ∘ interpC B .fst
+    iB' : _ → _
+    iB' = fst ∘ interpC B' .fst
+    module iB  = IsMonoidHom (interpC B .snd)
+    module iB' = IsMonoidHom (interpC B' .snd)
+
+    𝔹  = CompType→ErrorDomain B
+    𝔹' = CompType→ErrorDomain B'
+
+  quasiEquivC-refl : (d : ErrorDomRel 𝔹 𝔹' ℓd) → QuasiOrderEquivC B B' d d
+  quasiEquivC-refl d .δ₁  = MB.ε
+  quasiEquivC-refl d .δ₁' = MB'.ε
+  quasiEquivC-refl d .sq-d-d' =
+    subst2 (λ ϕ ϕ' → ErrorDomSq d d ϕ ϕ')
+      (sym (cong fst iB.presε)) (sym (cong fst iB'.presε)) (ED-IdSqV d)
+  quasiEquivC-refl d .δ₂  = MB.ε
+  quasiEquivC-refl d .δ₂' = MB'.ε
+  quasiEquivC-refl d .sq-d'-d =
+    subst2 (λ ϕ ϕ' → ErrorDomSq d d ϕ ϕ')
+      (sym (cong fst iB.presε)) (sym (cong fst iB'.presε)) (ED-IdSqV d)
+
+  quasiEquivC-sym : {d : ErrorDomRel 𝔹 𝔹' ℓd} {d' : ErrorDomRel 𝔹 𝔹' ℓd'} →
+    QuasiOrderEquivC B B' d d' → QuasiOrderEquivC B B' d' d
+  quasiEquivC-sym e .δ₁  = e .δ₂
+  quasiEquivC-sym e .δ₁' = e .δ₂'
+  quasiEquivC-sym e .sq-d-d' = e .sq-d'-d
+  quasiEquivC-sym e .δ₂  = e .δ₁
+  quasiEquivC-sym e .δ₂' = e .δ₁'
+  quasiEquivC-sym e .sq-d'-d = e .sq-d-d'
+
+  quasiEquivC-trans : {d : ErrorDomRel 𝔹 𝔹' ℓd} {d' : ErrorDomRel 𝔹 𝔹' ℓd'} {d'' : ErrorDomRel 𝔹 𝔹' ℓd''} →
+    QuasiOrderEquivC B B' d d' → QuasiOrderEquivC B B' d' d'' → QuasiOrderEquivC B B' d d''
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .δ₁  = e₂ .δ₁ MB.· e₁ .δ₁
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .δ₁' = e₂ .δ₁' MB'.· e₁ .δ₁'
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .sq-d-d' =
+    subst2 (λ ϕ ϕ' → ErrorDomSq d d'' ϕ ϕ')
+      (sym (cong fst (iB.pres· (e₂ .δ₁) (e₁ .δ₁))))
+      (sym (cong fst (iB'.pres· (e₂ .δ₁') (e₁ .δ₁'))))
+      (ED-CompSqV {d₁ = d} {d₂ = d'} {d₃ = d''}
+        {ϕ₁ = iB (e₁ .δ₁)} {ϕ₁' = iB' (e₁ .δ₁')} {ϕ₂ = iB (e₂ .δ₁)} {ϕ₂' = iB' (e₂ .δ₁')}
+        (e₁ .sq-d-d') (e₂ .sq-d-d'))
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .δ₂  = e₁ .δ₂ MB.· e₂ .δ₂
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .δ₂' = e₁ .δ₂' MB'.· e₂ .δ₂'
+  quasiEquivC-trans {d = d} {d' = d'} {d'' = d''} e₁ e₂ .sq-d'-d =
+    subst2 (λ ϕ ϕ' → ErrorDomSq d'' d ϕ ϕ')
+      (sym (cong fst (iB.pres· (e₁ .δ₂) (e₂ .δ₂))))
+      (sym (cong fst (iB'.pres· (e₁ .δ₂') (e₂ .δ₂'))))
+      (ED-CompSqV {d₁ = d''} {d₂ = d'} {d₃ = d}
+        {ϕ₁ = iB (e₂ .δ₂)} {ϕ₁' = iB' (e₂ .δ₂')} {ϕ₂ = iB (e₁ .δ₂)} {ϕ₂' = iB' (e₁ .δ₂')}
+        (e₂ .sq-d'-d) (e₁ .sq-d'-d))
+
+
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+
+-- Lemma: If two error domain relations d and d' between B and B' are
+-- quasi-right-representable by the same projection morphism p, then d
+-- is quasi-order-equivalent to d'. (Dual to the lemma above about
+-- predomain relations with the same projection.)
+
+module _
+  {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+  (d  : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd)
+  (d' : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd')
+  (ρd  : RightRepC B B' d)
+  (ρd' : RightRepC B B' d')
+  (eq : projC _ _ _ ρd ≡ projC _ _ _ ρd') where
+
+  private
+    MB  = PtbC B
+    MB' = PtbC B'
+    iB : _ → _
+    iB = fst ∘ interpC B .fst
+    iB' : _ → _
+    iB' = fst ∘ interpC B' .fst
+    rB = idEDRel (CompType→ErrorDomain B)
+    rB' = idEDRel (CompType→ErrorDomain B')
+
+    δld  = δlpC _ _ _ ρd
+    δrd' = δrpC _ _ _ ρd'
+
+  -- The square is formed by horizontally composing the following
+  -- squares, and using the fact that composing with the homogeneous
+  -- relations is the identity.
+  --
+  --            d                    ⊑B'
+  --       B o----* B'          B' o---* B'
+  --       |        |           |        |
+  --  d.δl | d.DnR  | p      p' | d'.DnL | d'.δr
+  --       v        v           v        v
+  --       B o----* B           B o----* B'
+  --           ⊑B                   d'
+  quasi-order-rel-C-proj : Σ[ δ-left ∈ ⟨ MB ⟩ ] Σ[ δ-right ∈ ⟨ MB' ⟩ ]
+    (ErrorDomSq d d' (iB δ-left) (iB' δ-right))
+  quasi-order-rel-C-proj .fst = δld
+  quasi-order-rel-C-proj .snd .fst = δrd'
+  quasi-order-rel-C-proj .snd .snd = composed123
+    where
+      α1 : ErrorDomSq d (d ⊙ed rB') IdE IdE
+      α1 = sq-d-d⊙idB' d
+
+      α2 : ErrorDomSq (d ⊙ed rB') (rB ⊙ed d') (iB δld) (iB' δrd')
+      α2 = _∘esqh_ {ϕ₁ = iB δld} {ϕ₂ = projC _ _ _ ρd} {ϕ₃ = iB' δrd'}
+        (DnRC _ _ _ ρd)
+        (transport (λ i → ErrorDomSq rB' d' (eq (~ i)) (iB' δrd')) (DnLC _ _ _ ρd'))
+
+      α3 : ErrorDomSq (rB ⊙ed d') d' IdE IdE
+      α3 = sq-idB⊙d-d d'
+
+      composed12 : ErrorDomSq d (rB ⊙ed d') ((iB δld) ∘ed IdE) ((iB' δrd') ∘ed IdE)
+      composed12 = ED-CompSqV
+        {d₁ = d} {d₂ = d ⊙ed rB'} {d₃ = rB ⊙ed d'}
+        {ϕ₁ = IdE} {ϕ₁' = IdE} {ϕ₂ = iB δld} {ϕ₂' = iB' δrd'}
+        α1 α2
+
+      composed123 : ErrorDomSq d d' (IdE ∘ed (iB δld) ∘ed IdE) (IdE ∘ed (iB' δrd') ∘ed IdE)
+      composed123 = ED-CompSqV
+        {d₁ = d} {d₂ = rB ⊙ed d'} {d₃ = d'}
+        {ϕ₁ = iB δld} {ϕ₁' = iB' δrd'} {ϕ₂ = IdE} {ϕ₂' = IdE}
+        composed12 α3
+
+module _
+  {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+  (d  : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd)
+  (d' : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd')
+  (ρd  : RightRepC B B' d)
+  (ρd' : RightRepC B B' d')
+  (eq : projC _ _ _ ρd ≡ projC _ _ _ ρd') where
+
+  open QuasiOrderEquivC
+
+  eqProj→quasiEquivC : QuasiOrderEquivC B B' d d'
+  eqProj→quasiEquivC .δ₁      = quasi-order-rel-C-proj _ _ ρd ρd' eq .fst
+  eqProj→quasiEquivC .δ₁'     = quasi-order-rel-C-proj _ _ ρd ρd' eq .snd .fst
+  eqProj→quasiEquivC .sq-d-d' = quasi-order-rel-C-proj _ _ ρd ρd' eq .snd .snd
+  eqProj→quasiEquivC .δ₂      = quasi-order-rel-C-proj _ _ ρd' ρd (sym eq) .fst
+  eqProj→quasiEquivC .δ₂'     = quasi-order-rel-C-proj _ _ ρd' ρd (sym eq) .snd .fst
+  eqProj→quasiEquivC .sq-d'-d = quasi-order-rel-C-proj _ _ ρd' ρd (sym eq) .snd .snd
+
+
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+
+-- Lemma: If two predomain relations c and c' between A and A' are
+-- quasi-left-representable by the same embedding morphism e, then c
+-- is quasi-order-equivalent to c'. (The remaining case of the lemma;
+-- dual to the lemma about error domain relations with the same
+-- embedding.)
+
+module _
+  {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+  (c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+  (c' : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
+  (ρc  : LeftRepV A A' c)
+  (ρc' : LeftRepV A A' c')
+  (eq : embV _ _ _ ρc ≡ embV _ _ _ ρc') where
+
+  private
+    MA  = PtbV A
+    MA' = PtbV A'
+    iA : _ → _
+    iA = fst ∘ interpV A .fst
+    iA' : _ → _
+    iA' = fst ∘ interpV A' .fst
+    rA  = idPRel (ValType→Predomain A)
+    rA' = idPRel (ValType→Predomain A')
+
+    δlc' = δleV _ _ _ ρc'
+    δrc  = δreV _ _ _ ρc
+
+  --           ⊑A                    c
+  --       A o----* A           A o----* A'
+  --       |        |           |        |
+  -- c'.δl | c'.UpR | e      e  | c.UpL  | c.δr
+  --       v        v           v        v
+  --       A o----* A'          A' o---* A'
+  --           c'                   ⊑A'
+  quasi-order-rel-V-emb : Σ[ δ-left ∈ ⟨ MA ⟩ ] Σ[ δ-right ∈ ⟨ MA' ⟩ ]
+    (PSq c c' (iA δ-left) (iA' δ-right))
+  quasi-order-rel-V-emb .fst = δlc'
+  quasi-order-rel-V-emb .snd .fst = δrc
+  quasi-order-rel-V-emb .snd .snd = composed123
+    where
+      α1 : PSq c (rA ⊙ c) Id Id
+      α1 = sq-c-idA⊙c c
+
+      α2 : PSq (rA ⊙ c) (c' ⊙ rA') (iA δlc') (iA' δrc)
+      α2 = CompSqH {f = iA δlc'} {g = embV _ _ _ ρc'} {h = iA' δrc}
+        (UpRV _ _ _ ρc')
+        (transport (λ i → PSq c rA' (eq i) (iA' δrc)) (UpLV _ _ _ ρc))
+
+      α3 : PSq (c' ⊙ rA') c' Id Id
+      α3 = sq-c⊙A'-c c'
+
+      composed12 : PSq c (c' ⊙ rA') ((iA δlc') ∘p Id) ((iA' δrc) ∘p Id)
+      composed12 = CompSqV
+        {c₁ = c} {c₂ = rA ⊙ c} {c₃ = c' ⊙ rA'}
+        {f₁ = Id} {g₁ = Id} {f₂ = iA δlc'} {g₂ = iA' δrc}
+        α1 α2
+
+      composed123 : PSq c c' (Id ∘p (iA δlc') ∘p Id) (Id ∘p (iA' δrc) ∘p Id)
+      composed123 = CompSqV
+        {c₁ = c} {c₂ = c' ⊙ rA'} {c₃ = c'}
+        {f₁ = iA δlc'} {g₁ = iA' δrc} {f₂ = Id} {g₂ = Id}
+        composed12 α3
+
+module _
+  {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+  (c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc)
+  (c' : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc')
+  (ρc  : LeftRepV A A' c)
+  (ρc' : LeftRepV A A' c')
+  (eq : embV _ _ _ ρc ≡ embV _ _ _ ρc') where
+
+  open QuasiOrderEquivV
+
+  eqEmbV→quasiEquivV : QuasiOrderEquivV A A' c c'
+  eqEmbV→quasiEquivV .δ₁      = quasi-order-rel-V-emb _ _ ρc ρc' eq .fst
+  eqEmbV→quasiEquivV .δ₁'     = quasi-order-rel-V-emb _ _ ρc ρc' eq .snd .fst
+  eqEmbV→quasiEquivV .sq-c-c' = quasi-order-rel-V-emb _ _ ρc ρc' eq .snd .snd
+  eqEmbV→quasiEquivV .δ₂      = quasi-order-rel-V-emb _ _ ρc' ρc (sym eq) .fst
+  eqEmbV→quasiEquivV .δ₂'     = quasi-order-rel-V-emb _ _ ρc' ρc (sym eq) .snd .fst
+  eqEmbV→quasiEquivV .sq-c'-c = quasi-order-rel-V-emb _ _ ρc' ρc (sym eq) .snd .snd

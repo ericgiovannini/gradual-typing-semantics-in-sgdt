@@ -46,6 +46,7 @@ open import Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.Composition k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaU k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaF k
+open import Semantics.Concrete.Perturbation.QuasiRepresentation.QuasiEquivalence k
 
 open import Semantics.Concrete.Types k as Types hiding (U ; F ; _×_ ; _⟶_)
 open import Semantics.Concrete.Relations.Base k
@@ -88,6 +89,8 @@ private
     ℓBₒ' ℓ≤Bₒ' ℓ≈Bₒ' : Level
 
     ℓc₁ ℓc₂ ℓc₃  : Level
+    ℓA'' ℓ≤A'' ℓ≈A'' ℓMA'' : Level
+    ℓB'' ℓ≤B'' ℓ≈B'' ℓMB'' : Level
 
     ℓMA₁ ℓMA₂ ℓMA₃ : Level
     ℓMA₁' ℓMA₂' ℓMA₃' : Level
@@ -337,10 +340,182 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {B : ValType ℓB ℓ≤B ℓ�
     |A| = ValType→Predomain A
     |B| = ValType→Predomain B
 
-  U⟶F-Id-emb : ValRel≈ (IdV (Types.U (A Types.⟶ Types.F B))) (U (IdV A ⟶ F (IdV B)))
-  U⟶F-Id-emb = sym
+  U⟶F-Id-emb≡ :
+      IdV (Types.U (A Types.⟶ Types.F B)) .snd .fst .fst
+    ≡ (U (IdV A ⟶ F (IdV B))) .snd .fst .fst
+  U⟶F-Id-emb≡ = sym
     ( cong₂ _∘p_
         (cong (λ ϕ → ϕ ⟶Kᴸ (F-ob.F-ob |B|)) (F-mor-pres-id {A = |A|}))
         (cong (λ g → |A| ⟶Kᴿ g) (cong U-mor (F-mor-pres-id {A = |B|})))
     ∙ cong₂ _∘p_ (KlArrowMorphismᴸ-id (F-ob.F-ob |B|)) (KlArrowMorphismᴿ-id |A|)
     ∙ eqPMor _ _ refl )
+
+  U⟶F-Id-emb : ValRel≈ (IdV (Types.U (A Types.⟶ Types.F B))) (U (IdV A ⟶ F (IdV B)))
+  U⟶F-Id-emb = eqEmbV→quasiEquivV _ _
+    (IdV (Types.U (A Types.⟶ Types.F B)) .snd .fst)
+    (U (IdV A ⟶ F (IdV B)) .snd .fst)
+    U⟶F-Id-emb≡
+
+
+----------------------------------------------------------------------
+-- Quasi-order-equivalence and the functorial actions (Lemma D.18)
+----------------------------------------------------------------------
+
+-- U preserves quasi-order-equivalence.
+module _ {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+         {d  : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd}
+         {d' : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd'} where
+
+  private
+    ιB : _ → _
+    ιB δ = interpC B .fst δ .fst
+    ιB' : _ → _
+    ιB' δ = interpC B' .fst δ .fst
+
+  U-quasiEquiv : QuasiOrderEquivC B B' d d' →
+    QuasiOrderEquivV (Types.U B) (Types.U B') (U-rel d) (U-rel d')
+  U-quasiEquiv e .QuasiOrderEquivV.δ₁  = i₂ .fst (e .QuasiOrderEquivC.δ₁)
+  U-quasiEquiv e .QuasiOrderEquivV.δ₁' = i₂ .fst (e .QuasiOrderEquivC.δ₁')
+  U-quasiEquiv e .QuasiOrderEquivV.sq-c-c' =
+    U-sq d d' (ιB (e .QuasiOrderEquivC.δ₁)) (ιB' (e .QuasiOrderEquivC.δ₁')) (e .QuasiOrderEquivC.sq-d-d')
+  U-quasiEquiv e .QuasiOrderEquivV.δ₂  = i₂ .fst (e .QuasiOrderEquivC.δ₂)
+  U-quasiEquiv e .QuasiOrderEquivV.δ₂' = i₂ .fst (e .QuasiOrderEquivC.δ₂')
+  U-quasiEquiv e .QuasiOrderEquivV.sq-c'-c =
+    U-sq d' d (ιB (e .QuasiOrderEquivC.δ₂)) (ιB' (e .QuasiOrderEquivC.δ₂')) (e .QuasiOrderEquivC.sq-d'-d)
+
+
+-- ⟶ preserves quasi-order-equivalence (contravariantly in the first
+-- argument, which is why the squares of the value equivalence are used
+-- in the opposite direction).
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+         {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+         {c  : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc}
+         {c₂ : PRel (ValType→Predomain A) (ValType→Predomain A') ℓc'}
+         {d  : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd}
+         {d₂ : ErrorDomRel (CompType→ErrorDomain B) (CompType→ErrorDomain B') ℓd'} where
+
+  private
+    ιA : _ → _
+    ιA δ = interpV A .fst δ .fst
+    ιA' : _ → _
+    ιA' δ = interpV A' .fst δ .fst
+    ιB : _ → _
+    ιB δ = interpC B .fst δ .fst
+    ιB' : _ → _
+    ιB' δ = interpC B' .fst δ .fst
+    module M⟶  = MonoidStr (PtbC (A Types.⟶ B) .snd)
+    module M⟶' = MonoidStr (PtbC (A' Types.⟶ B') .snd)
+
+  ⟶-quasiEquiv : QuasiOrderEquivV A A' c c₂ → QuasiOrderEquivC B B' d d₂ →
+    QuasiOrderEquivC (A Types.⟶ B) (A' Types.⟶ B') (c ⟶rel d) (c₂ ⟶rel d₂)
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.δ₁ =
+    (i₂ .fst (ec .QuasiOrderEquivC.δ₁)) M⟶.· (i₁ .fst (ev .QuasiOrderEquivV.δ₂))
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.δ₁' =
+    (i₂ .fst (ec .QuasiOrderEquivC.δ₁')) M⟶'.· (i₁ .fst (ev .QuasiOrderEquivV.δ₂'))
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.sq-d-d' = ED-CompSqV
+    {d₁ = c ⟶rel d} {d₂ = c₂ ⟶rel d} {d₃ = c₂ ⟶rel d₂}
+    {ϕ₁ = ιA (ev .QuasiOrderEquivV.δ₂) ⟶mor IdE} {ϕ₁' = ιA' (ev .QuasiOrderEquivV.δ₂') ⟶mor IdE}
+    {ϕ₂ = Mor.Id ⟶mor ιB (ec .QuasiOrderEquivC.δ₁)}  {ϕ₂' = Mor.Id ⟶mor ιB' (ec .QuasiOrderEquivC.δ₁')}
+    ((ev .QuasiOrderEquivV.sq-c'-c) ⟶sq (ED-IdSqV d))
+    ((Predom-IdSqV c₂) ⟶sq (ec .QuasiOrderEquivC.sq-d-d'))
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.δ₂ =
+    (i₂ .fst (ec .QuasiOrderEquivC.δ₂)) M⟶.· (i₁ .fst (ev .QuasiOrderEquivV.δ₁))
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.δ₂' =
+    (i₂ .fst (ec .QuasiOrderEquivC.δ₂')) M⟶'.· (i₁ .fst (ev .QuasiOrderEquivV.δ₁'))
+  ⟶-quasiEquiv ev ec .QuasiOrderEquivC.sq-d'-d = ED-CompSqV
+    {d₁ = c₂ ⟶rel d₂} {d₂ = c ⟶rel d₂} {d₃ = c ⟶rel d}
+    {ϕ₁ = ιA (ev .QuasiOrderEquivV.δ₁) ⟶mor IdE} {ϕ₁' = ιA' (ev .QuasiOrderEquivV.δ₁') ⟶mor IdE}
+    {ϕ₂ = Mor.Id ⟶mor ιB (ec .QuasiOrderEquivC.δ₂)}  {ϕ₂' = Mor.Id ⟶mor ιB' (ec .QuasiOrderEquivC.δ₂')}
+    ((ev .QuasiOrderEquivV.sq-c-c') ⟶sq (ED-IdSqV d₂))
+    ((Predom-IdSqV c) ⟶sq (ec .QuasiOrderEquivC.sq-d'-d))
+
+
+-- U (d ⊙ d') is quasi-order-equivalent to U d ⊙ U d' (Lemma D.12):
+-- both are quasi-right-represented by the same projection.
+module _ {B₁ : CompType ℓB₁ ℓ≤B₁ ℓ≈B₁ ℓMB₁} {B₂ : CompType ℓB₂ ℓ≤B₂ ℓ≈B₂ ℓMB₂}
+         {B₃ : CompType ℓB₃ ℓ≤B₃ ℓ≈B₃ ℓMB₃}
+         (d : CRelPP B₁ B₂ ℓd) (d' : CRelPP B₂ B₃ ℓd')
+         (ρd : RightRepC B₁ B₂ (d .fst)) (ρd' : RightRepC B₂ B₃ (d' .fst)) where
+
+  Udd'≈UdUd' : QuasiOrderEquivV (Types.U B₁) (Types.U B₃)
+    (U-rel (d .fst ⊙ed d' .fst)) (U-rel (d .fst) PRel.⊙ U-rel (d' .fst))
+  Udd'≈UdUd' = eqEmb→quasiEquivV _ _
+    (U-rightRep _ _ (d .fst ⊙ed d' .fst) (RightRepC-Comp d d' ρd ρd'))
+    (RightRepV-Comp (RelPP.U d) (RelPP.U d') (U-rightRep _ _ (d .fst) ρd) (U-rightRep _ _ (d' .fst) ρd'))
+    refl -- U preserves composition definitionally
+
+
+-- F (c ⊙ c') is quasi-order-equivalent to F c ⊙ F c' (Lemma D.11):
+-- both are quasi-left-represented by the same embedding.
+module _ {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁} {A₂ : ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂}
+         {A₃ : ValType ℓA₃ ℓ≤A₃ ℓ≈A₃ ℓMA₃}
+         (c : VRelPP A₁ A₂ ℓc) (c' : VRelPP A₂ A₃ ℓc')
+         (ρc : LeftRepV A₁ A₂ (c .fst)) (ρc' : LeftRepV A₂ A₃ (c' .fst)) where
+
+  Fcc'≈FcFc' : QuasiOrderEquivC (Types.F A₁) (Types.F A₃)
+    (F-rel (c .fst PRel.⊙ c' .fst)) (F-rel (c .fst) ⊙ed F-rel (c' .fst))
+  Fcc'≈FcFc' = eqEmb→quasiEquivC _ _
+    (F-leftRep A₁ A₃ (c .fst PRel.⊙ c' .fst) (LeftRepV-Comp c c' ρc ρc'))
+    (LeftRepC-Comp (RelPP.F c) (RelPP.F c')
+      (F-leftRep A₁ A₂ (c .fst) ρc) (F-leftRep A₂ A₃ (c' .fst) ρc'))
+    (F-mor-pres-comp _ _) -- functoriality of F
+
+
+-- (c ⊙ c') ⟶ (d ⊙ d') is quasi-order-equivalent to (c ⟶ d) ⊙ (c' ⟶ d')
+-- (Lemma D.18): both are quasi-right-represented by the same projection,
+-- namely (e_c' ∘ e_c) ⟶ (p_d ∘ p_d').
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+         {A'' : ValType ℓA'' ℓ≤A'' ℓ≈A'' ℓMA''}
+         {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+         {B'' : CompType ℓB'' ℓ≤B'' ℓ≈B'' ℓMB''}
+         (c : VRelPP A A' ℓc) (c' : VRelPP A' A'' ℓc')
+         (d : CRelPP B B' ℓd) (d' : CRelPP B' B'' ℓd')
+         (ρc : LeftRepV A A' (c .fst)) (ρc' : LeftRepV A' A'' (c' .fst))
+         (ρd : RightRepC B B' (d .fst)) (ρd' : RightRepC B' B'' (d' .fst)) where
+
+  ⟶⊙≈⊙⟶ : QuasiOrderEquivC (A Types.⟶ B) (A'' Types.⟶ B'')
+    ((c .fst PRel.⊙ c' .fst) ⟶rel (d .fst ⊙ed d' .fst))
+    ((c .fst ⟶rel d .fst) ⊙ed (c' .fst ⟶rel d' .fst))
+  ⟶⊙≈⊙⟶ = eqProj→quasiEquivC _ _ ρ₁ ρ₂ eq
+    where
+      ρ₁ : RightRepC (A Types.⟶ B) (A'' Types.⟶ B'') ((c .fst PRel.⊙ c' .fst) ⟶rel (d .fst ⊙ed d' .fst))
+      ρ₁ = RightRepArrow (c .fst PRel.⊙ c' .fst) (d .fst ⊙ed d' .fst)
+             (LeftRepV-Comp c c' ρc ρc') (RightRepC-Comp d d' ρd ρd')
+
+      ρ₂ : RightRepC (A Types.⟶ B) (A'' Types.⟶ B'') ((c .fst ⟶rel d .fst) ⊙ed (c' .fst ⟶rel d' .fst))
+      ρ₂ = RightRepC-Comp (c RelPP.⟶ d) (c' RelPP.⟶ d')
+             (RightRepArrow (c .fst) (d .fst) ρc ρd) (RightRepArrow (c' .fst) (d' .fst) ρc' ρd')
+
+      -- Both projections send g to p_d ∘ p_d' ∘ g ∘ e_c' ∘ e_c.
+      eq : projC _ _ _ ρ₁ ≡ projC _ _ _ ρ₂
+      eq = eqEDMor _ _ (funExt (λ g → eqPMor _ _ refl))
+
+
+-- The semantic counterpart of the ⇀-trans equation on type precision
+-- derivations: (c ⇀ d) ⊙ (c' ⇀ d') is equivalent to (c ⊙ c') ⇀ (d ⊙ d')
+-- as value relations.
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+         {A'' : ValType ℓA'' ℓ≤A'' ℓ≈A'' ℓMA''}
+         {B : ValType ℓB ℓ≤B ℓ≈B ℓMB} {B' : ValType ℓB' ℓ≤B' ℓ≈B' ℓMB'}
+         {B'' : ValType ℓB'' ℓ≤B'' ℓ≈B'' ℓMB''}
+         (c : ValRel A A' ℓc) (c' : ValRel A' A'' ℓc')
+         (d : ValRel B B' ℓd) (d' : ValRel B' B'' ℓd') where
+
+  U⟶F-comp-equiv : ValRel≈ (⊙V (U (c ⟶ F d)) (U (c' ⟶ F d'))) (U (⊙V c c' ⟶ F (⊙V d d')))
+  U⟶F-comp-equiv =
+    quasiEquivV-trans
+      -- U(c ⟶ Fd) ⊙ U(c' ⟶ Fd')  ≈  U((c ⟶ Fd) ⊙ (c' ⟶ Fd'))
+      (quasiEquivV-sym
+        (Udd'≈UdUd' ((c ⟶ F d) .fst) ((c' ⟶ F d') .fst)
+                    ((c ⟶ F d) .snd .fst) ((c' ⟶ F d') .snd .fst)))
+      (quasiEquivV-trans
+        -- ≈ U((c ⊙ c') ⟶ (Fd ⊙ Fd'))
+        (U-quasiEquiv
+          (quasiEquivC-sym
+            (⟶⊙≈⊙⟶ (c .fst) (c' .fst) ((F d) .fst) ((F d') .fst)
+                   (c .snd .fst) (c' .snd .fst) ((F d) .snd .fst) ((F d') .snd .fst))))
+        -- ≈ U((c ⊙ c') ⟶ F(d ⊙ d'))
+        (U-quasiEquiv
+          (⟶-quasiEquiv
+            (quasiEquivV-refl _)
+            (quasiEquivC-sym (Fcc'≈FcFc' (d .fst) (d' .fst) (d .snd .fst) (d' .snd .fst))))))

@@ -31,6 +31,7 @@ open import Semantics.Concrete.Predomain.Relation
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Perturbation.Relation k as Relation hiding (_×_)
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
+open import Semantics.Concrete.Perturbation.QuasiRepresentation.QuasiEquivalence k
 open import Semantics.Concrete.Types k as Types hiding (_×_)
 open import Semantics.Concrete.Predomain.FreeErrorDomain k
 ---------------------------------------------------------------
@@ -87,9 +88,13 @@ module _ (A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA) (A'  : ValType ℓA'  ℓ�
     where open F-rel
 
 module _ {A  : ValType ℓA  ℓ≤A  ℓ≈A ℓMA} {A'  : ValType ℓA'  ℓ≤A'  ℓ≈A' ℓMA'} where
-  -- If two relations are (quasi)-represented by the same embedding, then they are quasi-equivalent.
+  -- Two value relations are equivalent when their underlying predomain
+  -- relations are quasi-order-equivalent (Definition 5.8 in the paper):
+  -- there are perturbations and squares in both directions between
+  -- them. (Relations represented by the same embedding are equivalent in
+  -- this sense, see eqEmbV→quasiEquivV.)
   ValRel≈ : (c : ValRel A A' ℓc) (c' : ValRel A A' ℓc') → Type _
-  ValRel≈ c c' = c .snd .fst .fst ≡ c' .snd .fst .fst
+  ValRel≈ c c' = QuasiOrderEquivV A A' (c .fst .fst) (c' .fst .fst)
 
 module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ≤B'  ℓ≈B' ℓMB') where
   CompRel : ∀ (ℓd : Level) → Type _
@@ -99,9 +104,9 @@ module _ (B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB) (B'  : CompType ℓB'  ℓ
     × LeftRepV (Types.U B) (Types.U B') (U-rel (d .fst))
 
 module _ {B  : CompType ℓB  ℓ≤B  ℓ≈B ℓMB} {B'  : CompType ℓB'  ℓ≤B'  ℓ≈B' ℓMB'} where
-  -- If two relations are (quasi)-represented by the same embedding, then they are quasi-equivalent.
+  -- Likewise for computation relations.
   CompRel≈ : (d : CompRel B B' ℓd) (d' : CompRel B B' ℓd') → Type _
-  CompRel≈ d d' = d .snd .fst .fst ≡ d' .snd .fst .fst
+  CompRel≈ d d' = QuasiOrderEquivC B B' (d .fst .fst) (d' .fst .fst)
 
 
 module _ {Aᵢ  : ValType ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ ℓMAᵢ} {Aᵢ'  : ValType ℓAᵢ'  ℓ≤Aᵢ'  ℓ≈Aᵢ' ℓMAᵢ'}

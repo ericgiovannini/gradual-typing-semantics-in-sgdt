@@ -12,6 +12,9 @@ formalization.
   and `Semantics/Concrete/Perturbation/Semantic.agda`, Lemmas D.14 and
   D.15 in `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`,
   and Definition D.17 in `Semantics/Concrete/Relations/Constructions.agda`.
+  Updated again on 2026-10-04 after completing Lemma D.7 and Lemma D.18 and
+  redefining `ValRel≈`/`CompRel≈` as quasi-order-equivalence, which closes
+  the last hole in `Syntax/FineGrained/Denotation/TypePrecision.agda`.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -26,9 +29,9 @@ formalization.
 | Paper result | Topic | Status | Location |
 |---|---|---|---|
 | App. D.1/D.2 (unnumbered) | `Σ-SemPtb-eq`, `Σ-SemPtb-ind` | 4 holes, unused | `Semantics/Concrete/Perturbation/Semantic.agda:762,782,788,790` |
-| Lemma D.7 | Same embedding (values) / same projection (computations) cases | not started, unused | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda` |
+| Lemma D.7 | Same embedding (values) / same projection (computations) cases | done 2026-10-04 | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda:572,657` |
 | Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
-| Lemma D.18 | Quasi-order-equivalence of functors with composition | not started | `Semantics/Concrete/Relations/Base.agda:91,103` |
+| Lemma D.18 | Quasi-order-equivalence of functors with composition | done 2026-10-04 | `Semantics/Concrete/Relations/Constructions.agda:375-504` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
 
@@ -101,15 +104,24 @@ complete in `Relation/Constructions/Pi.agda` and `Sigma.agda` (not loaded by
 
 ## Appendix D.3 and D.4: quasi-representability and relations
 
-### Lemma D.7, relations represented by the same morphism are quasi-equivalent
+### Lemma D.7, relations represented by the same morphism are quasi-equivalent (done 2026-10-04)
 
-Two of four cases are done in
+All four cases are in
 `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda`:
-computation relations with the same embedding (`eqEmb→quasiEquivC`, line 249)
-and value relations with the same projection (`eqEmb→quasiEquivV`, line 358;
-the name is misleading, the hypothesis is equality of projections). The two
-remaining cases, value relations with the same embedding and computation
-relations with the same projection, are absent. Nothing currently needs them.
+
+- computation relations with the same embedding: `eqEmb→quasiEquivC` (line 248);
+- value relations with the same projection: `eqEmb→quasiEquivV` (line 357;
+  the name is historical, the hypothesis is equality of projections);
+- computation relations with the same projection: `eqProj→quasiEquivC`
+  (line 572), used by Lemma D.18;
+- value relations with the same embedding: `eqEmbV→quasiEquivV` (line 657),
+  used by the unit, associativity and `⇀-refl` cases of `⟦_⟧ty⊑-≈`.
+
+The same file now also shows that quasi-order-equivalence is an equivalence
+relation: `quasiEquivV-refl/sym/trans` (lines 391 to 425) and
+`quasiEquivC-refl/sym/trans` (lines 450 to 484), with the perturbations of a
+composite being the monoid products of the component perturbations. The
+file no longer uses `--allow-unsolved-metas`.
 
 ### Lemma D.9, reflexive relations are quasi-representable
 
@@ -148,24 +160,35 @@ identity relation on the arrow type (the pointwise ordering); the two agree up
 to reflexivity and transitivity of the ordering, and small conversions bridge
 the gap.
 
-### Lemma D.18, quasi-order-equivalence of functors with composition
+### Lemma D.18, quasi-order-equivalence of functors with composition (done 2026-10-04)
 
-Not formalized. `ValRel≈` and `CompRel≈`
-(`Semantics/Concrete/Relations/Base.agda:91` and `:103`) define
-quasi-equivalence of value and computation relations only as equality of
-embeddings. The semantic validation of the type-precision equations
-(`⟦_⟧ty⊑-≈` in `Syntax/FineGrained/Denotation/TypePrecision.agda`,
-remaining-work item (2) of Section 6.3) is proved for five of the six
-equations (symmetry, the two unit laws, associativity, and `⇀-refl`, the
-last one via `U⟶F-Id-emb` in `Semantics/Concrete/Relations/Constructions.agda`).
-The remaining equation `⇀-trans` cannot hold as an equality of embeddings:
-the projection representing `F (c ⊙ c')` (`repFcFc'→repFcc'` in
-`CompositionLemmaF.agda`) is the composite of the two projections conjugated
-by perturbations, so the embeddings of `(c ⊙ c') ⇀ (d ⊙ d')` and
-`(c ⇀ d) ⊙ (c' ⇀ d')` differ by perturbations. Proving it requires weakening
-`ValRel≈` to the paper's quasi-order-equivalence (`QuasiOrderEquivV`), the
-missing same-embedding case of Lemma D.7 for value relations, and this
-lemma's cases for `U`, `F`, `⟶` and composition.
+`ValRel≈` and `CompRel≈` (`Semantics/Concrete/Relations/Base.agda:96` and
+`:108`) are now the paper's quasi-order-equivalence of the underlying
+relations (`QuasiOrderEquivV`, `QuasiOrderEquivC`) rather than equality of
+embeddings. The lemma itself is in
+`Semantics/Concrete/Relations/Constructions.agda`:
+
+- `U-quasiEquiv` (line 375) and `⟶-quasiEquiv` (line 409): `U` and `⟶`
+  preserve quasi-order-equivalence (the latter contravariantly in the value
+  argument, with the perturbation of an arrow equivalence being the product of
+  the two injected component perturbations).
+- `Udd'≈UdUd'` (line 440) and `Fcc'≈FcFc'` (line 455): Lemmas D.12 and D.11
+  as standalone statements, extracted from the two composition-lemma files.
+- `⟶⊙≈⊙⟶` (line 476): `(c ⊙ c') ⟶ (d ⊙ d')` and `(c ⟶ d) ⊙ (c' ⟶ d')` are
+  both right-represented by the projection `(e_c' ∘ e_c) ⟶ (p_d ∘ p_d')`, so
+  they are quasi-order-equivalent by the same-projection case of Lemma D.7
+  (the equality of projections is `refl` up to extensionality).
+- `U⟶F-comp-equiv` (line 504): the chain
+  `U(c ⟶ Fd) ⊙ U(c' ⟶ Fd') ≈ U((c ⟶ Fd) ⊙ (c' ⟶ Fd')) ≈ U((c ⊙ c') ⟶ (Fd ⊙ Fd')) ≈ U((c ⊙ c') ⟶ F(d ⊙ d'))`,
+  assembled with `quasiEquivV-trans`.
+
+With this, all six type-precision equations are validated in
+`Syntax/FineGrained/Denotation/TypePrecision.agda` (`⟦_⟧ty⊑-≈`; `⇀-trans`
+is `U⟶F-comp-equiv`), and that file no longer uses `--allow-unsolved-metas`.
+The earlier obstacle, that the two sides of `⇀-trans` have different
+embeddings (the projection representing `F (c ⊙ c')` is the composite of the
+two projections conjugated by perturbations), is exactly why equality of
+embeddings had to be weakened.
 
 ### Definition D.16, composition of computation relations
 
@@ -203,8 +226,9 @@ context precision `⟦_⟧ctx⊑` is complete.
 - Lemma D.13 (composition for F and U):
   `Semantics/Concrete/Perturbation/QuasiRepresentation/CompositionLemmaF.agda`
   and `CompositionLemmaU.agda`.
-- Lemmas D.11 and D.12 are not stated separately; they are discharged inside
-  the two composition-lemma files through the same-embedding case of D.7.
+- Lemmas D.11 and D.12 are stated as `Fcc'≈FcFc'` and `Udd'≈UdUd'` in
+  `Semantics/Concrete/Relations/Constructions.agda` (also discharged inline in
+  the two composition-lemma files through the same-embedding case of D.7).
 - The three dynamic-type relations of Section 5.3.1 (`injNat`, `injTimes`,
   `injArr`) are complete as full value relations, including push-pull
   structure and both representabilities, in
@@ -230,5 +254,5 @@ Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [
   └─> Lemma D.15 (2)  ─┐  [done]
 Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) [done] ──> ⟦ c ⇀ d ⟧ty⊑ [done]
 
-Lemma D.18 + quasi-equivalence as ValRel≈ ──> ⟦ ⇀-trans ⟧ty⊑-≈ (the one remaining type precision equation)
+Lemma D.7 (all cases) [done] ──> Lemma D.18 + quasi-equivalence as ValRel≈ [done] ──> ⟦ ⇀-trans ⟧ty⊑-≈ [done]
 ```
