@@ -1,6 +1,5 @@
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Common.Later
 module Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions (k : Clock) where
@@ -657,9 +656,12 @@ module _
     (ρd : RightRepC B B' d) →
     RightRepC (A Types.⟶ B) (A' Types.⟶ B') (c ⟶rel d)
   RightRepArrow ρc ρd = mkRightRepC (A Types.⟶ B) (A' Types.⟶ B') (c ⟶rel d)
-    p-arrow δl-arrow {!!} δr-arrow {!DnL-arrow!}
-    
+    p-arrow δl-arrow DnR δr-arrow DnL
+
     where
+      module 𝔸  = PredomainStr (𝔸 .snd)
+      module 𝔹' = ErrorDomainStr (𝔹' .snd)
+
       -- Data corresponding to c
       ec   = embV _ _ _ ρc
       δlc  = δleV _ _ _ ρc
@@ -699,6 +701,18 @@ module _
         {ϕ₂ = Id ⟶mor pd}  {ϕ₂' = Id ⟶mor (iB' δrd .fst)}
         (UpLc ⟶sq (ED-IdSqV rB'))
         ((Predom-IdSqV c) ⟶sq DnLd)
+
+      -- The squares DnR-arrow and DnL-arrow above are stated using the
+      -- relations rA ⟶rel rB and rA' ⟶rel rB' (the arrow applied to the
+      -- identity relations), whereas the representation needs the identity
+      -- relations on the arrow error domains, i.e., the pointwise ordering
+      -- on morphisms. The two agree up to reflexivity and transitivity of
+      -- the ordering, which is what DnR and DnL account for.
+      DnR : ErrorDomSq (c ⟶rel d) (idEDRel (𝔸 ⟶ob 𝔹)) (i-arr δl-arrow .fst) p-arrow
+      DnR f f' H x = DnR-arrow f f' H x x (𝔸.is-refl x)
+
+      DnL : ErrorDomSq (idEDRel (𝔸' ⟶ob 𝔹')) (c ⟶rel d) p-arrow (i-arr' δr-arrow .fst)
+      DnL f f' H = DnL-arrow f f' (λ x y x≤y → 𝔹'.is-trans _ _ _ (H x) (f' .PMor.isMon x≤y))
 
 
 -----------------------------------------------------------------------------------
@@ -769,9 +783,15 @@ module _
       (ρUd : LeftRepV (Types.U B) (Types.U B') (U-rel d)) →
       LeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
     LeftRepUArrow ρFc ρUd = mkLeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
-      e-UArrow δl-UArrow {!!} {!!} {!!}
+      e-UArrow δl-UArrow UpR-UArrow δr-UArrow UpL-UArrow
       where
-      
+
+      module 𝔸' = PredomainStr (𝔸' .snd)
+      module 𝔹  = ErrorDomainStr (𝔹 .snd)
+
+      rUA  = idPRel (ValType→Predomain U-arrow)
+      rUA' = idPRel (ValType→Predomain U-arrow')
+
       -- Data corresponding to Fc
       pFc   = projC _ _ _ ρFc
       δlFc  = δlpC  _ _ _ ρFc
@@ -794,8 +814,22 @@ module _
       δl-UArrow =  (Kl-Arrow-Ptb-L A B .fst δlFc)
          M-arrow.· (Kl-Arrow-Ptb-R A B .fst δlUd)
 
-      UpR-UArrow : PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) (i-arrow δl-UArrow) e-UArrow
-      UpR-UArrow = {!!}
+      -- Interpreting the composite syntactic perturbation δl-UArrow gives
+      -- the composite of the Kleisli actions on the interpretations of
+      -- δlFc and δlUd. This uses the coherence lemmas ⟶Kᴸ-lemma and
+      -- ⟶Kᴿ-lemma relating the syntactic and semantic Kleisli arrow actions.
+      i-δl : i-arrow δl-UArrow ≡ (iFA δlFc ⟶Kᴸ 𝔹) ∘p (𝔸 ⟶Kᴿ iUB δlUd)
+      i-δl =
+          cong fst (interpV U-arrow .snd .IsMonoidHom.pres·
+                      (Kl-Arrow-Ptb-L A B .fst δlFc) (Kl-Arrow-Ptb-R A B .fst δlUd))
+        ∙ cong₂ _∘p_
+            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A} {B = B})) δlFc))
+            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A} {B = B})) δlUd))
+
+      UpR-UArrow : PSq rUA (U-rel (c ⟶rel d)) (i-arrow δl-UArrow) e-UArrow
+      UpR-UArrow f f' f≤f' =
+        subst (λ z → PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) z e-UArrow) (sym i-δl) sq-comp
+          f f' (λ x y x≤y → 𝔹.is-trans _ _ _ (f≤f' x) (f' .PMor.isMon x≤y))
         where
           sq1 : PSq (U-rel (rA ⟶rel rB)) (U-rel (rA ⟶rel d)) (𝔸 ⟶Kᴿ iUB δlUd) (𝔸 ⟶Kᴿ eUd)
           sq1 = KlArrowMorphismᴿ-sq (idPRel 𝔸) {dᵢ = rB} {dₒ = d} {f = iUB δlUd} {g = eUd} UpRUd
@@ -808,16 +842,34 @@ module _
                             {f₁ = 𝔸 ⟶Kᴿ iUB δlUd} {g₁ = 𝔸 ⟶Kᴿ eUd} {f₂ = iFA δlFc ⟶Kᴸ 𝔹} {g₂ = pFc ⟶Kᴸ 𝔹'}
                             sq1 sq2
 
-          -- We need to use the fact that the following are equal:
-          --
-          -- 1. interpreting δlFc as a semantic perturbation on FA
-          -- and then applying the Kleisli action on morphisms, i.e.,
-          -- (iFA δlFc) ⟶Kᴸ 𝔹.
-          --
-          -- 2. first applying the Kleisli action on syntactic perturbations
-          -- to obtain a syntactic perturbation of U(A ⟶ B), and then
-          -- interpreting that as a semantic perturbation on U(A ⟶ B).
-          
+      δr-UArrow : ⟨ PtbV U-arrow' ⟩
+      δr-UArrow =  (Kl-Arrow-Ptb-L A' B' .fst δrFc)
+         M-arrow'.· (Kl-Arrow-Ptb-R A' B' .fst δrUd)
+
+      i-δr : i-arrow' δr-UArrow ≡ (iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd)
+      i-δr =
+          cong fst (interpV U-arrow' .snd .IsMonoidHom.pres·
+                      (Kl-Arrow-Ptb-L A' B' .fst δrFc) (Kl-Arrow-Ptb-R A' B' .fst δrUd))
+        ∙ cong₂ _∘p_
+            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A'} {B = B'})) δrFc))
+            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A'} {B = B'})) δrUd))
+
+      UpL-UArrow : PSq (U-rel (c ⟶rel d)) rUA' e-UArrow (i-arrow' δr-UArrow)
+      UpL-UArrow f f' H x =
+        subst (λ z → PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow z) (sym i-δr) sq-comp
+          f f' H x x (𝔸'.is-refl x)
+        where
+          sq1 : PSq (U-rel (c ⟶rel d)) (U-rel (c ⟶rel rB')) (𝔸 ⟶Kᴿ eUd) (𝔸' ⟶Kᴿ iUB' δrUd)
+          sq1 = KlArrowMorphismᴿ-sq c {dᵢ = d} {dₒ = rB'} {f = eUd} {g = iUB' δrUd} UpLUd
+
+          sq2 : PSq (U-rel (c ⟶rel rB')) (U-rel (rA' ⟶rel rB')) (pFc ⟶Kᴸ 𝔹') (iFA' δrFc ⟶Kᴸ 𝔹')
+          sq2 = KlArrowMorphismᴸ-sq {cᵢ = c} {cₒ = rA'} pFc (iFA' δrFc) {d = rB'} DnLFc
+
+          sq-comp : PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow ((iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd))
+          sq-comp = CompSqV {c₁ = U-rel (c ⟶rel d)} {c₂ = U-rel (c ⟶rel rB')} {c₃ = U-rel (rA' ⟶rel rB')}
+                            {f₁ = 𝔸 ⟶Kᴿ eUd} {g₁ = 𝔸' ⟶Kᴿ iUB' δrUd} {f₂ = pFc ⟶Kᴸ 𝔹'} {g₂ = iFA' δrFc ⟶Kᴸ 𝔹'}
+                            sq1 sq2
+
 
 
 

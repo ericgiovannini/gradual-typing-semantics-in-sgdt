@@ -9,7 +9,8 @@ formalization.
   (Agda 2.8.0, cubical-0.9). Updated 2026-10-04 after completing the
   Definition B.3 laws in `Semantics/Concrete/Predomain/Kleisli.agda` and
   Definitions D.5 and D.6 in `Semantics/Concrete/Perturbation/Kleisli.agda`
-  and `Semantics/Concrete/Perturbation/Semantic.agda`.
+  and `Semantics/Concrete/Perturbation/Semantic.agda`, and Lemma D.15 in
+  `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -27,11 +28,9 @@ formalization.
 | Lemma D.7 | Same embedding (values) / same projection (computations) cases | not started, unused | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda` |
 | Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
 | Lemma D.14 (2) | `F(c₁ × c₂)` quasi-right-representable | not started (no longer blocked) | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda` |
-| Lemma D.15 (1) | `c ⟶ d` quasi-right-representable | 2 holes, squares built | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:655-700` |
-| Lemma D.15 (2) | `U(c ⟶ d)` quasi-left-representable | 4 holes, partial (no longer blocked) | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:767-825` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | not started | `Semantics/Concrete/Relations/Base.agda:91,103` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
-| Def. D.17 | Product and arrow actions on value/computation relations | not started, blocked | `Semantics/Concrete/Relations/Constructions.agda` |
+| Def. D.17 | Product and arrow actions on value/computation relations | not started; arrow unblocked, product blocked on D.14 (2) | `Semantics/Concrete/Relations/Constructions.agda` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
 
 ## Appendix B: Kleisli actions
@@ -128,27 +127,20 @@ Not started. Part 1 (`×-leftRep`,
 `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:558`)
 is complete. Part 2 is blocked on the square lemmas for Definition B.3.
 
-### Lemma D.15 part 1, `c ⟶ d` is quasi-right-representable
+### Lemma D.15, the arrow preserves quasi-representability (done 2026-10-04)
 
-`RightRepArrow`
-(`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:655`).
-The projection `p-arrow`, both perturbations `δl-arrow` and `δr-arrow`, and
-both squares `DnR-arrow` and `DnL-arrow` are written in the `where` clause,
-but the two square slots in the `mkRightRepC` call at line 660 are holes. What
-is missing is the identification of the interpretation of the composite
-perturbation with the composite of the two interpretations, so that the
-constructed squares have the required type.
-
-### Lemma D.15 part 2, `U(c ⟶ d)` is quasi-left-representable
-
-`LeftRepUArrow`
-(`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:767`).
-The embedding `e-UArrow` and the left perturbation `δl-UArrow` are defined.
-The three remaining fields at line 772 are holes: the right perturbation and
-the two squares. `UpR-UArrow` (line 798) has its two component squares and
-their composite built; the comment there identifies the missing fact as the
-left-side coherence lemma `⟶Kᴸ-lemma` of Definition D.5. The right-side square
-`UpL` has not been started.
+Both parts are complete in
+`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`,
+which no longer needs `--allow-unsolved-metas`: `RightRepArrow` (part 1,
+`c ⟶ d` is quasi-right-representable) and `LeftRepUArrow` (part 2,
+`U(c ⟶ d)` is quasi-left-representable). The squares are the functorial
+actions of `⟶` and of the Kleisli arrow actions on squares; part 2 uses the
+Definition D.5 coherence lemmas to identify the interpretation of the
+composite syntactic perturbation with the composite of the Kleisli actions.
+In both parts the squares come out stated for `r(A) ⟶ r(B)` rather than the
+identity relation on the arrow type (the pointwise ordering); the two agree up
+to reflexivity and transitivity of the ordering, and small conversions bridge
+the gap.
 
 ### Lemma D.18, quasi-order-equivalence of functors with composition
 
@@ -173,8 +165,10 @@ structure `⊙C` (`Perturbation/Relation/Constructions.agda:161`),
 ### Definition D.17, functorial actions on value and computation relations
 
 F and U are done (`Semantics/Concrete/Relations/Constructions.agda:278` and
-`:290`). The product and arrow actions have no definition, blocked on Lemma
-D.14 part 2 and Lemma D.15 respectively. These two actions are what
+`:290`). The product and arrow actions have no definition. The product action
+is blocked on Lemma D.14 part 2; the arrow action is no longer blocked, since
+Lemma D.15 is complete, and can be assembled from `RightRepArrow`,
+`LeftRepUArrow` and the push-pull structure of Lemma D.4. These two actions are what
 `⟦ c ⇀ d ⟧ty⊑` and the context case `⟦ c ∷ C ⟧ctx⊑`
 (`Syntax/FineGrained/Denotation/TypePrecision.agda:22` and `:28`) need.
 
@@ -213,8 +207,8 @@ Def. B.3 laws (×Kᴸ/×Kᴿ functoriality, squares)  [done]
   └─> Lemma D.14 (2)  ──> Def. D.17 (× on relations) ──> ⟦ c ∷ C ⟧ctx⊑
 
 Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [done]
-  └─> Lemma D.15 (2)  ─┐
-Lemma D.15 (1)        ─┴─> Def. D.17 (⟶ on relations) ──> ⟦ c ⇀ d ⟧ty⊑
+  └─> Lemma D.15 (2)  ─┐  [done]
+Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) ──> ⟦ c ⇀ d ⟧ty⊑
 
 Lemma D.18 ──> ⟦_⟧ty⊑-≈ (equations on type precision derivations)
 ```
