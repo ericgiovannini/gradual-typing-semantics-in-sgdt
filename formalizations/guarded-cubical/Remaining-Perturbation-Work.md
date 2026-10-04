@@ -9,8 +9,8 @@ formalization.
   (Agda 2.8.0, cubical-0.9). Updated 2026-10-04 after completing the
   Definition B.3 laws in `Semantics/Concrete/Predomain/Kleisli.agda` and
   Definitions D.5 and D.6 in `Semantics/Concrete/Perturbation/Kleisli.agda`
-  and `Semantics/Concrete/Perturbation/Semantic.agda`, and Lemma D.15 in
-  `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`.
+  and `Semantics/Concrete/Perturbation/Semantic.agda`, and Lemmas D.14 and
+  D.15 in `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -27,10 +27,9 @@ formalization.
 | App. D.1/D.2 (unnumbered) | `Σ-SemPtb-eq`, `Σ-SemPtb-ind` | 4 holes, unused | `Semantics/Concrete/Perturbation/Semantic.agda:762,782,788,790` |
 | Lemma D.7 | Same embedding (values) / same projection (computations) cases | not started, unused | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda` |
 | Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
-| Lemma D.14 (2) | `F(c₁ × c₂)` quasi-right-representable | not started (no longer blocked) | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | not started | `Semantics/Concrete/Relations/Base.agda:91,103` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
-| Def. D.17 | Product and arrow actions on value/computation relations | not started; arrow unblocked, product blocked on D.14 (2) | `Semantics/Concrete/Relations/Constructions.agda` |
+| Def. D.17 | Product and arrow actions on value/computation relations | not started, no longer blocked | `Semantics/Concrete/Relations/Constructions.agda` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
 
 ## Appendix B: Kleisli actions
@@ -121,11 +120,18 @@ computation relation in `Semantics/Concrete/Relations/Constructions.agda`
 (only `IdV`, line 98). The push-pull part `IdRelC` exists in
 `Semantics/Concrete/Perturbation/Relation/Constructions.agda:105`.
 
-### Lemma D.14 part 2, F preserves right-representability of products
+### Lemma D.14, products preserve quasi-representability (done 2026-10-04)
 
-Not started. Part 1 (`×-leftRep`,
-`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:558`)
-is complete. Part 2 is blocked on the square lemmas for Definition B.3.
+Both parts are complete in
+`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`:
+`×-leftRep` (part 1, `c₁ × c₂` is quasi-left-representable) and
+`×-F-rightRep` (part 2, `F (c₁ × c₂)` is quasi-right-representable). Part 2
+follows the paper: the projection is the composite of the Kleisli product
+actions of the two projections, the perturbations are the images of the
+given ones under the Definition D.6 actions, and the squares are vertical
+composites of the actions of `×Kᴸ` and `×Kᴿ` on squares (Definition B.3),
+with the Definition D.6 coherence lemmas identifying the interpretation of
+the composite syntactic perturbation.
 
 ### Lemma D.15, the arrow preserves quasi-representability (done 2026-10-04)
 
@@ -165,10 +171,11 @@ structure `⊙C` (`Perturbation/Relation/Constructions.agda:161`),
 ### Definition D.17, functorial actions on value and computation relations
 
 F and U are done (`Semantics/Concrete/Relations/Constructions.agda:278` and
-`:290`). The product and arrow actions have no definition. The product action
-is blocked on Lemma D.14 part 2; the arrow action is no longer blocked, since
-Lemma D.15 is complete, and can be assembled from `RightRepArrow`,
-`LeftRepUArrow` and the push-pull structure of Lemma D.4. These two actions are what
+`:290`). The product and arrow actions have no definition, but neither is
+blocked any more: the product action can be assembled from `×-leftRep`,
+`×-F-rightRep` and the push-pull structure of Lemma D.3, and the arrow action
+from `RightRepArrow`, `LeftRepUArrow` and the push-pull structure of Lemma
+D.4. These two actions are what
 `⟦ c ⇀ d ⟧ty⊑` and the context case `⟦ c ∷ C ⟧ctx⊑`
 (`Syntax/FineGrained/Denotation/TypePrecision.agda:22` and `:28`) need.
 
@@ -204,7 +211,7 @@ loads this module.
 
 ```
 Def. B.3 laws (×Kᴸ/×Kᴿ functoriality, squares)  [done]
-  └─> Lemma D.14 (2)  ──> Def. D.17 (× on relations) ──> ⟦ c ∷ C ⟧ctx⊑
+  └─> Lemma D.14 (2) [done] ──> Def. D.17 (× on relations) ──> ⟦ c ∷ C ⟧ctx⊑
 
 Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [done]
   └─> Lemma D.15 (2)  ─┐  [done]

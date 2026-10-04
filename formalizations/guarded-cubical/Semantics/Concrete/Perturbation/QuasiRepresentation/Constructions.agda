@@ -603,6 +603,103 @@ module _
         (UpLc₁ ×-Sq (Predom-IdSqV c₂))
         ((Predom-IdSqV rA₁') ×-Sq UpLc₂)
 
+
+  -- If F c₁ and F c₂ are quasi-right-representable, then so is F (c₁ × c₂).
+  --
+  -- The projection is the composite of the Kleisli product actions of
+  -- the two projections, the perturbations are the images of the given
+  -- perturbations under the Kleisli product actions on syntactic
+  -- perturbations, and the squares are vertical composites of the
+  -- actions of ×Kᴸ and ×Kᴿ on the given squares. The coherence lemmas
+  -- ×Kᴸ-lemma and ×Kᴿ-lemma identify the interpretation of the composite
+  -- syntactic perturbation with the composite of the Kleisli actions on
+  -- the interpretations.
+  ×-F-rightRep :
+    RightRepC (Types.F A₁) (Types.F A₁') (F-rel c₁) →
+    RightRepC (Types.F A₂) (Types.F A₂') (F-rel c₂) →
+    RightRepC (Types.F (A₁ Types.× A₂)) (Types.F (A₁' Types.× A₂')) (F-rel (c₁ ×pbmonrel c₂))
+  ×-F-rightRep ρ₁ ρ₂ =
+    mkRightRepC (Types.F (A₁ Types.× A₂)) (Types.F (A₁' Types.× A₂')) (F-rel (c₁ ×pbmonrel c₂))
+      p× δl× DnR× δr× DnL×
+    where
+      -- Data corresponding to F c₁
+      p₁   = projC _ _ _ ρ₁
+      δl₁  = δlpC  _ _ _ ρ₁
+      δr₁  = δrpC  _ _ _ ρ₁
+      DnR₁ = DnRC  _ _ _ ρ₁
+      DnL₁ = DnLC  _ _ _ ρ₁
+
+      -- Data corresponding to F c₂
+      p₂   = projC _ _ _ ρ₂
+      δl₂  = δlpC  _ _ _ ρ₂
+      δr₂  = δrpC  _ _ _ ρ₂
+      DnR₂ = DnRC  _ _ _ ρ₂
+      DnL₂ = DnLC  _ _ _ ρ₂
+
+      iFA₁  = fst ∘ interpC (Types.F A₁) .fst
+      iFA₁' = fst ∘ interpC (Types.F A₁') .fst
+      iFA₂  = fst ∘ interpC (Types.F A₂) .fst
+      iFA₂' = fst ∘ interpC (Types.F A₂') .fst
+
+      F×  = Types.F (A₁ Types.× A₂)
+      F×' = Types.F (A₁' Types.× A₂')
+
+      module MF×  = MonoidStr (PtbC F× .snd)
+      module MF×' = MonoidStr (PtbC F×' .snd)
+
+      iF×  = fst ∘ interpC F×  .fst
+      iF×' = fst ∘ interpC F×' .fst
+
+      -- Data corresponding to F (c₁ × c₂)
+      p× : ErrorDomMor (F-ob (𝔸₁' ×dp 𝔸₂')) (F-ob (𝔸₁ ×dp 𝔸₂))
+      p× = (p₁ ×Kᴸ 𝔸₂) ∘ed (𝔸₁' ×Kᴿ p₂)
+
+      δl× : ⟨ PtbC F× ⟩
+      δl× = (KPtb.Kl-Prod-Ptb-L A₁ A₂ .fst δl₁) MF×.· (KPtb.Kl-Prod-Ptb-R A₁ A₂ .fst δl₂)
+
+      i-δl : iF× δl× ≡ (iFA₁ δl₁ ×Kᴸ 𝔸₂) ∘ed (𝔸₁ ×Kᴿ iFA₂ δl₂)
+      i-δl =
+          cong fst (interpC F× .snd .IsMonoidHom.pres·
+                      (KPtb.Kl-Prod-Ptb-L A₁ A₂ .fst δl₁) (KPtb.Kl-Prod-Ptb-R A₁ A₂ .fst δl₂))
+        ∙ cong₂ _∘ed_
+            (cong fst (funExt⁻ (cong fst (KPtb.×Kᴸ-lemma A₁ A₂)) δl₁))
+            (cong fst (funExt⁻ (cong fst (KPtb.×Kᴿ-lemma A₁ A₂)) δl₂))
+
+      -- As in the proof of ×-leftRep, Agda identifies F-rel (rA₁ × rA₂)
+      -- with the identity relation on F (A₁ × A₂).
+      DnR× : ErrorDomSq (F-rel (c₁ ×pbmonrel c₂)) (idEDRel (F-ob (𝔸₁ ×dp 𝔸₂))) (iF× δl×) p×
+      DnR× =
+        subst (λ z → ErrorDomSq (F-rel (c₁ ×pbmonrel c₂)) (F-rel (rA₁ ×pbmonrel rA₂)) z p×)
+              (sym i-δl)
+          (ED-CompSqV
+            {d₁ = F-rel (c₁ ×pbmonrel c₂)} {d₂ = F-rel (c₁ ×pbmonrel rA₂)} {d₃ = F-rel (rA₁ ×pbmonrel rA₂)}
+            {ϕ₁ = 𝔸₁ ×Kᴿ iFA₂ δl₂} {ϕ₁' = 𝔸₁' ×Kᴿ p₂}
+            {ϕ₂ = iFA₁ δl₁ ×Kᴸ 𝔸₂} {ϕ₂' = p₁ ×Kᴸ 𝔸₂}
+            (KlProdMorphismᴿ-Sq c₂ rA₂ c₁ (iFA₂ δl₂) p₂ DnR₂)
+            (KlProdMorphismᴸ-Sq c₁ rA₁ rA₂ (iFA₁ δl₁) p₁ DnR₁))
+
+      δr× : ⟨ PtbC F×' ⟩
+      δr× = (KPtb.Kl-Prod-Ptb-L A₁' A₂' .fst δr₁) MF×'.· (KPtb.Kl-Prod-Ptb-R A₁' A₂' .fst δr₂)
+
+      i-δr : iF×' δr× ≡ (iFA₁' δr₁ ×Kᴸ 𝔸₂') ∘ed (𝔸₁' ×Kᴿ iFA₂' δr₂)
+      i-δr =
+          cong fst (interpC F×' .snd .IsMonoidHom.pres·
+                      (KPtb.Kl-Prod-Ptb-L A₁' A₂' .fst δr₁) (KPtb.Kl-Prod-Ptb-R A₁' A₂' .fst δr₂))
+        ∙ cong₂ _∘ed_
+            (cong fst (funExt⁻ (cong fst (KPtb.×Kᴸ-lemma A₁' A₂')) δr₁))
+            (cong fst (funExt⁻ (cong fst (KPtb.×Kᴿ-lemma A₁' A₂')) δr₂))
+
+      DnL× : ErrorDomSq (idEDRel (F-ob (𝔸₁' ×dp 𝔸₂'))) (F-rel (c₁ ×pbmonrel c₂)) p× (iF×' δr×)
+      DnL× =
+        subst (λ z → ErrorDomSq (F-rel (rA₁' ×pbmonrel rA₂')) (F-rel (c₁ ×pbmonrel c₂)) p× z)
+              (sym i-δr)
+          (ED-CompSqV
+            {d₁ = F-rel (rA₁' ×pbmonrel rA₂')} {d₂ = F-rel (rA₁' ×pbmonrel c₂)} {d₃ = F-rel (c₁ ×pbmonrel c₂)}
+            {ϕ₁ = 𝔸₁' ×Kᴿ p₂} {ϕ₁' = 𝔸₁' ×Kᴿ iFA₂' δr₂}
+            {ϕ₂ = p₁ ×Kᴸ 𝔸₂} {ϕ₂' = iFA₁' δr₁ ×Kᴸ 𝔸₂'}
+            (KlProdMorphismᴿ-Sq rA₂' c₂ rA₁' p₂ (iFA₂' δr₂) DnL₂)
+            (KlProdMorphismᴸ-Sq rA₁' c₁ c₂ p₁ (iFA₁' δr₁) DnL₁))
+
 -----------------------------------------------------------------------------------
 
 -- The functor ⊎ preserves quasi-representability.
