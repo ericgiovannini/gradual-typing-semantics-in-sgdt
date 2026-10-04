@@ -9,8 +9,9 @@ formalization.
   (Agda 2.8.0, cubical-0.9). Updated 2026-10-04 after completing the
   Definition B.3 laws in `Semantics/Concrete/Predomain/Kleisli.agda` and
   Definitions D.5 and D.6 in `Semantics/Concrete/Perturbation/Kleisli.agda`
-  and `Semantics/Concrete/Perturbation/Semantic.agda`, and Lemmas D.14 and
-  D.15 in `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`.
+  and `Semantics/Concrete/Perturbation/Semantic.agda`, Lemmas D.14 and
+  D.15 in `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`,
+  and Definition D.17 in `Semantics/Concrete/Relations/Constructions.agda`.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -29,7 +30,6 @@ formalization.
 | Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | not started | `Semantics/Concrete/Relations/Base.agda:91,103` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
-| Def. D.17 | Product and arrow actions on value/computation relations | not started, no longer blocked | `Semantics/Concrete/Relations/Constructions.agda` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
 
 ## Appendix B: Kleisli actions
@@ -168,16 +168,18 @@ structure `⊙C` (`Perturbation/Relation/Constructions.agda:161`),
 `repUdUd'→repUdd'` from Lemma D.13
 (`Perturbation/QuasiRepresentation/CompositionLemmaU.agda:122`).
 
-### Definition D.17, functorial actions on value and computation relations
+### Definition D.17, functorial actions on value and computation relations (done 2026-10-04)
 
-F and U are done (`Semantics/Concrete/Relations/Constructions.agda:278` and
-`:290`). The product and arrow actions have no definition, but neither is
-blocked any more: the product action can be assembled from `×-leftRep`,
-`×-F-rightRep` and the push-pull structure of Lemma D.3, and the arrow action
-from `RightRepArrow`, `LeftRepUArrow` and the push-pull structure of Lemma
-D.4. These two actions are what
-`⟦ c ⇀ d ⟧ty⊑` and the context case `⟦ c ∷ C ⟧ctx⊑`
-(`Syntax/FineGrained/Denotation/TypePrecision.agda:22` and `:28`) need.
+All four actions are defined in `Semantics/Concrete/Relations/Constructions.agda`,
+which no longer needs `--allow-unsolved-metas`: `F` and `U` (already present),
+and the new `_×_` on value relations and `_⟶_` from a value and a computation
+relation to a computation relation. The product action combines the push-pull
+structure of Lemma D.3 with `×-leftRep` and `×-F-rightRep` (Lemma D.14); the
+arrow action combines the push-pull structure of Lemma D.4 with
+`RightRepArrow` and `LeftRepUArrow` (Lemma D.15). These are the semantic
+ingredients for `⟦ c ⇀ d ⟧ty⊑` and the context case `⟦ c ∷ C ⟧ctx⊑`
+(`Syntax/FineGrained/Denotation/TypePrecision.agda:22` and `:28`), which are
+still holes.
 
 ### Complete in this section
 
@@ -211,11 +213,11 @@ loads this module.
 
 ```
 Def. B.3 laws (×Kᴸ/×Kᴿ functoriality, squares)  [done]
-  └─> Lemma D.14 (2) [done] ──> Def. D.17 (× on relations) ──> ⟦ c ∷ C ⟧ctx⊑
+  └─> Lemma D.14 (2) [done] ──> Def. D.17 (× on relations) [done] ──> ⟦ c ∷ C ⟧ctx⊑
 
 Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [done]
   └─> Lemma D.15 (2)  ─┐  [done]
-Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) ──> ⟦ c ⇀ d ⟧ty⊑
+Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) [done] ──> ⟦ c ⇀ d ⟧ty⊑
 
 Lemma D.18 ──> ⟦_⟧ty⊑-≈ (equations on type precision derivations)
 ```

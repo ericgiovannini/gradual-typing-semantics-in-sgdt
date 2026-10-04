@@ -875,97 +875,97 @@ module _
     i-arrow' : _ → _
     i-arrow' = fst ∘ interpV U-arrow' .fst
 
-    LeftRepUArrow :
-      (ρFc : RightRepC (Types.F A) (Types.F A') (F-rel c)) →
-      (ρUd : LeftRepV (Types.U B) (Types.U B') (U-rel d)) →
-      LeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
-    LeftRepUArrow ρFc ρUd = mkLeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
-      e-UArrow δl-UArrow UpR-UArrow δr-UArrow UpL-UArrow
+  LeftRepUArrow :
+    (ρFc : RightRepC (Types.F A) (Types.F A') (F-rel c)) →
+    (ρUd : LeftRepV (Types.U B) (Types.U B') (U-rel d)) →
+    LeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
+  LeftRepUArrow ρFc ρUd = mkLeftRepV U-arrow U-arrow' (U-rel (c ⟶rel d))
+    e-UArrow δl-UArrow UpR-UArrow δr-UArrow UpL-UArrow
+    where
+
+    module 𝔸' = PredomainStr (𝔸' .snd)
+    module 𝔹  = ErrorDomainStr (𝔹 .snd)
+
+    rUA  = idPRel (ValType→Predomain U-arrow)
+    rUA' = idPRel (ValType→Predomain U-arrow')
+
+    -- Data corresponding to Fc
+    pFc   = projC _ _ _ ρFc
+    δlFc  = δlpC  _ _ _ ρFc
+    δrFc  = δrpC  _ _ _ ρFc
+    DnRFc = DnRC  _ _ _ ρFc
+    DnLFc = DnLC  _ _ _ ρFc
+
+    -- Data corresponding to Ud
+    eUd   = embV _ _ _ ρUd
+    δlUd  = δleV _ _ _ ρUd
+    δrUd  = δreV _ _ _ ρUd
+    UpLUd = UpLV _ _ _ ρUd
+    UpRUd = UpRV _ _ _ ρUd
+
+    -- Data corresponding to U(c ⟶ d)
+    e-UArrow : PMor _ _
+    e-UArrow = (pFc ⟶Kᴸ 𝔹') ∘p (𝔸 ⟶Kᴿ eUd)
+
+    δl-UArrow : ⟨ PtbV U-arrow ⟩
+    δl-UArrow =  (Kl-Arrow-Ptb-L A B .fst δlFc)
+       M-arrow.· (Kl-Arrow-Ptb-R A B .fst δlUd)
+
+    -- Interpreting the composite syntactic perturbation δl-UArrow gives
+    -- the composite of the Kleisli actions on the interpretations of
+    -- δlFc and δlUd. This uses the coherence lemmas ⟶Kᴸ-lemma and
+    -- ⟶Kᴿ-lemma relating the syntactic and semantic Kleisli arrow actions.
+    i-δl : i-arrow δl-UArrow ≡ (iFA δlFc ⟶Kᴸ 𝔹) ∘p (𝔸 ⟶Kᴿ iUB δlUd)
+    i-δl =
+        cong fst (interpV U-arrow .snd .IsMonoidHom.pres·
+                    (Kl-Arrow-Ptb-L A B .fst δlFc) (Kl-Arrow-Ptb-R A B .fst δlUd))
+      ∙ cong₂ _∘p_
+          (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A} {B = B})) δlFc))
+          (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A} {B = B})) δlUd))
+
+    UpR-UArrow : PSq rUA (U-rel (c ⟶rel d)) (i-arrow δl-UArrow) e-UArrow
+    UpR-UArrow f f' f≤f' =
+      subst (λ z → PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) z e-UArrow) (sym i-δl) sq-comp
+        f f' (λ x y x≤y → 𝔹.is-trans _ _ _ (f≤f' x) (f' .PMor.isMon x≤y))
       where
+        sq1 : PSq (U-rel (rA ⟶rel rB)) (U-rel (rA ⟶rel d)) (𝔸 ⟶Kᴿ iUB δlUd) (𝔸 ⟶Kᴿ eUd)
+        sq1 = KlArrowMorphismᴿ-sq (idPRel 𝔸) {dᵢ = rB} {dₒ = d} {f = iUB δlUd} {g = eUd} UpRUd
 
-      module 𝔸' = PredomainStr (𝔸' .snd)
-      module 𝔹  = ErrorDomainStr (𝔹 .snd)
+        sq2 : PSq (U-rel (rA ⟶rel d)) (U-rel (c ⟶rel d)) (iFA δlFc ⟶Kᴸ 𝔹) (pFc ⟶Kᴸ 𝔹')
+        sq2 = KlArrowMorphismᴸ-sq {cᵢ = rA} {cₒ = c} (iFA δlFc) pFc {d = d} DnRFc
 
-      rUA  = idPRel (ValType→Predomain U-arrow)
-      rUA' = idPRel (ValType→Predomain U-arrow')
+        sq-comp : PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) ((iFA δlFc ⟶Kᴸ 𝔹) ∘p (𝔸 ⟶Kᴿ iUB δlUd)) e-UArrow
+        sq-comp = CompSqV {c₁ = U-rel (rA ⟶rel rB)} {c₂ = U-rel (rA ⟶rel d)} {c₃ = U-rel (c ⟶rel d)}
+                          {f₁ = 𝔸 ⟶Kᴿ iUB δlUd} {g₁ = 𝔸 ⟶Kᴿ eUd} {f₂ = iFA δlFc ⟶Kᴸ 𝔹} {g₂ = pFc ⟶Kᴸ 𝔹'}
+                          sq1 sq2
 
-      -- Data corresponding to Fc
-      pFc   = projC _ _ _ ρFc
-      δlFc  = δlpC  _ _ _ ρFc
-      δrFc  = δrpC  _ _ _ ρFc
-      DnRFc = DnRC  _ _ _ ρFc
-      DnLFc = DnLC  _ _ _ ρFc
+    δr-UArrow : ⟨ PtbV U-arrow' ⟩
+    δr-UArrow =  (Kl-Arrow-Ptb-L A' B' .fst δrFc)
+       M-arrow'.· (Kl-Arrow-Ptb-R A' B' .fst δrUd)
 
-      -- Data corresponding to Ud
-      eUd   = embV _ _ _ ρUd
-      δlUd  = δleV _ _ _ ρUd
-      δrUd  = δreV _ _ _ ρUd
-      UpLUd = UpLV _ _ _ ρUd
-      UpRUd = UpRV _ _ _ ρUd
+    i-δr : i-arrow' δr-UArrow ≡ (iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd)
+    i-δr =
+        cong fst (interpV U-arrow' .snd .IsMonoidHom.pres·
+                    (Kl-Arrow-Ptb-L A' B' .fst δrFc) (Kl-Arrow-Ptb-R A' B' .fst δrUd))
+      ∙ cong₂ _∘p_
+          (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A'} {B = B'})) δrFc))
+          (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A'} {B = B'})) δrUd))
 
-      -- Data corresponding to U(c ⟶ d)
-      e-UArrow : PMor _ _
-      e-UArrow = (pFc ⟶Kᴸ 𝔹') ∘p (𝔸 ⟶Kᴿ eUd)
+    UpL-UArrow : PSq (U-rel (c ⟶rel d)) rUA' e-UArrow (i-arrow' δr-UArrow)
+    UpL-UArrow f f' H x =
+      subst (λ z → PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow z) (sym i-δr) sq-comp
+        f f' H x x (𝔸'.is-refl x)
+      where
+        sq1 : PSq (U-rel (c ⟶rel d)) (U-rel (c ⟶rel rB')) (𝔸 ⟶Kᴿ eUd) (𝔸' ⟶Kᴿ iUB' δrUd)
+        sq1 = KlArrowMorphismᴿ-sq c {dᵢ = d} {dₒ = rB'} {f = eUd} {g = iUB' δrUd} UpLUd
 
-      δl-UArrow : ⟨ PtbV U-arrow ⟩
-      δl-UArrow =  (Kl-Arrow-Ptb-L A B .fst δlFc)
-         M-arrow.· (Kl-Arrow-Ptb-R A B .fst δlUd)
+        sq2 : PSq (U-rel (c ⟶rel rB')) (U-rel (rA' ⟶rel rB')) (pFc ⟶Kᴸ 𝔹') (iFA' δrFc ⟶Kᴸ 𝔹')
+        sq2 = KlArrowMorphismᴸ-sq {cᵢ = c} {cₒ = rA'} pFc (iFA' δrFc) {d = rB'} DnLFc
 
-      -- Interpreting the composite syntactic perturbation δl-UArrow gives
-      -- the composite of the Kleisli actions on the interpretations of
-      -- δlFc and δlUd. This uses the coherence lemmas ⟶Kᴸ-lemma and
-      -- ⟶Kᴿ-lemma relating the syntactic and semantic Kleisli arrow actions.
-      i-δl : i-arrow δl-UArrow ≡ (iFA δlFc ⟶Kᴸ 𝔹) ∘p (𝔸 ⟶Kᴿ iUB δlUd)
-      i-δl =
-          cong fst (interpV U-arrow .snd .IsMonoidHom.pres·
-                      (Kl-Arrow-Ptb-L A B .fst δlFc) (Kl-Arrow-Ptb-R A B .fst δlUd))
-        ∙ cong₂ _∘p_
-            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A} {B = B})) δlFc))
-            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A} {B = B})) δlUd))
-
-      UpR-UArrow : PSq rUA (U-rel (c ⟶rel d)) (i-arrow δl-UArrow) e-UArrow
-      UpR-UArrow f f' f≤f' =
-        subst (λ z → PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) z e-UArrow) (sym i-δl) sq-comp
-          f f' (λ x y x≤y → 𝔹.is-trans _ _ _ (f≤f' x) (f' .PMor.isMon x≤y))
-        where
-          sq1 : PSq (U-rel (rA ⟶rel rB)) (U-rel (rA ⟶rel d)) (𝔸 ⟶Kᴿ iUB δlUd) (𝔸 ⟶Kᴿ eUd)
-          sq1 = KlArrowMorphismᴿ-sq (idPRel 𝔸) {dᵢ = rB} {dₒ = d} {f = iUB δlUd} {g = eUd} UpRUd
-
-          sq2 : PSq (U-rel (rA ⟶rel d)) (U-rel (c ⟶rel d)) (iFA δlFc ⟶Kᴸ 𝔹) (pFc ⟶Kᴸ 𝔹')
-          sq2 = KlArrowMorphismᴸ-sq {cᵢ = rA} {cₒ = c} (iFA δlFc) pFc {d = d} DnRFc
-
-          sq-comp : PSq (U-rel (rA ⟶rel rB)) (U-rel (c ⟶rel d)) ((iFA δlFc ⟶Kᴸ 𝔹) ∘p (𝔸 ⟶Kᴿ iUB δlUd)) e-UArrow
-          sq-comp = CompSqV {c₁ = U-rel (rA ⟶rel rB)} {c₂ = U-rel (rA ⟶rel d)} {c₃ = U-rel (c ⟶rel d)}
-                            {f₁ = 𝔸 ⟶Kᴿ iUB δlUd} {g₁ = 𝔸 ⟶Kᴿ eUd} {f₂ = iFA δlFc ⟶Kᴸ 𝔹} {g₂ = pFc ⟶Kᴸ 𝔹'}
-                            sq1 sq2
-
-      δr-UArrow : ⟨ PtbV U-arrow' ⟩
-      δr-UArrow =  (Kl-Arrow-Ptb-L A' B' .fst δrFc)
-         M-arrow'.· (Kl-Arrow-Ptb-R A' B' .fst δrUd)
-
-      i-δr : i-arrow' δr-UArrow ≡ (iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd)
-      i-δr =
-          cong fst (interpV U-arrow' .snd .IsMonoidHom.pres·
-                      (Kl-Arrow-Ptb-L A' B' .fst δrFc) (Kl-Arrow-Ptb-R A' B' .fst δrUd))
-        ∙ cong₂ _∘p_
-            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴸ-lemma {A = A'} {B = B'})) δrFc))
-            (cong fst (funExt⁻ (cong fst (KPtb.⟶Kᴿ-lemma {A = A'} {B = B'})) δrUd))
-
-      UpL-UArrow : PSq (U-rel (c ⟶rel d)) rUA' e-UArrow (i-arrow' δr-UArrow)
-      UpL-UArrow f f' H x =
-        subst (λ z → PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow z) (sym i-δr) sq-comp
-          f f' H x x (𝔸'.is-refl x)
-        where
-          sq1 : PSq (U-rel (c ⟶rel d)) (U-rel (c ⟶rel rB')) (𝔸 ⟶Kᴿ eUd) (𝔸' ⟶Kᴿ iUB' δrUd)
-          sq1 = KlArrowMorphismᴿ-sq c {dᵢ = d} {dₒ = rB'} {f = eUd} {g = iUB' δrUd} UpLUd
-
-          sq2 : PSq (U-rel (c ⟶rel rB')) (U-rel (rA' ⟶rel rB')) (pFc ⟶Kᴸ 𝔹') (iFA' δrFc ⟶Kᴸ 𝔹')
-          sq2 = KlArrowMorphismᴸ-sq {cᵢ = c} {cₒ = rA'} pFc (iFA' δrFc) {d = rB'} DnLFc
-
-          sq-comp : PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow ((iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd))
-          sq-comp = CompSqV {c₁ = U-rel (c ⟶rel d)} {c₂ = U-rel (c ⟶rel rB')} {c₃ = U-rel (rA' ⟶rel rB')}
-                            {f₁ = 𝔸 ⟶Kᴿ eUd} {g₁ = 𝔸' ⟶Kᴿ iUB' δrUd} {f₂ = pFc ⟶Kᴸ 𝔹'} {g₂ = iFA' δrFc ⟶Kᴸ 𝔹'}
-                            sq1 sq2
+        sq-comp : PSq (U-rel (c ⟶rel d)) (U-rel (rA' ⟶rel rB')) e-UArrow ((iFA' δrFc ⟶Kᴸ 𝔹') ∘p (𝔸' ⟶Kᴿ iUB' δrUd))
+        sq-comp = CompSqV {c₁ = U-rel (c ⟶rel d)} {c₂ = U-rel (c ⟶rel rB')} {c₃ = U-rel (rA' ⟶rel rB')}
+                          {f₁ = 𝔸 ⟶Kᴿ eUd} {g₁ = 𝔸' ⟶Kᴿ iUB' δrUd} {f₂ = pFc ⟶Kᴸ 𝔹'} {g₂ = iFA' δrFc ⟶Kᴸ 𝔹'}
+                          sq1 sq2
 
 
 

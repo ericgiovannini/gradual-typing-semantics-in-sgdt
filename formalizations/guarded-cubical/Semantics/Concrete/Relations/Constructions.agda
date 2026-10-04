@@ -12,7 +12,6 @@
 
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Common.Later
 
 module Semantics.Concrete.Relations.Constructions (k : Clock) where
@@ -24,7 +23,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Monoid.FreeProduct
 open import Cubical.Algebra.Monoid.FreeMonoid as Free
-open import Cubical.Data.Sigma
+open import Cubical.Data.Sigma hiding (_×_)
 
 open import Semantics.Concrete.Predomain.Base
 open import Semantics.Concrete.Predomain.Constructions
@@ -39,7 +38,7 @@ open import Semantics.Concrete.LockStepErrorOrdering k
 
 open import Semantics.Concrete.Perturbation.Semantic k
 open import Semantics.Concrete.Perturbation.Relation k as RelPP
-  hiding (⊎-inl ; ⊎-inr ; U ; F ; Next ; ⊙V ; ⊙C)
+  hiding (⊎-inl ; ⊎-inr ; U ; F ; Next ; ⊙V ; ⊙C ; _×_ ; _⟶_)
 
 open import Semantics.Concrete.Perturbation.QuasiRepresentation k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.Constructions k
@@ -47,7 +46,7 @@ open import Semantics.Concrete.Perturbation.QuasiRepresentation.Composition k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaU k
 open import Semantics.Concrete.Perturbation.QuasiRepresentation.CompositionLemmaF k
 
-open import Semantics.Concrete.Types k as Types hiding (U ; F ; _×_)
+open import Semantics.Concrete.Types k as Types hiding (U ; F ; _×_ ; _⟶_)
 open import Semantics.Concrete.Relations.Base k
 
 ---------------------------------------------------------------
@@ -295,3 +294,33 @@ module _ {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B'
 
   -- Right rep for F (U d)
   U d .snd .snd = F-rightRep (Types.U B) (Types.U B') _ (U-rightRep B B' _ (d .snd .fst))
+
+
+-- Products
+
+module _ {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁} {A₁' : ValType ℓA₁' ℓ≤A₁' ℓ≈A₁' ℓMA₁'}
+         {A₂ : ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂} {A₂' : ValType ℓA₂' ℓ≤A₂' ℓ≈A₂' ℓMA₂'} where
+
+  _×_ : ValRel A₁ A₁' ℓc₁ → ValRel A₂ A₂' ℓc₂ → ValRel (A₁ Types.× A₂) (A₁' Types.× A₂') _
+  (c₁ × c₂) .fst = c₁ .fst RelPP.× c₂ .fst
+
+  -- Left rep for c₁ × c₂
+  (c₁ × c₂) .snd .fst = ×-leftRep (c₁ .fst .fst) (c₂ .fst .fst) (c₁ .snd .fst) (c₂ .snd .fst)
+
+  -- Right rep for F (c₁ × c₂)
+  (c₁ × c₂) .snd .snd = ×-F-rightRep (c₁ .fst .fst) (c₂ .fst .fst) (c₁ .snd .snd) (c₂ .snd .snd)
+
+
+-- Arrows
+
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}
+         {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} {B' : CompType ℓB' ℓ≤B' ℓ≈B' ℓMB'} where
+
+  _⟶_ : ValRel A A' ℓc → CompRel B B' ℓd → CompRel (A Types.⟶ B) (A' Types.⟶ B') _
+  (c ⟶ d) .fst = c .fst RelPP.⟶ d .fst
+
+  -- Right rep for c ⟶ d
+  (c ⟶ d) .snd .fst = RightRepArrow (c .fst .fst) (d .fst .fst) (c .snd .fst) (d .snd .fst)
+
+  -- Left rep for U (c ⟶ d)
+  (c ⟶ d) .snd .snd = LeftRepUArrow (c .fst .fst) (d .fst .fst) (c .snd .snd) (d .snd .snd)
