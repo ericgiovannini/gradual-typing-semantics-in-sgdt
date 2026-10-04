@@ -2,11 +2,6 @@
 
 {-# OPTIONS --lossy-unification #-}
 
- -- to allow opening this module in other files while there are still holes
-{-# OPTIONS --allow-unsolved-metas #-}
-
-open import Common.Later
-
 open import Common.Later
 
 module Semantics.Concrete.Predomain.Kleisli (k : Clock) where
@@ -46,6 +41,8 @@ private
     ℓB  ℓ≤B  ℓ≈B  : Level
     ℓB' ℓ≤B' ℓ≈B' : Level
     ℓΓ ℓ≤Γ ℓ≈Γ : Level
+    ℓΓ' ℓ≤Γ' ℓ≈Γ' : Level
+    ℓcΓ : Level
     ℓC : Level
     ℓAᵢ  ℓ≤Aᵢ  ℓ≈Aᵢ  : Level
     ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ' : Level
@@ -323,6 +320,61 @@ PRel.R (dₒ .UR)
 open ExtAsEDMorphism
 open StrongExtCombinator
 
+-- Squares for the cartesian combinators. These are the same as the
+-- corresponding lemmas in SquareCombinators, restated for the
+-- (transparent) notion of square used here.
+private
+  Sq-SwapPair :
+    {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : Predomain ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+    {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+    {c₁ : PRel A₁ A₁' ℓc₁} {c₂ : PRel A₂ A₂' ℓc₂} →
+    PSq (c₁ ×pbmonrel c₂) (c₂ ×pbmonrel c₁)
+        (SwapPair {A = A₁} {B = A₂}) (SwapPair {A = A₁'} {B = A₂'})
+  Sq-SwapPair (x₁ , x₂) (y₁ , y₂) (p , q) = q , p
+
+  Sq-Curry :
+    {Γ  : Predomain ℓΓ  ℓ≤Γ  ℓ≈Γ}  {Γ'  : Predomain ℓΓ'  ℓ≤Γ'  ℓ≈Γ'}
+    {Aᵢ : Predomain ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aᵢ' : Predomain ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
+    {Aₒ : Predomain ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} {Aₒ' : Predomain ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'}
+    {cΓ : PRel Γ Γ' ℓcΓ} {cᵢ : PRel Aᵢ Aᵢ' ℓcᵢ} {cₒ : PRel Aₒ Aₒ' ℓcₒ}
+    {f : PMor (Γ ×dp Aᵢ) Aₒ} {g : PMor (Γ' ×dp Aᵢ') Aₒ'} →
+    PSq (cΓ ×pbmonrel cᵢ) cₒ f g →
+    PSq cΓ (cᵢ ==>pbmonrel cₒ) (Curry {Γ = Γ} {A = Aᵢ} f) (Curry {Γ = Γ'} {A = Aᵢ'} g)
+  Sq-Curry α γ γ' γ≤γ' x y x≤y = α (γ , x) (γ' , y) (γ≤γ' , x≤y)
+
+  Sq-Uncurry :
+    {Γ  : Predomain ℓΓ  ℓ≤Γ  ℓ≈Γ}  {Γ'  : Predomain ℓΓ'  ℓ≤Γ'  ℓ≈Γ'}
+    {Aᵢ : Predomain ℓAᵢ ℓ≤Aᵢ ℓ≈Aᵢ} {Aᵢ' : Predomain ℓAᵢ' ℓ≤Aᵢ' ℓ≈Aᵢ'}
+    {Aₒ : Predomain ℓAₒ ℓ≤Aₒ ℓ≈Aₒ} {Aₒ' : Predomain ℓAₒ' ℓ≤Aₒ' ℓ≈Aₒ'}
+    {cΓ : PRel Γ Γ' ℓcΓ} {cᵢ : PRel Aᵢ Aᵢ' ℓcᵢ} {cₒ : PRel Aₒ Aₒ' ℓcₒ}
+    {f : PMor Γ (Aᵢ ==> Aₒ)} {g : PMor Γ' (Aᵢ' ==> Aₒ')} →
+    PSq cΓ (cᵢ ==>pbmonrel cₒ) f g →
+    PSq (cΓ ×pbmonrel cᵢ) cₒ (Uncurry f) (Uncurry g)
+  Sq-Uncurry α (γ , x) (γ' , y) (γ≤γ' , x≤y) = α γ γ' γ≤γ' x y x≤y
+
+
+-- The strong extension StrongExt is not itself a morphism of error
+-- domains (see the comment in MonadCombinators), but its fibre at a
+-- fixed parameter γ is: it is the extension of (g γ) : A → UB to an
+-- error domain morphism FA ⊸ B.
+module _
+  {Γ : Predomain ℓΓ ℓ≤Γ ℓ≈Γ} {A : Predomain ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B}
+  (g : ⟨ U-ob (Γ ⟶ob (A ⟶ob B)) ⟩) (γ : ⟨ Γ ⟩) where
+
+  private
+    module B   = ErrorDomainStr (B .snd)
+    module SE  = StrongCBPVExt ⟨ Γ ⟩ ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f (λ γ' → g .f γ' .f)
+    module SEq = SE.Equations γ
+
+  StrongExt-ED : ErrorDomMor (F-ob A) B
+  StrongExt-ED .ErrorDomMor.f  = StrongExt {Γ = Γ} {A = A} {B = B} .f g .f γ
+  StrongExt-ED .ErrorDomMor.f℧ = SEq.ext-℧
+  StrongExt-ED .ErrorDomMor.fθ = SEq.ext-θ
+
+  StrongExt-ED-η : (x : ⟨ A ⟩) → StrongExt-ED .ErrorDomMor.fun (η x) ≡ g .f γ .f x
+  StrongExt-ED-η = SEq.ext-η
+
+
 _×kob_ : (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
   Predomain (ℓ-max ℓA₁ ℓA₂) (ℓ-max ℓ≤A₁ ℓ≤A₂) (ℓ-max ℓ≈A₁ ℓ≈A₂)
 A₁ ×kob A₂ = A₁ ×dp A₂
@@ -341,8 +393,6 @@ module _
   KlProdMorphismᴸ :
     KlMorV (A₁ ×kob A₂) (A₁' ×kob A₂)
   KlProdMorphismᴸ = Ext (KlProdᴸ-pt2 ∘p KlProdᴸ-pt1)
-     
-    -- (U-mor (Ext (? ×mor ?))) ∘p (U-mor ϕ) ∘p η-mor
 
   _×Kᴸ_ = KlProdMorphismᴸ
 
@@ -352,7 +402,11 @@ KlProdMorphismᴸ-Id :
   {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁}
   (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
   (IdE {B = F-ob A₁}) ×Kᴸ A₂ ≡ IdE
-KlProdMorphismᴸ-Id = {!!}
+KlProdMorphismᴸ-Id {A₁ = A₁} A₂ = F-extensionality _ _
+  (ExtAsEDMorphism.Equations.Ext-η _
+   ∙ eqPMor _ _ (funExt (λ { (x , y) →
+       StrongExt-ED-η {Γ = A₂} {A = A₁} {B = F-ob (A₁ ×dp A₂)}
+         (Curry (η-mor ∘p SwapPair)) y x })))
 
 -- Composition
 KlProdMorphismᴸ-Comp :
@@ -360,7 +414,39 @@ KlProdMorphismᴸ-Comp :
   {A₁'' : Predomain ℓA₁'' ℓ≤A₁'' ℓ≈A₁''} →
   (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) (ϕ : KlMorV A₁ A₁') (ϕ' : KlMorV A₁' A₁'') →
   ((ϕ' ∘ed ϕ) ×Kᴸ A₂) ≡ (ϕ' ×Kᴸ A₂) ∘ed (ϕ ×Kᴸ A₂)
-KlProdMorphismᴸ-Comp = {!!}
+KlProdMorphismᴸ-Comp {A₁ = A₁} {A₁' = A₁'} {A₁'' = A₁''} A₂ ϕ ϕ' =
+  F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) → goal x y })))
+  where
+    module ϕ = ErrorDomMor ϕ
+
+    -- The strong extension at parameter y, for A₁' and for A₁''.
+    S'  : ⟨ A₂ ⟩ → ErrorDomMor (F-ob A₁')  (F-ob (A₁'  ×dp A₂))
+    S'  = StrongExt-ED {Γ = A₂} {A = A₁'}  {B = F-ob (A₁'  ×dp A₂)} (Curry (η-mor ∘p SwapPair))
+
+    S'' : ⟨ A₂ ⟩ → ErrorDomMor (F-ob A₁'') (F-ob (A₁'' ×dp A₂))
+    S'' = StrongExt-ED {Γ = A₂} {A = A₁''} {B = F-ob (A₁'' ×dp A₂)} (Curry (η-mor ∘p SwapPair))
+
+    -- (ϕ' ×Kᴸ A₂) ∘ S' y ≡ S'' y ∘ ϕ' as morphisms F A₁' ⊸ F (A₁'' × A₂).
+    -- Both are error domain morphisms out of a free error domain, so
+    -- it suffices to check them on η x'.
+    lem : (y : ⟨ A₂ ⟩) → (ϕ' ×Kᴸ A₂) ∘ed S' y ≡ S'' y ∘ed ϕ'
+    lem y = F-extensionality _ _ (eqPMor _ _ (funExt (λ x' →
+        cong ((ϕ' ×Kᴸ A₂) .ErrorDomMor.fun)
+             (StrongExt-ED-η {Γ = A₂} {A = A₁'} {B = F-ob (A₁' ×dp A₂)}
+               (Curry (η-mor ∘p SwapPair)) y x')
+      ∙ ExtAsEDMorphism.Equations-U.ext-η
+             (KlProdᴸ-pt2 ϕ' A₂ ∘p KlProdᴸ-pt1 ϕ' A₂) (x' , y))))
+
+    goal : (x : ⟨ A₁ ⟩) (y : ⟨ A₂ ⟩) →
+        (KlProdᴸ-pt2 (ϕ' ∘ed ϕ) A₂ ∘p KlProdᴸ-pt1 (ϕ' ∘ed ϕ) A₂) .f (x , y)
+      ≡ (U-mor ((ϕ' ×Kᴸ A₂) ∘ed (ϕ ×Kᴸ A₂)) ∘p η-mor) .f (x , y)
+    goal x y = sym
+      ( cong ((ϕ' ×Kᴸ A₂) .ErrorDomMor.fun)
+             (ExtAsEDMorphism.Equations-U.ext-η
+               (KlProdᴸ-pt2 ϕ A₂ ∘p KlProdᴸ-pt1 ϕ A₂) (x , y))
+      ∙ funExt⁻ (cong ErrorDomMor.fun (lem y)) (ϕ.fun (η x)) )
 
 
 -- Action on squares
@@ -381,62 +467,65 @@ module _
   open F-rel
   open ExtAsEDMorphism
 
-  KlProdMorphismᴸ-Sq :    
+  -- The square is built in two stages, matching the definition
+  -- Ext (pt2 ∘p pt1): first the square for pt1 (the given square α
+  -- under η, in the first component, and the identity square in the
+  -- second), then the square for pt2 (the strong extension preserves
+  -- squares, after swapping/currying).
+  KlProdMorphismᴸ-Sq :
     ErrorDomSq (F-rel (cᵢ₁ ×pbmonrel c₂)) (F-rel (cₒ₁ ×pbmonrel c₂)) (ϕ ×Kᴸ A₂) (ϕ' ×Kᴸ A₂')
-  KlProdMorphismᴸ-Sq x y H =
-    let foo = Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) (U-mor (ϕ ×Kᴸ A₂) ∘p η-mor) (U-mor (ϕ' ×Kᴸ A₂') ∘p η-mor) γ x y H in
-    let foo2 = F-rel-free (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) (ϕ ×Kᴸ A₂) (ϕ' ×Kᴸ A₂') {!!} x y H in {!!}
-    where
-      pt1 = KlProdᴸ-pt1 ϕ A₂
-      pt2 = KlProdᴸ-pt2 ϕ A₂
+  KlProdMorphismᴸ-Sq =
+    Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂))
+      (KlProdᴸ-pt2 ϕ  A₂  ∘p KlProdᴸ-pt1 ϕ  A₂)
+      (KlProdᴸ-pt2 ϕ' A₂' ∘p KlProdᴸ-pt1 ϕ' A₂')
+      (CompSqV
+        {c₁ = cᵢ₁ ×pbmonrel c₂}
+        {c₂ = U-rel (F-rel cₒ₁) ×pbmonrel c₂}
+        {c₃ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+        ( _×-Sq_
+            {f₁ = U-mor ϕ ∘p η-mor} {g₁ = U-mor ϕ' ∘p η-mor} {f₂ = Id} {g₂ = Id}
+            (CompSqV {c₁ = cᵢ₁} {c₂ = U-rel (F-rel cᵢ₁)} {c₃ = U-rel (F-rel cₒ₁)}
+               {f₁ = η-mor} {g₁ = η-mor} {f₂ = U-mor ϕ} {g₂ = U-mor ϕ'}
+               (η-sq cᵢ₁) (U-sq (F-rel cᵢ₁) (F-rel cₒ₁) ϕ ϕ' α))
+            (Predom-IdSqV c₂) )
+        (CompSqV
+          {c₁ = U-rel (F-rel cₒ₁) ×pbmonrel c₂}
+          {c₂ = c₂ ×pbmonrel U-rel (F-rel cₒ₁)}
+          {c₃ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+          {f₁ = SwapPair {A = U-ob (F-ob Aₒ₁)}  {B = A₂}}
+          {g₁ = SwapPair {A = U-ob (F-ob Aₒ₁')} {B = A₂'}}
+          {f₂ = Uncurry (StrongExt {Γ = A₂}  {A = Aₒ₁}  {B = F-ob (Aₒ₁  ×dp A₂)}  .f (Curry (η-mor ∘p SwapPair)))}
+          {g₂ = Uncurry (StrongExt {Γ = A₂'} {A = Aₒ₁'} {B = F-ob (Aₒ₁' ×dp A₂')} .f (Curry (η-mor ∘p SwapPair)))}
+          Sq-SwapPair
+          (Sq-Uncurry
+            {cΓ = c₂} {cᵢ = U-rel (F-rel cₒ₁)} {cₒ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+            {f = StrongExt {Γ = A₂}  {A = Aₒ₁}  {B = F-ob (Aₒ₁  ×dp A₂)}  .f (Curry (η-mor ∘p SwapPair))}
+            {g = StrongExt {Γ = A₂'} {A = Aₒ₁'} {B = F-ob (Aₒ₁' ×dp A₂')} .f (Curry (η-mor ∘p SwapPair))}
+            (StrongExt-Sq c₂ cₒ₁ (F-rel (cₒ₁ ×pbmonrel c₂))
+              (Curry (η-mor ∘p SwapPair)) (Curry (η-mor ∘p SwapPair))
+              (Sq-Curry
+                {cΓ = c₂} {cᵢ = cₒ₁} {cₒ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+                {f = η-mor ∘p SwapPair} {g = η-mor ∘p SwapPair}
+                (CompSqV {c₁ = c₂ ×pbmonrel cₒ₁} {c₂ = cₒ₁ ×pbmonrel c₂}
+                         {c₃ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
+                  Sq-SwapPair (η-sq (cₒ₁ ×pbmonrel c₂))))))))
 
-      pt1' = KlProdᴸ-pt1 ϕ' A₂'
-      pt2' = KlProdᴸ-pt2 ϕ' A₂'
-
-      β : PSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) (pt2 ∘p pt1) (pt2' ∘p pt1')
-      β = CompSqV
-            {c₁ = cᵢ₁ ×pbmonrel c₂} {c₂ = U-rel (F-rel cₒ₁) ×pbmonrel c₂} {c₃ = U-rel (F-rel (cₒ₁ ×pbmonrel c₂))}
-            ({!!} ×-Sq (Predom-IdSqV c₂))
-            {!!}
-            -- (λ x y xRy → StrongExt-Sq cᵢ₁ {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!})
-
-      γ : PSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂)))
-               (U-mor (ϕ ×Kᴸ A₂) ∘p η-mor) (U-mor (ϕ' ×Kᴸ A₂') ∘p η-mor)
-      γ = subst2
-        (λ p q → PSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) p q)
-        {!!} {!!}
-        -- (Equations.Ext-η {!pt2 ∘p pt1!}) (Equations.Ext-η {!!})
-        β
-
-     
-
-{-
-      β = subst2
-        (λ p q → PSq (cᵢ₁ ×pbmonrel c₂) (U-rel (F-rel (cₒ₁ ×pbmonrel c₂))) p q)
-        (Equations.Ext-η _) (Equations.Ext-η _)
-        (λ { (x , y) (x' , y') (xRx' , yRy') →
-          Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) _ _ (λ p q pRq → Ext-sq (cᵢ₁ ×pbmonrel c₂) (F-rel (cₒ₁ ×pbmonrel c₂)) _ _ (λ v w vRw → Ext-sq (cₒ₁ ×pbmonrel c₂) {!F-rel (cₒ₁ ×pbmonrel c₂)!} {!!} {!!} {!!} {!!} {!!} {!!}) (η-mor $ p) (η-mor $ q) (η-sq _ p q pRq))
-                 (η-mor $ (x , y)) (η-mor $ (x' , y'))
-                 (η-sq (cᵢ₁ ×pbmonrel c₂) (x , y) (x' , y') (xRx' , yRy'))})
--}                 
-  
--- F-rel-free {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!} -- Ext-sq {!!} {!!} {!!} {!!} {!!} {!!} {!!} {!!}
-  
 
 
 ----------------------------------------------------------------------
 
-KlProdMorphismᴿ :
-    {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'}
-    (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (ϕ : KlMorV A₂ A₂') →
-    KlMorV (A₁ ×kob A₂) (A₁ ×kob A₂')
-KlProdMorphismᴿ {A₂ = A₂} {A₂' = A₂'} A₁ ϕ = Ext (pt2 ∘p pt1)
-  where
-    pt1 : PMor (A₁ ×dp A₂) (A₁ ×dp (U-ob (F-ob A₂')))
-    pt1 = Id ×mor (U-mor ϕ ∘p η-mor)
+module _
+  {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+  (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (ϕ : KlMorV A₂ A₂') where
 
-    pt2 : PMor (A₁ ×dp (U-ob (F-ob A₂'))) (U-ob (F-ob (A₁ ×dp A₂')))
-    pt2 = Uncurry (StrongExt .f (Curry η-mor))
+  KlProdᴿ-pt1 : PMor (A₁ ×dp A₂) (A₁ ×dp (U-ob (F-ob A₂')))
+  KlProdᴿ-pt1 = Id ×mor (U-mor ϕ ∘p η-mor)
+
+  KlProdᴿ-pt2 : PMor (A₁ ×dp (U-ob (F-ob A₂'))) (U-ob (F-ob (A₁ ×dp A₂')))
+  KlProdᴿ-pt2 = Uncurry (StrongExt .f (Curry η-mor))
+
+  KlProdMorphismᴿ : KlMorV (A₁ ×kob A₂) (A₁ ×kob A₂')
+  KlProdMorphismᴿ = Ext (KlProdᴿ-pt2 ∘p KlProdᴿ-pt1)
 
 _×Kᴿ_ = KlProdMorphismᴿ
 
@@ -446,7 +535,11 @@ KlProdMorphismᴿ-Id :
   {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂}
   (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) →
   A₁ ×Kᴿ (IdE {B = F-ob A₂}) ≡ IdE
-KlProdMorphismᴿ-Id = {!!}
+KlProdMorphismᴿ-Id {A₂ = A₂} A₁ = F-extensionality _ _
+  (ExtAsEDMorphism.Equations.Ext-η _
+   ∙ eqPMor _ _ (funExt (λ { (x , y) →
+       StrongExt-ED-η {Γ = A₁} {A = A₂} {B = F-ob (A₁ ×dp A₂)}
+         (Curry η-mor) x y })))
 
 -- Composition
 KlProdMorphismᴿ-Comp :
@@ -454,7 +547,36 @@ KlProdMorphismᴿ-Comp :
     {A₂'' : Predomain ℓA₂'' ℓ≤A₂'' ℓ≈A₂''} →
     (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (ϕ : KlMorV A₂ A₂') (ϕ' : KlMorV A₂' A₂'') →
     (A₁ ×Kᴿ (ϕ' ∘ed ϕ)) ≡ (A₁ ×Kᴿ ϕ') ∘ed (A₁ ×Kᴿ ϕ)
-KlProdMorphismᴿ-Comp = {!!}
+KlProdMorphismᴿ-Comp {A₂ = A₂} {A₂' = A₂'} {A₂'' = A₂''} A₁ ϕ ϕ' =
+  F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) → goal x y })))
+  where
+    module ϕ = ErrorDomMor ϕ
+
+    -- The strong extension at parameter x, for A₂' and for A₂''.
+    T'  : ⟨ A₁ ⟩ → ErrorDomMor (F-ob A₂')  (F-ob (A₁ ×dp A₂'))
+    T'  = StrongExt-ED {Γ = A₁} {A = A₂'}  {B = F-ob (A₁ ×dp A₂')}  (Curry η-mor)
+
+    T'' : ⟨ A₁ ⟩ → ErrorDomMor (F-ob A₂'') (F-ob (A₁ ×dp A₂''))
+    T'' = StrongExt-ED {Γ = A₁} {A = A₂''} {B = F-ob (A₁ ×dp A₂'')} (Curry η-mor)
+
+    lem : (x : ⟨ A₁ ⟩) → (A₁ ×Kᴿ ϕ') ∘ed T' x ≡ T'' x ∘ed ϕ'
+    lem x = F-extensionality _ _ (eqPMor _ _ (funExt (λ y' →
+        cong ((A₁ ×Kᴿ ϕ') .ErrorDomMor.fun)
+             (StrongExt-ED-η {Γ = A₁} {A = A₂'} {B = F-ob (A₁ ×dp A₂')}
+               (Curry η-mor) x y')
+      ∙ ExtAsEDMorphism.Equations-U.ext-η
+             (KlProdᴿ-pt2 A₁ ϕ' ∘p KlProdᴿ-pt1 A₁ ϕ') (x , y'))))
+
+    goal : (x : ⟨ A₁ ⟩) (y : ⟨ A₂ ⟩) →
+        (KlProdᴿ-pt2 A₁ (ϕ' ∘ed ϕ) ∘p KlProdᴿ-pt1 A₁ (ϕ' ∘ed ϕ)) .f (x , y)
+      ≡ (U-mor ((A₁ ×Kᴿ ϕ') ∘ed (A₁ ×Kᴿ ϕ)) ∘p η-mor) .f (x , y)
+    goal x y = sym
+      ( cong ((A₁ ×Kᴿ ϕ') .ErrorDomMor.fun)
+             (ExtAsEDMorphism.Equations-U.ext-η
+               (KlProdᴿ-pt2 A₁ ϕ ∘p KlProdᴿ-pt1 A₁ ϕ) (x , y))
+      ∙ funExt⁻ (cong ErrorDomMor.fun (lem x)) (ϕ.fun (η y)) )
 
 
 -- Action on squares
@@ -477,4 +599,27 @@ module _
   KlProdMorphismᴿ-Sq :
     (α : ErrorDomSq (F-rel cᵢ₂) (F-rel cₒ₂) ϕ ϕ') →
     ErrorDomSq (F-rel (c₁ ×pbmonrel cᵢ₂)) (F-rel (c₁ ×pbmonrel cₒ₂)) (A₁ ×Kᴿ ϕ) (A₁' ×Kᴿ ϕ')
-  KlProdMorphismᴿ-Sq α = {!!}
+  KlProdMorphismᴿ-Sq α =
+    Ext-sq (c₁ ×pbmonrel cᵢ₂) (F-rel (c₁ ×pbmonrel cₒ₂))
+      (KlProdᴿ-pt2 A₁  ϕ  ∘p KlProdᴿ-pt1 A₁  ϕ)
+      (KlProdᴿ-pt2 A₁' ϕ' ∘p KlProdᴿ-pt1 A₁' ϕ')
+      (CompSqV
+        {c₁ = c₁ ×pbmonrel cᵢ₂}
+        {c₂ = c₁ ×pbmonrel U-rel (F-rel cₒ₂)}
+        {c₃ = U-rel (F-rel (c₁ ×pbmonrel cₒ₂))}
+        ( _×-Sq_
+            {f₁ = Id} {g₁ = Id} {f₂ = U-mor ϕ ∘p η-mor} {g₂ = U-mor ϕ' ∘p η-mor}
+            (Predom-IdSqV c₁)
+            (CompSqV {c₁ = cᵢ₂} {c₂ = U-rel (F-rel cᵢ₂)} {c₃ = U-rel (F-rel cₒ₂)}
+               {f₁ = η-mor} {g₁ = η-mor} {f₂ = U-mor ϕ} {g₂ = U-mor ϕ'}
+               (η-sq cᵢ₂) (U-sq (F-rel cᵢ₂) (F-rel cₒ₂) ϕ ϕ' α)) )
+        (Sq-Uncurry
+          {cΓ = c₁} {cᵢ = U-rel (F-rel cₒ₂)} {cₒ = U-rel (F-rel (c₁ ×pbmonrel cₒ₂))}
+          {f = StrongExt {Γ = A₁}  {A = Aₒ₂}  {B = F-ob (A₁  ×dp Aₒ₂)}  .f (Curry η-mor)}
+          {g = StrongExt {Γ = A₁'} {A = Aₒ₂'} {B = F-ob (A₁' ×dp Aₒ₂')} .f (Curry η-mor)}
+          (StrongExt-Sq c₁ cₒ₂ (F-rel (c₁ ×pbmonrel cₒ₂))
+            (Curry η-mor) (Curry η-mor)
+            (Sq-Curry
+              {cΓ = c₁} {cᵢ = cₒ₂} {cₒ = U-rel (F-rel (c₁ ×pbmonrel cₒ₂))}
+              {f = η-mor} {g = η-mor}
+              (η-sq (c₁ ×pbmonrel cₒ₂))))))
