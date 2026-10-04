@@ -153,9 +153,19 @@ the gap.
 Not formalized. `ValRel≈` and `CompRel≈`
 (`Semantics/Concrete/Relations/Base.agda:91` and `:103`) define
 quasi-equivalence of value and computation relations only as equality of
-embeddings. This lemma is what the semantic validation of the type-precision
-equations (`⟦_⟧ty⊑-≈` in `Syntax/FineGrained/Denotation/TypePrecision.agda:31`,
-remaining-work item (2) of Section 6.3) would need.
+embeddings. The semantic validation of the type-precision equations
+(`⟦_⟧ty⊑-≈` in `Syntax/FineGrained/Denotation/TypePrecision.agda`,
+remaining-work item (2) of Section 6.3) is proved for five of the six
+equations (symmetry, the two unit laws, associativity, and `⇀-refl`, the
+last one via `U⟶F-Id-emb` in `Semantics/Concrete/Relations/Constructions.agda`).
+The remaining equation `⇀-trans` cannot hold as an equality of embeddings:
+the projection representing `F (c ⊙ c')` (`repFcFc'→repFcc'` in
+`CompositionLemmaF.agda`) is the composite of the two projections conjugated
+by perturbations, so the embeddings of `(c ⊙ c') ⇀ (d ⊙ d')` and
+`(c ⇀ d) ⊙ (c' ⇀ d')` differ by perturbations. Proving it requires weakening
+`ValRel≈` to the paper's quasi-order-equivalence (`QuasiOrderEquivV`), the
+missing same-embedding case of Lemma D.7 for value relations, and this
+lemma's cases for `U`, `F`, `⟶` and composition.
 
 ### Definition D.16, composition of computation relations
 
@@ -178,8 +188,9 @@ structure of Lemma D.3 with `×-leftRep` and `×-F-rightRep` (Lemma D.14); the
 arrow action combines the push-pull structure of Lemma D.4 with
 `RightRepArrow` and `LeftRepUArrow` (Lemma D.15). These are the semantic
 ingredients for `⟦ c ⇀ d ⟧ty⊑` and the context case `⟦ c ∷ C ⟧ctx⊑`
-(`Syntax/FineGrained/Denotation/TypePrecision.agda:22` and `:28`), which are
-still holes.
+(`Syntax/FineGrained/Denotation/TypePrecision.agda`), which are now
+defined; the interpretation of type precision derivations `⟦_⟧ty⊑` and of
+context precision `⟦_⟧ctx⊑` is complete.
 
 ### Complete in this section
 
@@ -213,11 +224,11 @@ loads this module.
 
 ```
 Def. B.3 laws (×Kᴸ/×Kᴿ functoriality, squares)  [done]
-  └─> Lemma D.14 (2) [done] ──> Def. D.17 (× on relations) [done] ──> ⟦ c ∷ C ⟧ctx⊑
+  └─> Lemma D.14 (2) [done] ──> Def. D.17 (× on relations) [done] ──> ⟦ c ∷ C ⟧ctx⊑ [done]
 
 Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [done]
   └─> Lemma D.15 (2)  ─┐  [done]
-Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) [done] ──> ⟦ c ⇀ d ⟧ty⊑
+Lemma D.15 (1) [done] ─┴─> Def. D.17 (⟶ on relations) [done] ──> ⟦ c ⇀ d ⟧ty⊑ [done]
 
-Lemma D.18 ──> ⟦_⟧ty⊑-≈ (equations on type precision derivations)
+Lemma D.18 + quasi-equivalence as ValRel≈ ──> ⟦ ⇀-trans ⟧ty⊑-≈ (the one remaining type precision equation)
 ```

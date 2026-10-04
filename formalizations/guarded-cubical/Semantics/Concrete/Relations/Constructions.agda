@@ -34,6 +34,7 @@ open import Semantics.Concrete.Predomain.Relation as PRel hiding (⊎-inl ; ⊎-
 open import Semantics.Concrete.Predomain.Combinators hiding (U)
 open import Semantics.Concrete.Predomain.FreeErrorDomain k
 open import Semantics.Concrete.Predomain.MonadCombinators k
+open import Semantics.Concrete.Predomain.Kleisli k
 open import Semantics.Concrete.LockStepErrorOrdering k
 
 open import Semantics.Concrete.Perturbation.Semantic k
@@ -324,3 +325,22 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' �
 
   -- Left rep for U (c ⟶ d)
   (c ⟶ d) .snd .snd = LeftRepUArrow (c .fst .fst) (d .fst .fst) (c .snd .snd) (d .snd .snd)
+
+
+-- The arrow action on the identity relations is represented by the
+-- same embedding as the identity relation on the arrow type: the
+-- embedding of U (IdV A ⟶ F (IdV B)) is the composite of the Kleisli
+-- actions of F-mor Id, which is the identity.
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {B : ValType ℓB ℓ≤B ℓ≈B ℓMB} where
+
+  private
+    |A| = ValType→Predomain A
+    |B| = ValType→Predomain B
+
+  U⟶F-Id-emb : ValRel≈ (IdV (Types.U (A Types.⟶ Types.F B))) (U (IdV A ⟶ F (IdV B)))
+  U⟶F-Id-emb = sym
+    ( cong₂ _∘p_
+        (cong (λ ϕ → ϕ ⟶Kᴸ (F-ob.F-ob |B|)) (F-mor-pres-id {A = |A|}))
+        (cong (λ g → |A| ⟶Kᴿ g) (cong U-mor (F-mor-pres-id {A = |B|})))
+    ∙ cong₂ _∘p_ (KlArrowMorphismᴸ-id (F-ob.F-ob |B|)) (KlArrowMorphismᴿ-id |A|)
+    ∙ eqPMor _ _ refl )
