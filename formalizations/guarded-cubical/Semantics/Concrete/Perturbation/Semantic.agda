@@ -261,7 +261,16 @@ A⟶-SemPtb .snd .IsMonoidHom.pres· g h =
 ⟶KB-SemPtb : {A : Predomain ℓA ℓ≤A ℓ≈A} {B : ErrorDomain ℓB ℓ≤B ℓ≈B} →
   MonoidHom ((CEndo (F-ob A)) ^op) (Endo (U-ob (A ⟶ob B)))
 ⟶KB-SemPtb {B = B} .fst ϕ .fst = ϕ .fst ⟶Kᴸ B
-⟶KB-SemPtb .fst ϕ .snd = {!!} -- follows from preservation of identity and bisimilarity
+⟶KB-SemPtb {A = A} {B = B} .fst ϕ .snd g g' g≈g' x y x≈y =
+  -- NTS: ext g (ϕ (η x)) ≈ g' y.
+  -- Since ϕ ≈ id we have ϕ (η x) ≈ η y, and ext preserves bisimilarity,
+  -- so ext g (ϕ (η x)) ≈ ext g' (η y) = g' y.
+  subst (λ z → ExtCombinator.Ext .f g .f (ϕ .fst .ErrorDomMor.fun (η-mor .f x)) B.≈ z)
+        (CBPVExt.Equations.ext-η ⟨ A ⟩ ⟨ B ⟩ B.℧ B.θ.f (g' .f) y)
+        (ExtCombinator.Ext .pres≈ {x = g} {y = g'} g≈g'
+          (ϕ .fst .ErrorDomMor.fun (η-mor .f x)) (η-mor .f y)
+          (ϕ .snd (η-mor .f x) (η-mor .f y) (η-mor .pres≈ x≈y)))
+  where module B = ErrorDomainStr (B .snd)
 ⟶KB-SemPtb .snd .IsMonoidHom.presε =
   EqEndomor→EqSemPtb _ _ (KlArrowMorphismᴸ-id _)
 ⟶KB-SemPtb .snd .IsMonoidHom.pres· ϕ ϕ' =
@@ -284,7 +293,31 @@ A⟶K-SemPtb .snd .IsMonoidHom.pres· g g' =
   EqEndomor→EqSemPtb _ _ (KlArrowMorphismᴿ-comp _ (g' .fst) (g .fst))
 
 
--- TODO Kleisli ×
+-- Kleisli product actions on semantic perturbations.
+-- The underlying actions on morphisms and their laws are in
+-- Predomain.Kleisli.
+
+-- ϕ ×K A₂
+
+×KA-SemPtb : {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  MonoidHom (CEndo (F-ob A₁)) (CEndo (F-ob (A₁ ×dp A₂)))
+×KA-SemPtb {A₂ = A₂} .fst ϕ .fst = ϕ .fst ×Kᴸ A₂
+×KA-SemPtb {A₁ = A₁} {A₂ = A₂} .fst ϕ .snd = KlProdMorphismᴸ-≈id A₁ A₂ (ϕ .fst) (ϕ .snd)
+×KA-SemPtb {A₂ = A₂} .snd .IsMonoidHom.presε =
+  EqEndomor→EqCSemPtb _ _ (KlProdMorphismᴸ-Id A₂)
+×KA-SemPtb {A₂ = A₂} .snd .IsMonoidHom.pres· ϕ ϕ' =
+  EqEndomor→EqCSemPtb _ _ (KlProdMorphismᴸ-Comp A₂ (ϕ' .fst) (ϕ .fst))
+
+-- A₁ ×K ϕ
+
+A×K-SemPtb : {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} →
+  MonoidHom (CEndo (F-ob A₂)) (CEndo (F-ob (A₁ ×dp A₂)))
+A×K-SemPtb {A₁ = A₁} .fst ϕ .fst = A₁ ×Kᴿ ϕ .fst
+A×K-SemPtb {A₁ = A₁} {A₂ = A₂} .fst ϕ .snd = KlProdMorphismᴿ-≈id A₁ A₂ (ϕ .fst) (ϕ .snd)
+A×K-SemPtb {A₁ = A₁} .snd .IsMonoidHom.presε =
+  EqEndomor→EqCSemPtb _ _ (KlProdMorphismᴿ-Id A₁)
+A×K-SemPtb {A₁ = A₁} .snd .IsMonoidHom.pres· ϕ ϕ' =
+  EqEndomor→EqCSemPtb _ _ (KlProdMorphismᴿ-Comp A₁ (ϕ' .fst) (ϕ .fst))
 
 
 

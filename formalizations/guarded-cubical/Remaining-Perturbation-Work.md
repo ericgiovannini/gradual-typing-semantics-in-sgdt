@@ -7,7 +7,9 @@ formalization.
 
 - Generated on 2026-10-02 from the working tree at commit `8b33ef3`
   (Agda 2.8.0, cubical-0.9). Updated 2026-10-04 after completing the
-  Definition B.3 laws in `Semantics/Concrete/Predomain/Kleisli.agda`.
+  Definition B.3 laws in `Semantics/Concrete/Predomain/Kleisli.agda` and
+  Definitions D.5 and D.6 in `Semantics/Concrete/Perturbation/Kleisli.agda`
+  and `Semantics/Concrete/Perturbation/Semantic.agda`.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -21,16 +23,12 @@ formalization.
 
 | Paper result | Topic | Status | Location |
 |---|---|---|---|
-| Def. D.5 (+ prose after D.6) | Coherence of syntactic and semantic Kleisli arrow actions, left side | 4 holes | `Semantics/Concrete/Perturbation/Kleisli.agda:113-130` |
-| Def. D.5 (+ prose after D.6) | Same, right side | commented out | `Semantics/Concrete/Perturbation/Kleisli.agda:146-159` |
-| Def. 5.5 / Def. B.1 | `⟶KB-SemPtb` is bisimilar to the identity | 1 hole | `Semantics/Concrete/Perturbation/Semantic.agda:264` |
-| Def. D.6 | Kleisli product action on syntactic perturbations | not started | `Semantics/Concrete/Perturbation/Kleisli.agda` (end of file) |
-| App. D.1/D.2 (unnumbered) | `Σ-SemPtb-eq`, `Σ-SemPtb-ind` | 4 holes, unused | `Semantics/Concrete/Perturbation/Semantic.agda:729,749,755,757` |
+| App. D.1/D.2 (unnumbered) | `Σ-SemPtb-eq`, `Σ-SemPtb-ind` | 4 holes, unused | `Semantics/Concrete/Perturbation/Semantic.agda:762,782,788,790` |
 | Lemma D.7 | Same embedding (values) / same projection (computations) cases | not started, unused | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda` |
 | Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
 | Lemma D.14 (2) | `F(c₁ × c₂)` quasi-right-representable | not started (no longer blocked) | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda` |
 | Lemma D.15 (1) | `c ⟶ d` quasi-right-representable | 2 holes, squares built | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:655-700` |
-| Lemma D.15 (2) | `U(c ⟶ d)` quasi-left-representable | 4 holes, partial | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:767-825` |
+| Lemma D.15 (2) | `U(c ⟶ d)` quasi-left-representable | 4 holes, partial (no longer blocked) | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:767-825` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | not started | `Semantics/Concrete/Relations/Base.agda:91,103` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
 | Def. D.17 | Product and arrow actions on value/computation relations | not started, blocked | `Semantics/Concrete/Relations/Constructions.agda` |
@@ -60,37 +58,37 @@ composition and square laws, in `Semantics/Concrete/Predomain/Kleisli.agda`.
 
 ## Appendix D.2: lemmas about perturbations
 
-### Definition D.5, Kleisli arrow action on syntactic perturbations
+### Definition D.5, Kleisli arrow action on syntactic perturbations (done 2026-10-04)
 
-The two monoid homomorphisms exist: `Kl-Arrow-Ptb-L`
-(`Semantics/Concrete/Perturbation/Kleisli.agda:74`) and `Kl-Arrow-Ptb-R`
-(line 81). The coherence property stated in prose after Definition D.6
-(interpreting `id ⟶k m` equals the Kleisli action applied to the
-interpretation of `m`) is unproved in both directions:
+The two monoid homomorphisms `Kl-Arrow-Ptb-L` and `Kl-Arrow-Ptb-R`
+(`Semantics/Concrete/Perturbation/Kleisli.agda`) and the coherence property
+stated in prose after Definition D.6 (interpreting `id ⟶k m` equals the
+Kleisli action applied to the interpretation of `m`) are complete in both
+directions: `⟶Kᴸ-lemma` and `⟶Kᴿ-lemma` in the same file. The semantic
+arrow actions `⟶KB-SemPtb` and `A⟶K-SemPtb`
+(`Semantics/Concrete/Perturbation/Semantic.agda`) are both complete semantic
+perturbations in the sense of Definition 5.5. The module
+`Semantics/Concrete/Perturbation/Kleisli.agda` no longer needs
+`--allow-unsolved-metas`.
 
-- Left side: `⟶Kᴸ-lemma` (line 113) has four holes in lines 121 to 130. The
-  natural-number case is an equational chain with three missing steps; the
-  monoid case is a bare hole.
-- Right side: `⟶Kᴿ-lemma` exists only inside a block comment, lines 146 to 159.
-- The semantic action the left side refers to, `⟶KB-SemPtb`
-  (`Semantics/Concrete/Perturbation/Semantic.agda:261`), is itself incomplete:
-  line 264 leaves the proof that the result is bisimilar to the identity, so it
-  is not yet a semantic perturbation in the sense of Definition 5.5. The other
-  semantic arrow action `A⟶K-SemPtb` (line 276) is complete.
+### Definition D.6, Kleisli product action on syntactic perturbations (done 2026-10-04)
 
-### Definition D.6, Kleisli product action on syntactic perturbations
-
-Not formalized. There is no product analogue of the two homomorphisms in
-`Semantics/Concrete/Perturbation/Kleisli.agda` (the file ends with the comment
-"Actions of Kleisli product on perturbations" and nothing after it), and no
-semantic product action in `Semantics/Concrete/Perturbation/Semantic.agda`.
+`Kl-Prod-Ptb-L` and `Kl-Prod-Ptb-R`
+(`Semantics/Concrete/Perturbation/Kleisli.agda`) are the homomorphisms of the
+definition, and `×Kᴸ-lemma` and `×Kᴿ-lemma` are the corresponding coherence
+properties with the semantic product actions `×KA-SemPtb` and `A×K-SemPtb`
+(`Semantics/Concrete/Perturbation/Semantic.agda`). The semantic actions are
+monoid homomorphisms by the laws of Definition B.3; the coherence proofs use
+`KlProdᴸ-δ*`/`KlProdᴿ-δ*` (the product actions commute with `δ*`) and
+`KlProdᴸ-F`/`KlProdᴿ-F` (they turn `F-mor f` into `F-mor (f × id)` resp.
+`F-mor (id × f)`), all in `Semantics/Concrete/Predomain/Kleisli.agda`.
 
 ### Unnumbered auxiliary lemmas on sigma-type perturbations (Appendix D.1, D.2)
 
 `Σ-SemPtb-eq` and `Σ-SemPtb-ind` in
-`Semantics/Concrete/Perturbation/Semantic.agda` have holes at lines 729, 749,
-755 and 757. Nothing uses them; the dynamic type goes through `Σ-SemPtb`
-itself, which is complete.
+`Semantics/Concrete/Perturbation/Semantic.agda` have holes at lines 762, 782,
+788 and 790; they are the only remaining holes in that module. Nothing uses
+them; the dynamic type goes through `Σ-SemPtb` itself, which is complete.
 
 ### Complete in this section
 
@@ -214,7 +212,7 @@ loads this module.
 Def. B.3 laws (×Kᴸ/×Kᴿ functoriality, squares)  [done]
   └─> Lemma D.14 (2)  ──> Def. D.17 (× on relations) ──> ⟦ c ∷ C ⟧ctx⊑
 
-Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity
+Def. D.5 coherence (⟶Kᴸ-lemma, ⟶Kᴿ-lemma) + ⟶KB-SemPtb bisimilarity  [done]
   └─> Lemma D.15 (2)  ─┐
 Lemma D.15 (1)        ─┴─> Def. D.17 (⟶ on relations) ──> ⟦ c ⇀ d ⟧ty⊑
 

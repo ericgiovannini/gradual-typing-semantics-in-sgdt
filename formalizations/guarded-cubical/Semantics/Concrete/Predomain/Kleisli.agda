@@ -374,6 +374,10 @@ module _
   StrongExt-ED-η : (x : ⟨ A ⟩) → StrongExt-ED .ErrorDomMor.fun (η x) ≡ g .f γ .f x
   StrongExt-ED-η = SEq.ext-η
 
+  StrongExt-ED-δ : (lx : ⟨ U-ob (F-ob A) ⟩) →
+    StrongExt-ED .ErrorDomMor.fun (δ lx) ≡ B.θ.f (next (StrongExt-ED .ErrorDomMor.fun lx))
+  StrongExt-ED-δ = SEq.ext-δ
+
 
 _×kob_ : (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) →
   Predomain (ℓ-max ℓA₁ ℓA₂) (ℓ-max ℓ≤A₁ ℓ≤A₂) (ℓ-max ℓ≈A₁ ℓ≈A₂)
@@ -623,3 +627,126 @@ module _
               {cΓ = c₁} {cᵢ = cₒ₂} {cₒ = U-rel (F-rel (c₁ ×pbmonrel cₒ₂))}
               {f = η-mor} {g = η-mor}
               (η-sq (c₁ ×pbmonrel cₒ₂))))))
+
+
+------------------------------------------------------------------
+-- Further properties of the Kleisli product actions
+------------------------------------------------------------------
+
+-- These are used to show that the syntactic Kleisli product actions
+-- on perturbations (Perturbation.Kleisli) agree with the semantic
+-- ones (Perturbation.Semantic):
+--
+--   * the actions commute with the delay morphism δ*,
+--   * the actions turn F-mor f into F-mor (f ×mor Id) resp. F-mor (Id ×mor f),
+--   * the actions preserve bisimilarity with the identity.
+
+module _ (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁) (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) where
+
+  private
+    gᴸ = Curry {Γ = A₂} {A = A₁} (η-mor {A = A₁ ×dp A₂} ∘p SwapPair)
+    gᴿ = Curry {Γ = A₁} {A = A₂} (η-mor {A = A₁ ×dp A₂})
+
+    Sᴸ : ⟨ A₂ ⟩ → ErrorDomMor (F-ob A₁) (F-ob (A₁ ×dp A₂))
+    Sᴸ = StrongExt-ED {Γ = A₂} {A = A₁} {B = F-ob (A₁ ×dp A₂)} gᴸ
+
+    Sᴿ : ⟨ A₁ ⟩ → ErrorDomMor (F-ob A₂) (F-ob (A₁ ×dp A₂))
+    Sᴿ = StrongExt-ED {Γ = A₁} {A = A₂} {B = F-ob (A₁ ×dp A₂)} gᴿ
+
+  -- Commuting with δ*
+  KlProdᴸ-δ* : (δ* {A = A₁}) ×Kᴸ A₂ ≡ δ* {A = A₁ ×dp A₂}
+  KlProdᴸ-δ* = F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) →
+         cong (Sᴸ y .ErrorDomMor.fun) (ExtAsEDMorphism.Equations-U.ext-η (δ-mor ∘p η-mor) x)
+       ∙ StrongExt-ED-δ gᴸ y (η x)
+       ∙ cong δ (StrongExt-ED-η gᴸ y x)
+       ∙ sym (ExtAsEDMorphism.Equations-U.ext-η (δ-mor ∘p η-mor) (x , y)) })))
+
+  KlProdᴿ-δ* : A₁ ×Kᴿ (δ* {A = A₂}) ≡ δ* {A = A₁ ×dp A₂}
+  KlProdᴿ-δ* = F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) →
+         cong (Sᴿ x .ErrorDomMor.fun) (ExtAsEDMorphism.Equations-U.ext-η (δ-mor ∘p η-mor) y)
+       ∙ StrongExt-ED-δ gᴿ x (η y)
+       ∙ cong δ (StrongExt-ED-η gᴿ x y)
+       ∙ sym (ExtAsEDMorphism.Equations-U.ext-η (δ-mor ∘p η-mor) (x , y)) })))
+
+  -- Preservation of bisimilarity with the identity
+  KlProdMorphismᴸ-≈id : (ϕ : KlMorV A₁ A₁) → (U-mor ϕ) ≈mon Id → U-mor (ϕ ×Kᴸ A₂) ≈mon Id
+  KlProdMorphismᴸ-≈id ϕ ϕ≈id =
+    transport (λ i → U-mor (ϕ ×Kᴸ A₂) ≈mon (lem2 i)) lem1
+    where
+      module LP = PredomainStr ((U-ob (F-ob (A₁ ×dp A₂))) .snd)
+
+      -- pt2 ∘ pt1 is bisimilar to η
+      pt≈η : _≈mon_ {X = A₁ ×dp A₂} {Y = U-ob (F-ob (A₁ ×dp A₂))}
+               (KlProdᴸ-pt2 ϕ A₂ ∘p KlProdᴸ-pt1 ϕ A₂) η-mor
+      pt≈η (x , y) (x' , y') (x≈x' , y≈y') =
+        subst (λ z → (KlProdᴸ-pt2 ϕ A₂ ∘p KlProdᴸ-pt1 ϕ A₂) .PMor.f (x , y) LP.≈ z)
+              (StrongExt-ED-η gᴸ y' x')
+              (StrongExt {Γ = A₂} {A = A₁} {B = F-ob (A₁ ×dp A₂)} .f gᴸ .pres≈ y≈y'
+                (ϕ .ErrorDomMor.fun (η x)) (η x')
+                (ϕ≈id (η x) (η x') (η-mor .pres≈ x≈x')))
+
+      lem1 : U-mor (ϕ ×Kᴸ A₂) ≈mon U-mor (Ext η-mor)
+      lem1 = ExtCombinator.Ext .pres≈ {x = KlProdᴸ-pt2 ϕ A₂ ∘p KlProdᴸ-pt1 ϕ A₂} {y = η-mor} pt≈η
+
+      lem2 : U-mor (Ext (η-mor {A = A₁ ×dp A₂})) ≡ Id
+      lem2 = cong U-mor Ext-unit-right
+
+  KlProdMorphismᴿ-≈id : (ϕ : KlMorV A₂ A₂) → (U-mor ϕ) ≈mon Id → U-mor (A₁ ×Kᴿ ϕ) ≈mon Id
+  KlProdMorphismᴿ-≈id ϕ ϕ≈id =
+    transport (λ i → U-mor (A₁ ×Kᴿ ϕ) ≈mon (lem2 i)) lem1
+    where
+      module LP = PredomainStr ((U-ob (F-ob (A₁ ×dp A₂))) .snd)
+
+      pt≈η : _≈mon_ {X = A₁ ×dp A₂} {Y = U-ob (F-ob (A₁ ×dp A₂))}
+               (KlProdᴿ-pt2 A₁ ϕ ∘p KlProdᴿ-pt1 A₁ ϕ) η-mor
+      pt≈η (x , y) (x' , y') (x≈x' , y≈y') =
+        subst (λ z → (KlProdᴿ-pt2 A₁ ϕ ∘p KlProdᴿ-pt1 A₁ ϕ) .PMor.f (x , y) LP.≈ z)
+              (StrongExt-ED-η gᴿ x' y')
+              (StrongExt {Γ = A₁} {A = A₂} {B = F-ob (A₁ ×dp A₂)} .f gᴿ .pres≈ x≈x'
+                (ϕ .ErrorDomMor.fun (η y)) (η y')
+                (ϕ≈id (η y) (η y') (η-mor .pres≈ y≈y')))
+
+      lem1 : U-mor (A₁ ×Kᴿ ϕ) ≈mon U-mor (Ext η-mor)
+      lem1 = ExtCombinator.Ext .pres≈ {x = KlProdᴿ-pt2 A₁ ϕ ∘p KlProdᴿ-pt1 A₁ ϕ} {y = η-mor} pt≈η
+
+      lem2 : U-mor (Ext (η-mor {A = A₁ ×dp A₂})) ≡ Id
+      lem2 = cong U-mor Ext-unit-right
+
+
+-- Interaction with the action of F on morphisms
+module _ {A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁} {A₁' : Predomain ℓA₁' ℓ≤A₁' ℓ≈A₁'}
+         (f : PMor A₁ A₁') (A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂) where
+
+  private
+    gᴸ = Curry {Γ = A₂} {A = A₁'} (η-mor {A = A₁' ×dp A₂} ∘p SwapPair)
+    Sᴸ : ⟨ A₂ ⟩ → ErrorDomMor (F-ob A₁') (F-ob (A₁' ×dp A₂))
+    Sᴸ = StrongExt-ED {Γ = A₂} {A = A₁'} {B = F-ob (A₁' ×dp A₂)} gᴸ
+
+  KlProdᴸ-F : (F-mor f) ×Kᴸ A₂ ≡ F-mor (f ×mor Id)
+  KlProdᴸ-F = F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) →
+         cong (Sᴸ y .ErrorDomMor.fun) (map-η (f .PMor.f) x)
+       ∙ StrongExt-ED-η gᴸ y (f .PMor.f x)
+       ∙ sym (map-η ((f ×mor Id) .PMor.f) (x , y)) })))
+
+module _ (A₁ : Predomain ℓA₁ ℓ≤A₁ ℓ≈A₁)
+         {A₂ : Predomain ℓA₂ ℓ≤A₂ ℓ≈A₂} {A₂' : Predomain ℓA₂' ℓ≤A₂' ℓ≈A₂'}
+         (f : PMor A₂ A₂') where
+
+  private
+    gᴿ = Curry {Γ = A₁} {A = A₂'} (η-mor {A = A₁ ×dp A₂'})
+    Sᴿ : ⟨ A₁ ⟩ → ErrorDomMor (F-ob A₂') (F-ob (A₁ ×dp A₂'))
+    Sᴿ = StrongExt-ED {Γ = A₁} {A = A₂'} {B = F-ob (A₁ ×dp A₂')} gᴿ
+
+  KlProdᴿ-F : A₁ ×Kᴿ (F-mor f) ≡ F-mor (Id ×mor f)
+  KlProdᴿ-F = F-extensionality _ _
+    (ExtAsEDMorphism.Equations.Ext-η _
+     ∙ eqPMor _ _ (funExt (λ { (x , y) →
+         cong (Sᴿ x .ErrorDomMor.fun) (map-η (f .PMor.f) y)
+       ∙ StrongExt-ED-η gᴿ x (f .PMor.f y)
+       ∙ sym (map-η ((Id ×mor f) .PMor.f) (x , y)) })))
