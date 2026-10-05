@@ -89,6 +89,7 @@ private
     ℓBₒ' ℓ≤Bₒ' ℓ≈Bₒ' : Level
 
     ℓc₁ ℓc₂ ℓc₃  : Level
+    ℓd₁ ℓd₂ ℓd₃  : Level
     ℓA'' ℓ≤A'' ℓ≈A'' ℓMA'' : Level
     ℓB'' ℓ≤B'' ℓ≈B'' ℓMB'' : Level
 
@@ -164,6 +165,26 @@ module _
   ⊙V .snd .fst = LeftRepV-Comp (c₁ .fst) (c₂ .fst) (c₁ .snd .fst) (c₂ .snd .fst)
   
   ⊙V .snd .snd = repFcFc'→repFcc' (c₁ .fst) (c₂ .fst) (c₁ .snd .fst) (c₂ .snd .fst) (c₁ .snd .snd) (c₂ .snd .snd)
+
+
+-- Composition of computation relations (Definition D.16): the composite
+-- error domain relation with the composite push-pull structure (Lemma
+-- D.1), right-represented by the composite of the projections (Lemma
+-- D.10), and with U of the composite left-represented via Lemma D.13
+-- from the left representations of U d₁ and U d₂.
+
+module _
+  {B₁ : CompType ℓB₁ ℓ≤B₁ ℓ≈B₁ ℓMB₁} {B₂ : CompType ℓB₂ ℓ≤B₂ ℓ≈B₂ ℓMB₂} {B₃ : CompType ℓB₃ ℓ≤B₃ ℓ≈B₃ ℓMB₃}
+  (d₁ : CompRel B₁ B₂ ℓd₁)
+  (d₂ : CompRel B₂ B₃ ℓd₂)
+  where
+
+  ⊙C : CompRel B₁ B₃ _
+  ⊙C .fst = RelPP.⊙C (d₁ .fst) (d₂ .fst)
+
+  ⊙C .snd .fst = RightRepC-Comp (d₁ .fst) (d₂ .fst) (d₁ .snd .fst) (d₂ .snd .fst)
+
+  ⊙C .snd .snd = repUdUd'→repUdd' (d₁ .fst) (d₂ .fst) (d₁ .snd .fst) (d₂ .snd .fst) (d₁ .snd .snd) (d₂ .snd .snd)
 
 
 

@@ -15,7 +15,7 @@ formalization.
   Updated again on 2026-10-04 after completing Lemma D.7 and Lemma D.18 and
   redefining `ValRel≈`/`CompRel≈` as quasi-order-equivalence, which closes
   the last hole in `Syntax/FineGrained/Denotation/TypePrecision.agda`, and
-  after completing the computation half of Lemma D.9.
+  after completing the computation half of Lemma D.9 and Definition D.16.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -33,7 +33,7 @@ formalization.
 | Lemma D.7 | Same embedding (values) / same projection (computations) cases | done 2026-10-04 | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda:572,657` |
 | Lemma D.9 | Computation half; identity computation relation | done 2026-10-04 | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:120,124`, `Semantics/Concrete/Relations/Constructions.agda:114` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | done 2026-10-04 | `Semantics/Concrete/Relations/Constructions.agda:375-504` |
-| Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
+| Def. D.16 | Composition of computation relations | done 2026-10-04 | `Semantics/Concrete/Relations/Constructions.agda:182` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
 
 ## Appendix B: Kleisli actions
@@ -196,16 +196,18 @@ embeddings (the projection representing `F (c ⊙ c')` is the composite of the
 two projections conjugated by perturbations), is exactly why equality of
 embeddings had to be weakened.
 
-### Definition D.16, composition of computation relations
+### Definition D.16, composition of computation relations (done 2026-10-04)
 
-Value-relation composition `⊙V` is done
-(`Semantics/Concrete/Relations/Constructions.agda:145`). The computation
-version has no definition, although all three ingredients exist: the push-pull
-structure `⊙C` (`Perturbation/Relation/Constructions.agda:161`),
+Both halves are in `Semantics/Concrete/Relations/Constructions.agda`:
+value-relation composition `⊙V` (line 162) and computation-relation
+composition `⊙C` (line 182). The latter assembles the push-pull structure
+`RelPP.⊙C` (`Perturbation/Relation/Constructions.agda:161`, Lemma D.1),
 `RightRepC-Comp` from Lemma D.10
 (`Perturbation/QuasiRepresentation/Composition.agda:380`), and
 `repUdUd'→repUdd'` from Lemma D.13
-(`Perturbation/QuasiRepresentation/CompositionLemmaU.agda:122`).
+(`Perturbation/QuasiRepresentation/CompositionLemmaU.agda:122`), mirroring
+`⊙V`. Together with `IdC` (line 115) the computation relations now have
+identities and composition, matching the value relations.
 
 ### Definition D.17, functorial actions on value and computation relations (done 2026-10-04)
 
