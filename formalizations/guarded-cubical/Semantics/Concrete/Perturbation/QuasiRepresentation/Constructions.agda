@@ -93,6 +93,37 @@ module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} where
   RightRepV-Id : RightRepV A A rA
   RightRepV-Id = mkRightRepV A A rA
     Id MA.ε UpR-DnR MA.ε UpL-DnL
+
+
+-- The identity error domain relation is quasi-left-representable and
+-- quasi-right-representable (Lemma D.9, computation half). The
+-- embedding and the projection are the identity morphism and the
+-- perturbations are the unit of the monoid, which the interpretation
+-- homomorphism sends to the identity morphism, so all four squares are
+-- identity squares.
+
+module _ {B : CompType ℓB ℓ≤B ℓ≈B ℓMB} where
+
+  private
+    |B| = CompType→ErrorDomain B
+    module MB = MonoidStr (PtbC B .snd)
+    iB = fst ∘ interpC B .fst
+    module iB = IsMonoidHom (interpC B .snd)
+    rB = idEDRel |B|
+
+    UpR-DnR : ErrorDomSq rB rB (iB MB.ε) IdE
+    UpR-DnR = subst (λ z → ErrorDomSq rB rB z IdE) (sym (cong fst iB.presε)) (ED-IdSqH IdE)
+
+    UpL-DnL : ErrorDomSq rB rB IdE (iB MB.ε)
+    UpL-DnL = subst (λ z → ErrorDomSq rB rB IdE z) (sym (cong fst iB.presε)) (ED-IdSqH IdE)
+
+  LeftRepC-Id : LeftRepC B B rB
+  LeftRepC-Id = mkLeftRepC B B rB
+    IdE MB.ε UpR-DnR MB.ε UpL-DnL
+
+  RightRepC-Id : RightRepC B B rB
+  RightRepC-Id = mkRightRepC B B rB
+    IdE MB.ε UpR-DnR MB.ε UpL-DnL
       
 
 

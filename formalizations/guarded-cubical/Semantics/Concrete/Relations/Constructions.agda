@@ -107,6 +107,19 @@ IdV A .snd .fst = LeftRepV-Id
 -- Right rep for F Id
 IdV A .snd .snd = F-rightRep A A _ RightRepV-Id
 
+
+-- The identity computation relation (Lemma D.9, computation half):
+-- the identity error domain relation with its push-pull structure, its
+-- right representation, and the left representation of U Id.
+IdC : ∀ (B : CompType ℓB ℓ≤B ℓ≈B ℓMB) → CompRel B B ℓ≤B
+IdC B .fst = IdRelC
+
+-- Right rep for Id
+IdC B .snd .fst = RightRepC-Id
+
+-- Left rep for U Id
+IdC B .snd .snd = U-leftRep B B _ LeftRepC-Id
+
 open F-rel
 
 module C = ClockedCombinators k

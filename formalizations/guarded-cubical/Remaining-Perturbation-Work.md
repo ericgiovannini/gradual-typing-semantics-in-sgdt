@@ -14,7 +14,8 @@ formalization.
   and Definition D.17 in `Semantics/Concrete/Relations/Constructions.agda`.
   Updated again on 2026-10-04 after completing Lemma D.7 and Lemma D.18 and
   redefining `ValRel≈`/`CompRel≈` as quasi-order-equivalence, which closes
-  the last hole in `Syntax/FineGrained/Denotation/TypePrecision.agda`.
+  the last hole in `Syntax/FineGrained/Denotation/TypePrecision.agda`, and
+  after completing the computation half of Lemma D.9.
 - Paths are relative to `formalizations/guarded-cubical`.
 - "Hole" means an interaction hole `{! !}` in live (non-commented) code.
   Agda prints no warning for these when `--allow-unsolved-metas` is on, so a
@@ -30,7 +31,7 @@ formalization.
 |---|---|---|---|
 | App. D.1/D.2 (unnumbered) | `Σ-SemPtb-eq`, `Σ-SemPtb-ind` | 4 holes, unused | `Semantics/Concrete/Perturbation/Semantic.agda:762,782,788,790` |
 | Lemma D.7 | Same embedding (values) / same projection (computations) cases | done 2026-10-04 | `Semantics/Concrete/Perturbation/QuasiRepresentation/QuasiEquivalence.agda:572,657` |
-| Lemma D.9 | Computation half; identity computation relation | not started | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`, `Semantics/Concrete/Relations/Constructions.agda` |
+| Lemma D.9 | Computation half; identity computation relation | done 2026-10-04 | `Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:120,124`, `Semantics/Concrete/Relations/Constructions.agda:114` |
 | Lemma D.18 | Quasi-order-equivalence of functors with composition | done 2026-10-04 | `Semantics/Concrete/Relations/Constructions.agda:375-504` |
 | Def. D.16 | Composition of computation relations | not started, ingredients exist | `Semantics/Concrete/Relations/Constructions.agda` |
 | (outside paper) | `π1` as a value morphism with perturbation action | 2 holes, unused | `Semantics/Concrete/Types/Morphism.agda:227-228` |
@@ -123,14 +124,19 @@ relation: `quasiEquivV-refl/sym/trans` (lines 391 to 425) and
 composite being the monoid products of the component perturbations. The
 file no longer uses `--allow-unsolved-metas`.
 
-### Lemma D.9, reflexive relations are quasi-representable
+### Lemma D.9, reflexive relations are quasi-representable (done 2026-10-04)
 
-The value half is done (`LeftRepV-Id`, `RightRepV-Id` at
-`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda:90`
-and `:94`). The computation half has no counterpart, and there is no identity
-computation relation in `Semantics/Concrete/Relations/Constructions.agda`
-(only `IdV`, line 98). The push-pull part `IdRelC` exists in
-`Semantics/Concrete/Perturbation/Relation/Constructions.agda:105`.
+Both halves are in
+`Semantics/Concrete/Perturbation/QuasiRepresentation/Constructions.agda`:
+the value half (`LeftRepV-Id`, `RightRepV-Id`, lines 89 and 93) and the
+computation half (`LeftRepC-Id`, `RightRepC-Id`, lines 120 and 124). In
+each case the embedding and projection are the identity morphism, the
+perturbations are the monoid unit, and the squares are identity squares
+transported along the fact that the interpretation homomorphism preserves
+the unit. The identity computation relation `IdC` (push-pull structure
+`IdRelC`, right representation `RightRepC-Id`, left representation of
+`U Id` via `U-leftRep`) is in `Semantics/Concrete/Relations/Constructions.agda`
+at line 114, next to `IdV` (line 101).
 
 ### Lemma D.14, products preserve quasi-representability (done 2026-10-04)
 
