@@ -105,8 +105,11 @@ _×p_  : Poset ℓA ℓ'A -> Poset ℓB ℓ'B -> Poset (ℓ-max ℓA ℓB) (ℓ-
 A ×p B =
   (⟨ A ⟩ × ⟨ B ⟩) ,
   (posetstr order (isposet
-    (isSet× (IsPoset.is-set A.isPoset) (IsPoset.is-set B.isPoset))
-    propValued order-refl order-trans {!!}))
+    (isSet× A.is-set (B.is-set))
+    propValued order-refl order-trans
+      λ ab a'b' ab≦a'b' a'b'≦ab →
+        ΣPathP ( A.is-antisym _ _ (ab≦a'b' .fst) (a'b'≦ab .fst)
+               , B.is-antisym _ _ (ab≦a'b' .snd) (a'b'≦ab .snd))))
   where
     module A = PosetStr (A .snd)
     module B = PosetStr (B .snd)
@@ -178,7 +181,7 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ'B = ℓ'B} A B =
   (⟨ A ⟩ ⊎ ⟨ B ⟩) ,
   posetstr order (isposet
     (isSet⊎ ((IsPoset.is-set A.isPoset)) ((IsPoset.is-set B.isPoset)))
-    propValued order-refl order-trans {!!})
+    propValued order-refl order-trans order-antisym)
   where
     module A = PosetStr (A .snd)
     module B = PosetStr (B .snd)
@@ -204,7 +207,8 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ'B = ℓ'B} A B =
       lift (transitive B b1 b2 b3 (lower b1≤b2) (lower b2≤b3))
 
     order-antisym : BinaryRelation.isAntisym order
-    order-antisym = {!!}
+    order-antisym (inl a) (inl a') ≤ ≥ = cong inl (A.is-antisym a a' (≤ .lower) (≥ .lower))
+    order-antisym (inr b) (inr b') ≤ ≥ = cong inr (B.is-antisym b b' (≤ .lower) (≥ .lower))
 
 σ1 : {A : Poset ℓA ℓ'A} {B : Poset ℓB ℓ'B} -> ⟨ A ==> (A ⊎p B) ⟩
 σ1 = record { f = λ a -> inl a ; isMon = λ {x} {y} x≤y → lift x≤y }
@@ -217,15 +221,15 @@ _⊎p_ {ℓ'A = ℓ'A} {ℓ'B = ℓ'B} A B =
 
 -- Functions from clocks into posets inherit the poset structure of the codomain.
 -- (Note: Nothing here is specific to clocks.)
-𝔽 : (Clock -> Poset ℓ ℓ') -> Poset ℓ ℓ'
-𝔽 A = (∀ k -> ⟨ A k ⟩) ,
-  posetstr (λ x y → ∀ k -> rel (A k) (x k) (y k))
-  (isposet
-    (λ f g pf1 pf2 → λ i1 i2 k → isSet-poset (A k) (f k) (g k) (λ i' -> pf1 i' k) (λ i' -> pf2 i' k) i1 i2)
-    (λ f g pf1 pf2 i k → isPropValued-poset (A k) (f k) (g k) (pf1 k) (pf2 k) i )
-    (λ f k → reflexive (A k) (f k))
-    (λ f g h f≤g g≤h k → transitive (A k) (f k) (g k) (h k) (f≤g k) (g≤h k))
-    {!!})
+-- 𝔽 : (Clock -> Poset ℓ ℓ') -> Poset ℓ ℓ'
+-- 𝔽 A = (∀ k -> ⟨ A k ⟩) ,
+--   posetstr (λ x y → ∀ k -> rel (A k) (x k) (y k))
+--   (isposet
+--     (λ f g pf1 pf2 → λ i1 i2 k → isSet-poset (A k) (f k) (g k) (λ i' -> pf1 i' k) (λ i' -> pf2 i' k) i1 i2)
+--     (λ f g pf1 pf2 i k → isPropValued-poset (A k) (f k) (g k) (pf1 k) (pf2 k) i )
+--     (λ f k → reflexive (A k) (f k))
+--     (λ f g h f≤g g≤h k → transitive (A k) (f k) (g k) (h k) (f≤g k) (g≤h k))
+--     {!!})
 
 
 -- Later structure on posets
