@@ -349,6 +349,33 @@ module _ {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁} {A₁' : ValTyp
   (c₁ × c₂) .snd .snd = ×-F-rightRep (c₁ .fst .fst) (c₂ .fst .fst) (c₁ .snd .snd) (c₂ .snd .snd)
 
 
+-- The product action respects identities and composition up to
+-- quasi-order-equivalence: in both cases the two relations are
+-- represented by the same embedding, since the embedding of a product
+-- relation is the product of the embeddings.
+
+module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {B : ValType ℓB ℓ≤B ℓ≈B ℓMB} where
+
+  ×-Id-emb : ValRel≈ (IdV (A Types.× B)) (IdV A × IdV B)
+  ×-Id-emb = eqEmbV→quasiEquivV _ _
+    (IdV (A Types.× B) .snd .fst)
+    ((IdV A × IdV B) .snd .fst)
+    (eqPMor _ _ refl)
+
+module _ {A₁ : ValType ℓA₁ ℓ≤A₁ ℓ≈A₁ ℓMA₁} {A₂ : ValType ℓA₂ ℓ≤A₂ ℓ≈A₂ ℓMA₂}
+         {A₃ : ValType ℓA₃ ℓ≤A₃ ℓ≈A₃ ℓMA₃}
+         {B₁ : ValType ℓB₁ ℓ≤B₁ ℓ≈B₁ ℓMB₁} {B₂ : ValType ℓB₂ ℓ≤B₂ ℓ≈B₂ ℓMB₂}
+         {B₃ : ValType ℓB₃ ℓ≤B₃ ℓ≈B₃ ℓMB₃}
+         (c : ValRel A₁ A₂ ℓc) (c' : ValRel A₂ A₃ ℓc')
+         (d : ValRel B₁ B₂ ℓd) (d' : ValRel B₂ B₃ ℓd') where
+
+  ×-comp-equiv : ValRel≈ (⊙V (c × d) (c' × d')) (⊙V c c' × ⊙V d d')
+  ×-comp-equiv = eqEmbV→quasiEquivV _ _
+    (⊙V (c × d) (c' × d') .snd .fst)
+    ((⊙V c c' × ⊙V d d') .snd .fst)
+    (eqPMor _ _ refl)
+
+
 -- Arrows
 
 module _ {A : ValType ℓA ℓ≤A ℓ≈A ℓMA} {A' : ValType ℓA' ℓ≤A' ℓ≈A' ℓMA'}

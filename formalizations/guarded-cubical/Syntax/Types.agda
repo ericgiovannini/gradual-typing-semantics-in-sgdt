@@ -5,7 +5,7 @@ open import Cubical.Data.Nat
 open import Cubical.Relation.Nullary
 open import Cubical.Foundations.Function
 open import Cubical.Data.List hiding (nil)
-open import Cubical.Data.Prod hiding (map)
+open import Cubical.Data.Prod hiding (map ; _×_)
 open import Cubical.Data.Empty renaming (rec to exFalso)
 
 -- Types --
@@ -13,6 +13,7 @@ data Ty : Type where
   nat : Ty
   dyn : Ty
   _⇀_ : Ty -> Ty -> Ty
+  _×_ : Ty -> Ty -> Ty
 
 private
  variable
@@ -22,9 +23,10 @@ data _⊑_ : Ty → Ty → Type where
   refl-⊑ : S ⊑ S
   trans-⊑ : S ⊑ T → T ⊑ U → S ⊑ U
   _⇀_ : R ⊑ R' → S ⊑ S' → (R ⇀ S) ⊑ (R' ⇀ S')
+  _×_ : R ⊑ R' → S ⊑ S' → (R × S) ⊑ (R' × S')
   inj-nat : nat ⊑ dyn
   inj-arr : (dyn ⇀ dyn) ⊑ dyn
-  -- TODO: add products
+  inj-times : (dyn × dyn) ⊑ dyn
 
 _∘⊑_ : S ⊑ T → T ⊑ U → S ⊑ U
 _∘⊑_ = trans-⊑
@@ -33,6 +35,7 @@ dyn-⊤ : S ⊑ dyn
 dyn-⊤ {nat} = inj-nat
 dyn-⊤ {dyn} = refl-⊑
 dyn-⊤ {S ⇀ S₁} = trans-⊑ (dyn-⊤ ⇀ dyn-⊤) inj-arr
+dyn-⊤ {S × S₁} = trans-⊑ (dyn-⊤ × dyn-⊤) inj-times
 
 record TyPrec : Type where
   field
@@ -51,6 +54,11 @@ _⇀TP_ : TyPrec → TyPrec → TyPrec
 (c ⇀TP d) .ty-left = ty-left c ⇀ ty-left d
 (c ⇀TP d) .ty-right = ty-right c ⇀ ty-right d
 (c ⇀TP d) .ty-prec = c .ty-prec ⇀ d .ty-prec
+
+_×TP_ : TyPrec → TyPrec → TyPrec
+(c ×TP d) .ty-left = ty-left c × ty-left d
+(c ×TP d) .ty-right = ty-right c × ty-right d
+(c ×TP d) .ty-prec = c .ty-prec × d .ty-prec
 
 Ctx = List Ty
 private
@@ -103,11 +111,12 @@ module _ where
   private
     X = Unit
     St : Unit → Type
-    St tt = Unit ⊎ (Unit ⊎ Unit)
+    St tt = Unit ⊎ (Unit ⊎ (Unit ⊎ Unit))
     P : ∀ x → St x → Type
     P tt (inl x) = ⊥
     P tt (inr (inl x)) = ⊥
-    P tt (inr (inr x)) = Unit ⊎ Unit
+    P tt (inr (inr (inl x))) = Unit ⊎ Unit
+    P tt (inr (inr (inr x))) = Unit ⊎ Unit
     inX : ∀ x → (s : St x) → P x s → X
     inX x s p = tt
     W = IW St P inX tt
@@ -115,7 +124,11 @@ module _ where
     Ty→W : Ty → W
     Ty→W nat = node (inl tt) exFalso
     Ty→W dyn = node (inr (inl tt)) exFalso
-    Ty→W (A ⇀ B) = node (inr (inr tt)) trees where
+    Ty→W (A ⇀ B) = node (inr (inr (inl tt))) trees where
+      trees : Unit ⊎ Unit → W
+      trees (inl x) = Ty→W A
+      trees (inr x) = Ty→W B
+    Ty→W (A × B) = node (inr (inr (inr tt))) trees where
       trees : Unit ⊎ Unit → W
       trees (inl x) = Ty→W A
       trees (inr x) = Ty→W B
@@ -123,15 +136,18 @@ module _ where
     W→Ty : W → Ty
     W→Ty (node (inl x) subtree) = nat
     W→Ty (node (inr (inl x)) subtree) = dyn
-    W→Ty (node (inr (inr x)) subtree) = W→Ty (subtree (inl tt)) ⇀ W→Ty (subtree (inr tt))
+    W→Ty (node (inr (inr (inl x))) subtree) = W→Ty (subtree (inl tt)) ⇀ W→Ty (subtree (inr tt))
+    W→Ty (node (inr (inr (inr x))) subtree) = W→Ty (subtree (inl tt)) × W→Ty (subtree (inr tt))
 
     rtr : (x : Ty) → W→Ty (Ty→W x) ≡ x
     rtr nat = refl
     rtr dyn = refl
     rtr (A ⇀ B) = cong₂ _⇀_ (rtr A) (rtr B)
+    rtr (A × B) = cong₂ _×_ (rtr A) (rtr B)
 
   isSetTy : isSet Ty
-  isSetTy = isSetRetract Ty→W W→Ty rtr (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit)) tt)
+  isSetTy = isSetRetract Ty→W W→Ty rtr
+    (isOfHLevelSuc-IW 1 (λ tt → isSet⊎ isSetUnit (isSet⊎ isSetUnit (isSet⊎ isSetUnit isSetUnit))) tt)
 
 
 data _≈_ : (S ⊑ T) → (S ⊑ T) → Type where
@@ -141,4 +157,5 @@ data _≈_ : (S ⊑ T) → (S ⊑ T) → Type where
   assoc : trans-⊑ c (trans-⊑ d d') ≈ trans-⊑ (trans-⊑ c d) d'
   ⇀-refl : refl-⊑ ≈ (refl-⊑ {S} ⇀ refl-⊑ {T})
   ⇀-trans : trans-⊑ (c ⇀ d) (c' ⇀ d') ≈ (trans-⊑ c c' ⇀ trans-⊑ d d')
-  -- TODO: add products
+  ×-refl : refl-⊑ ≈ (refl-⊑ {S} × refl-⊑ {T})
+  ×-trans : trans-⊑ (c × d) (c' × d') ≈ (trans-⊑ c c' × trans-⊑ d d')
