@@ -7,7 +7,6 @@
 
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Common.Later
 
 module Semantics.Concrete.ExtensionalModel (k : Clock) where

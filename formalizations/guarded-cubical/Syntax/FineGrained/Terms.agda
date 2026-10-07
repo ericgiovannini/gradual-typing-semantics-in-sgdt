@@ -94,8 +94,9 @@ data Val where
   -- V = λ x. V x
   fun-η : V ≡ lda (appP [ (!s ,s (V [ wk ]v)) ,s var ]cP)
 
-  injectN   : Val [ nat ] dyn
-  injectArr : Val [ dyn ⇀ dyn ] dyn
+  injectN     : Val [ nat ] dyn
+  injectArr   : Val [ dyn ⇀ dyn ] dyn
+  injectTimes : Val [ dyn × dyn ] dyn
   -- TODO: do we need this?
   -- mapDyn : Val [ nat ] nat → Val [ dyn ⇀ dyn ] (dyn ⇀ dyn) → Val [ dyn ] dyn
   -- TODO: add products
@@ -166,21 +167,11 @@ data Comp where
        (M [ ids ,s (zro [ !s ]v) ]c)
        (M [ wk ,s (suc [ !s ,s var ]v) ]c)
 
-  matchDyn : Comp (nat ∷ Γ) S → Comp ((dyn ⇀ dyn) ∷ Γ) S → Comp (dyn ∷ Γ) S
-
-  matchDynβn : (Kn : Comp (nat ∷ Γ) S) (Kf : Comp ((dyn ⇀ dyn) ∷ Γ) S)
-               (V : Val Γ nat) ->
-    matchDyn Kn Kf [ ids ,s (injectN [ !s ,s V ]v) ]c ≡
-    Kn [ ids ,s V ]c
-
-  matchDynβf : (Kn : Comp (nat ∷ Γ) S) (Kf : Comp ((dyn ⇀ dyn) ∷ Γ) S)
-               (V : Val Γ (dyn ⇀ dyn)) ->
-    matchDyn Kn Kf [ ids ,s (injectArr [ !s ,s V ]v) ]c ≡
-    Kf [ ids ,s V ]c
-
-  matchDynSubst :
-    ∀ (M : Comp (nat ∷ Γ) R) (N : Comp ((dyn ⇀ dyn) ∷ Γ) R) (γ : Subst Δ Γ)
-    → matchDyn M N [ ↑subst γ ]c ≡ matchDyn (M [ ↑subst γ ]c) (N [ ↑subst γ ]c)
+  -- Elimination of the dynamic type is by the downcasts dn inj-nat,
+  -- dn inj-arr and dn inj-times (which error on a mismatched tag). A
+  -- primitive matchDyn with a strict β law for the function case is
+  -- not sound in the intensional semantics, where unpacking the
+  -- function case of dyn takes a step.
 
 appP = app
 retP = ret
@@ -203,6 +194,13 @@ vToE V = bind (ret [ !s ,s V ]c)
 
 upE : (S⊑T : TyPrec) → EvCtx [] (ty-left S⊑T) (ty-right S⊑T)
 upE c = vToE (up c)
+
+-- Casts applied to computations in an arbitrary context.
+upC : (S⊑T : TyPrec) → Comp Γ (ty-left S⊑T) → Comp Γ (ty-right S⊑T)
+upC c M = (upE c [ !s ]e) [ M ]∙
+
+dnC : (S⊑T : TyPrec) → Comp Γ (ty-right S⊑T) → Comp Γ (ty-left S⊑T)
+dnC c M = (dn c [ !s ]e) [ M ]∙
 
 -- Sequencing computations via bind and [ _ ]∙
 bind' : Comp Γ S -> Comp (S ∷ Γ) T -> Comp Γ T

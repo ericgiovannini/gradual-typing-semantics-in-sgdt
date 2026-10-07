@@ -1,7 +1,7 @@
 {-
   Denotational semantics of gradual types as error predomains
 -}
-{-# OPTIONS --rewriting --lossy-unification --allow-unsolved-metas #-}
+{-# OPTIONS --rewriting --lossy-unification #-}
 open import Common.Later
 module Syntax.FineGrained.Denotation.Types (k : Clock) where
 

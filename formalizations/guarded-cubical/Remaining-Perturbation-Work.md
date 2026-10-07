@@ -25,6 +25,41 @@ formalization.
   quasi-representability", as remaining work; most entries here are pieces of
   that item.
 
+## Term semantics and term precision (done 2026-10-06)
+
+Not perturbation lemmas, but the two largest holes on the path to
+`Results.Graduality`, and not listed in the original version of this file:
+the interpretation of terms `⟦_⟧C` in
+`Syntax/FineGrained/Denotation/Terms.agda` and the interpretation of term
+precision `⟦_⟧C⊑` in `Syntax/FineGrained/Denotation/TermPrecision.agda` were
+both unfilled since 2024 (their files carried `--allow-unsolved-metas`).
+Both are now complete:
+
+- `Denotation/Terms.agda`: `⟦_⟧S`, `⟦_⟧V`, `⟦_⟧C`, `⟦_⟧E` for all point and
+  path constructors of the quotiented syntax, using the new combinators in
+  `Denotation/Combinators.agda` (natural-number case analysis, plugging and
+  Kleisli composition of evaluation contexts, the constant arrow).
+- `Denotation/TermPrecision.agda`: `⟦_⟧S⊑`, `⟦_⟧V⊑`, `⟦_⟧E⊑`, `⟦_⟧C⊑` as
+  extensional squares for every rule of `Syntax/FineGrained/Order.agda`,
+  including EquivTyPrec and the paper's cast rules UpL, UpR, DnL, DnR
+  (Section 6.4.3), using the square and bisimilarity lemmas in
+  `Denotation/Squares.agda`.
+- Syntax changes decided with the authors: `matchDyn` and its β laws were
+  removed from `Terms.agda` (the function-case law is not sound in the
+  intensional model; elimination of the dynamic type is by the downcasts),
+  `injectTimes` was added, and in `Order.agda` the non-standard `up-L` and
+  `retraction` rules were replaced by UpL/UpR/DnL/DnR and EquivTyPrec.
+- The pragma `--allow-unsolved-metas` is gone from `Denotation/{Types,
+  Terms, TermPrecision}.agda`, `Semantics/Concrete/ExtensionalModel.agda`
+  and `Semantics/Concrete/Relations/Base.agda`, so `Results.Graduality` is
+  certified by Agda down to the modules that still carry the pragma for
+  the perturbation holes listed below.
+- Type-checking note: in `TermPrecision.agda` every bisimilarity lemma is
+  applied with its predomain and morphism arguments explicit. Leaving them
+  implicit makes Agda solve them by η-expanding record metavariables, after
+  which conversion checking does not finish; with explicit arguments the
+  module checks in about two minutes.
+
 ## Summary
 
 | Paper result | Topic | Status | Location |

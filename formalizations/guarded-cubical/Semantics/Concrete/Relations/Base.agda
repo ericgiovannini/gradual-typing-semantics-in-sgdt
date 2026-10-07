@@ -12,7 +12,6 @@
 
 {-# OPTIONS --rewriting --guarded #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Common.Later
 
 module Semantics.Concrete.Relations.Base (k : Clock) where

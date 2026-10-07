@@ -53,30 +53,12 @@ data Val⊑ where
   -- lda may be admissible
   lda : ∀ {M M'} -> Comp⊑ (c ∷ C) d M M' → Val⊑ C (c ⇀ d) (lda M) (lda M')
 
-  -- TODO: UpL/UpR laws
--- -- Cast rules are admissible
-
-  -- up x <= x
-  up-L : ∀ R R' (c : R ⊑ R') → Val⊑ (c ∷ []) refl-⊑ (up (mkTyPrec c)) var
-
--- -- if x <= y then δl x <= e y
--- up-R : ∀ R R' (c : R ⊑ R') → Val⊑ ((refl-⊑ R) ∷ []) c (δl-e c) (emb c)
-
--- dn-L : ∀ R R' (c : R ⊑ R') → EvCtx⊑ [] (refl-⊑ R') c (proj c) (δr-p c)
--- dn-R : ∀ R R' (c : R ⊑ R') → EvCtx⊑ [] c (refl-⊑ R) (δl-p c) (proj c)
-
 data EvCtx⊑ where
   reflexive : EvCtx⊑ (refl-⊑ctx Γ) refl-⊑ refl-⊑ E E
   ∙E : EvCtx⊑ C c c ∙E ∙E
   _∘E_ : EvCtx⊑ C c d E E' → EvCtx⊑ C b c F F' → EvCtx⊑ C b d (E ∘E F) (E' ∘E F')
   _[_]e : EvCtx⊑ C c d E E' → Subst⊑ B C γ γ' → EvCtx⊑  B c d (E [ γ ]e) (E' [ γ' ]e)
   bind : Comp⊑ (c ∷ C) d M M' → EvCtx⊑ C c d (bind M) (bind M')
-
-  -- TODO: DnL/DnR laws
-  -- The other direction of retraction is admissible
-  retraction : ∀ S⊑T → EvCtx⊑ [] refl-⊑ refl-⊑
-    ∙E
-    (vToE (up S⊑T) ∘E dn S⊑T)
 
 data Comp⊑ where
   reflexive : Comp⊑ (refl-⊑ctx Γ) refl-⊑ M M
@@ -91,3 +73,12 @@ data Comp⊑ where
     Comp⊑ (refl-⊑ ∷ C) c (matchNat Kz Ks) (matchNat Kz' Ks')
 
   err⊥ : Comp⊑ (refl-⊑ctx Γ) refl-⊑ err' M
+  -- Equivalent type precision derivations give the same term precision.
+  EquivTyPrec : Comp⊑ C c M M' → c ≈ c' → Comp⊑ C c' M M'
+  -- The four cast rules, stated with composite derivations so that no
+  -- transitivity of term precision is needed (Figure "Term Precision
+  -- Rules" of the paper).
+  UpL : Comp⊑ C (trans-⊑ c d) M M' → Comp⊑ C d (upC (mkTyPrec c) M) M'
+  UpR : Comp⊑ C c M M' → Comp⊑ C (trans-⊑ c d) M (upC (mkTyPrec d) M')
+  DnL : Comp⊑ C d M M' → Comp⊑ C (trans-⊑ c d) (dnC (mkTyPrec c) M) M'
+  DnR : Comp⊑ C (trans-⊑ c d) M M' → Comp⊑ C c M (dnC (mkTyPrec d) M')
